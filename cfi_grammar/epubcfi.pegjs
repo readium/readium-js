@@ -28,13 +28,13 @@
 // zero = "0";
 
 fragment
-  = "epubcfi(" pathVal:path ")" { return { type:"cfiString", cfiString:pathVal}; }
+  = "epubcfi(" pathVal:path ")" { return { type:"CFIAST", cfiString:pathVal }; }
 
 path 
-  = stepVal:indexStep localPathVal:local_path { return { type:"packageDocPath", step:stepVal, localPath:localPathVal }; }
+  = stepVal:indexStep localPathVal:local_path { return { type:"cfiString", path:stepVal, localPath:localPathVal }; }
 
 local_path
-  = localPathStepVal:(indexStep / indirectionStep)+ { return { type:"localPath", step:localPathStepVal }; }
+  = localPathStepVal:(indexStep / indirectionStep)+ { return { steps:localPathStepVal }; }
 
 indexStep
   = "/" stepLengthVal:integer { return { type:"indexStep", stepLength:stepLengthVal }; }

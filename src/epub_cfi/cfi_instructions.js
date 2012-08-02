@@ -34,7 +34,7 @@ EPUBcfi.CFIInstructions = {
 		var $targetNode = $($currNode.children()[jqueryTargetNodeIndex]);
 
 		// If index exists return the next node
-		if ($targetNode && this.targetIdMatchesIdAssertion($targetNode, stepTargetNodeId)) {
+		if ($targetNode/* && this.targetIdMatchesIdAssertion($targetNode, stepTargetNodeId)*/) {
 
 			return $targetNode;
 		}
@@ -73,20 +73,25 @@ EPUBcfi.CFIInstructions = {
 				type: "GET",
 				url: contentDocHref,
 				dataType: "xml",
+				async: "false",
 				success: function(contentDocXML) {
 
 					var domParser = new window.DOMParser();
 					var contentDoc = domParser.parseFromString(contentDocXML, "text/xml");
 
-					$targetNode = $($(contentDoc.body).children()[jqueryTargetNodeIndex]);
+					// contentDoc.firstChild is intended to return the html element
+					$targetNode = $($(contentDoc.firstChild).children()[jqueryTargetNodeIndex]);
 
 					// If index exists
-					if ($targetNode && that.targetIdMatchesIdAssertion($targetNode, stepTargetNodeId)) {
+					if ($targetNode/* && that.targetIdMatchesIdAssertion($targetNode, stepTargetNodeId)*/) {
 
 						$documentResult = $targetNode;
 					}
 				}
 			});
+
+			// Assuming the ajax above was an asynchronous call
+			return $documentResult;
 		}
 			// }
 			// else if ($targetNode.is("iframe") || $targetNode.is("embed")) { 

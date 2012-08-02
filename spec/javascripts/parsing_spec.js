@@ -7,11 +7,11 @@ describe('parsing of EPUB CFIs', function () {
 
         var expectedAST = {
 
-            type : "cfiString",
+            type : "CFIAST",
             cfiString : {
 
-                type: "packageDocPath",
-                step: {
+                type : "cfiString",
+                path: {
 
                     type: "indexStep",
                     stepLength: "4"
@@ -19,8 +19,7 @@ describe('parsing of EPUB CFIs', function () {
 
                 localPath : {
 
-                    type : "localPath",
-                    step : [
+                    steps : [
                         {
                             type: "indexStep",
                             stepLength: "6"
@@ -44,11 +43,11 @@ describe('parsing of EPUB CFIs', function () {
 
         var expectedAST = {
 
-            type : "cfiString",
+            type : "CFIAST",
             cfiString : {
 
-                type: "packageDocPath",
-                step: {
+                type : "cfiString",
+                path: {
 
                     type: "indexStep",
                     stepLength: "4"
@@ -56,8 +55,7 @@ describe('parsing of EPUB CFIs', function () {
 
                 localPath : {
 
-                    type : "localPath",
-                    step : [
+                    steps : [
                         {
                             type: "indexStep",
                             stepLength: "6"

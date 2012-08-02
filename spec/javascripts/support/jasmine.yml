@@ -15,6 +15,7 @@ src_files:
     - lib/jquery-1.7.1.min.js
     - src/epubcfi.js
     - src/epub_cfi/cfi_instructions.js
+    - src/epub_cfi/cfi_interpreter.js
 
 # stylesheets
 #

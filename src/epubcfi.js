@@ -140,7 +140,7 @@ EPUBcfi.Parser = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, pathVal) { return { type:"cfiString", cfiString:pathVal}; })(pos0, result0[1]);
+          result0 = (function(offset, pathVal) { return { type:"CFIAST", cfiString:pathVal }; })(pos0, result0[1]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -168,7 +168,7 @@ EPUBcfi.Parser = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, stepVal, localPathVal) { return { type:"packageDocPath", step:stepVal, localPath:localPathVal }; })(pos0, result0[0], result0[1]);
+          result0 = (function(offset, stepVal, localPathVal) { return { type:"cfiString", path:stepVal, localPath:localPathVal }; })(pos0, result0[0], result0[1]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -198,7 +198,7 @@ EPUBcfi.Parser = (function(){
           result0 = null;
         }
         if (result0 !== null) {
-          result0 = (function(offset, localPathStepVal) { return { type:"localPath", step:localPathStepVal }; })(pos0, result0);
+          result0 = (function(offset, localPathStepVal) { return { steps:localPathStepVal }; })(pos0, result0);
         }
         if (result0 === null) {
           pos = pos0;
