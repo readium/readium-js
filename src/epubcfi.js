@@ -40,7 +40,8 @@ EPUBcfi.Parser = (function(){
         "fragment": parse_fragment,
         "path": parse_path,
         "local_path": parse_local_path,
-        "step": parse_step,
+        "indexStep": parse_indexStep,
+        "indirectionStep": parse_indirectionStep,
         "integer": parse_integer
       };
       
@@ -139,7 +140,7 @@ EPUBcfi.Parser = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, cfiPath) { return { type:"path", path:cfiPath}})(pos0, result0[1]);
+          result0 = (function(offset, pathVal) { return { type:"cfiString", cfiString:pathVal}; })(pos0, result0[1]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -148,23 +149,14 @@ EPUBcfi.Parser = (function(){
       }
       
       function parse_path() {
-        var result0, result1, result2;
+        var result0, result1;
         var pos0, pos1;
         
         pos0 = pos;
         pos1 = pos;
-        result0 = parse_step();
+        result0 = parse_indexStep();
         if (result0 !== null) {
-          result2 = parse_local_path();
-          if (result2 !== null) {
-            result1 = [];
-            while (result2 !== null) {
-              result1.push(result2);
-              result2 = parse_local_path();
-            }
-          } else {
-            result1 = null;
-          }
+          result1 = parse_local_path();
           if (result1 !== null) {
             result0 = [result0, result1];
           } else {
@@ -176,7 +168,7 @@ EPUBcfi.Parser = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, oneStep, localPath) { return { type:"step", step:oneStep, lPath:localPath } })(pos0, result0[0], result0[1]);
+          result0 = (function(offset, stepVal, localPathVal) { return { type:"packageDocPath", step:stepVal, localPath:localPathVal }; })(pos0, result0[0], result0[1]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -189,40 +181,24 @@ EPUBcfi.Parser = (function(){
         var pos0;
         
         pos0 = pos;
-        result1 = parse_step();
+        result1 = parse_indexStep();
         if (result1 === null) {
-          if (input.charCodeAt(pos) === 33) {
-            result1 = "!";
-            pos++;
-          } else {
-            result1 = null;
-            if (reportFailures === 0) {
-              matchFailed("\"!\"");
-            }
-          }
+          result1 = parse_indirectionStep();
         }
         if (result1 !== null) {
           result0 = [];
           while (result1 !== null) {
             result0.push(result1);
-            result1 = parse_step();
+            result1 = parse_indexStep();
             if (result1 === null) {
-              if (input.charCodeAt(pos) === 33) {
-                result1 = "!";
-                pos++;
-              } else {
-                result1 = null;
-                if (reportFailures === 0) {
-                  matchFailed("\"!\"");
-                }
-              }
+              result1 = parse_indirectionStep();
             }
           }
         } else {
           result0 = null;
         }
         if (result0 !== null) {
-          result0 = (function(offset, foundStep) { return { type:"step", step:foundStep } })(pos0, result0);
+          result0 = (function(offset, localPathStepVal) { return { type:"localPath", step:localPathStepVal }; })(pos0, result0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -230,7 +206,7 @@ EPUBcfi.Parser = (function(){
         return result0;
       }
       
-      function parse_step() {
+      function parse_indexStep() {
         var result0, result1;
         var pos0, pos1;
         
@@ -258,7 +234,43 @@ EPUBcfi.Parser = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, stepValue) { return { type:"slashStep", stepVal:stepValue};})(pos0, result0[1]);
+          result0 = (function(offset, stepLengthVal) { return { type:"indexStep", stepLength:stepLengthVal }; })(pos0, result0[1]);
+        }
+        if (result0 === null) {
+          pos = pos0;
+        }
+        return result0;
+      }
+      
+      function parse_indirectionStep() {
+        var result0, result1;
+        var pos0, pos1;
+        
+        pos0 = pos;
+        pos1 = pos;
+        if (input.substr(pos, 2) === "!/") {
+          result0 = "!/";
+          pos += 2;
+        } else {
+          result0 = null;
+          if (reportFailures === 0) {
+            matchFailed("\"!/\"");
+          }
+        }
+        if (result0 !== null) {
+          result1 = parse_integer();
+          if (result1 !== null) {
+            result0 = [result0, result1];
+          } else {
+            result0 = null;
+            pos = pos1;
+          }
+        } else {
+          result0 = null;
+          pos = pos1;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, stepLengthVal) { return { type:"indirectionStep", stepLength:stepLengthVal }; })(pos0, result0[1]);
         }
         if (result0 === null) {
           pos = pos0;
