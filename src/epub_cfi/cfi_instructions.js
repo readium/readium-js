@@ -195,37 +195,48 @@ EPUBcfi.CFIInstructions = {
 	injectCFIMarkerIntoText : function ($currNode, textOffset, elementToInject) {
 
 		// Filter out non-text nodes
-		var $textNodeList = $currNode.contents().filter(function () {
+		// var $textNodeList = $currNode.contents().filter(function () {
 
-			return this.nodeType === 3;
-		});
+		// 	return this.nodeType === 3;
+		// });
+
+		$nodeList = $currNode.contents();
 
 		var nodeNum;
 		var currNodeLength;
 		var currTextPosition = 0;
 		var nodeOffset;
 		var originalText;
-		for (nodeNum = 0; nodeNum <= $textNodeList.length; nodeNum++) {
+		var $injectedNode;
+		var $newTextNode;
+		for (nodeNum = 0; nodeNum <= $nodeList.length; nodeNum++) {
 
-			currNodeMaxIndex = ($textNodeList[nodeNum].nodeValue.length - 1) + currTextPosition;
+			if ($nodeList[nodeNum].nodeType === 3) {
 
-			if (currNodeMaxIndex >= textOffset) {
-
+				currNodeMaxIndex = ($nodeList[nodeNum].nodeValue.length - 1) + currTextPosition;
 				nodeOffset = textOffset - currTextPosition;
 
-				originalText = $textNodeList[nodeNum].nodeValue;
-				// REFACTORING CANDIDATE: Might want to split the text nodes and insert the element??? Not sure.
-				textWithInjection = [originalText.slice(0, nodeOffset), 
-									 elementToInject, 
-									 originalText.slice(nodeOffset, originalText.length)].join('');
+				if (currNodeMaxIndex >= textOffset) {
 
-				$textNodeList[nodeNum].nodeValue = textWithInjection;
+					// This node is going to be split and the components re-inserted
+					originalText = $nodeList[nodeNum].nodeValue;	
 
-				return $currNode;
-			}
-			else {
+					// Before part
+				 	$nodeList[nodeNum].nodeValue = originalText.slice(0, nodeOffset);
 
-				currTextPosition = currTextPosition + currNodeMaxIndex;
+					// Injected element
+					$injectedNode = $(elementToInject).insertAfter($nodeList.eq(nodeNum));
+
+					// After part
+					$newTextNode = $(document.createTextNode(originalText.slice(nodeOffset, originalText.length)));
+					$($newTextNode).insertAfter($injectedNode);
+
+					return $currNode;
+				}
+				else {
+
+					currTextPosition = currTextPosition + currNodeMaxIndex;
+				}
 			}
 		}
 
