@@ -31,7 +31,13 @@ EPUBcfi.CFIInstructions = {
 
 		// Find the jquery index for the current node
 		var jqueryTargetNodeIndex = (CFIStepValue / 2) - 1;
-		var $targetNode = $($currNode.children()[jqueryTargetNodeIndex]);
+		
+		if (this.indexOutOfRange(jqueryTargetNodeIndex, $currNode.children().not('.cfiMarker').length)) {
+
+			throw EPUBcfi.RuntimeError(undefined, "getNextNode", "out of range error");
+		}
+
+		var $targetNode = $($currNode.children().not('.cfiMarker')[jqueryTargetNodeIndex]);
 
 		// If index exists return the next node
 		if ($targetNode/* && this.targetIdMatchesIdAssertion($targetNode, stepTargetNodeId)*/) {
@@ -68,6 +74,7 @@ EPUBcfi.CFIInstructions = {
 			contentDocHref = $("#" + $currNode.attr("idref"), $packageDocument).attr("href");
 
 			// Load the resource
+			// TODO: This being a synchronous method is not ideal
 			$.ajax({
 
 				type: "GET",
@@ -79,8 +86,13 @@ EPUBcfi.CFIInstructions = {
 					var domParser = new window.DOMParser();
 					var contentDoc = domParser.parseFromString(contentDocXML, "text/xml");
 
+					if (that.indexOutOfRange(jqueryTargetNodeIndex, $(contentDoc.firstChild).children().not('.cfiMarker').length)) {
+
+						throw EPUBcfi.RuntimeError(undefined, "followIndirectionStep", "out of range error");
+					}
+
 					// contentDoc.firstChild is intended to return the html element
-					$targetNode = $($(contentDoc.firstChild).children()[jqueryTargetNodeIndex]);
+					$targetNode = $($(contentDoc.firstChild).children().not('.cfiMarker')[jqueryTargetNodeIndex]);
 
 					// If index exists
 					if ($targetNode/* && that.targetIdMatchesIdAssertion($targetNode, stepTargetNodeId)*/) {
@@ -120,30 +132,22 @@ EPUBcfi.CFIInstructions = {
 	// Arguments: a cfi text termination string, a jquery object to the current node
 	// Returns: id of the inserted marker, or returns the element? ??
 	// TODO: Missing handling of text assertions
-	textTermination : function (CFIStepValue, $currNode, stepTargetNodeId, textOffset) {
+	textTermination : function ($currNode, textOffset, elementToInject) {
 
 		var targetTextNode; 
+		var originalText;
+		var textWithInjection;
 		// TODO: validation for text offset
 
-		var $targetNode = this.getNextNode(CFIStepValue, $currNode, stepTargetNodeId);
-		if ($targetNode) {
+		// Get the first node, this should be a text node
+		if ($currNode.contents()[0] === undefined) {
 
-			// Get the first node, this should be a text node
-			targetTextNode = $targetNode.contents()[0];
-
-			if (targetTextNode.nodeType === 3) {
-
-				return targetTextNode.nodeValue.charAt(textOffset);
-			}
-			else {
-
-				return null;
-			}
+			throw EPUBcfi.RuntimeError(undefined, "textTermination", "text node not found");
 		}
-		else {
 
-			return null;
-		}
+		$currNode = this.injectCFIMarkerIntoText($currNode, textOffset, elementToInject);
+
+		return $currNode;
 	},
 
 	offsetTermination : function () {
@@ -177,6 +181,55 @@ EPUBcfi.CFIInstructions = {
 
 			return false;
 		}
+	},
+
+	indexOutOfRange : function (targetIndex, numChildElements) {
+
+		return (targetIndex > numChildElements - 1) ? true : false;
+	},
+
+	// TODO: This is interesting: Does the target have to be a pure text node? Or can it have
+	//   internal elements (that break up a sequence of text nodes)? How would the internal elements
+	//   affect the offset position? 
+	// REFACTORING CANDIDATE: Not really sure if this is the best way to do this. I kinda hate it. 
+	injectCFIMarkerIntoText : function ($currNode, textOffset, elementToInject) {
+
+		// Filter out non-text nodes
+		var $textNodeList = $currNode.contents().filter(function () {
+
+			return this.nodeType === 3;
+		});
+
+		var nodeNum;
+		var currNodeLength;
+		var currTextPosition = 0;
+		var nodeOffset;
+		var originalText;
+		for (nodeNum = 0; nodeNum <= $textNodeList.length; nodeNum++) {
+
+			currNodeMaxIndex = ($textNodeList[nodeNum].nodeValue.length - 1) + currTextPosition;
+
+			if (currNodeMaxIndex >= textOffset) {
+
+				nodeOffset = textOffset - currTextPosition;
+
+				originalText = $textNodeList[nodeNum].nodeValue;
+				// REFACTORING CANDIDATE: Might want to split the text nodes and insert the element??? Not sure.
+				textWithInjection = [originalText.slice(0, nodeOffset), 
+									 elementToInject, 
+									 originalText.slice(nodeOffset, originalText.length)].join('');
+
+				$textNodeList[nodeNum].nodeValue = textWithInjection;
+
+				return $currNode;
+			}
+			else {
+
+				currTextPosition = currTextPosition + currNodeMaxIndex;
+			}
+		}
+
+		// Throw an exception here
 	}
 }
 

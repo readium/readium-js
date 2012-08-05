@@ -1,4 +1,4 @@
-describe('parsing of EPUB CFIs', function () {
+describe('EPUB CFI generated parser', function () {
 
     it ('parses a CFI with index steps', function () {
 
@@ -28,7 +28,8 @@ describe('parsing of EPUB CFIs', function () {
                             type: "indexStep",
                             stepLength: "4"
                         }
-                    ]
+                    ],
+                    termStep : ""
                 }
             }
         }
@@ -38,7 +39,7 @@ describe('parsing of EPUB CFIs', function () {
 
     it ('parses a CFI with index steps and indirection steps', function () {
 
-        var cfi = "epubcfi(/4/6!/4)";
+        var cfi = "epubcfi(/4/6!/4:9)";
         var parsedAST = EPUBcfi.Parser.parse(cfi);
 
         var expectedAST = {
@@ -64,7 +65,12 @@ describe('parsing of EPUB CFIs', function () {
                             type: "indirectionStep",
                             stepLength: "4"
                         }
-                    ]
+                    ],
+                    termStep : {
+
+                        type: "textTerminus",
+                        offsetValue: "9"
+                    }
                 }
             }
         }

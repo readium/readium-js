@@ -34,13 +34,19 @@ path
   = stepVal:indexStep localPathVal:local_path { return { type:"cfiString", path:stepVal, localPath:localPathVal }; }
 
 local_path
-  = localPathStepVal:(indexStep / indirectionStep)+ { return { steps:localPathStepVal }; }
+  = localPathStepVal:(indexStep / indirectionStep)+ termStepVal:termstep? { return { steps:localPathStepVal, termStep:termStepVal }; }
 
 indexStep
   = "/" stepLengthVal:integer { return { type:"indexStep", stepLength:stepLengthVal }; }
 
 indirectionStep
   = "!/" stepLengthVal:integer { return { type:"indirectionStep", stepLength:stepLengthVal }; }
+
+termstep
+  = terminus
+
+terminus
+  = ":" textOffsetValue:integer { return { type:"textTerminus", offsetValue:textOffsetValue }; }
 
 integer
   = [1-9]

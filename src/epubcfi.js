@@ -42,6 +42,7 @@ EPUBcfi.Parser = (function(){
         "local_path": parse_local_path,
         "indexStep": parse_indexStep,
         "indirectionStep": parse_indirectionStep,
+        "terminus": parse_terminus,
         "integer": parse_integer
       };
       
@@ -178,9 +179,10 @@ EPUBcfi.Parser = (function(){
       
       function parse_local_path() {
         var result0, result1;
-        var pos0;
+        var pos0, pos1;
         
         pos0 = pos;
+        pos1 = pos;
         result1 = parse_indexStep();
         if (result1 === null) {
           result1 = parse_indirectionStep();
@@ -198,7 +200,20 @@ EPUBcfi.Parser = (function(){
           result0 = null;
         }
         if (result0 !== null) {
-          result0 = (function(offset, localPathStepVal) { return { steps:localPathStepVal }; })(pos0, result0);
+          result1 = parse_terminus();
+          result1 = result1 !== null ? result1 : "";
+          if (result1 !== null) {
+            result0 = [result0, result1];
+          } else {
+            result0 = null;
+            pos = pos1;
+          }
+        } else {
+          result0 = null;
+          pos = pos1;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, localPathStepVal, termStepVal) { return { steps:localPathStepVal, termStep:termStepVal }; })(pos0, result0[0], result0[1]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -271,6 +286,42 @@ EPUBcfi.Parser = (function(){
         }
         if (result0 !== null) {
           result0 = (function(offset, stepLengthVal) { return { type:"indirectionStep", stepLength:stepLengthVal }; })(pos0, result0[1]);
+        }
+        if (result0 === null) {
+          pos = pos0;
+        }
+        return result0;
+      }
+      
+      function parse_terminus() {
+        var result0, result1;
+        var pos0, pos1;
+        
+        pos0 = pos;
+        pos1 = pos;
+        if (input.charCodeAt(pos) === 58) {
+          result0 = ":";
+          pos++;
+        } else {
+          result0 = null;
+          if (reportFailures === 0) {
+            matchFailed("\":\"");
+          }
+        }
+        if (result0 !== null) {
+          result1 = parse_integer();
+          if (result1 !== null) {
+            result0 = [result0, result1];
+          } else {
+            result0 = null;
+            pos = pos1;
+          }
+        } else {
+          result0 = null;
+          pos = pos1;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, textOffsetValue) { return { type:"textTerminus", offsetValue:textOffsetValue }; })(pos0, result0[1]);
         }
         if (result0 === null) {
           pos = pos0;

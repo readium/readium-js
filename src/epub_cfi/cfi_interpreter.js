@@ -8,8 +8,12 @@
 //   to vector objects) than if lexing, parsing and interpretation were all handled in a single step. Finally, Readium's objective is 
 //   to demonstrate implementation of the EPUB 3.0 spec. An implementation with a strong separation of concerns that conforms to 
 //   well-understood patterns for DSL processing should be easier to communicate, analyze and understand. 
+// TODO: node type errors shouldn't really be possible if the cfi syntax is correct and the parser has no errors. Might want to make
+//   the script die in those instances. 
 
 EPUBcfi.Interpreter = {
+
+    _textCFIElement : '<span class="cfi_marker"/>',
 
     // ------------------------------------------------------------------------------------ //
     //  "PUBLIC" METHODS (THE API)                                                          //
@@ -21,8 +25,12 @@ EPUBcfi.Interpreter = {
     injectCFIReferenceElements : function (CFIAST, $packageDocument) {
         
         // Check node type; throw error if wrong type
-        if (CFIAST.type !== "CFIAST") { /* throw exception*/ }
+        if (CFIAST.type !== "CFIAST") { 
 
+            throw EPUBcfi.RuntimeError(CFIAST, "injectCFIReferenceElements", "node type error");
+        }
+
+        interpretCFIStringNode(CFIAST.cfiString, $packageDocument);
     },
 
     // ------------------------------------------------------------------------------------ //
@@ -31,7 +39,10 @@ EPUBcfi.Interpreter = {
 
     interpretCFIStringNode : function (cfiStringNode, $packageDocument) {
 
-        if (cfiStringNode.type !== "cfiString") {};
+        if (cfiStringNode.type !== "cfiString") {
+
+            throw EPUBcfi.RuntimeError(cfiStringNode, "interpretCFIStringNode", "node type error");
+        }
 
         // Get the "package element"
         var $packageElement = $($("package", $packageDocument)[0]);
@@ -63,7 +74,10 @@ EPUBcfi.Interpreter = {
     interpretIndexStepNode : function (indexStepNode, $currElement) {
 
         // Check node type; throw error if wrong type
-        if (indexStepNode.type !== "indexStep") {};
+        if (indexStepNode.type !== "indexStep") {
+
+            throw EPUCFI.RuntimeError(indexStepNode, "interpretIndexStepNode", "node type error");
+        }
 
         // Step
         var $stepTarget = EPUBcfi.CFIInstructions.getNextNode(indexStepNode.stepLength, $currElement, undefined);
@@ -75,7 +89,10 @@ EPUBcfi.Interpreter = {
     interpretIndirectionStepNode : function (indirectionStepNode, $currElement, $packageDocument) {
 
         // Check node type; throw error if wrong type
-        if (indirectionStepNode.type !== "indirectionStep") {};
+        if (indirectionStepNode.type !== "indirectionStep") {
+
+            throw EPUBcfi.RuntimeError(indirectionStepNode, "interpretIndirectionStepNode", "node type error");
+        }
 
         // indirection step
         var $stepTarget = EPUBcfi.CFIInstructions.followIndirectionStep(
@@ -87,4 +104,19 @@ EPUBcfi.Interpreter = {
         // return target element
         return $stepTarget;
     },
+
+    interpretTextTerminus : function (terminusNode, $currElement) {
+
+        if (terminusNode.type !== "textTerminus") {
+
+            throw EPUBcfi.RuntimeError(terminusNode, "interpretTextTerminus", "node type error");
+        }
+
+        var $elementInjectedInto = EPUBcfi.CFIInstructions.textTermination(
+            $currElement, 
+            terminusNode.offsetValue, 
+            this._textCFIElement);
+
+        return $elementInjectedInto;
+    }
 };

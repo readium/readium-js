@@ -39,7 +39,12 @@ describe ('The CFI interpreter', function () {
                             type : "indexStep",
                             stepLength : "14"
                         }
-                    ]
+                    ],
+                    termStep : {
+
+                        type: "textTerminus",
+                        offsetValue: "4"
+                    }
                 }
             }
         };
@@ -69,23 +74,32 @@ describe ('The CFI interpreter', function () {
 
     it ('interprets an index step node', function () {
 
-        var $expectedResult = $($('spine')[0]);
-        var $result = EPUBcfi.Interpreter.interpretIndexStepNode(CFIAST.cfiString.path, $packageDocument);
+        var $expectedResult = $($('spine', $packageDocument)[0]);
+        var $result = EPUBcfi.Interpreter.interpretIndexStepNode(CFIAST.cfiString.path, $($packageDocument.children()[0]));
 
-        expect($result.html()).toEqual($expectedResult.html());
+        expect($result.children()[0]).toEqual($expectedResult.children()[0]);
     });
 
     it ('interprets an indirection step node', function () {
 
         // The spy will return the correct content document, so this is more a test of whether this
         // method executes without error, given the starting element.
-        var $expectedResult = $contentDocument;
+        var $expectedResult = $($('body', $contentDocument)[0]);
         var $result = EPUBcfi.Interpreter.interpretIndirectionStepNode(
-            CFIAST.cfiString.localPath.steps[0], 
+            CFIAST.cfiString.localPath.steps[1], 
             $('<itemref linear="yes" idref="xchapter_001"/>'), 
             $packageDocument);
 
         expect($result.html()).toEqual($expectedResult.html());
     });
 
+    it ('injects an element into an element', function () {
+
+        var $expectedResult = 'Ther<span class="cfi_marker"/>e now is your insular city of the Manhattoes, belted round by wharves as Indian isles by coral reefs—commerce surrounds it with her surf. Right and left, the streets take you waterward. Its extreme downtown is the battery, where that noble mole is washed by waves, and cooled by breezes, which a few hours previous were out of sight of land. Look at the crowds of water-gazers there.';
+        var $result = EPUBcfi.Interpreter.interpretTextTerminus(
+            CFIAST.cfiString.localPath.termStep,
+            $("#c01p0002", $contentDocument));
+
+        expect($result.text()).toEqual($expectedResult);
+    });
 });
