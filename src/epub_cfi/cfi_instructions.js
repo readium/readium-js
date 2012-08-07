@@ -62,7 +62,11 @@ EPUBcfi.CFIInstructions = {
 		var $documentResult;
 
 		// This is an item ref
-		if ($currNode.is("itemref")) {
+		if ($currNode === undefined || !$currNode.is("itemref")) {
+
+			throw EPUBcfi.NodeTypeError($currNode, "expected an itemref element");
+		}
+		else {
 
 			contentDocHref = $("#" + $currNode.attr("idref"), $packageDocument).attr("href");
 
@@ -116,10 +120,6 @@ EPUBcfi.CFIInstructions = {
 
 			// 	return null;
 			// }
-		else {
-
-			throw EPUBcfi.NodeTypeError($currNode, "This node should have been an EPUB itemref element");
-		}
 	},
 
 	// Description: Executes an action at the specified text node
@@ -133,9 +133,13 @@ EPUBcfi.CFIInstructions = {
 		// TODO: validation for text offset
 
 		// Get the first node, this should be a text node
-		if ($currNode.contents()[0] === undefined) {
+		if ($currNode === undefined) {
 
-			throw EPUBcfi.TerminusError("Text", "Text offset:" + textOffset, "No nodes found for termination condition");
+			throw EPUBcfi.NodeTypeError($currNode, "expected a terminating parent node");
+		} 
+		else if ($currNode.contents()[0] === undefined) {
+
+			throw EPUBcfi.TerminusError("Text", "Text offset:" + textOffset, "no nodes found for termination condition");
 		}
 
 		$currNode = this.injectCFIMarkerIntoText($currNode, textOffset, elementToInject);
