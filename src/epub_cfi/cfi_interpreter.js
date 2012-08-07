@@ -8,8 +8,10 @@
 //   to vector objects) than if lexing, parsing and interpretation were all handled in a single step. Finally, Readium's objective is 
 //   to demonstrate implementation of the EPUB 3.0 spec. An implementation with a strong separation of concerns that conforms to 
 //   well-understood patterns for DSL processing should be easier to communicate, analyze and understand. 
-// TODO: node type errors shouldn't really be possible if the cfi syntax is correct and the parser has no errors. Might want to make
-//   the script die in those instances. 
+// REFACTORING CANDIDATE: node type errors shouldn't really be possible if the cfi syntax is correct and the parser has no errors. Might want to make
+//   the script die in those instances, once the interpreter/grammar is more stable. 
+// REFACTORING CANDIDATE: The use of the 'nodeType' property is confusing as this is a DOM node property and the two are unrelated. 
+//   Whoops. There shouldn't be any interference, however, I think this should be changed. 
 
 EPUBcfi.Interpreter = {
 
@@ -25,7 +27,7 @@ EPUBcfi.Interpreter = {
     injectCFIReferenceElements : function (CFIAST, $packageDocument) {
         
         // Check node type; throw error if wrong type
-        if (CFIAST.type !== "CFIAST") { 
+        if (CFIAST === undefined || CFIAST.type !== "CFIAST") { 
 
             throw EPUBcfi.NodeTypeError(CFIAST, "wrong node type");
         }
@@ -39,9 +41,9 @@ EPUBcfi.Interpreter = {
 
     interpretCFIStringNode : function (cfiStringNode, $packageDocument) {
 
-        if (cfiStringNode.type !== "cfiString") {
+        if (cfiStringNode === undefined || cfiStringNode.type !== "cfiString") {
 
-            throw EPUBcfi.NodeTypeError(cfiStringNode, "wrong node type");
+            throw EPUBcfi.NodeTypeError(cfiStringNode, "expected CFI string node");
         }
 
         // Get the "package element"
@@ -74,9 +76,9 @@ EPUBcfi.Interpreter = {
     interpretIndexStepNode : function (indexStepNode, $currElement) {
 
         // Check node type; throw error if wrong type
-        if (indexStepNode.type !== "indexStep") {
+        if (indexStepNode === undefined || indexStepNode.type !== "indexStep") {
 
-            throw EPUCFI.NodeTypeError(indexStepNode, "wrong node type");
+            throw EPUBcfi.NodeTypeError(indexStepNode, "expected index step node");
         }
 
         // Step
@@ -89,9 +91,9 @@ EPUBcfi.Interpreter = {
     interpretIndirectionStepNode : function (indirectionStepNode, $currElement, $packageDocument) {
 
         // Check node type; throw error if wrong type
-        if (indirectionStepNode.type !== "indirectionStep") {
+        if (indirectionStepNode === undefined || indirectionStepNode.type !== "indirectionStep") {
 
-            throw EPUBcfi.NodeTypeError(indirectionStepNode, "wrong node type");
+            throw EPUBcfi.NodeTypeError(indirectionStepNode, "expected indirection step node");
         }
 
         // indirection step
@@ -107,9 +109,9 @@ EPUBcfi.Interpreter = {
 
     interpretTextTerminus : function (terminusNode, $currElement) {
 
-        if (terminusNode.type !== "textTerminus") {
+        if (terminusNode === undefined || terminusNode.type !== "textTerminus") {
 
-            throw EPUBcfi.NodeTypeError(terminusNode, "wrong node type");
+            throw EPUBcfi.NodeTypeError(terminusNode, "expected text terminus node");
         }
 
         var $elementInjectedInto = EPUBcfi.CFIInstructions.textTermination(

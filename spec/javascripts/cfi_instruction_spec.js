@@ -64,4 +64,11 @@ describe("execution of cfi instructions", function () {
 
 		expect($result.html()).toEqual(expectedResult);
 	});
+
+
+	// Throws out of range errors for any "following" instructions
+
+	// Throws a node type error for itemref
+
+	// Throws terminus errors for invalid text offsets 
 });

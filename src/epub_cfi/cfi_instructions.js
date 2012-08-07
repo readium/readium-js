@@ -10,13 +10,6 @@ EPUBcfi.CFIInstructions = {
 	//  "PUBLIC" METHODS (THE API)                                                          //
 	// ------------------------------------------------------------------------------------ //
 
-	// Description: Implements a range, once a local path has been followed to the start of the range pointers
-	// Arguments: local_path_start?, local_path_end?
-	// Returns: nothing
-	setRange : function () {
-
-	},
-
 	// Description: Follows a step
 	// Arguments: a cfi step string, a jquery object which is the current element, the id of the node that should
 	//   be selected. 
@@ -147,18 +140,6 @@ EPUBcfi.CFIInstructions = {
 
 		$currNode = this.injectCFIMarkerIntoText($currNode, textOffset, elementToInject);
 		return $currNode;
-	},
-
-	offsetTermination : function () {
-		// TODO:
-	},
-
-	temporalTermination : function () {
-		// TODO: 
-	},
-
-	combinedTermination : function () {
-		// TODO:
 	},
 
 	// ------------------------------------------------------------------------------------ //
