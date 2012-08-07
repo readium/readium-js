@@ -40,9 +40,9 @@ describe("execution of cfi instructions", function () {
 		var domParser = new window.DOMParser();
 		var contentDoc = domParser.parseFromString(contentDocXHTML, "text/xml");
 
-		var $result = EPUBcfi.CFIInstructions.textTermination($("#c01p0002", $(contentDoc)), 4, '<span class="epub_cfi"/>');
+		var $result = EPUBcfi.CFIInstructions.textTermination($("#c01p0002", $(contentDoc)), 4, '<span class="epub_cfi"></span>');
 		
-		expect($result.text()).toEqual('Ther<span class="epub_cfi"/>e now is your insular city of the Manhattoes, belted round by wharves as Indian isles by coral reefs—commerce surrounds it with her surf. Right and left, the streets take you waterward. Its extreme downtown is the battery, where that noble mole is washed by waves, and cooled by breezes, which a few hours previous were out of sight of land. Look at the crowds of water-gazers there.');
+		expect($result.html()).toEqual('Ther<span xmlns="http://www.w3.org/1999/xhtml" class="epub_cfi"></span>e now is your insular city of the Manhattoes, belted round by wharves as Indian isles by coral reefs—commerce surrounds it with her surf. Right and left, the streets take you waterward. Its extreme downtown is the battery, where that noble mole is washed by waves, and cooled by breezes, which a few hours previous were out of sight of land. Look at the crowds of water-gazers there.');
 	});
 
 	it ('excludes any child elements of the current node that are CFI markers', function () {
@@ -57,8 +57,8 @@ describe("execution of cfi instructions", function () {
 
 	it ('excludes any CFI markers in a text node', function () {
 
-		var $currentNode = $('<p>blah blah <span class="cfiMarker"/> blah blah</p>');
-		var expectedResult = '<p>blah blah <span class="cfiMarker"/> blah <span class="cfiMarker"/> blah</p>';
+		var $currentNode = $('<p>blah blah <span class="cfiMarker"></span> blah blah</p>');
+		var expectedResult = 'blah blah <span class="cfiMarker"></span> blah bl<span class="cfiMarker"></span>ah';
 
 		var $result = EPUBcfi.CFIInstructions.textTermination($currentNode, 17, '<span class="cfiMarker"/>');
 

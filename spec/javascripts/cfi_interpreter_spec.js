@@ -95,11 +95,11 @@ describe ('The CFI interpreter', function () {
 
     it ('injects an element into an element', function () {
 
-        var $expectedResult = 'Ther<span class="cfi_marker"/>e now is your insular city of the Manhattoes, belted round by wharves as Indian isles by coral reefs—commerce surrounds it with her surf. Right and left, the streets take you waterward. Its extreme downtown is the battery, where that noble mole is washed by waves, and cooled by breezes, which a few hours previous were out of sight of land. Look at the crowds of water-gazers there.';
+        var $expectedResult = 'Ther<span xmlns="http://www.w3.org/1999/xhtml" class="cfi_marker"></span>e now is your insular city of the Manhattoes, belted round by wharves as Indian isles by coral reefs—commerce surrounds it with her surf. Right and left, the streets take you waterward. Its extreme downtown is the battery, where that noble mole is washed by waves, and cooled by breezes, which a few hours previous were out of sight of land. Look at the crowds of water-gazers there.';
         var $result = EPUBcfi.Interpreter.interpretTextTerminus(
             CFIAST.cfiString.localPath.termStep,
             $("#c01p0002", $contentDocument));
 
-        expect($result.text()).toEqual($expectedResult);
+        expect($result.html()).toEqual($expectedResult);
     });
 });
