@@ -16,7 +16,7 @@ src_files:
     - src/epubcfi.js
     - src/epub_cfi/cfi_instructions.js
     - src/epub_cfi/cfi_interpreter.js
-    - src/epub_cfi/runtime_error.js
+    - src/epub_cfi/runtime_errors.js
 
 # stylesheets
 #

@@ -34,12 +34,13 @@ EPUBcfi.CFIInstructions = {
 		
 		if (this.indexOutOfRange(jqueryTargetNodeIndex, $currNode.children().not('.cfiMarker').length)) {
 
-			throw EPUBcfi.RuntimeError(undefined, "getNextNode", "out of range error");
+			throw EPUBcfi.OutOfRangeError(jqueryTargetNodeIndex, $currNode.children().not('.cfiMarker').length, "");
 		}
 
 		var $targetNode = $($currNode.children().not('.cfiMarker')[jqueryTargetNodeIndex]);
 
 		// If index exists return the next node
+		// REFACTORING CANDIDATE: This will throw an exception when assertions are included
 		if ($targetNode/* && this.targetIdMatchesIdAssertion($targetNode, stepTargetNodeId)*/) {
 
 			return $targetNode;
@@ -55,12 +56,11 @@ EPUBcfi.CFIInstructions = {
 	//   depending on the target. 
 	// Arguments: the CFI step value, the current node (jquery object), the id assertion for the target node, 
 	//   the package document.
-	// TODO: Should probably refactor the ajax request into its own method, as it may grow or need to be 
-	//   overridden. 
+	// REFACTORING CANDIDATE: The intention here is that the resource request mechanism will be refactored into its 
+	//   own object in a way that it can be overridden with a different mechanism for retrieving components of an 
+	//   EPUB. While the default provided by the library will be a simple AJAX request, it will otherwise be up to the 
+	//   reading system to implement a useful request mechanism.
 	followIndirectionStep : function (CFIStepValue, $currNode, stepTargetNodeId, $packageDocument) {
-
-		// TODO: Check that stepValue is even
-		// TODO: Filter out any nodes that represent CFI tags in the document
 
 		var that = this;
 		var jqueryTargetNodeIndex = (CFIStepValue / 2) - 1;
@@ -74,7 +74,8 @@ EPUBcfi.CFIInstructions = {
 			contentDocHref = $("#" + $currNode.attr("idref"), $packageDocument).attr("href");
 
 			// Load the resource
-			// TODO: This being a synchronous method is not ideal
+			// REFACTORING CANDIDATE: It is not ideal that this is a synchronous call. It is this way for development 
+			//   purposes only. 
 			$.ajax({
 
 				type: "GET",
@@ -88,7 +89,7 @@ EPUBcfi.CFIInstructions = {
 
 					if (that.indexOutOfRange(jqueryTargetNodeIndex, $(contentDoc.firstChild).children().not('.cfiMarker').length)) {
 
-						throw EPUBcfi.RuntimeError(undefined, "followIndirectionStep", "out of range error");
+						throw EPUBcfi.OutOfRangeError(jqueryTargetNodeIndex, $(contentDoc.firstChild).children().not('.cfiMarker').length, "");
 					}
 
 					// contentDoc.firstChild is intended to return the html element
@@ -124,29 +125,27 @@ EPUBcfi.CFIInstructions = {
 			// }
 		else {
 
-			return null;
+			throw EPUBcfi.NodeTypeError($currNode, "This node should have been an EPUB itemref element");
 		}
 	},
 
 	// Description: Executes an action at the specified text node
 	// Arguments: a cfi text termination string, a jquery object to the current node
-	// Returns: id of the inserted marker, or returns the element? ??
-	// TODO: Missing handling of text assertions
 	textTermination : function ($currNode, textOffset, elementToInject) {
 
 		var targetTextNode; 
 		var originalText;
 		var textWithInjection;
+
 		// TODO: validation for text offset
 
 		// Get the first node, this should be a text node
 		if ($currNode.contents()[0] === undefined) {
 
-			throw EPUBcfi.RuntimeError(undefined, "textTermination", "text node not found");
+			throw EPUBcfi.TerminusError("Text", "Text offset:" + textOffset, "No nodes found for termination condition");
 		}
 
 		$currNode = this.injectCFIMarkerIntoText($currNode, textOffset, elementToInject);
-
 		return $currNode;
 	},
 
@@ -194,12 +193,7 @@ EPUBcfi.CFIInstructions = {
 	// REFACTORING CANDIDATE: Not really sure if this is the best way to do this. I kinda hate it. 
 	injectCFIMarkerIntoText : function ($currNode, textOffset, elementToInject) {
 
-		// Filter out non-text nodes
-		// var $textNodeList = $currNode.contents().filter(function () {
-
-		// 	return this.nodeType === 3;
-		// });
-
+		// Get child nodes, including text nodes
 		$nodeList = $currNode.contents();
 
 		var nodeNum;
@@ -240,7 +234,7 @@ EPUBcfi.CFIInstructions = {
 			}
 		}
 
-		// Throw an exception here
+		throw EPUBcfi.TerminusError("Text", "Text offset:" + textOffset, "The offset exceeded the length of the text");
 	}
 }
 

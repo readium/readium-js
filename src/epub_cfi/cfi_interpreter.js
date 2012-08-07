@@ -27,7 +27,7 @@ EPUBcfi.Interpreter = {
         // Check node type; throw error if wrong type
         if (CFIAST.type !== "CFIAST") { 
 
-            throw EPUBcfi.RuntimeError(CFIAST, "injectCFIReferenceElements", "node type error");
+            throw EPUBcfi.NodeTypeError(CFIAST, "wrong node type");
         }
 
         interpretCFIStringNode(CFIAST.cfiString, $packageDocument);
@@ -41,7 +41,7 @@ EPUBcfi.Interpreter = {
 
         if (cfiStringNode.type !== "cfiString") {
 
-            throw EPUBcfi.RuntimeError(cfiStringNode, "interpretCFIStringNode", "node type error");
+            throw EPUBcfi.NodeTypeError(cfiStringNode, "wrong node type");
         }
 
         // Get the "package element"
@@ -76,7 +76,7 @@ EPUBcfi.Interpreter = {
         // Check node type; throw error if wrong type
         if (indexStepNode.type !== "indexStep") {
 
-            throw EPUCFI.RuntimeError(indexStepNode, "interpretIndexStepNode", "node type error");
+            throw EPUCFI.NodeTypeError(indexStepNode, "wrong node type");
         }
 
         // Step
@@ -91,7 +91,7 @@ EPUBcfi.Interpreter = {
         // Check node type; throw error if wrong type
         if (indirectionStepNode.type !== "indirectionStep") {
 
-            throw EPUBcfi.RuntimeError(indirectionStepNode, "interpretIndirectionStepNode", "node type error");
+            throw EPUBcfi.NodeTypeError(indirectionStepNode, "wrong node type");
         }
 
         // indirection step
@@ -109,7 +109,7 @@ EPUBcfi.Interpreter = {
 
         if (terminusNode.type !== "textTerminus") {
 
-            throw EPUBcfi.RuntimeError(terminusNode, "interpretTextTerminus", "node type error");
+            throw EPUBcfi.NodeTypeError(terminusNode, "wrong node type");
         }
 
         var $elementInjectedInto = EPUBcfi.CFIInstructions.textTermination(
