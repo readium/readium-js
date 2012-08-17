@@ -64,12 +64,23 @@ describe ('The CFI interpreter', function () {
         });
     });
 
+    // REFACTORING CANDIDATE: Both of the next two tests simply check that the AST is interpreted
+    //   and returns something that is non-empty.
+    it ('interprets the cfi ast', function () {
+
+        var $result = EPUBcfi.Interpreter.injectCFIReferenceElements(CFIAST, $packageDocument);
+
+        expect($result).not.toEqual(undefined);
+        expect($result).not.toEqual($(''));
+    });
+
     it ('interprets the cfi string node', function () {
 
         var $expectedResult = $('#c01p0006', $contentDocument);
         var $result = EPUBcfi.Interpreter.interpretCFIStringNode(CFIAST.cfiString, $packageDocument);
 
-        expect($result.html()).toEqual($expectedResult.html());
+        expect($result).not.toEqual(undefined);
+        expect($result).not.toEqual($(''));
     });
 
     it ('interprets an index step node', function () {
@@ -108,7 +119,7 @@ describe ('The CFI interpreter', function () {
 
 describe('cfi interpreter error handling', function () {
 
-var CFIAST;
+    var CFIAST;
     var $packageDocument;
     var $contentDocument;
 

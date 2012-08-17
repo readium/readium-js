@@ -1,6 +1,3 @@
-// TODO: Should probably remove the interpreterFunction parameter. Also don't really need the nodeInAST parameter; something
-//   more generic will do. 
-
 EPUBcfi.NodeTypeError = function (node, message) {
 
     function NodeTypeError () {

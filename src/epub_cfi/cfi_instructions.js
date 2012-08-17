@@ -60,49 +60,41 @@ EPUBcfi.CFIInstructions = {
 		var $targetNode;
 		var contentDocHref;
 		var $documentResult;
+		var domParser;
+		var contentDoc;
 
 		// This is an item ref
 		if ($currNode === undefined || !$currNode.is("itemref")) {
 
 			throw EPUBcfi.NodeTypeError($currNode, "expected an itemref element");
 		}
-		else {
 
-			contentDocHref = $("#" + $currNode.attr("idref"), $packageDocument).attr("href");
+		// Load the resource
+		// REFACTORING CANDIDATE: Currently, this expects the retrieval to be synchronous.
+		contentDocHref = $("#" + $currNode.attr("idref"), $packageDocument).attr("href");
+		contentDocXML = this.retrieveResource(contentDocHref);
 
-			// Load the resource
-			// REFACTORING CANDIDATE: It is not ideal that this is a synchronous call. It is this way for development 
-			//   purposes only. 
-			$.ajax({
+		// Parse 
+		domParser = new window.DOMParser();
+		contentDoc = domParser.parseFromString(contentDocXML, "text/xml");
 
-				type: "GET",
-				url: contentDocHref,
-				dataType: "xml",
-				async: "false",
-				success: function(contentDocXML) {
+		if (that.indexOutOfRange(jqueryTargetNodeIndex, $(contentDoc.firstChild).children().not('.cfiMarker').length)) {
 
-					var domParser = new window.DOMParser();
-					var contentDoc = domParser.parseFromString(contentDocXML, "text/xml");
-
-					if (that.indexOutOfRange(jqueryTargetNodeIndex, $(contentDoc.firstChild).children().not('.cfiMarker').length)) {
-
-						throw EPUBcfi.OutOfRangeError(jqueryTargetNodeIndex, $(contentDoc.firstChild).children().not('.cfiMarker').length, "");
-					}
-
-					// contentDoc.firstChild is intended to return the html element
-					$targetNode = $($(contentDoc.firstChild).children().not('.cfiMarker')[jqueryTargetNodeIndex]);
-
-					// If index exists
-					if ($targetNode/* && that.targetIdMatchesIdAssertion($targetNode, stepTargetNodeId)*/) {
-
-						$documentResult = $targetNode;
-					}
-				}
-			});
-
-			// Assuming the ajax above was an asynchronous call
-			return $documentResult;
+			throw EPUBcfi.OutOfRangeError(jqueryTargetNodeIndex, $(contentDoc.firstChild).children().not('.cfiMarker').length, "");
 		}
+
+		// contentDoc.firstChild is intended to return the html element
+		$targetNode = $($(contentDoc.firstChild).children().not('.cfiMarker')[jqueryTargetNodeIndex]);
+
+		// If index exists
+		if ($targetNode/* && that.targetIdMatchesIdAssertion($targetNode, stepTargetNodeId)*/) {
+
+			$documentResult = $targetNode;
+		}
+
+		// Assuming the ajax above was an asynchronous call
+		return $documentResult;
+
 			// }
 			// else if ($targetNode.is("iframe") || $targetNode.is("embed")) { 
 
@@ -144,6 +136,32 @@ EPUBcfi.CFIInstructions = {
 
 		$currNode = this.injectCFIMarkerIntoText($currNode, textOffset, elementToInject);
 		return $currNode;
+	},
+
+	// Description: This method retrieves and returns a resource, based on a URL
+	// Arguments: the resource URL
+	// Rationale: The intention here is that this method is overriden to use a retrieval mechanism that makes sense 
+	//   for the application the CFI library is being included in. 
+	// REFACTORING CANDIDATE: This should be refactored to be a asynchronous call, although this will require changes 
+	//   throughout the intepreter.
+	// REFACTORING CANDIDATE: Might want to move this into its own namespace
+	retrieveResource : function (resourceURL) {
+
+		var resource;
+
+		$.ajax({
+
+			type: "GET",
+			url: resourceURL,
+			dataType: "xml",
+			async: "false",
+			success: function (response) {
+
+				resource = response;
+			}
+		});
+
+		return resource;
 	},
 
 	// ------------------------------------------------------------------------------------ //

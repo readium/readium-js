@@ -15,6 +15,7 @@
 
 EPUBcfi.Interpreter = {
 
+    // REFACTORING CANDIDATE: This should be a hash of types of elements that can be injected
     _textCFIElement : '<span class="cfi_marker"/>',
 
     // ------------------------------------------------------------------------------------ //
@@ -32,7 +33,7 @@ EPUBcfi.Interpreter = {
             throw EPUBcfi.NodeTypeError(CFIAST, "wrong node type");
         }
 
-        interpretCFIStringNode(CFIAST.cfiString, $packageDocument);
+        return this.interpretCFIStringNode(CFIAST.cfiString, $packageDocument);
     },
 
     // ------------------------------------------------------------------------------------ //
@@ -49,10 +50,10 @@ EPUBcfi.Interpreter = {
         // Get the "package element"
         var $packageElement = $($("package", $packageDocument)[0]);
 
-        // Interpet the package document step
+        // Interpet the path node (the package document step)
         var $currElement = this.interpretIndexStepNode(cfiStringNode.path, $packageElement);
 
-        // Interpret steps in the local path 
+        // Interpret the local_path node, which is a set of steps and and a terminus condition
         var stepNum = 0;
         var nextStepNode;
         for (stepNum = 0 ; stepNum <= cfiStringNode.localPath.steps.length - 1 ; stepNum++) {
@@ -68,6 +69,9 @@ EPUBcfi.Interpreter = {
                 $currElement = this.interpretIndirectionStepNode(nextStepNode, $currElement, $packageDocument);
             }
         }
+
+        // TODO: Validity check on current element
+        $currElement = this.interpretTextTerminus(cfiStringNode.localPath.termStep, $currElement);
 
         // Return the element that was injected into
         return $currElement;

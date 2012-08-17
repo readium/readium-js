@@ -1,0 +1,26 @@
+(function(global)) {
+    
+    var EPUBcfi = {
+
+        Parser : <%= cfi_parser %> 
+
+        Interpreter : <%= cfi_interpreter %>
+
+        Instructions : <%= cfi_instructions %>
+
+        NodeTypeError : <%= node_type_error %>
+
+        OutOfRangeError : <%= out_of_range_error %>
+
+        TerminusError : <%= terminus_error %>
+    };
+
+    if (global.EPUBcfi) {
+
+        throw new Error('The EPUB cfi library has already been defined');
+    }
+    else {
+
+        global.EPUBcfi = EPUBcfi;
+    }
+}) (typeof window === 'undefined' ? this : window);
