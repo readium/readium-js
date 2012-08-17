@@ -17,6 +17,7 @@ EPUBcfi.Interpreter = {
 
     // REFACTORING CANDIDATE: This should be a hash of types of elements that can be injected
     _textCFIElement : '<span class="cfi_marker"/>',
+    _packageDocumentLocation : '',
 
     // ------------------------------------------------------------------------------------ //
     //  "PUBLIC" METHODS (THE API)                                                          //
@@ -25,13 +26,15 @@ EPUBcfi.Interpreter = {
     // Description: This method executes the intepreter on a CFI AST. The CFI spec requires 
     //   the package document as a starting point.
     // Arguments: a CFI AST (json), the package document (jquery)
-    injectCFIReferenceElements : function (CFIAST, $packageDocument) {
+    injectCFIReferenceElements : function (CFIAST, $packageDocument, packageDocumentLocation) {
         
         // Check node type; throw error if wrong type
         if (CFIAST === undefined || CFIAST.type !== "CFIAST") { 
 
             throw EPUBcfi.NodeTypeError(CFIAST, "wrong node type");
         }
+
+        this._packageDocumentLocation = packageDocumentLocation;
 
         return this.interpretCFIStringNode(CFIAST.cfiString, $packageDocument);
     },

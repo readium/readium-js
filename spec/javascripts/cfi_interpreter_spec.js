@@ -60,7 +60,7 @@ describe ('The CFI interpreter', function () {
 
         spyOn($, "ajax").andCallFake(function (params) {
 
-            params.success(contentDocXHTML);
+            params.success(domParser.parseFromString(contentDocXHTML, 'text/xml'));
         });
     });
 
@@ -178,7 +178,7 @@ describe('cfi interpreter error handling', function () {
 
         spyOn($, "ajax").andCallFake(function (params) {
 
-            params.success(contentDocXHTML);
+            params.success(domParser.parseFromString(contentDocXHTML, 'text/xml'));
         });
     });
 

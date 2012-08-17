@@ -334,16 +334,41 @@
       }
       
       function parse_integer() {
-        var result0;
+        var result0, result1;
+        var pos0;
         
+        pos0 = pos;
         if (/^[1-9]/.test(input.charAt(pos))) {
-          result0 = input.charAt(pos);
+          result1 = input.charAt(pos);
           pos++;
         } else {
-          result0 = null;
+          result1 = null;
           if (reportFailures === 0) {
             matchFailed("[1-9]");
           }
+        }
+        if (result1 !== null) {
+          result0 = [];
+          while (result1 !== null) {
+            result0.push(result1);
+            if (/^[1-9]/.test(input.charAt(pos))) {
+              result1 = input.charAt(pos);
+              pos++;
+            } else {
+              result1 = null;
+              if (reportFailures === 0) {
+                matchFailed("[1-9]");
+              }
+            }
+          }
+        } else {
+          result0 = null;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, integerVal) { return integerVal.join('') })(pos0, result0);
+        }
+        if (result0 === null) {
+          pos = pos0;
         }
         return result0;
       }
@@ -546,6 +571,7 @@ EPUBcfi.CFIInstructions = {
 		var domParser;
 		var contentDoc;
 
+		// TODO: This check must be expanded to all the different types of indirection step
 		// This is an item ref
 		if ($currNode === undefined || !$currNode.is("itemref")) {
 
@@ -554,12 +580,11 @@ EPUBcfi.CFIInstructions = {
 
 		// Load the resource
 		// REFACTORING CANDIDATE: Currently, this expects the retrieval to be synchronous.
-		contentDocHref = $("#" + $currNode.attr("idref"), $packageDocument).attr("href");
-		contentDocXML = this.retrieveResource(contentDocHref);
-
-		// Parse 
-		domParser = new window.DOMParser();
-		contentDoc = domParser.parseFromString(contentDocXML, "text/xml");
+		contentDocHref = 
+			EPUBcfi.Interpreter._packageDocumentLocation 
+			+ '/' 
+			+ $("#" + $currNode.attr("idref"), $packageDocument).attr("href");
+		contentDoc = this.retrieveResource(contentDocHref);
 
 		if (that.indexOutOfRange(jqueryTargetNodeIndex, $(contentDoc.firstChild).children().not('.cfiMarker').length)) {
 
@@ -637,7 +662,7 @@ EPUBcfi.CFIInstructions = {
 			type: "GET",
 			url: resourceURL,
 			dataType: "xml",
-			async: "false",
+			async: false,
 			success: function (response) {
 
 				resource = response;
@@ -746,6 +771,7 @@ EPUBcfi.Interpreter = {
 
     // REFACTORING CANDIDATE: This should be a hash of types of elements that can be injected
     _textCFIElement : '<span class="cfi_marker"/>',
+    _packageDocumentLocation : '',
 
     // ------------------------------------------------------------------------------------ //
     //  "PUBLIC" METHODS (THE API)                                                          //
@@ -754,13 +780,15 @@ EPUBcfi.Interpreter = {
     // Description: This method executes the intepreter on a CFI AST. The CFI spec requires 
     //   the package document as a starting point.
     // Arguments: a CFI AST (json), the package document (jquery)
-    injectCFIReferenceElements : function (CFIAST, $packageDocument) {
+    injectCFIReferenceElements : function (CFIAST, $packageDocument, packageDocumentLocation) {
         
         // Check node type; throw error if wrong type
         if (CFIAST === undefined || CFIAST.type !== "CFIAST") { 
 
             throw EPUBcfi.NodeTypeError(CFIAST, "wrong node type");
         }
+
+        this._packageDocumentLocation = packageDocumentLocation;
 
         return this.interpretCFIStringNode(CFIAST.cfiString, $packageDocument);
     },

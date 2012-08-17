@@ -18,6 +18,7 @@ describe("execution of cfi instructions", function () {
 		var contentDocXHTML = jasmine.getFixtures().read('moby_dick_content_doc.xhtml');
 		var domParser = new window.DOMParser();
 		var packageDoc = domParser.parseFromString(packageDocXML, "text/xml");
+		var contentDoc = domParser.parseFromString(contentDocXHTML, "text/xml");
 		var spineElement = $($(packageDoc.firstChild).children()[2]).children()[6];
 
 		var nextNode;
@@ -25,13 +26,13 @@ describe("execution of cfi instructions", function () {
 
 		spyOn($, "ajax").andCallFake(function (params) {
 
-			params.success(contentDocXHTML);
+			params.success(contentDoc);
 		});
 
 		EPUBcfi.CFIInstructions.followIndirectionStep(2, $(spineElement), undefined, $(packageDoc));
 		calledHref = $.ajax.mostRecentCall.args[0].url;
 
-		expect(calledHref).toEqual("chapter_001.xhtml");
+		expect(calledHref).toEqual("/chapter_001.xhtml");
 	});
 
 	it("returns an element with injected text at the specified offset", function () {
@@ -88,6 +89,7 @@ describe('instruction error handling', function () {
 		var contentDocXHTML = jasmine.getFixtures().read('moby_dick_content_doc.xhtml');
 		var domParser = new window.DOMParser();
 		var packageDoc = domParser.parseFromString(packageDocXML, "text/xml");
+		var contentDoc = domParser.parseFromString(contentDocXHTML, "text/xml");
 		var spineElement = $($(packageDoc.firstChild).children()[2]).children()[6];
 
 		var nextNode;
@@ -95,7 +97,7 @@ describe('instruction error handling', function () {
 
 		spyOn($, "ajax").andCallFake(function (params) {
 
-			params.success(contentDocXHTML);
+			params.success(contentDoc);
 		});
 
 		// A step of 16 is greater than the number of child elements of the content document
@@ -112,6 +114,7 @@ describe('instruction error handling', function () {
 		var contentDocXHTML = jasmine.getFixtures().read('moby_dick_content_doc.xhtml');
 		var domParser = new window.DOMParser();
 		var packageDoc = domParser.parseFromString(packageDocXML, "text/xml");
+		var contentDoc = domParser.parseFromString(contentDocXHTML, "text/xml");
 		var spineElement = $($(packageDoc.firstChild).children()[2]).children()[6];
 
 		var nextNode;
@@ -119,7 +122,7 @@ describe('instruction error handling', function () {
 
 		spyOn($, "ajax").andCallFake(function (params) {
 
-			params.success(contentDocXHTML);
+			params.success(contentDoc);
 		});
 
 		expect(function () {

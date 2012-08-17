@@ -330,16 +330,41 @@ EPUBcfi.Parser = (function(){
       }
       
       function parse_integer() {
-        var result0;
+        var result0, result1;
+        var pos0;
         
+        pos0 = pos;
         if (/^[1-9]/.test(input.charAt(pos))) {
-          result0 = input.charAt(pos);
+          result1 = input.charAt(pos);
           pos++;
         } else {
-          result0 = null;
+          result1 = null;
           if (reportFailures === 0) {
             matchFailed("[1-9]");
           }
+        }
+        if (result1 !== null) {
+          result0 = [];
+          while (result1 !== null) {
+            result0.push(result1);
+            if (/^[1-9]/.test(input.charAt(pos))) {
+              result1 = input.charAt(pos);
+              pos++;
+            } else {
+              result1 = null;
+              if (reportFailures === 0) {
+                matchFailed("[1-9]");
+              }
+            }
+          }
+        } else {
+          result0 = null;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, integerVal) { return integerVal.join('') })(pos0, result0);
+        }
+        if (result0 === null) {
+          pos = pos0;
         }
         return result0;
       }

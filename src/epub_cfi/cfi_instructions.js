@@ -63,6 +63,7 @@ EPUBcfi.CFIInstructions = {
 		var domParser;
 		var contentDoc;
 
+		// TODO: This check must be expanded to all the different types of indirection step
 		// This is an item ref
 		if ($currNode === undefined || !$currNode.is("itemref")) {
 
@@ -71,12 +72,11 @@ EPUBcfi.CFIInstructions = {
 
 		// Load the resource
 		// REFACTORING CANDIDATE: Currently, this expects the retrieval to be synchronous.
-		contentDocHref = $("#" + $currNode.attr("idref"), $packageDocument).attr("href");
-		contentDocXML = this.retrieveResource(contentDocHref);
-
-		// Parse 
-		domParser = new window.DOMParser();
-		contentDoc = domParser.parseFromString(contentDocXML, "text/xml");
+		contentDocHref = 
+			EPUBcfi.Interpreter._packageDocumentLocation 
+			+ '/' 
+			+ $("#" + $currNode.attr("idref"), $packageDocument).attr("href");
+		contentDoc = this.retrieveResource(contentDocHref);
 
 		if (that.indexOutOfRange(jqueryTargetNodeIndex, $(contentDoc.firstChild).children().not('.cfiMarker').length)) {
 
@@ -154,7 +154,7 @@ EPUBcfi.CFIInstructions = {
 			type: "GET",
 			url: resourceURL,
 			dataType: "xml",
-			async: "false",
+			async: false,
 			success: function (response) {
 
 				resource = response;
