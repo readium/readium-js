@@ -1,19 +1,14 @@
-(function(global)) {
+(function(global) {
     
-    var EPUBcfi = {
+    var EPUBcfi = {};
 
-        Parser : <%= cfi_parser %> 
+    <%= cfi_parser %> 
 
-        Interpreter : <%= cfi_interpreter %>
+    <%= cfi_interpreter %>
 
-        Instructions : <%= cfi_instructions %>
+    <%= cfi_instructions %>
 
-        NodeTypeError : <%= node_type_error %>
-
-        OutOfRangeError : <%= out_of_range_error %>
-
-        TerminusError : <%= terminus_error %>
-    };
+    <%= runtime_errors %>
 
     if (global.EPUBcfi) {
 

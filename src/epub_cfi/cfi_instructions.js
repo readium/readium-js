@@ -239,6 +239,6 @@ EPUBcfi.CFIInstructions = {
 
 		throw EPUBcfi.TerminusError("Text", "Text offset:" + textOffset, "The offset exceeded the length of the text");
 	}
-}
+};
 
 

@@ -9,7 +9,7 @@ EPUBcfi.NodeTypeError = function (node, message) {
     NodeTypeError.constructor = NodeTypeError;
 
     return new NodeTypeError();
-},
+};
 
 EPUBcfi.OutOfRangeError = function (targetIndex, maxIndex, message) {
 
@@ -23,7 +23,7 @@ EPUBcfi.OutOfRangeError = function (targetIndex, maxIndex, message) {
     OutOfRangeError.constructor = OutOfRangeError()
 
     return new OutOfRangeError();
-},
+};
 
 EPUBcfi.TerminusError = function (terminusType, terminusCondition, message) {
 
@@ -37,4 +37,4 @@ EPUBcfi.TerminusError = function (terminusType, terminusCondition, message) {
     TerminusError.constructor = TerminusError();
 
     return new TerminusError();
-}
+};

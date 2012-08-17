@@ -15,7 +15,7 @@ rescue LoadError
 end
 
 # Generate the epub cfi library
-def render_template(templatePath, outputPath)
+def render_cfi_library_template(templatePath, outputPath)
 
     # Read each of the library components
     cfi_parser = File.read('src/epubcfi.js')
@@ -27,13 +27,13 @@ def render_template(templatePath, outputPath)
     erb = ERB.new(template)
     
     # Generate library
-    File.open(output, "w") do |f|
+    File.open(outputPath, "w") do |f|
         f.puts erb.result(binding)
     end
 end
 
 task :gen_cfi_library do
-    render_template("cfi_library_template.js.erb", "epub_cfi.js")
+    render_cfi_library_template("cfi_library_template.js.erb", "epub_cfi.js")
 end
 
 task :test_parser => [:gen_parser, :jasmine] do
