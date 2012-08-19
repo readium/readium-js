@@ -1,15 +1,15 @@
 // Description: This is an interpreter that inteprets an Abstract Syntax Tree (AST) for a CFI. The result of executing the interpreter
 //   is to inject an element, or set of elements, into an EPUB content document (which is just an XHTML document). These element(s) will
-//   represent the position or span in the EPUB referenced by a CFI.
-// Rationale: The AST is a clean and readable expression of the step-structure of a CFI. Although building an interpreter adds to the
-//   CFI infrastructure, it provides a number of benefits. First, it provides a clear separation of concerns between lexing/parsing a
+//   represent the position or area in the EPUB referenced by a CFI.
+// Rationale: The AST is a clean and readable expression of the step-terminus structure of a CFI. Although building an interpreter adds to the
+//   CFI infrastructure, it provides a number of benefits. First, it emphasizes a clear separation of concerns between lexing/parsing a
 //   CFI, which involves some complexity related to escaped and special characters, and the execution of the underlying set of steps 
 //   represented by the CFI. Second, it will be easier to extend the interpreter to account for new/altered CFI steps (say for references
-//   to vector objects) than if lexing, parsing and interpretation were all handled in a single step. Finally, Readium's objective is 
+//   to vector objects or multiple CFIs) than if lexing, parsing and interpretation were all handled in a single step. Finally, Readium's objective is 
 //   to demonstrate implementation of the EPUB 3.0 spec. An implementation with a strong separation of concerns that conforms to 
 //   well-understood patterns for DSL processing should be easier to communicate, analyze and understand. 
-// REFACTORING CANDIDATE: node type errors shouldn't really be possible if the cfi syntax is correct and the parser has no errors. Might want to make
-//   the script die in those instances, once the interpreter/grammar is more stable. 
+// REFACTORING CANDIDATE: node type errors shouldn't really be possible if the CFI syntax is correct and the parser is error free. 
+//   Might want to make the script die in those instances, once the grammar and interpreter are more stable. 
 // REFACTORING CANDIDATE: The use of the 'nodeType' property is confusing as this is a DOM node property and the two are unrelated. 
 //   Whoops. There shouldn't be any interference, however, I think this should be changed. 
 

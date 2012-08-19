@@ -1,8 +1,6 @@
 // Description: This model contains the implementation for "instructions" included in the EPUB CFI domain specific language (DSL). 
-//   Lexing and parsing a CFI produces an array of executable instructions for processing a CFI. This object contains a set of 
-//   functions that implement each of the instructions. 
-// Rationale: The lexing, parsing and execution functionality for CFI is designed with a goal to make it a stand-alone library. 
-//   As such, backbone.js was not used as it would create an unnecessary dependency for this library. 
+//   Lexing and parsing a CFI produces a set of executable instructions for processing a CFI (represented in the AST). 
+//   This object contains a set of functions that implement each of the executable instructions in the AST. 
 
 EPUBcfi.CFIInstructions = {
 
@@ -11,9 +9,6 @@ EPUBcfi.CFIInstructions = {
 	// ------------------------------------------------------------------------------------ //
 
 	// Description: Follows a step
-	// Arguments: a cfi step string, a jquery object which is the current element, the id of the node that should
-	//   be selected. 
-	// Returns: a jquery element
 	// Rationale: The use of children() is important here, as this jQuery method returns a tree of xml nodes, EXCLUDING
 	//   CDATA and text nodes. When we index into the set of child elements, we are assuming that text nodes have been 
 	//   excluded.
@@ -21,6 +16,7 @@ EPUBcfi.CFIInstructions = {
 	getNextNode : function (CFIStepValue, $currNode, stepTargetNodeId) {
 
 		// Find the jquery index for the current node
+		var $targetNode;
 		var jqueryTargetNodeIndex = (CFIStepValue / 2) - 1;
 		
 		if (this.indexOutOfRange(jqueryTargetNodeIndex, $currNode.children().not('.cfiMarker').length)) {
@@ -28,25 +24,13 @@ EPUBcfi.CFIInstructions = {
 			throw EPUBcfi.OutOfRangeError(jqueryTargetNodeIndex, $currNode.children().not('.cfiMarker').length, "");
 		}
 
-		var $targetNode = $($currNode.children().not('.cfiMarker')[jqueryTargetNodeIndex]);
-
-		// If index exists return the next node
-		// REFACTORING CANDIDATE: This will throw an exception when assertions are included
-		if ($targetNode/* && this.targetIdMatchesIdAssertion($targetNode, stepTargetNodeId)*/) {
-
-			return $targetNode;
-		}
-		else {
-
-			return null;
-		}
+	   $targetNode = $($currNode.children().not('.cfiMarker')[jqueryTargetNodeIndex]);
+		return $targetNode;
 	},
 
 	// Description: This instruction executes an indirection step, where a resource is retrieved using a 
 	//   link contained on a attribute of the target element. The attribute that contains the link differs
 	//   depending on the target. 
-	// Arguments: the CFI step value, the current node (jquery object), the id assertion for the target node, 
-	//   the package document.
 	// REFACTORING CANDIDATE: The intention here is that the resource request mechanism will be refactored into its 
 	//   own object in a way that it can be overridden with a different mechanism for retrieving components of an 
 	//   EPUB. While the default provided by the library will be a simple AJAX request, it will otherwise be up to the 
@@ -69,7 +53,8 @@ EPUBcfi.CFIInstructions = {
 		}
 
 		// Load the resource
-		// REFACTORING CANDIDATE: Currently, this expects the retrieval to be synchronous.
+		// REFACTORING CANDIDATE: Currently, this expects the retrieval to be synchronous. This must be changed to be
+		//   asynchronous.
 		contentDocHref = 
 			EPUBcfi.Config.packageDocumentURL 
 			+ '/' 
@@ -84,35 +69,16 @@ EPUBcfi.CFIInstructions = {
 		// contentDoc.firstChild is intended to return the html element
 		$targetNode = $($(contentDoc.firstChild).children().not('.cfiMarker')[jqueryTargetNodeIndex]);
 
-		// If index exists
-		if ($targetNode/* && that.targetIdMatchesIdAssertion($targetNode, stepTargetNodeId)*/) {
-
-			$documentResult = $targetNode;
-		}
-
-		// Assuming the ajax above was an asynchronous call
-		return $documentResult;
-
-			// }
-			// else if ($targetNode.is("iframe") || $targetNode.is("embed")) { 
-
-			// 	// src
-			// }
-			// else if ($targetNode.is("object")) {
-
-			// 	// data
-			// }
-			// else if ($targetNode.is("image") || $targetNode.is("xlink:href")) {
-
-			// 	// xlink:href
-			// }
-			// else {
-
-			// 	return null;
-			// }
+		// TODO: check for validity of returned node
+		return $targetNode;
+		
+		// TODO: Other types of indirection
+		// TODO: ($targetNode.is("iframe") || $targetNode.is("embed")) : src
+		// TODO: ($targetNode.is("object")) : data
+		// TODO: ($targetNode.is("image") || $targetNode.is("xlink:href")) : xlink:href
 	},
 
-	// Description: Executes an action at the specified text node
+	// Description: Injects an element at the specified text node
 	// Arguments: a cfi text termination string, a jquery object to the current node
 	textTermination : function ($currNode, textOffset, elementToInject) {
 
@@ -120,7 +86,7 @@ EPUBcfi.CFIInstructions = {
 		var originalText;
 		var textWithInjection;
 
-		// TODO: validation for text offset
+		// TODO: Out of range validation for text offset
 
 		// Get the first node, this should be a text node
 		if ($currNode === undefined) {
@@ -142,9 +108,7 @@ EPUBcfi.CFIInstructions = {
 
 	// Description: Checks that the id assertion for the node target matches that on 
 	//   the found node. 
-	// Arguments: idAssertion (string), the node found by indexing into child elements of the start node
-	// Notes: At some point, this could be a fallback: if the id assertion does not match the found-node id, it could 
-	//   try looking for the found node. 
+	// TODO: This part of the spec is not included yet.
 	targetIdMatchesIdAssertion : function ($foundNode, iDAssertion) {
 
 		if ($foundNode.attr("id") === iDAssertion) {
