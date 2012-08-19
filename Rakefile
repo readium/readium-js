@@ -1,7 +1,7 @@
 # Generate the epub cfi parser
 task :gen_parser do
 	`pegjs -e EPUBcfi.Parser ./cfi_grammar/epubcfi.pegjs`
-	mv './cfi_grammar/epubcfi.js', './src/epubcfi.js'
+	mv './cfi_grammar/epubcfi.js', './src/epub_cfi/epubcfi.js'
 end 
 
 # Start the jasmine server
@@ -18,7 +18,7 @@ end
 def render_cfi_library_template(templatePath, outputPath)
 
     # Read each of the library components
-    cfi_parser = File.read('src/epubcfi.js')
+    cfi_parser = File.read('src/epub_cfi/epubcfi.js')
     cfi_interpreter = File.read('src/epub_cfi/cfi_instructions.js')
     cfi_instructions = File.read('src/epub_cfi/cfi_interpreter.js')
     runtime_errors = File.read('src/epub_cfi/runtime_errors.js')

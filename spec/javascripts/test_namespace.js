@@ -1,7 +1,4 @@
 if (!window.EPUBcfi) {
 
-	window.EPUBcfi = {
-
-        
-    };
+	window.EPUBcfi = {};
 };

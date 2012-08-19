@@ -525,10 +525,8 @@ EPUBcfi.CFIInstructions = {
 	// Rationale: The use of children() is important here, as this jQuery method returns a tree of xml nodes, EXCLUDING
 	//   CDATA and text nodes. When we index into the set of child elements, we are assuming that text nodes have been 
 	//   excluded.
+	// REFACTORING CANDIDATE: This should be called "followIndexStep"
 	getNextNode : function (CFIStepValue, $currNode, stepTargetNodeId) {
-
-		// TODO: Check that stepValue is even
-		// TODO: Filter out any nodes that represent CFI tags in the document
 
 		// Find the jquery index for the current node
 		var jqueryTargetNodeIndex = (CFIStepValue / 2) - 1;
@@ -581,10 +579,10 @@ EPUBcfi.CFIInstructions = {
 		// Load the resource
 		// REFACTORING CANDIDATE: Currently, this expects the retrieval to be synchronous.
 		contentDocHref = 
-			EPUBcfi.Interpreter._packageDocumentLocation 
+			EPUBcfi.Config.packageDocumentURL 
 			+ '/' 
 			+ $("#" + $currNode.attr("idref"), $packageDocument).attr("href");
-		contentDoc = this.retrieveResource(contentDocHref);
+		contentDoc = EPUBcfi.Config.retrieveResource(contentDocHref);
 
 		if (that.indexOutOfRange(jqueryTargetNodeIndex, $(contentDoc.firstChild).children().not('.cfiMarker').length)) {
 
@@ -646,32 +644,6 @@ EPUBcfi.CFIInstructions = {
 		return $currNode;
 	},
 
-	// Description: This method retrieves and returns a resource, based on a URL
-	// Arguments: the resource URL
-	// Rationale: The intention here is that this method is overriden to use a retrieval mechanism that makes sense 
-	//   for the application the CFI library is being included in. 
-	// REFACTORING CANDIDATE: This should be refactored to be a asynchronous call, although this will require changes 
-	//   throughout the intepreter.
-	// REFACTORING CANDIDATE: Might want to move this into its own namespace
-	retrieveResource : function (resourceURL) {
-
-		var resource;
-
-		$.ajax({
-
-			type: "GET",
-			url: resourceURL,
-			dataType: "xml",
-			async: false,
-			success: function (response) {
-
-				resource = response;
-			}
-		});
-
-		return resource;
-	},
-
 	// ------------------------------------------------------------------------------------ //
 	//  "PRIVATE" HELPERS                                                                   //
 	// ------------------------------------------------------------------------------------ //
@@ -698,9 +670,6 @@ EPUBcfi.CFIInstructions = {
 		return (targetIndex > numChildElements - 1) ? true : false;
 	},
 
-	// TODO: This is interesting: Does the target have to be a pure text node? Or can it have
-	//   internal elements (that break up a sequence of text nodes)? How would the internal elements
-	//   affect the offset position? 
 	// REFACTORING CANDIDATE: Not really sure if this is the best way to do this. I kinda hate it. 
 	injectCFIMarkerIntoText : function ($currNode, textOffset, elementToInject) {
 
@@ -769,10 +738,6 @@ EPUBcfi.CFIInstructions = {
 
 EPUBcfi.Interpreter = {
 
-    // REFACTORING CANDIDATE: This should be a hash of types of elements that can be injected
-    _textCFIElement : '<span class="cfi_marker"/>',
-    _packageDocumentLocation : '',
-
     // ------------------------------------------------------------------------------------ //
     //  "PUBLIC" METHODS (THE API)                                                          //
     // ------------------------------------------------------------------------------------ //
@@ -780,15 +745,13 @@ EPUBcfi.Interpreter = {
     // Description: This method executes the intepreter on a CFI AST. The CFI spec requires 
     //   the package document as a starting point.
     // Arguments: a CFI AST (json), the package document (jquery)
-    injectCFIReferenceElements : function (CFIAST, $packageDocument, packageDocumentLocation) {
+    injectCFIReferenceElements : function (CFIAST, $packageDocument) {
         
         // Check node type; throw error if wrong type
         if (CFIAST === undefined || CFIAST.type !== "CFIAST") { 
 
-            throw EPUBcfi.NodeTypeError(CFIAST, "wrong node type");
+            throw EPUBcfi.NodeTypeError(CFIAST, "expected CFI AST root node");
         }
-
-        this._packageDocumentLocation = packageDocumentLocation;
 
         return this.interpretCFIStringNode(CFIAST.cfiString, $packageDocument);
     },
@@ -828,7 +791,7 @@ EPUBcfi.Interpreter = {
         }
 
         // TODO: Validity check on current element
-        $currElement = this.interpretTextTerminus(cfiStringNode.localPath.termStep, $currElement);
+        $currElement = this.interpretTextTerminusNode(cfiStringNode.localPath.termStep, $currElement);
 
         // Return the element that was injected into
         return $currElement;
@@ -868,7 +831,7 @@ EPUBcfi.Interpreter = {
         return $stepTarget;
     },
 
-    interpretTextTerminus : function (terminusNode, $currElement) {
+    interpretTextTerminusNode : function (terminusNode, $currElement) {
 
         if (terminusNode === undefined || terminusNode.type !== "textTerminus") {
 
@@ -878,7 +841,7 @@ EPUBcfi.Interpreter = {
         var $elementInjectedInto = EPUBcfi.CFIInstructions.textTermination(
             $currElement, 
             terminusNode.offsetValue, 
-            this._textCFIElement);
+            EPUBcfi.Config.cfiMarkerElements.textPointMarker);
 
         return $elementInjectedInto;
     }

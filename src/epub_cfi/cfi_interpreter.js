@@ -15,10 +15,6 @@
 
 EPUBcfi.Interpreter = {
 
-    // REFACTORING CANDIDATE: This should be a hash of types of elements that can be injected
-    _textCFIElement : '<span class="cfi_marker"/>',
-    _packageDocumentLocation : '',
-
     // ------------------------------------------------------------------------------------ //
     //  "PUBLIC" METHODS (THE API)                                                          //
     // ------------------------------------------------------------------------------------ //
@@ -26,15 +22,13 @@ EPUBcfi.Interpreter = {
     // Description: This method executes the intepreter on a CFI AST. The CFI spec requires 
     //   the package document as a starting point.
     // Arguments: a CFI AST (json), the package document (jquery)
-    injectCFIReferenceElements : function (CFIAST, $packageDocument, packageDocumentLocation) {
+    injectCFIReferenceElements : function (CFIAST, $packageDocument) {
         
         // Check node type; throw error if wrong type
         if (CFIAST === undefined || CFIAST.type !== "CFIAST") { 
 
-            throw EPUBcfi.NodeTypeError(CFIAST, "wrong node type");
+            throw EPUBcfi.NodeTypeError(CFIAST, "expected CFI AST root node");
         }
-
-        this._packageDocumentLocation = packageDocumentLocation;
 
         return this.interpretCFIStringNode(CFIAST.cfiString, $packageDocument);
     },
@@ -74,7 +68,7 @@ EPUBcfi.Interpreter = {
         }
 
         // TODO: Validity check on current element
-        $currElement = this.interpretTextTerminus(cfiStringNode.localPath.termStep, $currElement);
+        $currElement = this.interpretTextTerminusNode(cfiStringNode.localPath.termStep, $currElement);
 
         // Return the element that was injected into
         return $currElement;
@@ -114,7 +108,7 @@ EPUBcfi.Interpreter = {
         return $stepTarget;
     },
 
-    interpretTextTerminus : function (terminusNode, $currElement) {
+    interpretTextTerminusNode : function (terminusNode, $currElement) {
 
         if (terminusNode === undefined || terminusNode.type !== "textTerminus") {
 
@@ -124,7 +118,7 @@ EPUBcfi.Interpreter = {
         var $elementInjectedInto = EPUBcfi.CFIInstructions.textTermination(
             $currElement, 
             terminusNode.offsetValue, 
-            this._textCFIElement);
+            EPUBcfi.Config.cfiMarkerElements.textPointMarker);
 
         return $elementInjectedInto;
     }

@@ -13,10 +13,11 @@
 src_files:
     - spec/javascripts/test_namespace.js
     - lib/jquery-1.7.1.min.js
-    - src/epubcfi.js
+    - src/epub_cfi/epubcfi.js
     - src/epub_cfi/cfi_instructions.js
     - src/epub_cfi/cfi_interpreter.js
     - src/epub_cfi/runtime_errors.js
+    - src/epub_cfi/cfi_config.js
 
 # stylesheets
 #

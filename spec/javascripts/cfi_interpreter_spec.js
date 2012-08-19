@@ -107,7 +107,7 @@ describe ('The CFI interpreter', function () {
     it ('injects an element for a text terminus', function () {
 
         var $expectedResult = 'Ther<span xmlns="http://www.w3.org/1999/xhtml" class="cfi_marker"></span>e now is your insular city of the Manhattoes, belted round by wharves as Indian isles by coral reefs—commerce surrounds it with her surf. Right and left, the streets take you waterward. Its extreme downtown is the battery, where that noble mole is washed by waves, and cooled by breezes, which a few hours previous were out of sight of land. Look at the crowds of water-gazers there.';
-        var $result = EPUBcfi.Interpreter.interpretTextTerminus(
+        var $result = EPUBcfi.Interpreter.interpretTextTerminusNode(
             CFIAST.cfiString.localPath.termStep,
             $("#c01p0002", $contentDocument));
 
@@ -215,7 +215,7 @@ describe('cfi interpreter error handling', function () {
     it('throws an error for a text terminus node type error', function () {
 
         expect(function () {
-            EPUBcfi.Interpreter.interpretTextTerminus(
+            EPUBcfi.Interpreter.interpretTextTerminusNode(
             undefined,
             $("#c01p0002", $contentDocument))}
         ).toThrow(
