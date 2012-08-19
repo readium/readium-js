@@ -18,6 +18,7 @@ end
 def render_cfi_library_template(templatePath, outputPath)
 
     # Read each of the library components
+    cfi_config = File.read('src/epub_cfi/cfi_config.js')
     cfi_parser = File.read('src/epub_cfi/epubcfi.js')
     cfi_interpreter = File.read('src/epub_cfi/cfi_instructions.js')
     cfi_instructions = File.read('src/epub_cfi/cfi_interpreter.js')
