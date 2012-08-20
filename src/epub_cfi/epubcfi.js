@@ -330,38 +330,66 @@ EPUBcfi.Parser = (function(){
       }
       
       function parse_integer() {
-        var result0, result1;
-        var pos0;
+        var result0, result1, result2;
+        var pos0, pos1;
         
         pos0 = pos;
-        if (/^[1-9]/.test(input.charAt(pos))) {
-          result1 = input.charAt(pos);
+        if (input.charCodeAt(pos) === 48) {
+          result0 = "0";
           pos++;
         } else {
-          result1 = null;
+          result0 = null;
           if (reportFailures === 0) {
-            matchFailed("[1-9]");
+            matchFailed("\"0\"");
           }
         }
-        if (result1 !== null) {
-          result0 = [];
-          while (result1 !== null) {
-            result0.push(result1);
-            if (/^[1-9]/.test(input.charAt(pos))) {
-              result1 = input.charAt(pos);
-              pos++;
-            } else {
-              result1 = null;
-              if (reportFailures === 0) {
-                matchFailed("[1-9]");
-              }
+        if (result0 === null) {
+          pos1 = pos;
+          if (/^[1-9]/.test(input.charAt(pos))) {
+            result0 = input.charAt(pos);
+            pos++;
+          } else {
+            result0 = null;
+            if (reportFailures === 0) {
+              matchFailed("[1-9]");
             }
           }
-        } else {
-          result0 = null;
+          if (result0 !== null) {
+            result1 = [];
+            if (/^[0-9]/.test(input.charAt(pos))) {
+              result2 = input.charAt(pos);
+              pos++;
+            } else {
+              result2 = null;
+              if (reportFailures === 0) {
+                matchFailed("[0-9]");
+              }
+            }
+            while (result2 !== null) {
+              result1.push(result2);
+              if (/^[0-9]/.test(input.charAt(pos))) {
+                result2 = input.charAt(pos);
+                pos++;
+              } else {
+                result2 = null;
+                if (reportFailures === 0) {
+                  matchFailed("[0-9]");
+                }
+              }
+            }
+            if (result1 !== null) {
+              result0 = [result0, result1];
+            } else {
+              result0 = null;
+              pos = pos1;
+            }
+          } else {
+            result0 = null;
+            pos = pos1;
+          }
         }
         if (result0 !== null) {
-          result0 = (function(offset, integerVal) { return integerVal.join('') })(pos0, result0);
+          result0 = (function(offset, integerVal) { if (integerVal === "0") { return "0" } else { return  integerVal[0].concat(integerVal[1].join('')) } })(pos0, result0);
         }
         if (result0 === null) {
           pos = pos0;

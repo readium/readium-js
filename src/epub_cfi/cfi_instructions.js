@@ -135,6 +135,7 @@ EPUBcfi.CFIInstructions = {
 		var originalText;
 		var $injectedNode;
 		var $newTextNode;
+		// The iteration counter may be incorrect here (should be $nodeList.length - 1 ??)
 		for (nodeNum = 0; nodeNum <= $nodeList.length; nodeNum++) {
 
 			if ($nodeList[nodeNum].nodeType === 3) {

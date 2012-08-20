@@ -30,4 +30,4 @@ terminus
   = ":" textOffsetValue:integer { return { type:"textTerminus", offsetValue:textOffsetValue }; }
 
 integer
-  = integerVal:[1-9]+ { return integerVal.join('') }
+  = integerVal:("0" / [1-9][0-9]*) { if (integerVal === "0") { return "0" } else { return integerVal[0].concat(integerVal[1].join('')) } }

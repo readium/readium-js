@@ -380,38 +380,66 @@ EPUBcfi.Config = {
       }
       
       function parse_integer() {
-        var result0, result1;
-        var pos0;
+        var result0, result1, result2;
+        var pos0, pos1;
         
         pos0 = pos;
-        if (/^[1-9]/.test(input.charAt(pos))) {
-          result1 = input.charAt(pos);
+        if (input.charCodeAt(pos) === 48) {
+          result0 = "0";
           pos++;
         } else {
-          result1 = null;
+          result0 = null;
           if (reportFailures === 0) {
-            matchFailed("[1-9]");
+            matchFailed("\"0\"");
           }
         }
-        if (result1 !== null) {
-          result0 = [];
-          while (result1 !== null) {
-            result0.push(result1);
-            if (/^[1-9]/.test(input.charAt(pos))) {
-              result1 = input.charAt(pos);
-              pos++;
-            } else {
-              result1 = null;
-              if (reportFailures === 0) {
-                matchFailed("[1-9]");
-              }
+        if (result0 === null) {
+          pos1 = pos;
+          if (/^[1-9]/.test(input.charAt(pos))) {
+            result0 = input.charAt(pos);
+            pos++;
+          } else {
+            result0 = null;
+            if (reportFailures === 0) {
+              matchFailed("[1-9]");
             }
           }
-        } else {
-          result0 = null;
+          if (result0 !== null) {
+            result1 = [];
+            if (/^[0-9]/.test(input.charAt(pos))) {
+              result2 = input.charAt(pos);
+              pos++;
+            } else {
+              result2 = null;
+              if (reportFailures === 0) {
+                matchFailed("[0-9]");
+              }
+            }
+            while (result2 !== null) {
+              result1.push(result2);
+              if (/^[0-9]/.test(input.charAt(pos))) {
+                result2 = input.charAt(pos);
+                pos++;
+              } else {
+                result2 = null;
+                if (reportFailures === 0) {
+                  matchFailed("[0-9]");
+                }
+              }
+            }
+            if (result1 !== null) {
+              result0 = [result0, result1];
+            } else {
+              result0 = null;
+              pos = pos1;
+            }
+          } else {
+            result0 = null;
+            pos = pos1;
+          }
         }
         if (result0 !== null) {
-          result0 = (function(offset, integerVal) { return integerVal.join('') })(pos0, result0);
+          result0 = (function(offset, integerVal) { if (integerVal === "0") { return "0" } else { return  integerVal[0].concat(integerVal[1].join('')) } })(pos0, result0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -585,10 +613,6 @@ EPUBcfi.CFIInstructions = {
 	// Description: This instruction executes an indirection step, where a resource is retrieved using a 
 	//   link contained on a attribute of the target element. The attribute that contains the link differs
 	//   depending on the target. 
-	// REFACTORING CANDIDATE: The intention here is that the resource request mechanism will be refactored into its 
-	//   own object in a way that it can be overridden with a different mechanism for retrieving components of an 
-	//   EPUB. While the default provided by the library will be a simple AJAX request, it will otherwise be up to the 
-	//   reading system to implement a useful request mechanism.
 	followIndirectionStep : function (CFIStepValue, $currNode, stepTargetNodeId, $packageDocument) {
 
 		var that = this;
@@ -693,6 +717,7 @@ EPUBcfi.CFIInstructions = {
 		var originalText;
 		var $injectedNode;
 		var $newTextNode;
+		// The iteration counter may be incorrect here (should be $nodeList.length - 1 ??)
 		for (nodeNum = 0; nodeNum <= $nodeList.length; nodeNum++) {
 
 			if ($nodeList[nodeNum].nodeType === 3) {

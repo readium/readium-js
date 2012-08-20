@@ -1,4 +1,4 @@
-describe('EPUB CFI generated parser', function () {
+describe('Generated CFI parser', function () {
 
     it ('parses a CFI with index steps', function () {
 
