@@ -31,10 +31,6 @@ EPUBcfi.CFIInstructions = {
 	// Description: This instruction executes an indirection step, where a resource is retrieved using a 
 	//   link contained on a attribute of the target element. The attribute that contains the link differs
 	//   depending on the target. 
-	// REFACTORING CANDIDATE: The intention here is that the resource request mechanism will be refactored into its 
-	//   own object in a way that it can be overridden with a different mechanism for retrieving components of an 
-	//   EPUB. While the default provided by the library will be a simple AJAX request, it will otherwise be up to the 
-	//   reading system to implement a useful request mechanism.
 	followIndirectionStep : function (CFIStepValue, $currNode, stepTargetNodeId, $packageDocument) {
 
 		var that = this;
