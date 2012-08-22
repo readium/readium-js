@@ -23,23 +23,23 @@ the Interpreter will be removed. The intention is to create an API that only req
 
 3. Set the package document URL and retrieve a package document object:
 
-    `EPUBcfi.Config.packageDocumentURL = "http://something/something";
-    EPUBcfi.Config.cfiMarkerElements.textPointMarker = '<span class="cfi_marker"></span>';
+    `EPUBcfi.Config.packageDocumentURL = "http://something/something";`
+    `EPUBcfi.Config.cfiMarkerElements.textPointMarker = '<span class="cfi_marker"></span>';`
 
-    $packageDocument = do_some_stuff_to_get_a_jQueryed_package_document_object;`
+    `$packageDocument = do_some_stuff_to_get_a_jQueryed_package_document_object;`
 
 4. Parse a CFI and inject an element for that CFI:
 
     `cfi = 'epubcfi(/6/18!/4/2/4:2)';`
 
-    `try {
+    `try {`
     
-      ast = EPUBcfi.Parser.parse(cfi);
-      $resultWithInjection = EPUBcfi.Interpreter.injectCFIReferenceElements(ast, $packageDocument, pathToPackageDoc);`
-    }
+      `ast = EPUBcfi.Parser.parse(cfi);`
+      `$resultWithInjection = EPUBcfi.Interpreter.injectCFIReferenceElements(ast, $packageDocument, pathToPackageDoc);`
+    `}
     catch (err) {
     
-      Do something with the error;
+      `Do something with the error;`
     }`
 
 The result of this will be to inject the '<span class="cfi_marker"></span>' HTML element into a position in the EPUB pointed to by the CFI.
