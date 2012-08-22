@@ -14,7 +14,7 @@ The library may be extended to include other sorts of behaviour as the use cases
 Note: Steps 3. and 4. will change soon. The requirement to retrieve a package document, parse a CFI, and pass the result to
 the Interpreter, will be removed. The intention is to create an API that only requries the URL of an EPUB's package document and the HTML element to inject .
 
-1. Get a copy of the library. Currently, a development version of the (library)[https://github.com/justinHume/EPUBCFI/blob/master/epub_cfi.js] is available in the Github repository. When the library becomes more stable, a minified version will also be made available as a separate download. 
+1. Get a copy of the library. Currently, a development version of the [library](https://github.com/justinHume/EPUBCFI/blob/master/epub_cfi.js) is available in the Github repository. When the library becomes more stable, a minified version will also be made available as a separate download. 
 
 2. Add the CFI library to your code using a script tag, and make sure you have included jQuery:
 
@@ -52,10 +52,10 @@ There are a number of dependencies for this project:
 * Rake
 * The ERB template gem
 * Git
-* (jasmine)[http://pivotal.github.com/jasmine/]
-* (PEG.js)[http://pegjs.majda.cz/]. PEG.js is both a library and a command-line tool. The project assumes that the PEG.js command line tool can be found on your path. You can change this in the Rake file. 
+* [jasmine](http://pivotal.github.com/jasmine/)
+* [PEG.js](http://pegjs.majda.cz/). PEG.js is both a library and a command-line tool. The project assumes that the PEG.js command line tool can be found on your path. You can change this in the Rake file. 
 
-Once all that is good to go, clone the (Github)[https://github.com/justinHume/EPUBCFI] repository. 
+Once all that is good to go, clone the [Github](https://github.com/justinHume/EPUBCFI) repository. 
 
 There are a number of Rake tasks to help you with development: 
 
