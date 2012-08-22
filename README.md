@@ -30,17 +30,17 @@ the Interpreter will be removed. The intention is to create an API that only req
 
 4. Parse a CFI and inject an element for that CFI:
 
-    `cfi = 'epubcfi(/6/18!/4/2/4:2)';`
+    `cfi = 'epubcfi(/6/18!/4/2/4:2)';
 
-    `try {`
+    try {
     
-        `ast = EPUBcfi.Parser.parse(cfi);`
-        `$resultWithInjection = EPUBcfi.Interpreter.injectCFIReferenceElements(ast, $packageDocument, pathToPackageDoc);`
-    `}`
-    `catch (err) {`
-    ``
-        `// Do something with the error`
-    `}`
+        ast = EPUBcfi.Parser.parse(cfi);
+        $resultWithInjection = EPUBcfi.Interpreter.injectCFIReferenceElements(ast, $packageDocument, pathToPackageDoc);
+    }
+    catch (err) {
+    
+        // Do something with the error
+    }`
 
 The result of this will be to inject the '<span class="cfi_marker"></span>' HTML element into a position in the EPUB pointed to by the CFI.
 
