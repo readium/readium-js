@@ -24,7 +24,7 @@ The library may be extended to include other sorts of behaviour as the use cases
     EPUBcfi.Config.cfiMarkerElements.textPointMarker = '<span class="cfi_marker"></span>';
     ~~~
 
-4. _(optional)_ Override the retrieveResource() method. The intention here is that a reading system can provide its own implementation for retrieving a resource. The default implementation is to make a synchnronous (for now) AJAX request. As an example, if a resource is already availble in the DOM, the reading system may prefer to return the existing document rather than retrieving it from a persistence store. The contract for this function is that it is supplied a URL for a resource and returns a document object for that resource. This method would be overridden as such: 
+4. _(optional)_ Override the retrieveResource() method. The intention here is that a reading system can provide its own implementation for retrieving a resource. The default implementation is to make a synchnronous (for now) AJAX request. As an example, if a resource is already available in the DOM, the reading system may prefer to return the existing document rather than retrieve it from a persistence store. The function is supplied a URL for a resource and returns a document object for that resource. This method would be overridden as such: 
 
     ~~~
     EPUBcfi.Config.retrieveResource = function (resourceURL) {
