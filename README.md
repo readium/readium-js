@@ -24,8 +24,8 @@ The library may be extended to include other sorts of behaviour as the use cases
 
     EPUBcfi.Config.retrieveResource = function (resourceURL) {
 
-        myResource = get_stuff_the_way_you_like(resourceURL);
-        return turn_it_into_a_document_object(myResource);
+      myResource = get_stuff_the_way_you_like(resourceURL);
+      return turn_it_into_a_document_object(myResource);
     }
 
 5. Call the interpreter to inject an element for a CFI:
