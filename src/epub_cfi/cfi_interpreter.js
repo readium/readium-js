@@ -21,15 +21,20 @@ EPUBcfi.Interpreter = {
 
     // Description: This method executes the intepreter on a CFI AST. The CFI spec requires 
     //   the package document as a starting point.
-    // Arguments: a CFI AST (json), the package document (jquery)
-    injectCFIReferenceElements : function (CFIAST, $packageDocument) {
+    // Arguments: A CFI (string)
+    injectCFIReferenceElements : function (CFI) {
         
+        // Parse the cfi
+        var CFIAST = EPUBcfi.Parser.parse(CFI);
+
         // Check node type; throw error if wrong type
         if (CFIAST === undefined || CFIAST.type !== "CFIAST") { 
 
             throw EPUBcfi.NodeTypeError(CFIAST, "expected CFI AST root node");
         }
 
+        // Get the package document and walk the tree
+        var $packageDocument = $(EPUBcfi.Config.retrieveResource(EPUBcfi.Config.packageDocumentURL));        
         return this.interpretCFIStringNode(CFIAST.cfiString, $packageDocument);
     },
 

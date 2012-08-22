@@ -34,6 +34,8 @@ EPUBcfi.CFIInstructions = {
 	followIndirectionStep : function (CFIStepValue, $currNode, stepTargetNodeId, $packageDocument) {
 
 		var that = this;
+		var indexOfFilenameStart;
+		var URLForRetrieve;
 		var jqueryTargetNodeIndex = (CFIStepValue / 2) - 1;
 		var $targetNode;
 		var contentDocHref;
@@ -51,9 +53,12 @@ EPUBcfi.CFIInstructions = {
 		// Load the resource
 		// REFACTORING CANDIDATE: Currently, this expects the retrieval to be synchronous. This must be changed to be
 		//   asynchronous.
+		// Remove the package document filename from the package document url
+		indexOfFilenameStart = EPUBcfi.Config.packageDocumentURL.lastIndexOf('/') + 1;
+		URLForRetrieve = EPUBcfi.Config.packageDocumentURL.substr(0, indexOfFilenameStart);
+
 		contentDocHref = 
-			EPUBcfi.Config.packageDocumentURL 
-			+ '/' 
+			URLForRetrieve 
 			+ $("#" + $currNode.attr("idref"), $packageDocument).attr("href");
 		contentDoc = EPUBcfi.Config.retrieveResource(contentDocHref);
 

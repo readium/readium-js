@@ -389,7 +389,7 @@ EPUBcfi.Parser = (function(){
           }
         }
         if (result0 !== null) {
-          result0 = (function(offset, integerVal) { if (integerVal === "0") { return "0" } else { return  integerVal[0].concat(integerVal[1].join('')) } })(pos0, result0);
+          result0 = (function(offset, integerVal) { if (integerVal === "0") { return "0" } else { return integerVal[0].concat(integerVal[1].join('')) } })(pos0, result0);
         }
         if (result0 === null) {
           pos = pos0;

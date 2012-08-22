@@ -439,7 +439,7 @@ EPUBcfi.Config = {
           }
         }
         if (result0 !== null) {
-          result0 = (function(offset, integerVal) { if (integerVal === "0") { return "0" } else { return  integerVal[0].concat(integerVal[1].join('')) } })(pos0, result0);
+          result0 = (function(offset, integerVal) { if (integerVal === "0") { return "0" } else { return integerVal[0].concat(integerVal[1].join('')) } })(pos0, result0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -616,6 +616,8 @@ EPUBcfi.CFIInstructions = {
 	followIndirectionStep : function (CFIStepValue, $currNode, stepTargetNodeId, $packageDocument) {
 
 		var that = this;
+		var indexOfFilenameStart;
+		var URLForRetrieve;
 		var jqueryTargetNodeIndex = (CFIStepValue / 2) - 1;
 		var $targetNode;
 		var contentDocHref;
@@ -633,9 +635,12 @@ EPUBcfi.CFIInstructions = {
 		// Load the resource
 		// REFACTORING CANDIDATE: Currently, this expects the retrieval to be synchronous. This must be changed to be
 		//   asynchronous.
+		// Remove the package document filename from the package document url
+		indexOfFilenameStart = EPUBcfi.Config.packageDocumentURL.lastIndexOf('/') + 1;
+		URLForRetrieve = EPUBcfi.Config.packageDocumentURL.substr(0, indexOfFilenameStart);
+
 		contentDocHref = 
-			EPUBcfi.Config.packageDocumentURL 
-			+ '/' 
+			URLForRetrieve 
 			+ $("#" + $currNode.attr("idref"), $packageDocument).attr("href");
 		contentDoc = EPUBcfi.Config.retrieveResource(contentDocHref);
 
@@ -779,15 +784,20 @@ EPUBcfi.Interpreter = {
 
     // Description: This method executes the intepreter on a CFI AST. The CFI spec requires 
     //   the package document as a starting point.
-    // Arguments: a CFI AST (json), the package document (jquery)
-    injectCFIReferenceElements : function (CFIAST, $packageDocument) {
+    // Arguments: A CFI (string)
+    injectCFIReferenceElements : function (CFI) {
         
+        // Parse the cfi
+        var CFIAST = EPUBcfi.Parser.parse(CFI);
+
         // Check node type; throw error if wrong type
         if (CFIAST === undefined || CFIAST.type !== "CFIAST") { 
 
             throw EPUBcfi.NodeTypeError(CFIAST, "expected CFI AST root node");
         }
 
+        // Get the package document and walk the tree
+        var $packageDocument = $(EPUBcfi.Config.retrieveResource(EPUBcfi.Config.packageDocumentURL));        
         return this.interpretCFIStringNode(CFIAST.cfiString, $packageDocument);
     },
 
