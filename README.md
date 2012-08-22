@@ -81,7 +81,7 @@ The following are the development priorities (in order), going forward:
 
 CFIs can be viewed, for the purposes of this library, as a Domain Specific Language (DSL) for creating unique, recoverable and sortable indexes for EPUBs. Most of what I know of DSLs I learned from reading [Martin Fowler's work](http://martinfowler.com/bliki/DomainSpecificLanguage.html), so I'll just link him in here and let him describe DSL concepts, if you haven't been exposed to them.
 
-This CFI library is implemented using a number of standard patterns for Domain Specific Languages (DSLs). Before getting into the rationale for using DSL patterns, I'll go over the requirements for the CFI library.
+This CFI library is implemented using a number of standard patterns for DSLs. Before getting into the rationale for using DSL patterns, I'll go over the requirements for the CFI library:
 
 * Fully implement the EPUB 3.0 CFI specification.
 * Provide a stand-alone javascript library that enables a reading system to do useful things with a CFI. 
@@ -89,17 +89,17 @@ This CFI library is implemented using a number of standard patterns for Domain S
 
 Given these requirements, the rationale for the DSL approach is two-fold. First, to do something useful with a CFI, it must essentially be parsed and interpreted. This part of the problem is irreducible. Even if a non-language-tool approach were taken, the eventual result would almost certainly be to write something that resembles a lexer-parser-interperter-something. Given that the EPUB CFI grammar is fully specified and that DSL tools and methodologies are mature and available, it makes sense to leverage existing DSL approaches for this type of work. Using well-understood and practiced patterns leads to a (hopefully) clean, robust and extensible solution. This is especially likely when considering benefits like built-in syntax error handling that comes free-ish with tools like parser generators. 
 
-Second, using widely available DSL patterns aids in making the CFI library more accessible to developers and implementors. I think this is the case for all the standard reasons that design patterns, whether loosely or rigorously applied, are beneficial. Primarily, it is easier to understand - or learn about - a common pattern, as opposed to whatever amorphous collection of objects I might have invented on my own. 
+Second, using widely available DSL patterns aids in making the CFI library more accessible to developers and implementors. I think this is valid for all the standard reasons that design patterns, whether loosely or rigorously applied, are beneficial. Primarily, it is easier to understand - or learn about - a common pattern, as opposed to whatever amorphous collection of objects I might have invented on my own. 
 
 ## The CFI library architecture
 
 The CFI library consists of a number of components, with reponsibilities as follows:
 
-* Configuration: Maintains properties important to the behaviour of the CFI library.
-* Parser: Lexes and parses (in one step) a CFI string. It produces either syntax errors or an Abstract Syntax Tree (AST) representation of the CFI, in JSON format.
-* Interpreter: Walks the JSON AST and executes instructions for each node in the AST. The result of executing the interpreter is to inject an element, or set of elements, into an EPUB content document. These element(s) will represent a position, or area, referenced by a CFI.
-* Instructions: The implementation of a single statement in the CFI language.
-* Runtime errors: A set of errors that might be thrown when interpreting a CFI AST. 
+* __Configuration__: Maintains properties important to the behaviour of the CFI library.
+* __Parser__: Lexes and parses (in one step) a CFI string. It produces either syntax errors or an Abstract Syntax Tree (AST) representation of the CFI, in JSON format.
+* __Interpreter__: Walks the JSON AST and executes instructions for each node in the AST. The result of executing the interpreter is to inject an element, or set of elements, into an EPUB content document. These element(s) will represent a position, or area, referenced by a CFI.
+* __Instructions__: The implementation of a single statement in the CFI language.
+* __Runtime errors__: A set of errors that might be thrown when interpreting a CFI AST. 
 
 The following describes the rationale behind each component:
 
@@ -119,12 +119,10 @@ Finally, in regards to the rationale for using a Parsing Expression Grammar (PEG
 
 The interpreter is responsible for walking the AST and calling instructions that do something to interpret a CFI. This _something_ is, at the moment, to inject some arbitrary user-specified HTML at the location pointed to by a CFI. 
 
-The rationale for the interpreter and the instruction components being separate is based on the standard set of engineering reasons: Separation-of-concerns, extensibility, better abstraction etc. 
-
-To illustrate, while there is currently a one-to-one correspondence (with one exception) between an interpreter function and an instruction function, in the future it is likely that the behaviour of the interpreter will become more complex. It may act on a set of CFIs rather than a single CFI, load resources differently, etc. These types of changes to the interpreter would have no impact on the instructions being executed, hence the separation. 
+The rationale for the interpreter and the instruction components being separate is based on the standard set of engineering reasons: Separation-of-concerns, extensibility, better abstraction etc. To illustrate, while there is currently a one-to-one correspondence (with one exception) between an interpreter function and an instruction function, in the future it is likely that the behaviour of the interpreter will become more complex. It may be required to act on a set of CFIs rather than a single CFI, load resources differently, etc. These types of changes to the interpreter would have no impact on the instructions being executed, hence the separation. 
 
 ### Error handling
 
-At the moment, the only intention for this component is to provide some basic information for CFI interpretation errors (syntax errors are generated by the parser). There is not much to say about this other than that this component will likely evolve with a better understanding of the type of runtime errors a CFI might generate, and the use cases for the this library. 
+At the moment, the only intention for this component is to provide some basic information for CFI interpretation errors (syntax errors are generated by the parser). There is not much to say about this other than that this component will likely evolve with a better understanding of the type of runtime errors a CFI might generate, and the use cases for this library. 
 
 
