@@ -124,7 +124,7 @@ Second, it is easier to maintain a parser generator solution over time, as chang
 
 Third, using a parser generator enables a separation-of-concerns between lexing/parsing and whatever comes after (interpretation, in this case). This is _good_ because separation-of-concerns makes the life a developer much, much better. 
 
-Finally, in regards to the rationale for using a [Parsing Expression Grammar](http://en.wikipedia.org/wiki/Parsing_expression_grammar): The PEG.js library provides a simple generator, generates javascript parsers, and has decent documentation. This makes it a good candidate for this project. Beyond that, there is nothing that I can see in the CFI language that necessitates, or is limited by, the use of a PEG (the alternative being a generator based on an EBNF, like [ANTLR](http://www.antlr.org/), or something similar). 
+Finally, in regards to the rationale for using a [Parsing Expression Grammar](http://en.wikipedia.org/wiki/Parsing_expression_grammar): The PEG.js library provides a simple generator and API, generates javascript parsers, and has decent documentation. This makes it a good choice for this project. Beyond that, there is nothing that I can see in the CFI language that necessitates, or is limited by, the use of a PEG (the alternative being a generator based on an EBNF, like [ANTLR](http://www.antlr.org/), or something similar). 
 
 tl;dr, I chose a generator based on a PEG because PEG.js seemed easy and useful, rather than for some deep language reason. 
 
