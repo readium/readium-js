@@ -22,11 +22,15 @@ The library may be extended to include other sorts of behaviour as the use cases
 
 4. Override the retrieveResource() method _(optional)_. The intention here is that a reading system can provide its own implementation for retrieving a resource. The default implementation to make a synchnronous (for now) AJAX request. As an example, if a resource is already availble in the DOM, the reading system may very well prefer to return the existing document, rather than retrieving one from a persistence store. The contract for this function is that it is supplied a URL for the requested resource and returns a document object for that resource. This method would be overridden like this: 
 
+    ~~~
+
     EPUBcfi.Config.retrieveResource = function (resourceURL) {
 
-      myResource = get_stuff_the_way_you_like(resourceURL);
-      return turn_it_into_a_document_object(myResource);
+        myResource = get_stuff_the_way_you_like(resourceURL);
+        return turn_it_into_a_document_object(myResource);
     }
+
+    ~~~
 
 5. Call the interpreter to inject an element for a CFI:
 
