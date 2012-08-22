@@ -77,7 +77,7 @@ The following are the development priorities (in order), going forward:
 * Add additional terminus types.
 * Decide on some guarantees about the library API.
 
-# The Library implementation, for developers
+# The library implementation, for developers
 
 CFIs can be viewed, for the purposes of this library, as a Domain Specific Language (DSL) for creating unique, recoverable and sortable indexes for EPUBs. Most of what I know of DSLs I learned from reading [Martin Fowler's work](http://martinfowler.com/bliki/DomainSpecificLanguage.html), so I'll just link him in here and let him describe DSL concepts, if you haven't been exposed to them.
 
