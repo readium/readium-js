@@ -12,35 +12,35 @@ The library may be extended to include other sorts of behaviour as the use cases
 # How to use the CFI library
 
 Note: Steps 3. and 4. will change soon. The requirement to retrieve a package document, parse a CFI, and pass the result to
-the Interpreter, will be removed. The intention is to create an API that only requries the URL of an EPUB's package document and the HTML element to inject .
+the Interpreter will be removed. The intention is to create an API that only requries the URL of an EPUB's package document and HTML elements to inject at a location referenced by a CFI.
 
 1. Get a copy of the library. Currently, a development version of the [library](https://github.com/justinHume/EPUBCFI/blob/master/epub_cfi.js) is available in the Github repository. When the library becomes more stable, a minified version will also be made available as a separate download. 
 
 2. Add the CFI library to your code using a script tag, and make sure you have included jQuery:
 
-    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-    <script src="epub_cfi.js"></script>
+    `<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>`
+    `<script src="epub_cfi.js"></script>`
 
 3. Set the package document URL and retrieve a package document object:
 
-    EPUBcfi.Config.packageDocumentURL = "http://something/something";
-    EPUBcfi.Config.cfiMarkerElements.textPointMarker = '<span class="cfi_marker"></span>';
+    `EPUBcfi.Config.packageDocumentURL = "http://something/something";`
+    `EPUBcfi.Config.cfiMarkerElements.textPointMarker = '<span class="cfi_marker"></span>';`
 
-    $packageDocument = do_some_stuff_to_get_a_jQueryed_package_document_object;
+    `$packageDocument = do_some_stuff_to_get_a_jQueryed_package_document_object;`
 
 4. Parse a CFI and inject an element for that CFI:
 
-    cfi = 'epubcfi(/6/18!/4/2/4:2)';
+    `cfi = 'epubcfi(/6/18!/4/2/4:2)';`
 
-    try {
+    `try {`
     
-        ast = EPUBcfi.Parser.parse(cfi);
-        $resultWithInjection = EPUBcfi.Interpreter.injectCFIReferenceElements(ast, $packageDocument, pathToPackageDoc);
-    }
-    catch (err) {
-
-        // Do something with the error
-    }
+        `ast = EPUBcfi.Parser.parse(cfi);`
+        `$resultWithInjection = EPUBcfi.Interpreter.injectCFIReferenceElements(ast, $packageDocument, pathToPackageDoc);`
+    `}`
+    `catch (err) {`
+    ``
+        `// Do something with the error`
+    `}`
 
 The result of this will be to inject the '<span class="cfi_marker"></span>' HTML element into a position in the EPUB pointed to by the CFI.
 
