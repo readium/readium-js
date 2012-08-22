@@ -1,6 +1,3 @@
-EPUBCFI
-=======
-
 # The EPUB 3.0 CFI library
 
 This library provides support, in javascript, for parsing and interpreting EPUB 3.0 Canonical Fragment Identifiers (CFIs). jQuery is the only dependency. 
@@ -34,11 +31,11 @@ the Interpreter will be removed. The intention is to create an API that only req
 
     `try {`
     
-        `ast = EPUBcfi.Parser.parse(cfi);`
-        `$resultWithInjection = EPUBcfi.Interpreter.injectCFIReferenceElements(ast, $packageDocument, pathToPackageDoc);`
+        ast = EPUBcfi.Parser.parse(cfi);
+        $resultWithInjection = EPUBcfi.Interpreter.injectCFIReferenceElements(ast, $packageDocument, pathToPackageDoc);
     `} catch (err) {`
     
-        `Do something with the error;`
+        Do something with the error;
     `}`
 
 The result of this will be to inject the `'<span class="cfi_marker"></span>'` HTML element into a position in the EPUB pointed to by the CFI.
