@@ -30,14 +30,14 @@ the Interpreter will be removed. The intention is to create an API that only req
 
 4. Parse a CFI and inject an element for that CFI:
 
-    `cfi = 'epubcfi(/6/18!/4/2/4:2)';
+    `cfi = 'epubcfi(/6/18!/4/2/4:2)';`
 
-    try {
+    `try {
     
         ast = EPUBcfi.Parser.parse(cfi);
         $resultWithInjection = EPUBcfi.Interpreter.injectCFIReferenceElements(ast, $packageDocument, pathToPackageDoc);
-    }
-    catch (err) {
+    }`
+    `catch (err) {
     
         // Do something with the error
     }`
