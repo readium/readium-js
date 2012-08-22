@@ -12,37 +12,42 @@ The library may be extended to include other sorts of behaviour as the use cases
 
 2. Add the CFI library to your code using a script tag, and make sure you have jQuery:
 
-    `<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>`
-    `<script src="epub_cfi.js"></script>`
+    ~~~
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script src="epub_cfi.js"></script>
+    ~~~
 
 3. Set the package document URL and the type of element to inject for a particular CFI terminus type:
 
-    `EPUBcfi.Config.packageDocumentURL = "http://something/something/package.opf";`
-    `EPUBcfi.Config.cfiMarkerElements.textPointMarker = '<span class="cfi_marker"></span>';`
+    ~~~
+    EPUBcfi.Config.packageDocumentURL = "http://something/something/package.opf";
+    EPUBcfi.Config.cfiMarkerElements.textPointMarker = '<span class="cfi_marker"></span>';
+    ~~~
 
 4. Override the retrieveResource() method _(optional)_. The intention here is that a reading system can provide its own implementation for retrieving a resource. The default implementation to make a synchnronous (for now) AJAX request. As an example, if a resource is already availble in the DOM, the reading system may very well prefer to return the existing document, rather than retrieving one from a persistence store. The contract for this function is that it is supplied a URL for the requested resource and returns a document object for that resource. This method would be overridden like this: 
 
     ~~~
-
     EPUBcfi.Config.retrieveResource = function (resourceURL) {
 
         myResource = get_stuff_the_way_you_like(resourceURL);
         return turn_it_into_a_document_object(myResource);
     }
-
     ~~~
 
 5. Call the interpreter to inject an element for a CFI:
 
-    `cfi = 'epubcfi(/6/18!/4/2/4:2)';`
+    ~~~
+    cfi = 'epubcfi(/6/18!/4/2/4:2)';
 
-    `try {`
+    try {
     
         $resultWithInjection = EPUBcfi.Interpreter.injectCFIReferenceElements(cfi);
-    `} catch (err) {`
+    } 
+    catch (err) {
     
         Do something with the errors;
-    `}`
+    }
+    ~~~
 
 The result of this will be to inject the `'<span class="cfi_marker"></span>'` HTML element into a position in the EPUB pointed to by the CFI.
 
