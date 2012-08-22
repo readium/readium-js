@@ -6,7 +6,7 @@ The purpose of this library is to allow reading systems to do useful things with
 
 The library may be extended to include other sorts of behaviour as the use cases for CFIs become clearer. 
 
-# How to use the CFI library
+# Using the CFI library
 
 Note: Steps 3. and 4. will change soon. The requirement to retrieve a package document, parse a CFI, and pass the result to
 the Interpreter will be removed. The intention is to create an API that only requries the URL of an EPUB's package document and HTML elements to inject at a location referenced by a CFI.
