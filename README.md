@@ -100,11 +100,11 @@ This CFI library is implemented using a number of standard patterns for DSLs. Be
 
 Given these requirements, the rationale for the DSL approach is two-fold. First, to do something useful with a CFI, it must essentially be parsed and interpreted. This part of the problem is irreducible. Even if a non-language-tool approach were taken, the eventual result would almost certainly be to write something that resembles a lexer-parser-interperter-something. Given that the EPUB CFI grammar is fully specified and that DSL tools and methodologies are mature and available, it makes sense to leverage existing DSL approaches for this type of work. Using well-understood and practiced patterns leads to a (hopefully) clean, robust and extensible solution. This is especially likely when considering benefits like built-in syntax error handling that comes free-ish with tools like parser generators. 
 
-Second, using widely available DSL patterns aids in making the CFI library more accessible to developers and implementors. I think this is valid for all the standard reasons that design patterns, whether loosely or rigorously applied, are beneficial. Primarily, it is easier to understand - or learn about - a common pattern, as opposed to whatever amorphous collection of objects I might have invented on my own. 
+Second, using widely available DSL patterns aids in making the CFI library more accessible to developers and implementors. I think this is valid for all the standard reasons that design patterns, whether loosely or rigorously applied, are beneficial. First and foremost, it is easier to understand - or learn about - a common pattern, as opposed to whatever amorphous collection of objects I might have invented on my own. 
 
 ## The CFI library architecture
 
-The CFI library consists of a number of components, with reponsibilities as follows:
+The CFI library consists of a number of components that are based on DSL patterns, with reponsibilities as follows:
 
 * __Configuration__: Maintains properties important to the behaviour of the CFI library.
 * __Parser__: Lexes and parses (in one step) a CFI string. It produces either syntax errors or an Abstract Syntax Tree (AST) representation of the CFI, in JSON format.
@@ -124,7 +124,9 @@ Second, it is easier to maintain a parser generator solution over time, as chang
 
 Third, using a parser generator enables a separation-of-concerns between lexing/parsing and whatever comes after (interpretation, in this case). This is _good_ because separation-of-concerns makes the life a developer much, much better. 
 
-Finally, in regards to the rationale for using a [Parsing Expression Grammar](http://en.wikipedia.org/wiki/Parsing_expression_grammar): The PEG.js library provides a simple generator, generates javascript parsers, and has decent documentation. Beyond that, there is nothing that I can see in the CFI language that necessitates, or is limited by, the use of a PEG; the alternative being a generator based on an EBNF, like [ANTLR](http://www.antlr.org/), or something similar. tl;dr, I chose a generator based on a PEG because PEG.js seemed easy and useful, rather than for some deep language reason. 
+Finally, in regards to the rationale for using a [Parsing Expression Grammar](http://en.wikipedia.org/wiki/Parsing_expression_grammar): The PEG.js library provides a simple generator, generates javascript parsers, and has decent documentation. This makes it a good candidate for this project. Beyond that, there is nothing that I can see in the CFI language that necessitates, or is limited by, the use of a PEG (the alternative being a generator based on an EBNF, like [ANTLR](http://www.antlr.org/), or something similar). 
+
+tl;dr, I chose a generator based on a PEG because PEG.js seemed easy and useful, rather than for some deep language reason. 
 
 ### Interpreter and instructions
 
