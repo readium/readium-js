@@ -130,7 +130,7 @@ tl;dr, I chose a generator based on a PEG because PEG.js seemed easy and useful,
 
 ### Interpreter and instructions
 
-The interpreter is responsible for walking the AST and calling instructions that do something to interpret a CFI. This _something_ is, at the moment, to inject some arbitrary user-specified HTML at the location pointed to by a CFI. 
+The interpreter is responsible for walking the AST and calling instructions that do something to interpret a CFI. This _something_ is, at the moment, to inject some arbitrary user-specified HTML at the location referenced by a CFI. 
 
 The rationale for the interpreter and the instruction components being separate is based on the standard set of engineering reasons: Separation-of-concerns, extensibility, better abstraction etc. To illustrate, while there is currently a one-to-one correspondence (with one exception) between an interpreter function and an instruction function, in the future it is likely that the behaviour of the interpreter will become more complex. It may be required to act on a set of CFIs rather than a single CFI, load resources differently, etc. These types of changes to the interpreter would have no impact on the instructions being executed, hence the separation. 
 
