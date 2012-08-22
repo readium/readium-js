@@ -8,9 +8,7 @@ The library may be extended to include other sorts of behaviour as the use cases
 
 # Using the CFI library
 
-1. Get a copy of the library. 
-
-Currently, a development version of the [library](https://github.com/justinHume/EPUBCFI/blob/master/epub_cfi.js) is available in the Github repository. When the library becomes more stable, a minified version will also be made available as a separate download. 
+1. Get a copy of the library. Currently, a development version of the [library](https://github.com/justinHume/EPUBCFI/blob/master/epub_cfi.js) is available in the Github repository. When the library becomes more stable, a minified version will also be made available as a separate download. 
 
 2. Add the CFI library to your code using a script tag, and make sure you have jQuery:
 
@@ -22,18 +20,11 @@ Currently, a development version of the [library](https://github.com/justinHume/
     `EPUBcfi.Config.packageDocumentURL = "http://something/something/package.opf";`
     `EPUBcfi.Config.cfiMarkerElements.textPointMarker = '<span class="cfi_marker"></span>';`
 
-4. Override the retrieveResource() method _(optional)_
-
-The intention here is that a reading system can provide its own implementation for retrieving a resource. The default implementation to make a synchnronous (for now) AJAX request. As an example, if a resource is already availble in the DOM, the reading system may very well prefer to return the existing document, rather than retrieving one from a persistence store.
-
-The contract for this function is that it is supplied a URL for the requested resource and returns a document object for that resource.
-
-This method would be overridden like this: 
+4. Override the retrieveResource() method _(optional)_. The intention here is that a reading system can provide its own implementation for retrieving a resource. The default implementation to make a synchnronous (for now) AJAX request. As an example, if a resource is already availble in the DOM, the reading system may very well prefer to return the existing document, rather than retrieving one from a persistence store. The contract for this function is that it is supplied a URL for the requested resource and returns a document object for that resource. This method would be overridden like this: 
 
     EPUBcfi.Config.retrieveResource = function (resourceURL) {
 
         myResource = get_stuff_the_way_you_like(resourceURL);
-
         return turn_it_into_a_document_object(myResource);
     }
 
