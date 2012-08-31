@@ -32,7 +32,7 @@ describe("execution of cfi instructions", function () {
 		EPUBcfi.CFIInstructions.followIndirectionStep(2, $(spineElement), undefined, $(packageDoc));
 		calledHref = $.ajax.mostRecentCall.args[0].url;
 
-		expect(calledHref).toEqual("/chapter_001.xhtml");
+		expect(calledHref).toEqual("chapter_001.xhtml");
 	});
 
 	it("returns an element with injected text at the specified offset", function () {
