@@ -17,6 +17,10 @@
 // 5) "String" removed as redundant
 // 6) "Special-chars" removed as unnecessary due to PEG sequential match
 // 7) "character" will not include "space" in order to facilitate the handling of spaces in assertion values
+// 8) The "parameter" non-terminal uses a "valueNoSpace" instead of a "csv" on the RHS of the "=" sign; couldn't see why this was
+//  supposed to be a csv? Maybe this was being used the same way as the csv for the id assertion -> commas are allowed and it was 
+//  convenient as the "csv" non-terminal was already defined. 
+// 9) Removed "characterEscapedSpecial" as it was no longer required (redundant).
 
 fragment
   = "epubcfi(" pathVal:path ")" { return { type:"CFIAST", cfiString:pathVal }; }
@@ -39,26 +43,27 @@ termstep
 terminus
   = ":" textOffsetValue:integer { return { type:"textTerminus", offsetValue:textOffsetValue }; }
 
-assertion
-  = csvVal:csv? paramVal:parameter* { return { csvs:csvVal, parameters:paramVal }; }
+// Must have an assertion if you create an assertion "[]" in the cfi string
+idAssertion
+  = idVal:value { return idVal; }
+
+// Must have an assertion if you create an assertion "[]" in the cfi string
+textLocationAssertion
+  = csv parameter? { return ; }
 
 parameter
-  = paramVal:(";" valueNoSpace "=" csv) { return paramVal; }
+  = paramVal:(";" valueNoSpace "=" valueNoSpace) { return paramVal; }
 
 csv 
-  = firstVal:value remainingVal:("," value)* { return { first:firstVal, rest:remainingVal }; }
+  = preVal:value? "," postVal:value?  { return { preAssertion:preVal, postAssertion:postVal }; }
 
 // PEG.js does not have an "except" operator. My understanding is that "value-no-space" means "no spaces at all"
 valueNoSpace
-  = valueVal:characterEscapedSpecial+ { return valueVal.join(''); }
+  = valueVal:(escapedSpecialChars / character)+ { return valueVal.join(''); }
 
 // Removed stringEscapedSpecialChars as it was redundant
 value 
-  = valueVal:(characterEscapedSpecial / space)+ { return valueVal.join(''); }
-
-// Sequential matching made special-chars redundant as they'll be matched by escapedSpecialChars
-characterEscapedSpecial 
-  = charEscSpecVal:(escapedSpecialChars / character) { return charEscSpecVal; }
+  = valueVal:(escapedSpecialChars / character / space)+ { return valueVal.join(''); }
 
 escapedSpecialChars
   = escSpecCharVal:(
