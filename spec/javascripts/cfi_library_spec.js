@@ -1,2 +1,0 @@
-describe('CFI library', function () {
-});
