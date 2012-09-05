@@ -23,47 +23,83 @@
 // 9) Removed "characterEscapedSpecial" as it was no longer required (redundant).
 
 fragment
-  = "epubcfi(" pathVal:path ")" { return { type:"CFIAST", cfiString:pathVal }; }
+  = "epubcfi(" pathVal:path ")" { 
+        
+        return { type:"CFIAST", cfiString:pathVal }; 
+    }
 
 path 
-  = stepVal:indexStep localPathVal:local_path { return { type:"cfiString", path:stepVal, localPath:localPathVal }; }
+  = stepVal:indexStep localPathVal:local_path { 
+
+        return { type:"cfiString", path:stepVal, localPath:localPathVal }; 
+    }
 
 local_path
-  = localPathStepVal:(indexStep / indirectionStep)+ termStepVal:termstep? { return { steps:localPathStepVal, termStep:termStepVal }; }
+  = localPathStepVal:(indexStep / indirectionStep)+ termStepVal:termstep? { 
+
+        return { steps:localPathStepVal, termStep:termStepVal }; 
+    }
 
 indexStep
-  = "/" stepLengthVal:integer { return { type:"indexStep", stepLength:stepLengthVal }; }
+  = "/" stepLengthVal:integer { 
+
+        return { type:"indexStep", stepLength:stepLengthVal }; 
+    }
 
 indirectionStep
-  = "!/" stepLengthVal:integer { return { type:"indirectionStep", stepLength:stepLengthVal }; }
+  = "!/" stepLengthVal:integer { 
+
+        return { type:"indirectionStep", stepLength:stepLengthVal }; 
+    }
 
 termstep
   = terminus
 
 terminus
-  = ":" textOffsetValue:integer { return { type:"textTerminus", offsetValue:textOffsetValue }; }
+  = ":" textOffsetValue:integer { 
+
+        return { type:"textTerminus", offsetValue:textOffsetValue }; 
+    }
 
 // Must have an assertion if you create an assertion "[]" in the cfi string
 idAssertion
-  = idVal:value { return idVal; }
+  = idVal:value { 
+
+        return idVal; 
+    }
 
 // Must have an assertion if you create an assertion "[]" in the cfi string
 textLocationAssertion
-  = csv parameter? { return ; }
+  = csvVal:csv paramVal:parameter? { 
+
+        return { type:"textLocationAssertion", csv:csvVal, parameter:paramVal }; 
+    }
 
 parameter
-  = paramVal:(";" valueNoSpace "=" valueNoSpace) { return paramVal; }
+  = ";" paramLHSVal:valueNoSpace "=" paramRHSVal:valueNoSpace { 
+
+        return { type:"parameter", LHSValue:paramLHSVal, RHSValue:paramRHSVal }; 
+    }
 
 csv 
-  = preVal:value? "," postVal:value?  { return { preAssertion:preVal, postAssertion:postVal }; }
+  = preAssertionVal:value? "," postAssertionVal:value? { 
+
+        return { type:"csv", preAssertion:preAssertionVal, postAssertion:postAssertionVal }; 
+    }
 
 // PEG.js does not have an "except" operator. My understanding is that "value-no-space" means "no spaces at all"
 valueNoSpace
-  = valueVal:(escapedSpecialChars / character)+ { return valueVal.join(''); }
+  = stringVal:(escapedSpecialChars / character)+ { 
+
+        return stringVal.join(''); 
+    }
 
 // Removed stringEscapedSpecialChars as it was redundant
 value 
-  = valueVal:(escapedSpecialChars / character / space)+ { return valueVal.join(''); }
+  = stringVal:(escapedSpecialChars / character / space)+ { 
+
+        return stringVal.join(''); 
+    }
 
 escapedSpecialChars
   = escSpecCharVal:(
@@ -74,22 +110,26 @@ escapedSpecialChars
     / (circumflex semicolon)
     / (circumflex equal) 
     ) { 
+        
         return escSpecCharVal; 
     }
 
+// Digit and digit-non-zero not included as separate terminals
 number 
-  = intPartVal:( [1-9][0-9]+ ) "." fracPartVal:( [0-9]* [1-9] ) { return intPartVal.join('') + "." + fracPartVal.join('') ; }
+  = intPartVal:( [1-9][0-9]+ ) "." fracPartVal:( [0-9]* [1-9] ) { 
 
-// Digit and digit-non-zero not included as they are implicitly included in the 'integer' rule
+        return intPartVal.join('') + "." + fracPartVal.join(''); 
+    }
+
 integer
   = integerVal:("0" / [1-9][0-9]*) { 
 
         if (integerVal === "0") { 
-          return "0" 
+          return "0";
         } 
         else { 
-          return integerVal[0].concat(integerVal[1].join('')) 
-        } 
+          return integerVal[0].concat(integerVal[1].join(''));
+        }
     }
 
 space 

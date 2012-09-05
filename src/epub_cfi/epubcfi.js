@@ -43,12 +43,12 @@ EPUBcfi.Parser = (function(){
         "indexStep": parse_indexStep,
         "indirectionStep": parse_indirectionStep,
         "terminus": parse_terminus,
-        "assertion": parse_assertion,
+        "idAssertion": parse_idAssertion,
+        "textLocationAssertion": parse_textLocationAssertion,
         "parameter": parse_parameter,
         "csv": parse_csv,
         "valueNoSpace": parse_valueNoSpace,
         "value": parse_value,
-        "characterEscapedSpecial": parse_characterEscapedSpecial,
         "escapedSpecialChars": parse_escapedSpecialChars,
         "number": parse_number,
         "integer": parse_integer,
@@ -158,7 +158,10 @@ EPUBcfi.Parser = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, pathVal) { return { type:"CFIAST", cfiString:pathVal }; })(pos0, result0[1]);
+          result0 = (function(offset, pathVal) { 
+                
+                return { type:"CFIAST", cfiString:pathVal }; 
+            })(pos0, result0[1]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -186,7 +189,10 @@ EPUBcfi.Parser = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, stepVal, localPathVal) { return { type:"cfiString", path:stepVal, localPath:localPathVal }; })(pos0, result0[0], result0[1]);
+          result0 = (function(offset, stepVal, localPathVal) { 
+        
+                return { type:"cfiString", path:stepVal, localPath:localPathVal }; 
+            })(pos0, result0[0], result0[1]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -230,7 +236,10 @@ EPUBcfi.Parser = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, localPathStepVal, termStepVal) { return { steps:localPathStepVal, termStep:termStepVal }; })(pos0, result0[0], result0[1]);
+          result0 = (function(offset, localPathStepVal, termStepVal) { 
+        
+                return { steps:localPathStepVal, termStep:termStepVal }; 
+            })(pos0, result0[0], result0[1]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -266,7 +275,10 @@ EPUBcfi.Parser = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, stepLengthVal) { return { type:"indexStep", stepLength:stepLengthVal }; })(pos0, result0[1]);
+          result0 = (function(offset, stepLengthVal) { 
+        
+                return { type:"indexStep", stepLength:stepLengthVal }; 
+            })(pos0, result0[1]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -302,7 +314,10 @@ EPUBcfi.Parser = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, stepLengthVal) { return { type:"indirectionStep", stepLength:stepLengthVal }; })(pos0, result0[1]);
+          result0 = (function(offset, stepLengthVal) { 
+        
+                return { type:"indirectionStep", stepLength:stepLengthVal }; 
+            })(pos0, result0[1]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -338,7 +353,10 @@ EPUBcfi.Parser = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, textOffsetValue) { return { type:"textTerminus", offsetValue:textOffsetValue }; })(pos0, result0[1]);
+          result0 = (function(offset, textOffsetValue) { 
+        
+                return { type:"textTerminus", offsetValue:textOffsetValue }; 
+            })(pos0, result0[1]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -346,21 +364,34 @@ EPUBcfi.Parser = (function(){
         return result0;
       }
       
-      function parse_assertion() {
-        var result0, result1, result2;
+      function parse_idAssertion() {
+        var result0;
+        var pos0;
+        
+        pos0 = pos;
+        result0 = parse_value();
+        if (result0 !== null) {
+          result0 = (function(offset, idVal) { 
+        
+                return idVal; 
+            })(pos0, result0);
+        }
+        if (result0 === null) {
+          pos = pos0;
+        }
+        return result0;
+      }
+      
+      function parse_textLocationAssertion() {
+        var result0, result1;
         var pos0, pos1;
         
         pos0 = pos;
         pos1 = pos;
         result0 = parse_csv();
-        result0 = result0 !== null ? result0 : "";
         if (result0 !== null) {
-          result1 = [];
-          result2 = parse_parameter();
-          while (result2 !== null) {
-            result1.push(result2);
-            result2 = parse_parameter();
-          }
+          result1 = parse_parameter();
+          result1 = result1 !== null ? result1 : "";
           if (result1 !== null) {
             result0 = [result0, result1];
           } else {
@@ -372,7 +403,10 @@ EPUBcfi.Parser = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, csvVal, paramVal) { return { csvs:csvVal, parameters:paramVal }; })(pos0, result0[0], result0[1]);
+          result0 = (function(offset, csvVal, paramVal) { 
+        
+                return { type:"textLocationAssertion", csv:csvVal, parameter:paramVal }; 
+            })(pos0, result0[0], result0[1]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -408,7 +442,7 @@ EPUBcfi.Parser = (function(){
               }
             }
             if (result2 !== null) {
-              result3 = parse_csv();
+              result3 = parse_valueNoSpace();
               if (result3 !== null) {
                 result0 = [result0, result1, result2, result3];
               } else {
@@ -428,7 +462,10 @@ EPUBcfi.Parser = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, paramVal) { return paramVal; })(pos0, result0);
+          result0 = (function(offset, paramLHSVal, paramRHSVal) { 
+        
+                return { type:"parameter", LHSValue:paramLHSVal, RHSValue:paramRHSVal }; 
+            })(pos0, result0[1], result0[3]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -437,110 +474,26 @@ EPUBcfi.Parser = (function(){
       }
       
       function parse_csv() {
-        var result0, result1, result2, result3;
-        var pos0, pos1, pos2;
-        
-        pos0 = pos;
-        pos1 = pos;
-        result0 = parse_value();
-        if (result0 !== null) {
-          result1 = [];
-          pos2 = pos;
-          if (input.charCodeAt(pos) === 44) {
-            result2 = ",";
-            pos++;
-          } else {
-            result2 = null;
-            if (reportFailures === 0) {
-              matchFailed("\",\"");
-            }
-          }
-          if (result2 !== null) {
-            result3 = parse_value();
-            if (result3 !== null) {
-              result2 = [result2, result3];
-            } else {
-              result2 = null;
-              pos = pos2;
-            }
-          } else {
-            result2 = null;
-            pos = pos2;
-          }
-          while (result2 !== null) {
-            result1.push(result2);
-            pos2 = pos;
-            if (input.charCodeAt(pos) === 44) {
-              result2 = ",";
-              pos++;
-            } else {
-              result2 = null;
-              if (reportFailures === 0) {
-                matchFailed("\",\"");
-              }
-            }
-            if (result2 !== null) {
-              result3 = parse_value();
-              if (result3 !== null) {
-                result2 = [result2, result3];
-              } else {
-                result2 = null;
-                pos = pos2;
-              }
-            } else {
-              result2 = null;
-              pos = pos2;
-            }
-          }
-          if (result1 !== null) {
-            result0 = [result0, result1];
-          } else {
-            result0 = null;
-            pos = pos1;
-          }
-        } else {
-          result0 = null;
-          pos = pos1;
-        }
-        if (result0 !== null) {
-          result0 = (function(offset, firstVal, remainingVal) { return { first:firstVal, rest:remainingVal }; })(pos0, result0[0], result0[1]);
-        }
-        if (result0 === null) {
-          pos = pos0;
-        }
-        return result0;
-      }
-      
-      function parse_valueNoSpace() {
-        var result0, result1, result2, result3;
+        var result0, result1, result2;
         var pos0, pos1;
         
         pos0 = pos;
         pos1 = pos;
-        result0 = [];
-        result1 = parse_space();
-        while (result1 !== null) {
-          result0.push(result1);
-          result1 = parse_space();
-        }
+        result0 = parse_value();
+        result0 = result0 !== null ? result0 : "";
         if (result0 !== null) {
-          result2 = parse_characterEscapedSpecial();
-          if (result2 !== null) {
-            result1 = [];
-            while (result2 !== null) {
-              result1.push(result2);
-              result2 = parse_characterEscapedSpecial();
-            }
+          if (input.charCodeAt(pos) === 44) {
+            result1 = ",";
+            pos++;
           } else {
             result1 = null;
+            if (reportFailures === 0) {
+              matchFailed("\",\"");
+            }
           }
           if (result1 !== null) {
-            result2 = [];
-            result3 = parse_space();
-            while (result3 !== null) {
-              result2.push(result3);
-              result3 = parse_space();
-            }
+            result2 = parse_value();
+            result2 = result2 !== null ? result2 : "";
             if (result2 !== null) {
               result0 = [result0, result1, result2];
             } else {
@@ -556,7 +509,43 @@ EPUBcfi.Parser = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, valueVal) { return valueVal.join(''); })(pos0, result0);
+          result0 = (function(offset, preAssertionVal, postAssertionVal) { 
+        
+                return { type:"csv", preAssertion:preAssertionVal, postAssertion:postAssertionVal }; 
+            })(pos0, result0[0], result0[2]);
+        }
+        if (result0 === null) {
+          pos = pos0;
+        }
+        return result0;
+      }
+      
+      function parse_valueNoSpace() {
+        var result0, result1;
+        var pos0;
+        
+        pos0 = pos;
+        result1 = parse_escapedSpecialChars();
+        if (result1 === null) {
+          result1 = parse_character();
+        }
+        if (result1 !== null) {
+          result0 = [];
+          while (result1 !== null) {
+            result0.push(result1);
+            result1 = parse_escapedSpecialChars();
+            if (result1 === null) {
+              result1 = parse_character();
+            }
+          }
+        } else {
+          result0 = null;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, stringVal) { 
+        
+                return stringVal.join(''); 
+            })(pos0, result0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -569,42 +558,33 @@ EPUBcfi.Parser = (function(){
         var pos0;
         
         pos0 = pos;
-        result1 = parse_characterEscapedSpecial();
+        result1 = parse_escapedSpecialChars();
         if (result1 === null) {
-          result1 = parse_space();
+          result1 = parse_character();
+          if (result1 === null) {
+            result1 = parse_space();
+          }
         }
         if (result1 !== null) {
           result0 = [];
           while (result1 !== null) {
             result0.push(result1);
-            result1 = parse_characterEscapedSpecial();
+            result1 = parse_escapedSpecialChars();
             if (result1 === null) {
-              result1 = parse_space();
+              result1 = parse_character();
+              if (result1 === null) {
+                result1 = parse_space();
+              }
             }
           }
         } else {
           result0 = null;
         }
         if (result0 !== null) {
-          result0 = (function(offset, valueVal) { return valueVal.join(''); })(pos0, result0);
-        }
-        if (result0 === null) {
-          pos = pos0;
-        }
-        return result0;
-      }
-      
-      function parse_characterEscapedSpecial() {
-        var result0;
-        var pos0;
+          result0 = (function(offset, stringVal) { 
         
-        pos0 = pos;
-        result0 = parse_escapedSpecialChars();
-        if (result0 === null) {
-          result0 = parse_character();
-        }
-        if (result0 !== null) {
-          result0 = (function(offset, charEscSpecVal) { return charEscSpecVal; })(pos0, result0);
+                return stringVal.join(''); 
+            })(pos0, result0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -713,6 +693,7 @@ EPUBcfi.Parser = (function(){
         }
         if (result0 !== null) {
           result0 = (function(offset, escSpecCharVal) { 
+                
                 return escSpecCharVal; 
             })(pos0, result0);
         }
@@ -844,7 +825,10 @@ EPUBcfi.Parser = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, intPartVal, fracPartVal) { return intPartVal.join('') + "." + fracPartVal.join('') ; })(pos0, result0[0], result0[2]);
+          result0 = (function(offset, intPartVal, fracPartVal) { 
+        
+                return intPartVal.join('') + "." + fracPartVal.join(''); 
+            })(pos0, result0[0], result0[2]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -915,11 +899,11 @@ EPUBcfi.Parser = (function(){
           result0 = (function(offset, integerVal) { 
         
                 if (integerVal === "0") { 
-                  return "0" 
+                  return "0";
                 } 
                 else { 
-                  return integerVal[0].concat(integerVal[1].join('')) 
-                } 
+                  return integerVal[0].concat(integerVal[1].join(''));
+                }
             })(pos0, result0);
         }
         if (result0 === null) {
