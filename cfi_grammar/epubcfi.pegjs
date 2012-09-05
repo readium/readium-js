@@ -41,15 +41,25 @@ local_path
     }
 
 indexStep
-  = "/" stepLengthVal:integer { 
+  = "/" stepLengthVal:integer ("[" assertionVal:idAssertion "]")? { 
 
-        return { type:"indexStep", stepLength:stepLengthVal }; 
+        if (typeof assertionVal !== 'undefined') {
+            return { type:"indexStep", stepLength:stepLengthVal, idAssertion:assertionVal };
+        }
+        else {
+            return { type:"indexStep", stepLength:stepLengthVal, idAssertion:undefined };
+        }
     }
 
 indirectionStep
-  = "!/" stepLengthVal:integer { 
+  = "!/" stepLengthVal:integer ("[" assertionVal:idAssertion "]")? { 
 
-        return { type:"indirectionStep", stepLength:stepLengthVal }; 
+        if (typeof assertionVal !== 'undefined') {
+            return { type:"indirectionStep", stepLength:stepLengthVal, idAssertion:assertionVal };
+        }
+        else {
+            return { type:"indirectionStep", stepLength:stepLengthVal, idAssertion:undefined };
+        }
     }
 
 termstep
@@ -94,7 +104,8 @@ valueNoSpace
         return stringVal.join(''); 
     }
 
-// Removed stringEscapedSpecialChars as it was redundant
+// Removed stringEscapedSpecialChars as it was redundant (sort of). It obviously represented a "string of escaped special comments." 
+//   Will have to think about whether it makes sense to replace this with value. 
 value 
   = stringVal:(escapedSpecialChars / character / space)+ { 
 
@@ -157,4 +168,4 @@ equal
   = "=" { return "="; }
 
 character
-  = charVal:[a-z][A-Z] { return charVal.join(''); }
+  = charVal:([a-z] / [A-Z]) { return charVal; }
