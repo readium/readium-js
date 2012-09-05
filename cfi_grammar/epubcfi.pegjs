@@ -21,6 +21,8 @@
 //  supposed to be a csv? Maybe this was being used the same way as the csv for the id assertion -> commas are allowed and it was 
 //  convenient as the "csv" non-terminal was already defined. 
 // 9) Removed "characterEscapedSpecial" as it was no longer required (redundant).
+// 10) This hasn't been removed yet, but the "text location assertion" is only valid for the character offset terminus and has been 
+//  included in this grammar as such. 
 
 fragment
   = "epubcfi(" pathVal:path ")" { 
@@ -40,35 +42,27 @@ local_path
         return { steps:localPathStepVal, termStep:termStepVal }; 
     }
 
+// assertVal[1] is used because assertVal is an array of the match 0:"[" 1:idAssertion 2:"]"
 indexStep
-  = "/" stepLengthVal:integer ("[" assertionVal:idAssertion "]")? { 
+  = "/" stepLengthVal:integer assertVal:("[" idAssertion "]")? { 
 
-        if (typeof assertionVal !== 'undefined') {
-            return { type:"indexStep", stepLength:stepLengthVal, idAssertion:assertionVal };
-        }
-        else {
-            return { type:"indexStep", stepLength:stepLengthVal, idAssertion:undefined };
-        }
+        return { type:"indexStep", stepLength:stepLengthVal, idAssertion:assertVal[1] };
     }
 
 indirectionStep
-  = "!/" stepLengthVal:integer ("[" assertionVal:idAssertion "]")? { 
+  = "!/" stepLengthVal:integer assertVal:("[" idAssertion "]")? { 
 
-        if (typeof assertionVal !== 'undefined') {
-            return { type:"indirectionStep", stepLength:stepLengthVal, idAssertion:assertionVal };
-        }
-        else {
-            return { type:"indirectionStep", stepLength:stepLengthVal, idAssertion:undefined };
-        }
+        return { type:"indirectionStep", stepLength:stepLengthVal, idAssertion:assertVal[1] };
     }
 
+// REFACTORING CANDIDATE: The termstep non-terminal may be redundant
 termstep
   = terminus
 
 terminus
-  = ":" textOffsetValue:integer { 
+  = ":" textOffsetValue:integer textLocAssertVal:("[" textLocationAssertion "]")? { 
 
-        return { type:"textTerminus", offsetValue:textOffsetValue }; 
+        return { type:"textTerminus", offsetValue:textOffsetValue, textAssertion:textLocAssertVal[1] };
     }
 
 // Must have an assertion if you create an assertion "[]" in the cfi string
@@ -80,7 +74,7 @@ idAssertion
 
 // Must have an assertion if you create an assertion "[]" in the cfi string
 textLocationAssertion
-  = csvVal:csv paramVal:parameter? { 
+  = csvVal:csv? paramVal:parameter? { 
 
         return { type:"textLocationAssertion", csv:csvVal, parameter:paramVal }; 
     }

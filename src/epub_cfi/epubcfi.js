@@ -317,15 +317,10 @@ EPUBcfi.Parser = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, stepLengthVal) { 
+          result0 = (function(offset, stepLengthVal, assertVal) { 
         
-                if (typeof assertionVal !== 'undefined') {
-                    return { type:"indexStep", stepLength:stepLengthVal, idAssertion:assertionVal };
-                }
-                else {
-                    return { type:"indexStep", stepLength:stepLengthVal, idAssertion:undefined };
-                }
-            })(pos0, result0[1]);
+                return { type:"indexStep", stepLength:stepLengthVal, idAssertion:assertVal[1] };
+            })(pos0, result0[1], result0[2]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -403,15 +398,10 @@ EPUBcfi.Parser = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, stepLengthVal) { 
+          result0 = (function(offset, stepLengthVal, assertVal) { 
         
-                if (typeof assertionVal !== 'undefined') {
-                    return { type:"indirectionStep", stepLength:stepLengthVal, idAssertion:assertionVal };
-                }
-                else {
-                    return { type:"indirectionStep", stepLength:stepLengthVal, idAssertion:undefined };
-                }
-            })(pos0, result0[1]);
+                return { type:"indirectionStep", stepLength:stepLengthVal, idAssertion:assertVal[1] };
+            })(pos0, result0[1], result0[2]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -420,8 +410,8 @@ EPUBcfi.Parser = (function(){
       }
       
       function parse_terminus() {
-        var result0, result1;
-        var pos0, pos1;
+        var result0, result1, result2, result3, result4;
+        var pos0, pos1, pos2;
         
         pos0 = pos;
         pos1 = pos;
@@ -437,7 +427,49 @@ EPUBcfi.Parser = (function(){
         if (result0 !== null) {
           result1 = parse_integer();
           if (result1 !== null) {
-            result0 = [result0, result1];
+            pos2 = pos;
+            if (input.charCodeAt(pos) === 91) {
+              result2 = "[";
+              pos++;
+            } else {
+              result2 = null;
+              if (reportFailures === 0) {
+                matchFailed("\"[\"");
+              }
+            }
+            if (result2 !== null) {
+              result3 = parse_textLocationAssertion();
+              if (result3 !== null) {
+                if (input.charCodeAt(pos) === 93) {
+                  result4 = "]";
+                  pos++;
+                } else {
+                  result4 = null;
+                  if (reportFailures === 0) {
+                    matchFailed("\"]\"");
+                  }
+                }
+                if (result4 !== null) {
+                  result2 = [result2, result3, result4];
+                } else {
+                  result2 = null;
+                  pos = pos2;
+                }
+              } else {
+                result2 = null;
+                pos = pos2;
+              }
+            } else {
+              result2 = null;
+              pos = pos2;
+            }
+            result2 = result2 !== null ? result2 : "";
+            if (result2 !== null) {
+              result0 = [result0, result1, result2];
+            } else {
+              result0 = null;
+              pos = pos1;
+            }
           } else {
             result0 = null;
             pos = pos1;
@@ -447,10 +479,10 @@ EPUBcfi.Parser = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, textOffsetValue) { 
+          result0 = (function(offset, textOffsetValue, textLocAssertVal) { 
         
-                return { type:"textTerminus", offsetValue:textOffsetValue }; 
-            })(pos0, result0[1]);
+                return { type:"textTerminus", offsetValue:textOffsetValue, textAssertion:textLocAssertVal[1] };
+            })(pos0, result0[1], result0[2]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -483,6 +515,7 @@ EPUBcfi.Parser = (function(){
         pos0 = pos;
         pos1 = pos;
         result0 = parse_csv();
+        result0 = result0 !== null ? result0 : "";
         if (result0 !== null) {
           result1 = parse_parameter();
           result1 = result1 !== null ? result1 : "";
