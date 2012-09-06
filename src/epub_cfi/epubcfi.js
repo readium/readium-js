@@ -1269,6 +1269,17 @@ EPUBcfi.Parser = (function(){
               matchFailed("[A-Z]");
             }
           }
+          if (result0 === null) {
+            if (/^[0-9]/.test(input.charAt(pos))) {
+              result0 = input.charAt(pos);
+              pos++;
+            } else {
+              result0 = null;
+              if (reportFailures === 0) {
+                matchFailed("[0-9]");
+              }
+            }
+          }
         }
         if (result0 !== null) {
           result0 = (function(offset, charVal) { return charVal; })(pos0, result0);

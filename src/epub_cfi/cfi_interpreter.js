@@ -90,6 +90,15 @@ EPUBcfi.Interpreter = {
         // Step
         var $stepTarget = EPUBcfi.CFIInstructions.getNextNode(indexStepNode.stepLength, $currElement, undefined);
 
+        // Check the id assertion, if it exists
+        if (indexStepNode.idAssertion) {
+
+            if (!EPUBcfi.CFIInstructions.targetIdMatchesIdAssertion($stepTarget, indexStepNode.idAssertion)) {
+
+                throw EPUBcfi.CFIAssertionError(indexStepNode.idAssertion, $stepTarget.attr('id'), "Id assertion failed");
+            }
+        }
+
         // return target element
         return $stepTarget;
     },
@@ -108,6 +117,15 @@ EPUBcfi.Interpreter = {
             $currElement,
             undefined,
             $packageDocument);
+
+        // Check the id assertion, if it exists
+        if (indirectionStepNode.idAssertion) {
+
+            if (!EPUBcfi.CFIInstructions.targetIdMatchesIdAssertion($stepTarget, indirectionStepNode.idAssertion)) {
+
+                throw EPUBcfi.CFIAssertionError(indirectionStepNode.idAssertion, $stepTarget.attr('id'), "Id assertion failed");
+            }
+        }
 
         // return target element
         return $stepTarget;

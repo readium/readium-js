@@ -162,4 +162,4 @@ equal
   = "=" { return "="; }
 
 character
-  = charVal:([a-z] / [A-Z]) { return charVal; }
+  = charVal:([a-z] / [A-Z] / [0-9]) { return charVal; }

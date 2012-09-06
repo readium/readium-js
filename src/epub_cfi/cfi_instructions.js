@@ -103,16 +103,11 @@ EPUBcfi.CFIInstructions = {
 		return $currNode;
 	},
 
-	// ------------------------------------------------------------------------------------ //
-	//  "PRIVATE" HELPERS                                                                   //
-	// ------------------------------------------------------------------------------------ //
-
 	// Description: Checks that the id assertion for the node target matches that on 
 	//   the found node. 
-	// TODO: This part of the spec is not included yet.
-	targetIdMatchesIdAssertion : function ($foundNode, iDAssertion) {
+	targetIdMatchesIdAssertion : function ($foundNode, idAssertion) {
 
-		if ($foundNode.attr("id") === iDAssertion) {
+		if ($foundNode.attr("id") === idAssertion) {
 
 			return true;
 		}
@@ -121,6 +116,10 @@ EPUBcfi.CFIInstructions = {
 			return false;
 		}
 	},
+
+	// ------------------------------------------------------------------------------------ //
+	//  "PRIVATE" HELPERS                                                                   //
+	// ------------------------------------------------------------------------------------ //
 
 	indexOutOfRange : function (targetIndex, numChildElements) {
 
