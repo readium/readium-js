@@ -50,9 +50,7 @@ EPUBcfi.CFIInstructions = {
 			throw EPUBcfi.NodeTypeError($currNode, "expected an itemref element");
 		}
 
-		// Load the resource
-		// REFACTORING CANDIDATE: Currently, this expects the retrieval to be synchronous. This must be changed to be
-		//   asynchronous.
+		// Load the content document referenced by the spine item
 		// Remove the package document filename from the package document url
 		indexOfFilenameStart = EPUBcfi.Config.packageDocumentURL.lastIndexOf('/') + 1;
 		URLForRetrieve = EPUBcfi.Config.packageDocumentURL.substr(0, indexOfFilenameStart);
