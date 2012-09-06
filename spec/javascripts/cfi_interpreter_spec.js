@@ -65,7 +65,14 @@ describe ('The cfi interpreter', function () {
         expect($result.html()).toEqual($expectedResult);
     });
 
-    // Throws node type errors for each node type
+    // Rationale: This test is really only testing the decodeURI() method, which does not require testing. This spec exists
+    //   as a reminder that the interpreter currently uses this method to decode URI-encoded CFIs.
+    it ('decodes a CFI for URI escape characters', function () {
+
+        var cfi = "epubcfi(/2[%20%25%22af]/4:4)";
+        var decodedCFI = decodeURI(cfi);
+        expect(decodedCFI).toEqual('epubcfi(/2[ %"af]/4:4)');
+    });
 });
 
 describe('cfi interpreter error handling', function () {

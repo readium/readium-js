@@ -454,4 +454,49 @@ it ('parses a CFI with parameter-only text location assertion on a character ter
 
         expect(parsedAST).toEqual(expectedAST);
     });
+
+it ('parses a cfi with all the cfi escape characters', function () {
+
+        var cfi = "epubcfi(/4[4^^^[^]^(^)^,^;^=]/6!/4:9)";
+        var parsedAST = EPUBcfi.Parser.parse(cfi);
+
+        var expectedAST = {
+
+            type : "CFIAST",
+            cfiString : {
+
+                type : "cfiString",
+                path: {
+
+                    type: "indexStep",
+                    stepLength: "4",
+                    idAssertion: "4^[](),;="
+                },
+
+                localPath : {
+
+                    steps : [
+                        {
+                            type: "indexStep",
+                            stepLength: "6",
+                            idAssertion: undefined
+                        },
+                        {
+                            type: "indirectionStep",
+                            stepLength: "4",
+                            idAssertion: undefined
+                        }
+                    ],
+                    termStep : {
+
+                        type: "textTerminus",
+                        offsetValue: "9",
+                        textAssertion: undefined
+                    }
+                }
+            }
+        }
+
+        expect(parsedAST).toEqual(expectedAST);
+    });
 });

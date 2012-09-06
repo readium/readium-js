@@ -821,7 +821,7 @@ EPUBcfi.Parser = (function(){
         if (result0 !== null) {
           result0 = (function(offset, escSpecCharVal) { 
                 
-                return escSpecCharVal; 
+                return escSpecCharVal[1]; 
             })(pos0, result0);
         }
         if (result0 === null) {

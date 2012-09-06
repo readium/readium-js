@@ -24,8 +24,11 @@ EPUBcfi.Interpreter = {
     // Arguments: A CFI (string)
     injectCFIReferenceElements : function (CFI) {
         
+        // Decode any URI escape characters in the CFI string
+        var decodedCFI = decodeURI(CFI);
+
         // Parse the cfi
-        var CFIAST = EPUBcfi.Parser.parse(CFI);
+        var CFIAST = EPUBcfi.Parser.parse(decodedCFI);
 
         // Check node type; throw error if wrong type
         if (CFIAST === undefined || CFIAST.type !== "CFIAST") { 

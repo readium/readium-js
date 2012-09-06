@@ -116,7 +116,7 @@ escapedSpecialChars
     / (circumflex equal) 
     ) { 
         
-        return escSpecCharVal; 
+        return escSpecCharVal[1]; 
     }
 
 // Digit and digit-non-zero not included as separate terminals
