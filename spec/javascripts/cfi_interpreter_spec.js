@@ -1,14 +1,17 @@
 
 describe ('The cfi interpreter', function () {
 
+    var CFI;
     var CFIAST;
     var $packageDocument;
+    var contentDocument;
     var $contentDocument;
 
     beforeEach(function () {
 
         // Generate CFI AST to reference a paragraph in the Moby Dick test features
-        CFIAST = EPUBcfi.Parser.parse("epubcfi(/6/14!/4/2/14:4)");
+        CFI = "epubcfi(/6/14!/4/2/14:4)";
+        CFIAST = EPUBcfi.Parser.parse(CFI);
 
         // Set up package document
         var domParser = new window.DOMParser();
@@ -17,7 +20,8 @@ describe ('The cfi interpreter', function () {
 
         // Set up content document
         var contentDocXHTML = jasmine.getFixtures().read("moby_dick_content_doc.xhtml");
-        $contentDocument = $(domParser.parseFromString(contentDocXHTML, 'text/xml'));
+        contentDocument = domParser.parseFromString(contentDocXHTML, 'text/xml');
+        $contentDocument = $(contentDocument);
 
         spyOn($, "ajax").andCallFake(function (params) {
 
@@ -25,13 +29,11 @@ describe ('The cfi interpreter', function () {
         });
     });
 
-    it ('interprets the cfi string node', function () {
+    it ('can inject text when supplied with a content document', function () {
 
-        var $expectedResult = $('#c01p0006', $contentDocument);
-        var $result = EPUBcfi.Interpreter.interpretCFIStringNode(CFIAST.cfiString, $packageDocument);
-
-        expect($result).not.toEqual(undefined);
-        expect($result).not.toEqual($(''));
+        var expectedResult = 'c01p0006';
+        var $result = EPUBcfi.Interpreter.injectElement(CFI, contentDocument);
+        expect($result.attr("id")).toEqual(expectedResult);
     });
 
     it ('interprets an index step node without an id assertion', function () {
@@ -73,6 +75,12 @@ describe ('The cfi interpreter', function () {
         var decodedCFI = decodeURI(cfi);
         expect(decodedCFI).toEqual('epubcfi(/2[ %"af]/4:4)');
     });
+
+    it ('returns the href of a content document for the first indirection step of a cfi', function () {
+
+        var result = EPUBcfi.Interpreter.getContentDocHref(CFI, $packageDocument);
+        expect(result).toEqual("chapter_001.xhtml");
+    });
 });
 
 describe('cfi interpreter error handling', function () {
@@ -87,15 +95,6 @@ describe('cfi interpreter error handling', function () {
 
             // Generate CFI AST to reference a paragraph in the Moby Dick test features
             CFIAST = EPUBcfi.Parser.parse("epubcfi(/6/14!/4/2/14:4)");
-        });
-
-        it('detects a cfi string "node type" error', function () {
-
-            expect(function () {
-                EPUBcfi.Interpreter.interpretCFIStringNode(undefined, undefined)}
-            ).toThrow(
-                EPUBcfi.NodeTypeError(undefined, "expected CFI string node")
-                );
         });
 
         it('detects an index step "node type" error', function () {

@@ -39,8 +39,6 @@ EPUBcfi.CFIInstructions = {
 		var jqueryTargetNodeIndex = (CFIStepValue / 2) - 1;
 		var $targetNode;
 		var contentDocHref;
-		var $documentResult;
-		var domParser;
 		var contentDoc;
 
 		// TODO: This check must be expanded to all the different types of indirection step
@@ -118,6 +116,11 @@ EPUBcfi.CFIInstructions = {
 	// ------------------------------------------------------------------------------------ //
 	//  "PRIVATE" HELPERS                                                                   //
 	// ------------------------------------------------------------------------------------ //
+
+	retrieveItemRefHref : function ($itemRefElement, $packageDocument) {
+
+		return $("#" + $itemRefElement.attr("idref"), $packageDocument).attr("href");
+	},
 
 	indexOutOfRange : function (targetIndex, numChildElements) {
 

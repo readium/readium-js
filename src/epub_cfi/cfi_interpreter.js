@@ -19,15 +19,14 @@ EPUBcfi.Interpreter = {
     //  "PUBLIC" METHODS (THE API)                                                          //
     // ------------------------------------------------------------------------------------ //
 
-    // Description: This method executes the intepreter on a CFI AST. The CFI spec requires 
-    //   the package document as a starting point.
-    // Arguments: A CFI (string)
-    injectCFIReferenceElements : function (CFI) {
-        
-        // Decode any URI escape characters in the CFI string
-        var decodedCFI = decodeURI(CFI);
+    // Description: Find the content document referenced by the spine item. This should be the spine item 
+    //   referenced by the first indirection step in the CFI.
+    // Rationale: This method is a part of the API so that the reading system can "interact" the content document 
+    //   pointed to by a CFI. If this is not a separate step, the processing of the CFI must be tightly coupled with 
+    //   the reading system, as it stands now. 
+    getContentDocHref : function (CFI, $packageDocument) {
 
-        // Parse the cfi
+        var decodedCFI = decodeURI(CFI);
         var CFIAST = EPUBcfi.Parser.parse(decodedCFI);
 
         // Check node type; throw error if wrong type
@@ -36,32 +35,80 @@ EPUBcfi.Interpreter = {
             throw EPUBcfi.NodeTypeError(CFIAST, "expected CFI AST root node");
         }
 
-        // Get the package document and walk the tree
-        var $packageDocument = $(EPUBcfi.Config.retrieveResource(EPUBcfi.Config.packageDocumentURL));        
-        return this.interpretCFIStringNode(CFIAST.cfiString, $packageDocument);
+        var $packageElement = $($("package", $packageDocument)[0]);
+
+        // Interpet the path node (the package document step)
+        var $currElement = this.interpretIndexStepNode(CFIAST.cfiString.path, $packageElement);
+
+        // Interpret the local_path node, which is a set of steps and and a terminus condition
+        var stepNum = 0;
+        var nextStepNode;
+        for (stepNum = 0 ; stepNum <= CFIAST.cfiString.localPath.steps.length - 1 ; stepNum++) {
+        
+            nextStepNode = CFIAST.cfiString.localPath.steps[stepNum];
+
+            if (nextStepNode.type === "indexStep") {
+
+                $currElement = this.interpretIndexStepNode(nextStepNode, $currElement);
+            }
+            else if (nextStepNode.type === "indirectionStep") {
+
+                $currElement = this.interpretIndirectionStepNode(nextStepNode, $currElement, $packageDocument);
+            }
+
+            // Found the content document href referenced by the spine item 
+            if ($currElement.is("itemref")) {
+
+                return EPUBcfi.CFIInstructions.retrieveItemRefHref($currElement, $packageDocument);
+            }
+        }
+
+        // An itemref element was never found - a runtime error. The cfi is misspecified or the package document is 
+        // messed up.
+    },
+
+    // inject element into content document
+    injectElement : function (CFI, contentDocument) {
+
+        var decodedCFI = decodeURI(CFI);
+        var CFIAST = EPUBcfi.Parser.parse(decodedCFI);
+
+        // find the first indirection step in the local path; follow it like a regular step
+        var stepNum = 0;
+        var nextStepNode;
+        for (stepNum; stepNum <= CFIAST.cfiString.localPath.steps.length - 1 ; stepNum++) {
+        
+            nextStepNode = CFIAST.cfiString.localPath.steps[stepNum];
+            if (nextStepNode.type === "indirectionStep") {
+
+                // This is now assuming that indirection steps and index steps conform to an interface: an object with stepLength, idAssertion
+                nextStepNode.type = "indexStep";
+                // Getting the html element and creating a jquery object for it; excluding cfiMarkers
+                $currElement = this.interpretIndexStepNode(nextStepNode, $(contentDocument.firstChild));
+                stepNum++ // Increment the step num as this will be passed as the starting point for continuing interpretation
+                break;
+            }
+        }
+
+        // Interpret the rest of the steps
+        $currElement = this.interpretLocalPath(CFIAST.cfiString, stepNum, $currElement);
+
+        // TODO: detect what kind of terminus
+        $currElement = this.interpretTextTerminusNode(CFIAST.cfiString.localPath.termStep, $currElement);
+
+        // Return the element that was injected into
+        return $currElement;
     },
 
     // ------------------------------------------------------------------------------------ //
     //  "PRIVATE" HELPERS                                                                   //
     // ------------------------------------------------------------------------------------ //
 
-    interpretCFIStringNode : function (cfiStringNode, $packageDocument) {
+    interpretLocalPath : function (cfiStringNode, startStepNum, $currElement) {
 
-        if (cfiStringNode === undefined || cfiStringNode.type !== "cfiString") {
-
-            throw EPUBcfi.NodeTypeError(cfiStringNode, "expected CFI string node");
-        }
-
-        // Get the "package element"
-        var $packageElement = $($("package", $packageDocument)[0]);
-
-        // Interpet the path node (the package document step)
-        var $currElement = this.interpretIndexStepNode(cfiStringNode.path, $packageElement);
-
-        // Interpret the local_path node, which is a set of steps and and a terminus condition
-        var stepNum = 0;
+        var stepNum = startStepNum;
         var nextStepNode;
-        for (stepNum = 0 ; stepNum <= cfiStringNode.localPath.steps.length - 1 ; stepNum++) {
+        for (stepNum; stepNum <= cfiStringNode.localPath.steps.length - 1 ; stepNum++) {
         
             nextStepNode = cfiStringNode.localPath.steps[stepNum];
 
@@ -75,10 +122,6 @@ EPUBcfi.Interpreter = {
             }
         }
 
-        // TODO: Validity check on current element
-        $currElement = this.interpretTextTerminusNode(cfiStringNode.localPath.termStep, $currElement);
-
-        // Return the element that was injected into
         return $currElement;
     },
 
