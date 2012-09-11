@@ -17,14 +17,15 @@ EPUBcfi.CFIInstructions = {
 
 		// Find the jquery index for the current node
 		var $targetNode;
-		var jqueryTargetNodeIndex = (CFIStepValue / 2) - 1;
-		
-		if (this.indexOutOfRange(jqueryTargetNodeIndex, $currNode.children().not('.cfiMarker').length)) {
+		if (CFIStepValue % 2 == 0) {
 
-			throw EPUBcfi.OutOfRangeError(jqueryTargetNodeIndex, $currNode.children().not('.cfiMarker').length, "");
+			$targetNode = this.elementNodeStep(CFIStepValue, $currNode);
+		}
+		else {
+
+			$targetNode = this.textNodeStep(CFIStepValue, $currNode);
 		}
 
-	   $targetNode = $($currNode.children().not('.cfiMarker')[jqueryTargetNodeIndex]);
 		return $targetNode;
 	},
 
@@ -116,6 +117,34 @@ EPUBcfi.CFIInstructions = {
 	// ------------------------------------------------------------------------------------ //
 	//  "PRIVATE" HELPERS                                                                   //
 	// ------------------------------------------------------------------------------------ //
+
+	// Description: Step reference for xml element node. Expected that CFIStepValue is an even integer
+	elementNodeStep : function (CFIStepValue, $currNode) {
+
+		var $targetNode;
+		var jqueryTargetNodeIndex = (CFIStepValue / 2) - 1;
+		if (this.indexOutOfRange(jqueryTargetNodeIndex, $currNode.children().not('.cfiMarker').length)) {
+
+			throw EPUBcfi.OutOfRangeError(jqueryTargetNodeIndex, $currNode.children().not('.cfiMarker').length, "");
+		}
+
+	    $targetNode = $($currNode.children().not('.cfiMarker')[jqueryTargetNodeIndex]);
+		return $targetNode;
+	},
+
+	// Description: Step reference for text node. Expected that CFIStepValue is an odd integer
+	textNodeStep : function (CFIStepValue, $currNode) {
+
+		var $targetNode;
+		var jqueryTargetNodeIndex = CFIStepValue;
+		if (this.indexOutOfRange(jqueryTargetNodeIndex, $currNode.contents().not('.cfiMarker').length)) {
+
+			throw EPUBcfi.OutOfRangeError(jqueryTargetNodeIndex, $currNode.contents().not('.cfiMarker').length, "");
+		}
+
+	    $targetNode = $($currNode.contents().not('.cfiMarker')[jqueryTargetNodeIndex]);
+		return $targetNode;
+	},
 
 	retrieveItemRefHref : function ($itemRefElement, $packageDocument) {
 
