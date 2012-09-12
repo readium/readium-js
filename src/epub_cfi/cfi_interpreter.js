@@ -93,7 +93,7 @@ EPUBcfi.Interpreter = {
         // Interpret the rest of the steps
         $currElement = this.interpretLocalPath(CFIAST.cfiString, stepNum, $currElement);
 
-        // TODO: detect what kind of terminus
+        // TODO: detect what kind of terminus; for now, text node termini are the only kind implemented
         $currElement = this.interpretTextTerminusNode(CFIAST.cfiString.localPath.termStep, $currElement);
 
         // Return the element that was injected into

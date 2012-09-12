@@ -1,4 +1,4 @@
-describe("execution of cfi instructions", function () {
+describe("CFI INSTRUCTION OBJECT", function () {
 
 	it("finds the target element on a step", function () {
 
@@ -35,39 +35,96 @@ describe("execution of cfi instructions", function () {
 		expect(calledHref).toEqual("chapter_001.xhtml");
 	});
 
-	it("returns an element with injected text at the specified offset", function () {
+	it("injects text at the specified offset", function () {
 
 		var contentDocXHTML = jasmine.getFixtures().read('moby_dick_content_doc.xhtml');
 		var domParser = new window.DOMParser();
 		var contentDoc = domParser.parseFromString(contentDocXHTML, "text/xml");
 
-		var $result = EPUBcfi.CFIInstructions.textTermination($("#c01p0002", $(contentDoc)), 4, '<span class="epub_cfi"></span>');
+		var $result = EPUBcfi.CFIInstructions.textTermination($($("#c01p0002", $(contentDoc))[0].firstChild), 4, '<span class="epub_cfi"></span>');
 		
 		expect($result.html()).toEqual('Ther<span xmlns="http://www.w3.org/1999/xhtml" class="epub_cfi"></span>e now is your insular city of the Manhattoes, belted round by wharves as Indian isles by coral reefs—commerce surrounds it with her surf. Right and left, the streets take you waterward. Its extreme downtown is the battery, where that noble mole is washed by waves, and cooled by breezes, which a few hours previous were out of sight of land. Look at the crowds of water-gazers there.');
 	});
 
-	it('excludes any child elements of the current node that are CFI markers', function () {
+	it("injects text at the specified offset in the FIRST sub-node, when a target text node is specified as a list", function () {
 
-		var $currentNode = $('<div><div></div><div class="cfiMarker"></div><div id="correctDiv"></div><div></div></body></div>');
-		var $expectedNode = $('<div id="correctDiv"></div>');
+		// Get a list of text nodes
+		var $currNode = $('<div> asdfasd <div class="cfiMarker"></div> aslasjd <div></div> alsjflkds </div>');
+		var $targetTextNodeList = EPUBcfi.CFIInstructions.getNextNode(1, $currNode, undefined);
 
-		var $result = EPUBcfi.CFIInstructions.getNextNode(4, $currentNode, undefined);
-
-		expect($result.attr('id')).toEqual($expectedNode.attr('id'));
+		var $result = EPUBcfi.CFIInstructions.textTermination($targetTextNodeList, 4, '<span class="epub_cfi"></span>');
+		var $currNodeChildren = $result.contents();
+		
+		expect($currNodeChildren[0].nodeValue).toEqual(" asd");
+		expect($($currNodeChildren[1]).hasClass('epub_cfi')).toEqual(true);
+		expect($currNodeChildren[2].nodeValue).toEqual("fasd ");
 	});
 
-	it('excludes any CFI markers in a text node', function () {
+	it("injects text at the specified offset in the SECOND sub-node, when a target text node is specified as a list", function () {
 
-		var $currentNode = $('<p>blah blah <span class="cfiMarker"></span> blah blah</p>');
-		var expectedResult = 'blah blah <span class="cfiMarker"></span> blah bl<span class="cfiMarker"></span>ah';
+		// Get a list of text nodes
+		var $currNode = $('<div> asdfasd <div class="cfiMarker"></div> aslasjd <div></div> alsjflkds </div>');
+		var $targetTextNodeList = EPUBcfi.CFIInstructions.getNextNode(1, $currNode, undefined);
 
-		var $result = EPUBcfi.CFIInstructions.textTermination($currentNode, 17, '<span class="cfiMarker"/>');
+		var $result = EPUBcfi.CFIInstructions.textTermination($targetTextNodeList, 12, '<span class="epub_cfi"></span>');
+		var $currNodeChildren = $result.contents();
+		
+		expect($currNodeChildren[2].nodeValue).toEqual(" asl");
+		expect($($currNodeChildren[3]).hasClass('epub_cfi')).toEqual(true);
+		expect($currNodeChildren[4].nodeValue).toEqual("asjd ");
+	});
 
-		expect($result.html()).toEqual(expectedResult);
+	it('excludes elements that have a class that indicates they are "cfi markers" and returns a list of text nodes', function () {
+
+		var domParser = new window.DOMParser();
+		var xhtml = '<body><div>asdfsd <div class="cfiMarker"></div> ddfd</div><div></div></body>';
+		var doc = domParser.parseFromString(xhtml, 'text/xml');
+		var $currentNode = $(doc.firstChild.firstChild);
+
+		var $result = EPUBcfi.CFIInstructions.getNextNode(1, $currentNode, undefined);
+		expect($result.length).toEqual(2);
+		expect($result[0].nodeValue).toEqual("asdfsd ");
+		expect($result[1].nodeValue).toEqual(" ddfd");
+	});
+
+	it('returns the correct text node if the node is in the first position of a set of child nodes', function () {
+
+		var domParser = new window.DOMParser();
+		var xhtml = '<div>text1<div></div>text2<div></div>text3</div>';
+		var doc = domParser.parseFromString(xhtml, 'text/xml');
+		var $currentNode = $(doc.firstChild);
+
+		var $result = EPUBcfi.CFIInstructions.getNextNode(1, $currentNode, undefined);
+		expect($result.length).toEqual(1);
+		expect($result[0].nodeValue).toEqual("text1");
+	});
+
+	it('returns the correct text node if the node is between elements in a set of child nodes', function () {
+
+		var domParser = new window.DOMParser();
+		var xhtml = '<div>text1<div></div>text2<div></div>text3</div>';
+		var doc = domParser.parseFromString(xhtml, 'text/xml');
+		var $currentNode = $(doc.firstChild);
+
+		var $result = EPUBcfi.CFIInstructions.getNextNode(3, $currentNode, undefined);
+		expect($result.length).toEqual(1);
+		expect($result[0].nodeValue).toEqual("text2");
+	});
+
+	it('returns the correct text node if the node is the last in a set of child nodes', function () {
+
+		var domParser = new window.DOMParser();
+		var xhtml = '<div>text1<div></div>text2<div></div>text3</div>';
+		var doc = domParser.parseFromString(xhtml, 'text/xml');
+		var $currentNode = $(doc.firstChild);
+
+		var $result = EPUBcfi.CFIInstructions.getNextNode(5, $currentNode, undefined);
+		expect($result.length).toEqual(1);
+		expect($result[0].nodeValue).toEqual("text3");
 	});
 });
 
-describe('instruction error handling', function () {
+describe('CFI INSTRUCTION ERROR HANDLING', function () {
 
 	// Throws out of range errors for any "following" instructions
 	it('throws an out of range error for an index step', function () {
@@ -134,10 +191,10 @@ describe('instruction error handling', function () {
 	// Throws terminus errors for invalid text offsets 
 	it('throws a terminus error if an invalid text offset is provided', function () {
 
-		var $currentNode = $('<p></p>');
+		var $currentNode = $('<p>  </p>');
 
 		expect(function () {
-			EPUBcfi.CFIInstructions.textTermination($currentNode, 84, '<span class="cfiMarker"/>')})
+			EPUBcfi.CFIInstructions.textTermination($($currentNode.contents().firstChild), 84, '<span class="cfiMarker"/>')})
 		.toThrow(
 			EPUBcfi.TerminusError("Text", "Text offset:84", "no nodes found for termination condition"));
 	});

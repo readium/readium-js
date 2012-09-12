@@ -1,5 +1,5 @@
 
-describe ('The cfi interpreter', function () {
+describe ('CFI INTERPRETER OBJECT', function () {
 
     var CFI;
     var CFIAST;
@@ -10,7 +10,7 @@ describe ('The cfi interpreter', function () {
     beforeEach(function () {
 
         // Generate CFI AST to reference a paragraph in the Moby Dick test features
-        CFI = "epubcfi(/6/14!/4/2/14:4)";
+        CFI = "epubcfi(/6/14!/4/2/14/1:4)";
         CFIAST = EPUBcfi.Parser.parse(CFI);
 
         // Set up package document
@@ -62,7 +62,7 @@ describe ('The cfi interpreter', function () {
         var $expectedResult = 'Ther<span xmlns="http://www.w3.org/1999/xhtml" class="cfi_marker"></span>e now is your insular city of the Manhattoes, belted round by wharves as Indian isles by coral reefs—commerce surrounds it with her surf. Right and left, the streets take you waterward. Its extreme downtown is the battery, where that noble mole is washed by waves, and cooled by breezes, which a few hours previous were out of sight of land. Look at the crowds of water-gazers there.';
         var $result = EPUBcfi.Interpreter.interpretTextTerminusNode(
             CFIAST.cfiString.localPath.termStep,
-            $("#c01p0002", $contentDocument));
+            $($("#c01p0002", $contentDocument)[0].firstChild));
 
         expect($result.html()).toEqual($expectedResult);
     });
@@ -71,9 +71,9 @@ describe ('The cfi interpreter', function () {
     //   as a reminder that the interpreter currently uses this method to decode URI-encoded CFIs.
     it ('decodes a CFI for URI escape characters', function () {
 
-        var cfi = "epubcfi(/2[%20%25%22af]/4:4)";
+        var cfi = "epubcfi(/2[%20%25%22af]/4/1:4)";
         var decodedCFI = decodeURI(cfi);
-        expect(decodedCFI).toEqual('epubcfi(/2[ %"af]/4:4)');
+        expect(decodedCFI).toEqual('epubcfi(/2[ %"af]/4/1:4)');
     });
 
     it ('returns the href of a content document for the first indirection step of a cfi', function () {
@@ -83,9 +83,9 @@ describe ('The cfi interpreter', function () {
     });
 });
 
-describe('cfi interpreter error handling', function () {
+describe('CFI INTERPRETER ERROR HANDLING', function () {
     
-    describe('interpreter detects "node type" errors in the AST', function () {
+    describe('ERROR HANDLING FOR "NODE TYPE" ERRORS', function () {
 
         var CFIAST;
         var $packageDocument;
@@ -94,7 +94,7 @@ describe('cfi interpreter error handling', function () {
         beforeEach(function () {
 
             // Generate CFI AST to reference a paragraph in the Moby Dick test features
-            CFIAST = EPUBcfi.Parser.parse("epubcfi(/6/14!/4/2/14:4)");
+            CFIAST = EPUBcfi.Parser.parse("epubcfi(/6/14!/4/2/14/1:4)");
         });
 
         it('detects an index step "node type" error', function () {
@@ -130,7 +130,7 @@ describe('cfi interpreter error handling', function () {
         });
     });
 
-describe('error handling for id and text assertions', function () {
+describe('ERROR HANDLING FOR ID AND TEXT ASSERTIONS', function () {
 
         var CFIAST;
         var $packageDocument;
@@ -156,7 +156,7 @@ describe('error handling for id and text assertions', function () {
         it('detects a mis-match between an id assertion and a target element id, for an index step', function () {
 
             // Generate CFI AST to reference a paragraph in the Moby Dick test features
-            CFIAST = EPUBcfi.Parser.parse("epubcfi(/6/14!/4/2/14[c01p0002]:4)");
+            CFIAST = EPUBcfi.Parser.parse("epubcfi(/6/14!/4/2/14[c01p0002]/1:4)");
 
             expect(function () {
                 EPUBcfi.Interpreter.interpretIndexStepNode(
@@ -170,7 +170,7 @@ describe('error handling for id and text assertions', function () {
         it('does not throw an error when the id assertion matches the target element id, for an index step', function () {
 
             // Generate CFI AST to reference a paragraph in the Moby Dick test features
-            CFIAST = EPUBcfi.Parser.parse("epubcfi(/6/14!/4/2/14[c01p0006]:4)");
+            CFIAST = EPUBcfi.Parser.parse("epubcfi(/6/14!/4/2/14[c01p0006]/1:4)");
 
             // Expecting that no error is thrown; if one is, it'll cause this test to fail
             EPUBcfi.Interpreter.interpretIndexStepNode(
@@ -181,7 +181,7 @@ describe('error handling for id and text assertions', function () {
         it('detects a mis-match between an id assertion and a target element id, for an indirection step', function () {
 
             // Generate CFI AST to reference a paragraph in the Moby Dick test features
-            CFIAST = EPUBcfi.Parser.parse("epubcfi(/6/14!/4[body2]/2/14[c01p0006]:4)");
+            CFIAST = EPUBcfi.Parser.parse("epubcfi(/6/14!/4[body2]/2/14[c01p0006]/1:4)");
 
             expect(function () {
                 EPUBcfi.Interpreter.interpretIndirectionStepNode(
@@ -196,7 +196,7 @@ describe('error handling for id and text assertions', function () {
         it('does not throw an error when the id assertion matches the target element id, for an indirection step', function () {
 
             // Generate CFI AST to reference a paragraph in the Moby Dick test features
-            CFIAST = EPUBcfi.Parser.parse("epubcfi(/6/14!/4[body1]/2/14[c01p0002]:4)");
+            CFIAST = EPUBcfi.Parser.parse("epubcfi(/6/14!/4[body1]/2/14[c01p0002]/1:4)");
 
             // Expecting that no error is thrown; if one is, it'll cause this test to fail
             EPUBcfi.Interpreter.interpretIndirectionStepNode(

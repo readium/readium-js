@@ -1,4 +1,4 @@
-describe('Generated CFI parser', function () {
+describe('GENERATED CFI PARSER', function () {
 
     it ('parses a CFI with index steps', function () {
 

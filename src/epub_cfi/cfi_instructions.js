@@ -23,7 +23,7 @@ EPUBcfi.CFIInstructions = {
 		}
 		else {
 
-			$targetNode = this.textNodeStep(CFIStepValue, $currNode);
+			$targetNode = this.inferTargetTextNode(CFIStepValue, $currNode);
 		}
 
 		return $targetNode;
@@ -84,14 +84,12 @@ EPUBcfi.CFIInstructions = {
 		var originalText;
 		var textWithInjection;
 
-		// TODO: Out of range validation for text offset
-
 		// Get the first node, this should be a text node
 		if ($currNode === undefined) {
 
-			throw EPUBcfi.NodeTypeError($currNode, "expected a terminating parent node");
+			throw EPUBcfi.NodeTypeError($currNode, "expected a terminating node, or node list");
 		} 
-		else if ($currNode.contents()[0] === undefined) {
+		else if ($currNode.length === 0) {
 
 			throw EPUBcfi.TerminusError("Text", "Text offset:" + textOffset, "no nodes found for termination condition");
 		}
@@ -132,20 +130,6 @@ EPUBcfi.CFIInstructions = {
 		return $targetNode;
 	},
 
-	// Description: Step reference for text node. Expected that CFIStepValue is an odd integer
-	textNodeStep : function (CFIStepValue, $currNode) {
-
-		var $targetNode;
-		var jqueryTargetNodeIndex = CFIStepValue;
-		if (this.indexOutOfRange(jqueryTargetNodeIndex, $currNode.contents().not('.cfiMarker').length)) {
-
-			throw EPUBcfi.OutOfRangeError(jqueryTargetNodeIndex, $currNode.contents().not('.cfiMarker').length, "");
-		}
-
-	    $targetNode = $($currNode.contents().not('.cfiMarker')[jqueryTargetNodeIndex]);
-		return $targetNode;
-	},
-
 	retrieveItemRefHref : function ($itemRefElement, $packageDocument) {
 
 		return $("#" + $itemRefElement.attr("idref"), $packageDocument).attr("href");
@@ -156,11 +140,11 @@ EPUBcfi.CFIInstructions = {
 		return (targetIndex > numChildElements - 1) ? true : false;
 	},
 
-	// REFACTORING CANDIDATE: Not really sure if this is the best way to do this. I kinda hate it. 
-	injectCFIMarkerIntoText : function ($currNode, textOffset, elementToInject) {
-
-		// Get child nodes, including text nodes
-		$nodeList = $currNode.contents();
+	// REFACTORING CANDIDATE: Not really sure if this is the best way to do this. I kinda hate it.
+	// Rationale: In order to inject an element into a specific position, access to the parent object 
+	//   is required. This is obtained with the jquery parent() method. An alternative would be to 
+	//   pass in the parent with a filtered list containing only children that are part of the target text node.
+	injectCFIMarkerIntoText : function ($textNodeList, textOffset, elementToInject) {
 
 		var nodeNum;
 		var currNodeLength;
@@ -169,30 +153,30 @@ EPUBcfi.CFIInstructions = {
 		var originalText;
 		var $injectedNode;
 		var $newTextNode;
-		// The iteration counter may be incorrect here (should be $nodeList.length - 1 ??)
-		for (nodeNum = 0; nodeNum <= $nodeList.length; nodeNum++) {
+		// The iteration counter may be incorrect here (should be $textNodeList.length - 1 ??)
+		for (nodeNum = 0; nodeNum <= $textNodeList.length; nodeNum++) {
 
-			if ($nodeList[nodeNum].nodeType === 3) {
+			if ($textNodeList[nodeNum].nodeType === 3) {
 
-				currNodeMaxIndex = ($nodeList[nodeNum].nodeValue.length - 1) + currTextPosition;
+				currNodeMaxIndex = ($textNodeList[nodeNum].nodeValue.length - 1) + currTextPosition;
 				nodeOffset = textOffset - currTextPosition;
 
 				if (currNodeMaxIndex >= textOffset) {
 
 					// This node is going to be split and the components re-inserted
-					originalText = $nodeList[nodeNum].nodeValue;	
+					originalText = $textNodeList[nodeNum].nodeValue;	
 
 					// Before part
-				 	$nodeList[nodeNum].nodeValue = originalText.slice(0, nodeOffset);
+				 	$textNodeList[nodeNum].nodeValue = originalText.slice(0, nodeOffset);
 
 					// Injected element
-					$injectedNode = $(elementToInject).insertAfter($nodeList.eq(nodeNum));
+					$injectedNode = $(elementToInject).insertAfter($textNodeList.eq(nodeNum));
 
 					// After part
 					$newTextNode = $(document.createTextNode(originalText.slice(nodeOffset, originalText.length)));
 					$($newTextNode).insertAfter($injectedNode);
 
-					return $currNode;
+					return $textNodeList.parent();
 				}
 				else {
 
@@ -202,6 +186,81 @@ EPUBcfi.CFIInstructions = {
 		}
 
 		throw EPUBcfi.TerminusError("Text", "Text offset:" + textOffset, "The offset exceeded the length of the text");
+	},
+
+	// Description: This method finds a target text node and then injects an element into the appropriate node
+	// Arguments:
+	// Rationale:
+	// Notes: Passed a current node. This node should have a set of elements under it. This will include at least one text node, 
+	//   element nodes (maybe), or possibly a mix. 
+
+	// Passed a current node with a set of child elements. Also passed a step value that is an odd integer.
+	inferTargetTextNode : function (CFIStepValue, $currNode) {
+		
+		var $elementsWithoutMarkers;
+		var currTextNodePosition;
+		var logicalTargetPosition;
+		var nodeNum;
+		var $targetTextNodeList;
+
+		// Remove any cfi marker elements from the set of elements. 
+		// Rationale: A filtering function is used, as simply using a class selector with jquery appears to 
+		//   result in behaviour where text nodes are also filtered out, along with the class element being filtered.
+		$elementsWithoutMarkers = $currNode.contents().filter(
+			function () {
+
+				if ($(this).filter(".cfiMarker").length !== 0) {
+					return false;
+				}
+				else {
+					return true;
+				}
+			}
+		);
+
+		// Convert CFIStepValue to logical index; assumes odd integer for the step value
+		logicalTargetPosition = (parseInt(CFIStepValue) + 1) / 2;
+
+		// Set text node position counter
+		currTextNodePosition = 1;
+		$targetTextNodeList = $elementsWithoutMarkers.filter(
+			function () {
+
+				if (currTextNodePosition === logicalTargetPosition) {
+
+					// If it's a text node
+					if (this.nodeType === 3) {
+						return true; 
+					}
+					// Any other type of node, move onto the next text node
+					else {
+						currTextNodePosition++; 
+						return false;
+					}
+				}
+				// In this case, don't return any elements
+				else {
+
+					// If its the last child and it's not a text node, there are no text nodes after it
+					// and the currTextNodePosition shouldn't be incremented
+					if (this.nodeType !== 3 && this !== $elementsWithoutMarkers.lastChild) {
+						currTextNodePosition++;
+					}
+
+					return false;
+				}
+			}
+		);
+
+		// The filtering above should have counted the number of "logical" text nodes; this can be used to 
+		// detect out of range errors
+		if ($targetTextNodeList.length === 0) {
+
+			throw EPUBcfi.OutOfRangeError(logicalTargetPosition, currTextNodePosition, "Index out of range");
+		}
+
+		// return the text node list
+		return $targetTextNodeList;
 	}
 };
 
