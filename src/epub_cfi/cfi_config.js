@@ -29,13 +29,6 @@ EPUBcfi.Config = {
         return resource;
     },
 
-    // Description: A hash of default html elements to inject, for each type of cfi terminus
-    // Rationale: The intention is that a user can specify the default element to inject for each type of cfi terminus. 
-    cfiMarkerElements : {
-
-        textPointMarker : '<span class="cfi_marker"></span>'
-    },
-
     // Description: The URL to the epub's package document. The interpreter requires this to be able to load other resources in the
     //   epub, as all URIs in epub documents are specified relative to the package document. 
     // Rationale: This is currently set as part fo the config object literal. However, this is only for simplicity during the development

@@ -6,7 +6,7 @@ describe("CFI INSTRUCTION OBJECT", function () {
 		var domParser = new window.DOMParser();
 		var contentDoc = domParser.parseFromString(contentDocXHTML, "text/xml");
 
-		var $nextNode = EPUBcfi.CFIInstructions.getNextNode(4, $(contentDoc.firstChild), undefined);
+		var $nextNode = EPUBcfi.CFIInstructions.getNextNode(4, $(contentDoc.firstChild));
 		var nodeType = $nextNode.is("body");
 
 		expect(nodeType).toEqual(true);
@@ -29,7 +29,7 @@ describe("CFI INSTRUCTION OBJECT", function () {
 			params.success(contentDoc);
 		});
 
-		EPUBcfi.CFIInstructions.followIndirectionStep(2, $(spineElement), undefined, $(packageDoc));
+		EPUBcfi.CFIInstructions.followIndirectionStep(2, $(spineElement), $(packageDoc));
 		calledHref = $.ajax.mostRecentCall.args[0].url;
 
 		expect(calledHref).toEqual("chapter_001.xhtml");
@@ -50,7 +50,7 @@ describe("CFI INSTRUCTION OBJECT", function () {
 
 		// Get a list of text nodes
 		var $currNode = $('<div> asdfasd <div class="cfiMarker"></div> aslasjd <div></div> alsjflkds </div>');
-		var $targetTextNodeList = EPUBcfi.CFIInstructions.getNextNode(1, $currNode, undefined);
+		var $targetTextNodeList = EPUBcfi.CFIInstructions.getNextNode(1, $currNode);
 
 		var $result = EPUBcfi.CFIInstructions.textTermination($targetTextNodeList, 4, '<span class="epub_cfi"></span>');
 		var $currNodeChildren = $result.contents();
@@ -64,7 +64,7 @@ describe("CFI INSTRUCTION OBJECT", function () {
 
 		// Get a list of text nodes
 		var $currNode = $('<div> asdfasd <div class="cfiMarker"></div> aslasjd <div></div> alsjflkds </div>');
-		var $targetTextNodeList = EPUBcfi.CFIInstructions.getNextNode(1, $currNode, undefined);
+		var $targetTextNodeList = EPUBcfi.CFIInstructions.getNextNode(1, $currNode);
 
 		var $result = EPUBcfi.CFIInstructions.textTermination($targetTextNodeList, 12, '<span class="epub_cfi"></span>');
 		var $currNodeChildren = $result.contents();
@@ -81,7 +81,7 @@ describe("CFI INSTRUCTION OBJECT", function () {
 		var doc = domParser.parseFromString(xhtml, 'text/xml');
 		var $currentNode = $(doc.firstChild.firstChild);
 
-		var $result = EPUBcfi.CFIInstructions.getNextNode(1, $currentNode, undefined);
+		var $result = EPUBcfi.CFIInstructions.getNextNode(1, $currentNode);
 		expect($result.length).toEqual(2);
 		expect($result[0].nodeValue).toEqual("asdfsd ");
 		expect($result[1].nodeValue).toEqual(" ddfd");
@@ -94,7 +94,7 @@ describe("CFI INSTRUCTION OBJECT", function () {
 		var doc = domParser.parseFromString(xhtml, 'text/xml');
 		var $currentNode = $(doc.firstChild);
 
-		var $result = EPUBcfi.CFIInstructions.getNextNode(1, $currentNode, undefined);
+		var $result = EPUBcfi.CFIInstructions.getNextNode(1, $currentNode);
 		expect($result.length).toEqual(1);
 		expect($result[0].nodeValue).toEqual("text1");
 	});
@@ -106,7 +106,7 @@ describe("CFI INSTRUCTION OBJECT", function () {
 		var doc = domParser.parseFromString(xhtml, 'text/xml');
 		var $currentNode = $(doc.firstChild);
 
-		var $result = EPUBcfi.CFIInstructions.getNextNode(3, $currentNode, undefined);
+		var $result = EPUBcfi.CFIInstructions.getNextNode(3, $currentNode);
 		expect($result.length).toEqual(1);
 		expect($result[0].nodeValue).toEqual("text2");
 	});
@@ -118,7 +118,7 @@ describe("CFI INSTRUCTION OBJECT", function () {
 		var doc = domParser.parseFromString(xhtml, 'text/xml');
 		var $currentNode = $(doc.firstChild);
 
-		var $result = EPUBcfi.CFIInstructions.getNextNode(5, $currentNode, undefined);
+		var $result = EPUBcfi.CFIInstructions.getNextNode(5, $currentNode);
 		expect($result.length).toEqual(1);
 		expect($result[0].nodeValue).toEqual("text3");
 	});
@@ -135,7 +135,7 @@ describe('CFI INSTRUCTION ERROR HANDLING', function () {
 
 		// A step of 16 is greater than the number of child elements of the content document
 		expect(function () {
-			EPUBcfi.CFIInstructions.getNextNode(16, $(contentDoc.firstChild), undefined)})
+			EPUBcfi.CFIInstructions.getNextNode(16, $(contentDoc.firstChild))})
 		.toThrow(
 			EPUBcfi.OutOfRangeError(7, 2, ""));
 	});
@@ -159,7 +159,7 @@ describe('CFI INSTRUCTION ERROR HANDLING', function () {
 
 		// A step of 16 is greater than the number of child elements of the content document
 		expect(function () {
-			EPUBcfi.CFIInstructions.followIndirectionStep(16, $(spineElement), undefined, $(packageDoc))})
+			EPUBcfi.CFIInstructions.followIndirectionStep(16, $(spineElement), $(packageDoc))})
 		.toThrow(
 			EPUBcfi.OutOfRangeError(7, 2, ""));
 	});
@@ -183,7 +183,7 @@ describe('CFI INSTRUCTION ERROR HANDLING', function () {
 		});
 
 		expect(function () {
-			EPUBcfi.CFIInstructions.followIndirectionStep(16, undefined, undefined, $(packageDoc))})
+			EPUBcfi.CFIInstructions.followIndirectionStep(16, undefined, $(packageDoc))})
 		.toThrow(
 			EPUBcfi.NodeTypeError(undefined, "expected an itemref element"));
 	});

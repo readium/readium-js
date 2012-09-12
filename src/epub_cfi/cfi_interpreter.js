@@ -26,6 +26,7 @@ EPUBcfi.Interpreter = {
     //   the reading system, as it stands now. 
     getContentDocHref : function (CFI, $packageDocument) {
 
+        // Decode for URI/IRI escape characters
         var decodedCFI = decodeURI(CFI);
         var CFIAST = EPUBcfi.Parser.parse(decodedCFI);
 
@@ -46,7 +47,6 @@ EPUBcfi.Interpreter = {
         for (stepNum = 0 ; stepNum <= CFIAST.cfiString.localPath.steps.length - 1 ; stepNum++) {
         
             nextStepNode = CFIAST.cfiString.localPath.steps[stepNum];
-
             if (nextStepNode.type === "indexStep") {
 
                 $currElement = this.interpretIndexStepNode(nextStepNode, $currElement);
@@ -63,17 +63,18 @@ EPUBcfi.Interpreter = {
             }
         }
 
-        // An itemref element was never found - a runtime error. The cfi is misspecified or the package document is 
-        // messed up.
+        // TODO: If you get to here, an itemref element was never found - a runtime error. The cfi is misspecified or 
+        //   the package document is messed up.
     },
 
-    // inject element into content document
-    injectElement : function (CFI, contentDocument) {
+    // Description: Inject an arbirtary html element into a position in a content document referenced by a CFI
+    injectElement : function (CFI, contentDocument, elementToInject) {
 
         var decodedCFI = decodeURI(CFI);
         var CFIAST = EPUBcfi.Parser.parse(decodedCFI);
 
-        // find the first indirection step in the local path; follow it like a regular step
+        // Find the first indirection step in the local path; follow it like a regular step, as the content document it 
+        //   references is already loaded and has been passed to this method
         var stepNum = 0;
         var nextStepNode;
         for (stepNum; stepNum <= CFIAST.cfiString.localPath.steps.length - 1 ; stepNum++) {
@@ -94,7 +95,7 @@ EPUBcfi.Interpreter = {
         $currElement = this.interpretLocalPath(CFIAST.cfiString, stepNum, $currElement);
 
         // TODO: detect what kind of terminus; for now, text node termini are the only kind implemented
-        $currElement = this.interpretTextTerminusNode(CFIAST.cfiString.localPath.termStep, $currElement);
+        $currElement = this.interpretTextTerminusNode(CFIAST.cfiString.localPath.termStep, $currElement, elementToInject);
 
         // Return the element that was injected into
         return $currElement;
@@ -133,8 +134,8 @@ EPUBcfi.Interpreter = {
             throw EPUBcfi.NodeTypeError(indexStepNode, "expected index step node");
         }
 
-        // Step
-        var $stepTarget = EPUBcfi.CFIInstructions.getNextNode(indexStepNode.stepLength, $currElement, undefined);
+        // Index step
+        var $stepTarget = EPUBcfi.CFIInstructions.getNextNode(indexStepNode.stepLength, $currElement);
 
         // Check the id assertion, if it exists
         if (indexStepNode.idAssertion) {
@@ -145,7 +146,6 @@ EPUBcfi.Interpreter = {
             }
         }
 
-        // return target element
         return $stepTarget;
     },
 
@@ -157,11 +157,10 @@ EPUBcfi.Interpreter = {
             throw EPUBcfi.NodeTypeError(indirectionStepNode, "expected indirection step node");
         }
 
-        // indirection step
+        // Indirection step
         var $stepTarget = EPUBcfi.CFIInstructions.followIndirectionStep(
             indirectionStepNode.stepLength, 
             $currElement,
-            undefined,
             $packageDocument);
 
         // Check the id assertion, if it exists
@@ -173,11 +172,10 @@ EPUBcfi.Interpreter = {
             }
         }
 
-        // return target element
         return $stepTarget;
     },
 
-    interpretTextTerminusNode : function (terminusNode, $currElement) {
+    interpretTextTerminusNode : function (terminusNode, $currElement, elementToInject) {
 
         if (terminusNode === undefined || terminusNode.type !== "textTerminus") {
 
@@ -187,7 +185,7 @@ EPUBcfi.Interpreter = {
         var $elementInjectedInto = EPUBcfi.CFIInstructions.textTermination(
             $currElement, 
             terminusNode.offsetValue, 
-            EPUBcfi.Config.cfiMarkerElements.textPointMarker);
+            elementToInject);
 
         return $elementInjectedInto;
     }

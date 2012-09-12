@@ -62,7 +62,8 @@ describe ('CFI INTERPRETER OBJECT', function () {
         var $expectedResult = 'Ther<span xmlns="http://www.w3.org/1999/xhtml" class="cfi_marker"></span>e now is your insular city of the Manhattoes, belted round by wharves as Indian isles by coral reefs—commerce surrounds it with her surf. Right and left, the streets take you waterward. Its extreme downtown is the battery, where that noble mole is washed by waves, and cooled by breezes, which a few hours previous were out of sight of land. Look at the crowds of water-gazers there.';
         var $result = EPUBcfi.Interpreter.interpretTextTerminusNode(
             CFIAST.cfiString.localPath.termStep,
-            $($("#c01p0002", $contentDocument)[0].firstChild));
+            $($("#c01p0002", $contentDocument)[0].firstChild),
+            '<span class="cfi_marker"></span>');
 
         expect($result.html()).toEqual($expectedResult);
     });

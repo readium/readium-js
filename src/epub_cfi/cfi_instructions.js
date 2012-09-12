@@ -13,7 +13,7 @@ EPUBcfi.CFIInstructions = {
 	//   CDATA and text nodes. When we index into the set of child elements, we are assuming that text nodes have been 
 	//   excluded.
 	// REFACTORING CANDIDATE: This should be called "followIndexStep"
-	getNextNode : function (CFIStepValue, $currNode, stepTargetNodeId) {
+	getNextNode : function (CFIStepValue, $currNode) {
 
 		// Find the jquery index for the current node
 		var $targetNode;
@@ -32,7 +32,10 @@ EPUBcfi.CFIInstructions = {
 	// Description: This instruction executes an indirection step, where a resource is retrieved using a 
 	//   link contained on a attribute of the target element. The attribute that contains the link differs
 	//   depending on the target. 
-	followIndirectionStep : function (CFIStepValue, $currNode, stepTargetNodeId, $packageDocument) {
+	// REFACTORING CANDIDATE: At the moment, an itemref indirection step is not followed using this method and it 
+	//   may never be the case that this occurs (it is not currently expected to be called). 
+	//   However, this method will need to support the other types of indirection steps in the future.
+	followIndirectionStep : function (CFIStepValue, $currNode, $packageDocument) {
 
 		var that = this;
 		var indexOfFilenameStart;
@@ -54,9 +57,10 @@ EPUBcfi.CFIInstructions = {
 		indexOfFilenameStart = EPUBcfi.Config.packageDocumentURL.lastIndexOf('/') + 1;
 		URLForRetrieve = EPUBcfi.Config.packageDocumentURL.substr(0, indexOfFilenameStart);
 
+		// The URLForRetrieve parameter might need to be passed in? Not sure at the moment.
 		contentDocHref = 
-			URLForRetrieve 
-			+ $("#" + $currNode.attr("idref"), $packageDocument).attr("href");
+			 URLForRetrieve +
+			$("#" + $currNode.attr("idref"), $packageDocument).attr("href");
 		contentDoc = EPUBcfi.Config.retrieveResource(contentDocHref);
 
 		if (that.indexOutOfRange(jqueryTargetNodeIndex, $(contentDoc.firstChild).children().not('.cfiMarker').length)) {
@@ -140,7 +144,6 @@ EPUBcfi.CFIInstructions = {
 		return (targetIndex > numChildElements - 1) ? true : false;
 	},
 
-	// REFACTORING CANDIDATE: Not really sure if this is the best way to do this. I kinda hate it.
 	// Rationale: In order to inject an element into a specific position, access to the parent object 
 	//   is required. This is obtained with the jquery parent() method. An alternative would be to 
 	//   pass in the parent with a filtered list containing only children that are part of the target text node.
@@ -189,12 +192,13 @@ EPUBcfi.CFIInstructions = {
 	},
 
 	// Description: This method finds a target text node and then injects an element into the appropriate node
-	// Arguments:
-	// Rationale:
+	// Arguments: A step value that is an odd integer. A current node with a set of child elements.
+	// Rationale: The possibility that cfi marker elements have been injected into a text node at some point previous to 
+	//   this method being called (and thus splitting the original text node into two separate text nodes) necessitates that
+	//   the set of nodes that compromised the original target text node are inferred and returned.
 	// Notes: Passed a current node. This node should have a set of elements under it. This will include at least one text node, 
 	//   element nodes (maybe), or possibly a mix. 
-
-	// Passed a current node with a set of child elements. Also passed a step value that is an odd integer.
+	// REFACTORING CANDIDATE: This method is pretty long. Worth investigating to see if it can be refactored into something clearer.
 	inferTargetTextNode : function (CFIStepValue, $currNode) {
 		
 		var $elementsWithoutMarkers;
