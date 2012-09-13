@@ -24,9 +24,10 @@ EPUBcfi.Interpreter = {
     // Rationale: This method is a part of the API so that the reading system can "interact" the content document 
     //   pointed to by a CFI. If this is not a separate step, the processing of the CFI must be tightly coupled with 
     //   the reading system, as it stands now. 
-    getContentDocHref : function (CFI, $packageDocument) {
+    getContentDocHref : function (CFI, packageDocument) {
 
         // Decode for URI/IRI escape characters
+        var $packageDocument = $(packageDocument);
         var decodedCFI = decodeURI(CFI);
         var CFIAST = EPUBcfi.Parser.parse(decodedCFI);
 

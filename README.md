@@ -17,31 +17,24 @@ The library may be extended to include other sorts of behaviour as the use cases
     <script src="epub_cfi.js"></script>
     ~~~
 
-3. Set the package document URL and the type of element to inject for a particular CFI terminus type:
+3. Use the library in your reading system
 
     ~~~
-    EPUBcfi.Config.packageDocumentURL = 'http://something/something/package.opf';
-    EPUBcfi.Config.cfiMarkerElements.textPointMarker = '<span class="cfi_marker"></span>';
-    ~~~
-
-4. _(optional)_ Override the retrieveResource() method. The intention here is that a reading system can provide its own implementation for retrieving a resource. The default implementation is to make a synchnronous (for now) AJAX request. As an example, if a resource is already available in the DOM, the reading system may prefer to return the existing document rather than retrieve it from a persistence store. The function is supplied a URL for a resource and returns a document object for that resource. This method would be overridden as such: 
-
-    ~~~
-    EPUBcfi.Config.retrieveResource = function (resourceURL) {
-
-        myResource = get_stuff_the_way_you_like(resourceURL);
-        return turn_it_into_a_document_object(myResource);
-    }
-    ~~~
-
-5. Call the interpreter to inject an element for a CFI:
-
-    ~~~
-    cfi = 'epubcfi(/6/18!/4/2/4:2)';
+    var CFI = 'epubcfi(/6[id1]/18[id2]!/4[id3]/2[id4]/1:786)';
 
     try {
-    
-        $resultWithInjection = EPUBcfi.Interpreter.injectCFIReferenceElements(cfi);
+
+        // Get the EPUB's package document.
+        var packageDocument = get_the_package_document();
+
+        // Get a reference to the "top level" content document
+        hrefOfContentDoc = EPUBcfi.Interpreter.getContentDocHref(CFI, packageDocument);
+
+        // Load the content document
+        var contentDocument = get_the_content_document();
+
+        // Inject some arbitrary html at the location referenced by the CFI
+        EPUBcfi.Interpreter.injectElement(CFI, contentDocument, "<span id='cfi-id' class='cfi-marker'>CFI</span>");
     } 
     catch (err) {
     
@@ -49,7 +42,7 @@ The library may be extended to include other sorts of behaviour as the use cases
     }
     ~~~
 
-The result of this will be to inject the `'<span class="cfi_marker"></span>'` HTML element into a position in the EPUB pointed to by the CFI.
+The result of this will be to inject the `'<span id='cfi-id' class="cfi-marker"></span>'` HTML element into a position in the EPUB referenced by the CFI.
 
 # Setting up the development environment
 
@@ -75,14 +68,13 @@ That last Rake task will generate a single (production) javascript file that con
 
 # Future development priorities
 
-This is a very early version of this library and there are currently no guarantees about what will change. The library will evolve as I develop a better understanding of CFI use cases. 
+This is a very early version of this library and there are currently no guarantees about what will change. The library will evolve as I develop a better understanding of CFI use cases and how it might be integrated into readium systems (starting with Readium!). 
 
 The following are the development priorities (in order), going forward:
 
-* Add support for asynchronous resource retrieval.
-* Add CFI ID and text assertions.
-* Add escape characters to the grammar.
-* Support the Georgia sample in Readium; it contains a CFI-based table of contents.
+* Add methods for CFI generation for simple cases.
+* Add text assertion functionality.
+* Add utility methods to the library API (a method to indicate if a string is a valid CFI, maybe some methods that provide information about the CFI etc.
 * Add the CFI text-range terminus.
 * Add iframe indirection.
 * Add additional terminus types.
@@ -106,11 +98,11 @@ Second, using widely available DSL patterns aids in making the CFI library more 
 
 The CFI library consists of a number of components that are based on DSL patterns, with reponsibilities as follows:
 
-* __Configuration__: Maintains properties important to the behaviour of the CFI library.
 * __Parser__: Lexes and parses (in one step) a CFI string. It produces either syntax errors or an Abstract Syntax Tree (AST) representation of the CFI, in JSON format.
 * __Interpreter__: Walks the JSON AST and executes instructions for each node in the AST. The result of executing the interpreter is to inject an element, or set of elements, into an EPUB content document. These element(s) will represent a position, or area, referenced by a CFI.
 * __Instructions__: The implementation of a single statement in the CFI language.
 * __Runtime errors__: A set of errors that might be thrown when interpreting a CFI AST. 
+* __Configuration__: Maintains properties important to the behaviour of the CFI library. (This component has become less important and may be removed)
 
 The following describes the rationale behind each component:
 
