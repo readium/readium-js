@@ -24,10 +24,10 @@ The library may be extended to include other sorts of behaviour as the use cases
 
     try {
 
-        // Get the EPUB's package document.
+        // Get the EPUB's package document
         var packageDocument = get_the_package_document();
 
-        // Get a reference to the "top level" content document
+        // Get a reference to the "top level" content document in the CFI
         hrefOfContentDoc = EPUBcfi.Interpreter.getContentDocHref(CFI, packageDocument);
 
         // Load the content document
