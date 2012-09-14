@@ -18,6 +18,7 @@ src_files:
     - src/epub_cfi/cfi_interpreter.js
     - src/epub_cfi/runtime_errors.js
     - src/epub_cfi/cfi_config.js
+    - src/epub_cfi/cfi_generator.js
 
 # stylesheets
 #

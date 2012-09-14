@@ -22,6 +22,7 @@ def render_cfi_library_template(templatePath, outputPath)
     cfi_parser = File.read('src/epub_cfi/epubcfi.js')
     cfi_interpreter = File.read('src/epub_cfi/cfi_instructions.js')
     cfi_instructions = File.read('src/epub_cfi/cfi_interpreter.js')
+    cfi_generator = File.read('src/epub_cfi/cfi_generator.js')
     runtime_errors = File.read('src/epub_cfi/runtime_errors.js')
 
     template = File.read(templatePath)

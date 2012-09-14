@@ -198,19 +198,4 @@ describe('CFI INSTRUCTION ERROR HANDLING', function () {
 		.toThrow(
 			EPUBcfi.TerminusError("Text", "Text offset:84", "no nodes found for termination condition"));
 	});
-
-	describe("CFI GENERATION", function () {
-
-		it("can generate CFI steps recursively", function () {
-
-			var dom = "<html> <div></div> <div> <div id='startParent'> <div></div> textnode1 <div></div> textNode2 <div></div> </div> </div> <div></div> </html>";
-			var $dom = $((new window.DOMParser).parseFromString(dom, "text/xml"));
-
-			var generatedCFI = EPUBcfi.CFIInstructions.createCFIElementSteps($($('#startParent', $dom).contents()[2]), 3);
-
-			// This should be checked to see if this is what we actually expect, particularly with regards to the character 
-			//   offsets
-			expect(generatedCFI).toEqual("/4/2[startParent]/3:3[ te,xtn]");
-		});
-	});
 });
