@@ -212,7 +212,5 @@ describe('CFI INSTRUCTION ERROR HANDLING', function () {
 			//   offsets
 			expect(generatedCFI).toEqual("/4/2[startParent]/3:3[ te,xtn]");
 		});
-
-
 	});
 });

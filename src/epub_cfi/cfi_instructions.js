@@ -138,6 +138,7 @@ EPUBcfi.CFIInstructions = {
 	//  "PRIVATE" HELPERS                                                                   //
 	// ------------------------------------------------------------------------------------ //
 
+	// REFACTORING CANDIDATE: Some of the parts of this method could be refactored into their own methods. 
 	createCFITextNodeStep : function ($startTextNode, characterOffset) {
 
 		var $parentNode;
@@ -145,8 +146,11 @@ EPUBcfi.CFIInstructions = {
 		var currIndex;
 		var CFIIndex;
 		var indexOfTextNode;
-		var beforeAssertion;
-		var afterAssertion;
+		var preAssertion;
+		var preAssertionStartIndex;
+		var textLength;
+		var postAssertion;
+		var postAssertionEndIndex;
 
 		// Find text node position in the set of child elements, ignoring any cfi markers 
 		$parentNode = $startTextNode.parent();
@@ -189,27 +193,16 @@ EPUBcfi.CFIInstructions = {
 		// Convert the text node number to a CFI odd-integer representation
 		CFIIndex = (indexOfTextNode * 2) + 1;
 
-		// Add text assertions 
-		if ((characterOffset - 3) >= 0) {
+		// Add pre- and post- text assertions
+		preAssertionStartIndex = (characterOffset - 3 >= 0) ? characterOffset - 3 : 0;
+		preAssertion = $startTextNode[0].nodeValue.substring(preAssertionStartIndex, characterOffset);
 
-			beforeAssertion = $startTextNode[0].nodeValue.substring(characterOffset - 3, characterOffset);
-		}
-		else {
-
-			beforeAssertion = $startTextNode[0].nodeValue.substring(0, characterOffset);
-		}
-
-		if ((characterOffset + 3) <= $startTextNode[0].nodeValue.length) {
-
-			afterAssertion = $startTextNode[0].nodeValue.substring(characterOffset, characterOffset + 3);
-		}
-		else {
-
-			afterAssertion = $startTextNode[0].nodeValue.substring(characterOffset, $startTextNode[0].nodeValue.length);
-		}
+		textLength = $startTextNode[0].nodeValue.length;
+		postAssertionEndIndex = (characterOffset + 3 <= textLength) ? characterOffset + 3 : textLength;
+		postAssertion = $startTextNode[0].nodeValue.substring(characterOffset, postAssertionEndIndex);
 
 		// return the constructed text node step
-		return "/" + CFIIndex + ":" + characterOffset + "[" + beforeAssertion + "," + afterAssertion + "]";
+		return "/" + CFIIndex + ":" + characterOffset + "[" + preAssertion + "," + postAssertion + "]";
 	},
 
 	createCFIElementSteps : function ($currNode, characterOffset) {
