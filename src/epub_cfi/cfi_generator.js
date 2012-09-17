@@ -13,6 +13,34 @@ EPUBcfi.Generator = {
         var $itemRefStartNode;
         var packageDocCFI;
 
+        // start text node IS a text node
+        if (!startTextNode) {
+            throw new EPUBcfi.NodeTypeError(startTextNode, "Cannot generate a character offset from a starting point that is not a text node");
+        } else if (startTextNode.nodeType != 3) {
+            throw new EPUBcfi.NodeTypeError(startTextNode, "Cannot generate a character offset from a starting point that is not a text node");
+        }
+
+        // character offset within a range
+        if (characterOffset < 0) {
+            throw new EPUBcfi.OutOfRangeError(characterOffset, 0, "Character offset cannot be less than 0");
+        }
+        else if (characterOffset > startTextNode.nodeValue.length) {
+            throw new EPUBcfi.OutOfRangeError(characterOffset, startTextNode.nodeValue.length, "character offset cannot be greater than the length of the text node");
+        }
+
+        // content document name is non-empty
+        if (!contentDocumentName) {
+            throw new Error("The idref for the content document, as found in the spine, must be supplied");
+        }
+
+        // package document is non-empty and contains a package element
+        if (!packageDocument) {
+            throw new Error("A package document must be supplied to generate a CFI");
+        }
+        else if ($($("itemref[idref=" + contentDocumentName + "]", packageDocument)[0]).length === 0) {
+            throw new Error("The idref of the content document could not be found in the spine");
+        }
+
         // call the recursive function to get all the steps until the top of the content document
         contentDocCFI = this.createCFIElementSteps($(startTextNode), characterOffset, 'html');
 

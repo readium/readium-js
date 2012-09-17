@@ -19,7 +19,7 @@ describe("CFI GENERATOR", function () {
         var contentDoc = (new window.DOMParser).parseFromString(contentDocXhtml, "text/xml");
         var packageDoc = (new window.DOMParser).parseFromString(packageDocXhtml, "text/xml");
 
-        var generatedCFI = EPUBcfi.Generator.generateCharacterOffsetCFI($($('#startParent', contentDoc).contents()[2]), 3, "contentDocId", packageDoc);
+        var generatedCFI = EPUBcfi.Generator.generateCharacterOffsetCFI($('#startParent', contentDoc).contents()[2], 3, "contentDocId", packageDoc);
 
         // This should be checked to see if this is what we actually expect, particularly with regards to the character 
         //   offsets
@@ -38,4 +38,84 @@ describe("CFI GENERATOR", function () {
         expect(generatedCFI).toEqual("epubcfi(/6/14!/4[body1]/2/18[c01p0008]/1:103[, a,lof])");
     });
 
+    describe("CFI GENERATOR ERROR HANDLING", function () {
+
+        var contentDocXhtml;
+        var contentDoc;
+        var packageDocXhtml;
+        var packageDoc;
+        var startTextNode;
+
+        beforeEach(function () {
+
+            contentDocXhtml = jasmine.getFixtures().read("moby_dick_content_doc.xhtml");
+            contentDoc = (new window.DOMParser).parseFromString(contentDocXhtml, "text/xml");
+            packageDocXhtml = jasmine.getFixtures().read("moby_dick_package.opf");
+            packageDoc = (new window.DOMParser).parseFromString(packageDocXhtml, "text/xml");
+            startTextNode = $("#c01p0008", contentDoc)[0].firstChild;
+        });
+
+        // Throws text node start point error
+        it("throws an error if a text node is not supplied as a starting point", function () {
+
+            expect(function () {
+                EPUBcfi.Generator.generateCharacterOffsetCFI(undefined, 103, "xchapter_001", packageDoc)})
+            .toThrow(
+                EPUBcfi.NodeTypeError(undefined, "Cannot generate a character offset from a starting point that is not a text node")
+            );
+        });
+
+        // Character offset is outside an acceptable range
+        it("throws an error if the character offset is less then 0", function () {
+
+           expect(function () {
+                EPUBcfi.Generator.generateCharacterOffsetCFI(startTextNode, -1, "xchapter_001", packageDoc)})
+            .toThrow(
+                EPUBcfi.OutOfRangeError(-1, 0, "Character offset cannot be less than 0")
+            ); 
+        });
+
+        // Character offset is outside an acceptable range
+        it("throws an error if the character offset is greater than the length of the text node", function () {
+
+           expect(function () {
+                EPUBcfi.Generator.generateCharacterOffsetCFI(startTextNode, startTextNode.nodeValue.length + 1, "xchapter_001", packageDoc)})
+            .toThrow(
+                EPUBcfi.OutOfRangeError(
+                    startTextNode.nodeValue.length + 1, 
+                    startTextNode.nodeValue.length, 
+                    "character offset cannot be greater than the length of the text node")
+            ); 
+        });
+
+        // Content document name is within 
+        it("throws an error if an idref is not supplied", function () {
+
+            expect(function () {
+                EPUBcfi.Generator.generateCharacterOffsetCFI(startTextNode, 1, undefined, packageDoc)})
+            .toThrow(
+                Error("The idref for the content document, as found in the spine, must be supplied")
+            );
+        });
+
+        // non-empty package document
+        it("throws an error if a package document is not supplied", function () {
+
+            expect(function () {
+                EPUBcfi.Generator.generateCharacterOffsetCFI(startTextNode, 1, "xchapter_001", undefined)})
+            .toThrow(
+                Error("A package document must be supplied to generate a CFI")
+            );
+        });
+
+        // idref matches
+        it("throws an error if the idref does not match any idref attribute on itemref elements in the spine", function () {
+
+            expect(function () {
+                EPUBcfi.Generator.generateCharacterOffsetCFI(startTextNode, 1, "xchapter_", packageDoc)})
+            .toThrow(
+                Error("The idref of the content document could not be found in the spine")
+            );
+        });
+    });
 });
