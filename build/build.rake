@@ -7,8 +7,19 @@ out_path =  "release/epubcfi.min.js"
 # path the the closure compiler jar file
 jar_path = "build/tools/closure-compiler-v1346.jar"
 
-desc "Minify and copy all scripts into publish dir"
-task :minify do
+
+#tasks:
+
+desc "Concatenate all source files"
+file "#{in_path}" do
+	Rake::Task["gen_cfi_library"].invoke
+end
+
+desc "Minify the concatenated scipts"
+file "#{out_path}" => "#{in_path}" do
 	puts "minifying #{in_path}"
 	output = `java -jar #{jar_path} --js #{in_path} --js_output_file #{out_path}`
 end
+
+desc "create the concatented and minified library"
+task :build => "#{out_path}"
