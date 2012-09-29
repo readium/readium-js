@@ -1,3 +1,5 @@
+load 'build/build.rake'
+
 # Generate the epub cfi parser
 task :gen_parser do
 	`pegjs -e EPUBcfi.Parser ./cfi_grammar/epubcfi.pegjs`
