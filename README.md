@@ -6,7 +6,7 @@ The purpose of this library is to allow reading systems to do useful things with
 
 The library may be extended to include other sorts of behaviour as the use cases for CFIs become clearer. 
 
-# Using the CFI library
+# Using the CFI library for linking with CFIs
 
 1. Get a copy of the library. Currently, a development version of the [library](https://github.com/justinHume/EPUBCFI/blob/master/epub_cfi.js) is available in the Github repository. When the library becomes more stable, a minified version will also be made available as a separate download. 
 
@@ -44,6 +44,40 @@ The library may be extended to include other sorts of behaviour as the use cases
 
 The result of this will be to inject the `'<span id='cfi-id' class="cfi-marker"></span>'` HTML element into a position in the EPUB referenced by the CFI.
 
+# Using the CFI library for generating CFIs
+
+The CFI library can be used to generate CFIs in simple cases. This includes character offset terminus types for EPUBs that only require a package document (itemref) indirection step.
+
+1. Get a copy of the library, as per step 1 under the previous heading.
+
+2. Add the CFI library to your code using a script tag, as per step 2 under the previous heading.
+
+3. Use the library to generate a CFI
+
+    ~~~
+    try {
+
+        // Get the starting text node
+        var startTextNode = get_node();
+
+        // Get the starting offset into the text node
+        var charOffset = get_char_offset();
+
+        // Get the idref in the spine of the current content document
+        var contentDocIdref = get_idref();
+
+        // Get a reference to the package document
+        var packageDoc = get_package_doc();
+
+        // Generate the CFI
+        var generatedCFI = EPUBcfi.Generator.generateCharacterOffsetCFI(startTextNode, charOffset, contentDocIdref, packageDoc);
+    } 
+    catch (err) {
+    
+        Do something with the errors;
+    }
+    ~~~
+
 # Setting up the development environment
 
 There are a number of dependencies for this project: 
@@ -68,13 +102,12 @@ That last Rake task will generate a single (production) javascript file that con
 
 # Future development priorities
 
-This is a very early version of this library and there are currently no guarantees about what will change. The library will evolve as I develop a better understanding of CFI use cases and how it might be integrated into readium systems (starting with Readium!). 
+This is an early version of this library and there are currently no guarantees about what will change. The library will evolve as I develop a better understanding of CFI use cases and how it might be integrated into readium systems (starting with Readium!). 
 
 The following are the development priorities (in order), going forward:
 
-* Add methods for CFI generation for simple cases.
-* Add text assertion functionality.
-* Add utility methods to the library API (a method to indicate if a string is a valid CFI, maybe some methods that provide information about the CFI etc.
+* Add checking of text assertions
+* Add utility methods to the library API (a method to indicate if a string is a valid CFI, maybe some methods that provide information about the CFI etc.)
 * Add the CFI text-range terminus.
 * Add iframe indirection.
 * Add additional terminus types.
