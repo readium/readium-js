@@ -2,11 +2,11 @@
 
 This library provides support, in javascript, for parsing and interpreting EPUB 3.0 Canonical Fragment Identifiers (CFIs). jQuery is the only dependency. 
 
-The purpose of this library is to allow reading systems to do useful things with EPUB CFIs. At the moment, this involves injecting HTML elements into EPUB documents at locations referenced by CFIs. The intent is that the injected HTML elements can then be used by reading systems to navigate to, or display something at, those CFI locations. 
+The purpose of this library is to allow reading systems to do useful things with EPUB CFIs. At the moment, this involves injecting HTML elements into EPUB documents at locations referenced by CFIs, as well as generating CFIs for simpler EPUBs. The intent for injecting HTML is that the injected elements can be used by reading systems to navigate to, or display something at, those CFI locations. 
 
 The library may be extended to include other sorts of behaviour as the use cases for CFIs become clearer. 
 
-# Using the CFI library for linking with CFIs
+# Using the library for linking with CFIs
 
 1. Get a copy of the library. Currently, a development version of the [library](https://github.com/justinHume/EPUBCFI/blob/master/epub_cfi.js) is available in the Github repository. When the library becomes more stable, a minified version will also be made available as a separate download. 
 
@@ -44,7 +44,7 @@ The library may be extended to include other sorts of behaviour as the use cases
 
 The result of this will be to inject the `'<span id='cfi-id' class="cfi-marker"></span>'` HTML element into a position in the EPUB referenced by the CFI.
 
-# Using the CFI library for generating CFIs
+# Using the library for generating CFIs
 
 The CFI library can be used to generate CFIs in simple cases. This includes character offset terminus types for EPUBs that only require a package document (itemref) indirection step.
 
