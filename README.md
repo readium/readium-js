@@ -48,9 +48,9 @@ The result of this will be to inject the `'<span id='cfi-id' class="cfi-marker">
 
 The CFI library can be used to generate CFIs in simple cases. This includes character offset terminus types for EPUBs that only require a package document (itemref) indirection step.
 
-1. Get a copy of the library, as per step 1 under the previous heading.
+1. Get a copy of the library, as per step 1 of "linking with CFIs," above.
 
-2. Add the CFI library to your code using a script tag, as per step 2 under the previous heading.
+2. Add the CFI library to your code using a script tag, as per step 2 of "linking with CFIs," above.
 
 3. Use the library to generate a CFI
 
