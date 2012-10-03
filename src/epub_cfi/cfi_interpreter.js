@@ -113,7 +113,6 @@ EPUBcfi.Interpreter = {
         for (stepNum; stepNum <= cfiStringNode.localPath.steps.length - 1 ; stepNum++) {
         
             nextStepNode = cfiStringNode.localPath.steps[stepNum];
-
             if (nextStepNode.type === "indexStep") {
 
                 $currElement = this.interpretIndexStepNode(nextStepNode, $currElement);

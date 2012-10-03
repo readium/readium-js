@@ -1,6 +1,6 @@
 describe("CFI INSTRUCTION OBJECT", function () {
 
-	it("finds the target element on a step", function () {
+	it("finds the target element on an index step", function () {
 
 		var contentDocXHTML = jasmine.getFixtures().read('moby_dick_content_doc.xhtml');
 		var domParser = new window.DOMParser();
@@ -12,27 +12,32 @@ describe("CFI INSTRUCTION OBJECT", function () {
 		expect(nodeType).toEqual(true);
 	});
 
-	it("obtains the itemref's corresponding href for a content document", function () {
+	// Finds the target element on an iframe indirection step
+	it("finds the target element on an iframe indirection step", function () {
 
-		var packageDocXML = jasmine.getFixtures().read('moby_dick_package.opf');
-		var contentDocXHTML = jasmine.getFixtures().read('moby_dick_content_doc.xhtml');
+		var contentDocXHTML = jasmine.getFixtures().read("content_doc_for_iframe.xhtml");
 		var domParser = new window.DOMParser();
-		var packageDoc = domParser.parseFromString(packageDocXML, "text/xml");
 		var contentDoc = domParser.parseFromString(contentDocXHTML, "text/xml");
-		var spineElement = $($(packageDoc.firstChild).children()[2]).children()[6];
+		var iframeContentXHTML = jasmine.getFixtures().read("iframe_content.xhtml");
 
-		var nextNode;
-		var calledHref;
+		// Append iframe to the body of the content doc
+		var iframe = contentDoc.createElement('iframe');
+		contentDoc.body.appendChild(iframe);
+		iframe.style.width = "100px";
+		iframe.style.height = "100px";
 
-		spyOn($, "ajax").andCallFake(function (params) {
+		$(iframe).attr("src", "about:blank");
 
-			params.success(contentDoc);
-		});
+        setTimeout( function() {
+            var doc = iframe.contentWindow.document;
+        }, 1 );
 
-		EPUBcfi.CFIInstructions.followIndirectionStep(2, $(spineElement), $(packageDoc));
-		calledHref = $.ajax.mostRecentCall.args[0].url;
+		iframe.contentWindow.document.open("text/xml", "replace");
+		iframe.contentWindow.document.write(iframeContentXHTML);
+		iframe.contentWindow.document.close();
 
-		expect(calledHref).toEqual("chapter_001.xhtml");
+		var $nextNode = EPUBcfi.CFIInstructions.followIndirectionStep(4, $("iframe", contentDoc));
+
 	});
 
 	it("injects text at the specified offset", function () {
@@ -165,7 +170,7 @@ describe('CFI INSTRUCTION ERROR HANDLING', function () {
 	});
 	
 	// Throws a node type error for itemref
-	it('throws a node type error if an itemref indirection step is called on a different element', function () {
+	it('throws a node type error if an iframe indirection step is called on a different element', function () {
 
 		var packageDocXML = jasmine.getFixtures().read('moby_dick_package.opf');
 		var contentDocXHTML = jasmine.getFixtures().read('moby_dick_content_doc.xhtml');
@@ -185,7 +190,7 @@ describe('CFI INSTRUCTION ERROR HANDLING', function () {
 		expect(function () {
 			EPUBcfi.CFIInstructions.followIndirectionStep(16, undefined, $(packageDoc))})
 		.toThrow(
-			EPUBcfi.NodeTypeError(undefined, "expected an itemref element"));
+			EPUBcfi.NodeTypeError(undefined, "expected an iframe element"));
 	});
 
 	// Throws terminus errors for invalid text offsets 

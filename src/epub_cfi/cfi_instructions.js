@@ -38,44 +38,44 @@ EPUBcfi.CFIInstructions = {
 	followIndirectionStep : function (CFIStepValue, $currNode, $packageDocument) {
 
 		var that = this;
+		var $contentDocument; 
+		var $startElement;
+		var $targetNode;
+
+		// Old vars
 		var indexOfFilenameStart;
 		var URLForRetrieve;
 		var jqueryTargetNodeIndex = (CFIStepValue / 2) - 1;
-		var $targetNode;
+		
 		var contentDocHref;
 		var contentDoc;
 
 		// TODO: This check must be expanded to all the different types of indirection step
 		// This is an item ref
-		if ($currNode === undefined || !$currNode.is("itemref")) {
+		if ($currNode === undefined || !$currNode.is("iframe")) {
 
-			throw EPUBcfi.NodeTypeError($currNode, "expected an itemref element");
+			throw EPUBcfi.NodeTypeError($currNode, "expected an iframe element");
 		}
 
-		// Load the content document referenced by the spine item
-		// Remove the package document filename from the package document url
-		indexOfFilenameStart = EPUBcfi.Config.packageDocumentURL.lastIndexOf('/') + 1;
-		URLForRetrieve = EPUBcfi.Config.packageDocumentURL.substr(0, indexOfFilenameStart);
+		// Check node type
+		if ($currNode.is("iframe")) {
 
-		// The URLForRetrieve parameter might need to be passed in? Not sure at the moment.
-		contentDocHref = 
-			 URLForRetrieve +
-			$("#" + $currNode.attr("idref"), $packageDocument).attr("href");
-		contentDoc = EPUBcfi.Config.retrieveResource(contentDocHref);
+			// Get content
+			$contentDocument = $currNode.contents();
 
-		if (that.indexOutOfRange(jqueryTargetNodeIndex, $(contentDoc.firstChild).children().not('.cfiMarker').length)) {
+			// Go to the first XHTML element, which will be the first child of the top-level document object
+			// REFACTORING CANDIDATE: What if the first element is an excluded class? 
+			$startElement = $($contentDocument[0].firstChild);
 
-			throw EPUBcfi.OutOfRangeError(jqueryTargetNodeIndex, $(contentDoc.firstChild).children().not('.cfiMarker').length, "");
+			// Follow an index step
+			$targetNode = this.getNextNode(CFIStepValue, $startElement);
+
+			// Return that shit!
+			return $targetNode; 
 		}
 
-		// contentDoc.firstChild is intended to return the html element
-		$targetNode = $($(contentDoc.firstChild).children().not('.cfiMarker')[jqueryTargetNodeIndex]);
-
-		// TODO: check for validity of returned node
-		return $targetNode;
-		
 		// TODO: Other types of indirection
-		// TODO: ($targetNode.is("iframe") || $targetNode.is("embed")) : src
+		// TODO: $targetNode.is("embed")) : src
 		// TODO: ($targetNode.is("object")) : data
 		// TODO: ($targetNode.is("image") || $targetNode.is("xlink:href")) : xlink:href
 	},

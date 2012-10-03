@@ -135,7 +135,6 @@ The CFI library consists of a number of components that are based on DSL pattern
 * __Interpreter__: Walks the JSON AST and executes instructions for each node in the AST. The result of executing the interpreter is to inject an element, or set of elements, into an EPUB content document. These element(s) will represent a position, or area, referenced by a CFI.
 * __Instructions__: The implementation of a single statement in the CFI language.
 * __Runtime errors__: A set of errors that might be thrown when interpreting a CFI AST. 
-* __Configuration__: Maintains properties important to the behaviour of the CFI library. (This component has become less important and may be removed)
 
 The following describes the rationale behind each component:
 

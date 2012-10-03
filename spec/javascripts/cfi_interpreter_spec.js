@@ -44,19 +44,6 @@ describe ('CFI INTERPRETER OBJECT', function () {
         expect($result.children()[0]).toEqual($expectedResult.children()[0]);
     });
 
-    it ('interprets an indirection step node without an id assertion', function () {
-
-        // The spy will return the correct content document, so this is more a test of whether this
-        // method executes without error, given the starting element.
-        var $expectedResult = $($('body', $contentDocument)[0]);
-        var $result = EPUBcfi.Interpreter.interpretIndirectionStepNode(
-            CFIAST.cfiString.localPath.steps[1], 
-            $('<itemref linear="yes" idref="xchapter_001"/>'), 
-            $packageDocument);
-
-        expect($result.html()).toEqual($expectedResult.html());
-    });
-
     it ('injects an element for a text terminus with a text location assertion', function () {
 
         var $expectedResult = 'Ther<span xmlns="http://www.w3.org/1999/xhtml" class="cfi_marker"></span>e now is your insular city of the Manhattoes, belted round by wharves as Indian isles by coral reefs—commerce surrounds it with her surf. Right and left, the streets take you waterward. Its extreme downtown is the battery, where that noble mole is washed by waves, and cooled by breezes, which a few hours previous were out of sight of land. Look at the crowds of water-gazers there.';
