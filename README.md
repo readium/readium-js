@@ -109,7 +109,6 @@ The following are the development priorities (in order), going forward:
 * Add checking of text assertions
 * Add utility methods to the library API (a method to indicate if a string is a valid CFI, maybe some methods that provide information about the CFI etc.)
 * Add the CFI text-range terminus.
-* Add iframe indirection.
 * Add additional terminus types.
 * Decide on some guarantees about the library API.
 
