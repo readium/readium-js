@@ -171,11 +171,17 @@ describe('ERROR HANDLING FOR ID AND TEXT ASSERTIONS', function () {
             // Generate CFI AST to reference a paragraph in the Moby Dick test features
             CFIAST = EPUBcfi.Parser.parse("epubcfi(/6/14!/4[body2]/2/14[c01p0006]/1:4)");
 
+            // Faking the follow indirection step, it'll return an element with an id that doesn't match the assertion
+            spyOn(EPUBcfi.CFIInstructions, "followIndirectionStep").andCallFake(function (params) {
+
+                return $('<body></body>').attr("id", "body1");
+            });
+
             expect(function () {
                 EPUBcfi.Interpreter.interpretIndirectionStepNode(
                 CFIAST.cfiString.localPath.steps[1],
-                $('<itemref linear="yes" idref="xchapter_001"/>'),
-                $packageDocument)}
+                undefined,
+                undefined)}
             ).toThrow(
                 EPUBcfi.CFIAssertionError("body2", "body1", "Id assertion failed")
                 );
@@ -186,11 +192,17 @@ describe('ERROR HANDLING FOR ID AND TEXT ASSERTIONS', function () {
             // Generate CFI AST to reference a paragraph in the Moby Dick test features
             CFIAST = EPUBcfi.Parser.parse("epubcfi(/6/14!/4[body1]/2/14[c01p0002]/1:4)");
 
+            // Faking the follow indirection step, it'll return an element with an id that matches the assertion
+            spyOn(EPUBcfi.CFIInstructions, "followIndirectionStep").andCallFake(function (params) {
+
+                return $('<body></body>').attr("id", "body1");
+            });
+
             // Expecting that no error is thrown; if one is, it'll cause this test to fail
             EPUBcfi.Interpreter.interpretIndirectionStepNode(
                 CFIAST.cfiString.localPath.steps[1],
-                $('<itemref linear="yes" idref="xchapter_001"/>'),
-                $packageDocument);
+                undefined,
+                undefined);
         });
     });
 });

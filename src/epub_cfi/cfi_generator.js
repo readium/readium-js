@@ -25,7 +25,7 @@ EPUBcfi.Generator = {
             throw new EPUBcfi.OutOfRangeError(characterOffset, 0, "Character offset cannot be less than 0");
         }
         else if (characterOffset > startTextNode.nodeValue.length) {
-            throw new EPUBcfi.OutOfRangeError(characterOffset, startTextNode.nodeValue.length, "character offset cannot be greater than the length of the text node");
+            throw new EPUBcfi.OutOfRangeError(characterOffset, startTextNode.nodeValue.length - 1, "character offset cannot be greater than the length of the text node");
         }
 
         // content document name is non-empty

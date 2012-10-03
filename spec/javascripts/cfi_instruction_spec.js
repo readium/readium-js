@@ -15,29 +15,25 @@ describe("CFI INSTRUCTION OBJECT", function () {
 	// Finds the target element on an iframe indirection step
 	it("finds the target element on an iframe indirection step", function () {
 
-		var contentDocXHTML = jasmine.getFixtures().read("content_doc_for_iframe.xhtml");
-		var domParser = new window.DOMParser();
-		var contentDoc = domParser.parseFromString(contentDocXHTML, "text/xml");
 		var iframeContentXHTML = jasmine.getFixtures().read("iframe_content.xhtml");
 
-		// Append iframe to the body of the content doc
-		var iframe = contentDoc.createElement('iframe');
-		contentDoc.body.appendChild(iframe);
-		iframe.style.width = "100px";
-		iframe.style.height = "100px";
+		// Rationale: Append iframe to the body of the current window. This is a bit hacky, but a document containing an iframe
+		//   appears to have to be loaded in a window to create an iframe, with content, as an element of that document. The original
+		//   intention was to create a document object and then append an iframe; I was unable to find a way to do this, hence appending
+		//   the iframe to the current document (jasmine).
+		var iframe = $('<iframe src="' + window.location.href +  '"/>')[0];
+		document.body.appendChild(iframe);
 
-		$(iframe).attr("src", "about:blank");
+		iframe.contentDocument.open("text/xml", "replace");
+		iframe.contentDocument.write(iframeContentXHTML);
+		iframe.contentDocument.close();
 
-        setTimeout( function() {
-            var doc = iframe.contentWindow.document;
-        }, 1 );
+		var $nextNode = EPUBcfi.CFIInstructions.followIndirectionStep(4, $("iframe", document));
 
-		iframe.contentWindow.document.open("text/xml", "replace");
-		iframe.contentWindow.document.write(iframeContentXHTML);
-		iframe.contentWindow.document.close();
+		expect($nextNode.attr("id")).toEqual("body1");
 
-		var $nextNode = EPUBcfi.CFIInstructions.followIndirectionStep(4, $("iframe", contentDoc));
-
+		// Remove the injected iframe
+		$(iframe).remove();
 	});
 
 	it("injects text at the specified offset", function () {
@@ -142,33 +138,34 @@ describe('CFI INSTRUCTION ERROR HANDLING', function () {
 		expect(function () {
 			EPUBcfi.CFIInstructions.getNextNode(16, $(contentDoc.firstChild))})
 		.toThrow(
-			EPUBcfi.OutOfRangeError(7, 2, ""));
+			EPUBcfi.OutOfRangeError(7, 1, ""));
 	});
 
 	it('throws an out of range error for an indirection step', function () {
 
-		var packageDocXML = jasmine.getFixtures().read('moby_dick_package.opf');
-		var contentDocXHTML = jasmine.getFixtures().read('moby_dick_content_doc.xhtml');
-		var domParser = new window.DOMParser();
-		var packageDoc = domParser.parseFromString(packageDocXML, "text/xml");
-		var contentDoc = domParser.parseFromString(contentDocXHTML, "text/xml");
-		var spineElement = $($(packageDoc.firstChild).children()[2]).children()[6];
+		var iframeContentXHTML = jasmine.getFixtures().read("iframe_content.xhtml");
 
-		var nextNode;
-		var calledHref;
+		// Rationale: Append iframe to the body of the current window. This is a bit hacky, but a document containing an iframe
+		//   appears to have to be loaded in a window to create an iframe, with content, as an element of that document. The original
+		//   intention was to create a document object and then append an iframe; I was unable to find a way to do this, hence appending
+		//   the iframe to the current document (jasmine).
+		var iframe = $('<iframe src="' + window.location.href + '"/>')[0];
+		document.body.appendChild(iframe);
 
-		spyOn($, "ajax").andCallFake(function (params) {
-
-			params.success(contentDoc);
-		});
+		iframe.contentDocument.open("text/xml", "replace");
+		iframe.contentDocument.write(iframeContentXHTML);
+		iframe.contentDocument.close();
 
 		// A step of 16 is greater than the number of child elements of the content document
 		expect(function () {
-			EPUBcfi.CFIInstructions.followIndirectionStep(16, $(spineElement), $(packageDoc))})
+			EPUBcfi.CFIInstructions.followIndirectionStep(6, $('iframe', document))})
 		.toThrow(
-			EPUBcfi.OutOfRangeError(7, 2, ""));
+			EPUBcfi.OutOfRangeError(2, 1, ""));
+
+		// Remove the injected iframe
+		$(iframe).remove();
 	});
-	
+
 	// Throws a node type error for itemref
 	it('throws a node type error if an iframe indirection step is called on a different element', function () {
 

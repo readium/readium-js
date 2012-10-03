@@ -32,9 +32,8 @@ EPUBcfi.CFIInstructions = {
 	// Description: This instruction executes an indirection step, where a resource is retrieved using a 
 	//   link contained on a attribute of the target element. The attribute that contains the link differs
 	//   depending on the target. 
-	// REFACTORING CANDIDATE: At the moment, an itemref indirection step is not followed using this method and it 
-	//   may never be the case that this occurs (it is not currently expected to be called). 
-	//   However, this method will need to support the other types of indirection steps in the future.
+	// Note: Iframe indirection will (should) fail if the iframe is not from the same domain as its containing script due to 
+	//   the cross origin security policy
 	followIndirectionStep : function (CFIStepValue, $currNode, $packageDocument) {
 
 		var that = this;
@@ -42,22 +41,14 @@ EPUBcfi.CFIInstructions = {
 		var $startElement;
 		var $targetNode;
 
-		// Old vars
-		var indexOfFilenameStart;
-		var URLForRetrieve;
-		var jqueryTargetNodeIndex = (CFIStepValue / 2) - 1;
-		
-		var contentDocHref;
-		var contentDoc;
-
 		// TODO: This check must be expanded to all the different types of indirection step
-		// This is an item ref
+		// Only expects iframes, at the moment
 		if ($currNode === undefined || !$currNode.is("iframe")) {
 
 			throw EPUBcfi.NodeTypeError($currNode, "expected an iframe element");
 		}
 
-		// Check node type
+		// Check node type; only iframe indirection is handled, at the moment
 		if ($currNode.is("iframe")) {
 
 			// Get content
@@ -65,7 +56,7 @@ EPUBcfi.CFIInstructions = {
 
 			// Go to the first XHTML element, which will be the first child of the top-level document object
 			// REFACTORING CANDIDATE: What if the first element is an excluded class? 
-			$startElement = $($contentDocument[0].firstChild);
+			$startElement = $($contentDocument.children()[0]);
 
 			// Follow an index step
 			$targetNode = this.getNextNode(CFIStepValue, $startElement);
@@ -127,7 +118,7 @@ EPUBcfi.CFIInstructions = {
 		var jqueryTargetNodeIndex = (CFIStepValue / 2) - 1;
 		if (this.indexOutOfRange(jqueryTargetNodeIndex, $currNode.children().not('.cfiMarker').length)) {
 
-			throw EPUBcfi.OutOfRangeError(jqueryTargetNodeIndex, $currNode.children().not('.cfiMarker').length, "");
+			throw EPUBcfi.OutOfRangeError(jqueryTargetNodeIndex, $currNode.children().not('.cfiMarker').length - 1, "");
 		}
 
 	    $targetNode = $($currNode.children().not('.cfiMarker')[jqueryTargetNodeIndex]);
@@ -260,7 +251,7 @@ EPUBcfi.CFIInstructions = {
 		// detect out of range errors
 		if ($targetTextNodeList.length === 0) {
 
-			throw EPUBcfi.OutOfRangeError(logicalTargetPosition, currTextNodePosition, "Index out of range");
+			throw EPUBcfi.OutOfRangeError(logicalTargetPosition, currTextNodePosition - 1, "Index out of range");
 		}
 
 		// return the text node list
