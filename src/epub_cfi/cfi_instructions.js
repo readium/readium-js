@@ -201,17 +201,19 @@ EPUBcfi.CFIInstructions = {
 		// Remove any cfi marker elements from the set of elements. 
 		// Rationale: A filtering function is used, as simply using a class selector with jquery appears to 
 		//   result in behaviour where text nodes are also filtered out, along with the class element being filtered.
-		$elementsWithoutMarkers = $currNode.contents().filter(
-			function () {
+		// $elementsWithoutMarkers = $currNode.contents().filter(
+		// 	function () {
 
-				if ($(this).filter(".cfiMarker").length !== 0) {
-					return false;
-				}
-				else {
-					return true;
-				}
-			}
-		);
+		// 		if ($(this).filter(".cfiMarker").length !== 0) {
+		// 			return false;
+		// 		}
+		// 		else {
+		// 			return true;
+		// 		}
+		// 	}
+		// );
+
+		$elementsWithoutMarkers = this.applyBlacklist($currNode.contents(), ["cfiMarker"], []);
 
 		// Convert CFIStepValue to logical index; assumes odd integer for the step value
 		logicalTargetPosition = (parseInt(CFIStepValue) + 1) / 2;
@@ -256,7 +258,46 @@ EPUBcfi.CFIInstructions = {
 
 		// return the text node list
 		return $targetTextNodeList;
-	}
+	},
+
+	applyBlacklist : function ($elements, blacklistClasses, blacklistElements) {
+
+        var $filteredElements;
+
+        $filteredElements = $elements.filter(
+            function () {
+
+                var $currElement = $(this);
+                var includeInList = true;
+
+                // Filter each element with the class type
+                $.each(blacklistClasses, function (index, value) {
+
+                    if ($currElement.hasClass(value)) {
+                    	includeInList = false;
+
+                    	// Break this loop
+                        return false;
+                    }
+                });
+
+                // For each type of element
+                $.each(blacklistElements, function (index, value) {
+
+                    if ($currElement.is(value)) {
+                    	includeInList = false;
+
+                    	// Break this loop
+                        return false;
+                    }
+                });
+
+                return includeInList;
+            }
+        );
+
+        return $filteredElements;
+    }
 };
 
 

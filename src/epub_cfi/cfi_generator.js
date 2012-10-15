@@ -74,19 +74,7 @@ EPUBcfi.Generator = {
 
         // Find text node position in the set of child elements, ignoring any cfi markers 
         $parentNode = $startTextNode.parent();
-
-        // REFACTORING CANDIDATE: This code exists in the inferTargetNode method and should be moved into its own method
-        $contentsExcludingMarkers = $parentNode.contents().filter(
-            function () {
-
-                if ($(this).filter(".cfiMarker").length !== 0) {
-                    return false;
-                }
-                else {
-                    return true;
-                }
-            }
-        );
+        $contentsExcludingMarkers = EPUBcfi.CFIInstructions.applyBlacklist($parentNode.contents(), ["cfiMarker"], []);
 
         // Find the text node number in the list, inferring nodes that were originally together
         currIndex = 0;

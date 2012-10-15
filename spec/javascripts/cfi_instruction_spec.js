@@ -123,6 +123,82 @@ describe("CFI INSTRUCTION OBJECT", function () {
 		expect($result.length).toEqual(1);
 		expect($result[0].nodeValue).toEqual("text3");
 	});
+
+	it("filters blacklist classes", function () {
+
+		var $elements = $(
+			"<div class='blacklistClass1'></div>"
+			+ "<div id='survivor-1' class='some-other'></div>"
+			+ "<div id='survivor-2' class=''></div>"
+			+ "<div id='survivor-3'></div>"
+			+ "<div class='blacklistClass2'></div>"
+			);
+
+		$result = EPUBcfi.CFIInstructions.applyBlacklist($elements, ["blacklistClass1", "blacklistClass2"], []);
+
+		expect($result[0].id).toEqual("survivor-1");
+		expect($result[1].id).toEqual("survivor-2");
+		expect($result[2].id).toEqual("survivor-3");
+	});
+
+	it("filters blacklist elements", function () {
+
+		var $elements = $(
+			"<div id='survivor-1'></div>"
+			+ "<mathjax></mathjax>"
+			+ "<div id='survivor-2' class=''></div>"
+			+ "<blacklistElement></blacklistElement>"
+			+ "<div id='survivor-3'></div>"
+			);
+
+		$result = EPUBcfi.CFIInstructions.applyBlacklist($elements, [], ["mathjax", "blacklistElement"]);
+
+		expect($result[0].id).toEqual("survivor-1");
+		expect($result[1].id).toEqual("survivor-2");
+		expect($result[2].id).toEqual("survivor-3");
+	});
+
+	it("filters blacklist classes with text nodes", function () {
+
+		var $elements = $(
+			"<div class='blacklistClass1'></div>"
+			+ "textNode-1"
+			+ "<div id='survivor-1' class='some-other'></div>"
+			+ "<div id='survivor-2' class=''></div>"
+			+ "<div id='survivor-3'></div>"
+			+ "textNode-2"
+			+ "<div class='blacklistClass2'></div>"
+			);
+
+		$result = EPUBcfi.CFIInstructions.applyBlacklist($elements, ["blacklistClass1", "blacklistClass2"], []);
+
+		expect($result[0].nodeType).toEqual(3);
+		expect($result[1].id).toEqual("survivor-1");
+		expect($result[2].id).toEqual("survivor-2");
+		expect($result[3].id).toEqual("survivor-3");
+		expect($result[4].nodeType).toEqual(3);
+	});
+
+	it("filters blacklist elements with text nodes", function () {
+
+		var $elements = $(
+			"<div id='survivor-1'></div>"
+			+ "<mathjax></mathjax>"
+			+ "textNode-1"
+			+ "<div id='survivor-2' class=''></div>"
+			+ "<blacklistElement></blacklistElement>"
+			+ "textNode-2"
+			+ "<div id='survivor-3'></div>"
+			);
+
+		$result = EPUBcfi.CFIInstructions.applyBlacklist($elements, [], ["mathjax", "blacklistElement"]);
+
+		expect($result[0].id).toEqual("survivor-1");
+		expect($result[1].nodeType).toEqual(3);
+		expect($result[2].id).toEqual("survivor-2");
+		expect($result[3].nodeType).toEqual(3);
+		expect($result[4].id).toEqual("survivor-3");
+	});
 });
 
 describe('CFI INSTRUCTION ERROR HANDLING', function () {
