@@ -13,17 +13,17 @@ EPUBcfi.CFIInstructions = {
 	//   CDATA and text nodes. When we index into the set of child elements, we are assuming that text nodes have been 
 	//   excluded.
 	// REFACTORING CANDIDATE: This should be called "followIndexStep"
-	getNextNode : function (CFIStepValue, $currNode) {
+	getNextNode : function (CFIStepValue, $currNode, classBlacklist, elementBlacklist) {
 
 		// Find the jquery index for the current node
 		var $targetNode;
 		if (CFIStepValue % 2 == 0) {
 
-			$targetNode = this.elementNodeStep(CFIStepValue, $currNode);
+			$targetNode = this.elementNodeStep(CFIStepValue, $currNode, classBlacklist, elementBlacklist);
 		}
 		else {
 
-			$targetNode = this.inferTargetTextNode(CFIStepValue, $currNode);
+			$targetNode = this.inferTargetTextNode(CFIStepValue, $currNode, classBlacklist, elementBlacklist);
 		}
 
 		return $targetNode;
@@ -34,10 +34,11 @@ EPUBcfi.CFIInstructions = {
 	//   depending on the target. 
 	// Note: Iframe indirection will (should) fail if the iframe is not from the same domain as its containing script due to 
 	//   the cross origin security policy
-	followIndirectionStep : function (CFIStepValue, $currNode, $packageDocument) {
+	followIndirectionStep : function (CFIStepValue, $currNode, $packageDocument, classBlacklist, elementBlacklist) {
 
 		var that = this;
 		var $contentDocument; 
+		var $blacklistExcluded;
 		var $startElement;
 		var $targetNode;
 
@@ -55,11 +56,11 @@ EPUBcfi.CFIInstructions = {
 			$contentDocument = $currNode.contents();
 
 			// Go to the first XHTML element, which will be the first child of the top-level document object
-			// REFACTORING CANDIDATE: What if the first element is an excluded class? 
-			$startElement = $($contentDocument.children()[0]);
+			$blacklistExcluded = this.applyBlacklist($contentDocument.children(), classBlacklist, elementBlacklist);
+			$startElement = $($blacklistExcluded[0]);
 
 			// Follow an index step
-			$targetNode = this.getNextNode(CFIStepValue, $startElement);
+			$targetNode = this.getNextNode(CFIStepValue, $startElement, classBlacklist, elementBlacklist);
 
 			// Return that shit!
 			return $targetNode; 
@@ -74,10 +75,6 @@ EPUBcfi.CFIInstructions = {
 	// Description: Injects an element at the specified text node
 	// Arguments: a cfi text termination string, a jquery object to the current node
 	textTermination : function ($currNode, textOffset, elementToInject) {
-
-		var targetTextNode; 
-		var originalText;
-		var textWithInjection;
 
 		// Get the first node, this should be a text node
 		if ($currNode === undefined) {
@@ -112,16 +109,22 @@ EPUBcfi.CFIInstructions = {
 	// ------------------------------------------------------------------------------------ //
 
 	// Description: Step reference for xml element node. Expected that CFIStepValue is an even integer
-	elementNodeStep : function (CFIStepValue, $currNode) {
+	elementNodeStep : function (CFIStepValue, $currNode, classBlacklist, elementBlacklist) {
 
 		var $targetNode;
+		var $blacklistExcluded;
+		var numElements;
 		var jqueryTargetNodeIndex = (CFIStepValue / 2) - 1;
-		if (this.indexOutOfRange(jqueryTargetNodeIndex, $currNode.children().not('.cfiMarker').length)) {
 
-			throw EPUBcfi.OutOfRangeError(jqueryTargetNodeIndex, $currNode.children().not('.cfiMarker').length - 1, "");
+		$blacklistExcluded = this.applyBlacklist($currNode.children(), classBlacklist, elementBlacklist);
+		numElements = $blacklistExcluded.length;
+
+		if (this.indexOutOfRange(jqueryTargetNodeIndex, numElements)) {
+
+			throw EPUBcfi.OutOfRangeError(jqueryTargetNodeIndex, numElements - 1, "");
 		}
 
-	    $targetNode = $($currNode.children().not('.cfiMarker')[jqueryTargetNodeIndex]);
+	    $targetNode = $($blacklistExcluded[jqueryTargetNodeIndex]);
 		return $targetNode;
 	},
 
@@ -190,7 +193,7 @@ EPUBcfi.CFIInstructions = {
 	// Notes: Passed a current node. This node should have a set of elements under it. This will include at least one text node, 
 	//   element nodes (maybe), or possibly a mix. 
 	// REFACTORING CANDIDATE: This method is pretty long. Worth investigating to see if it can be refactored into something clearer.
-	inferTargetTextNode : function (CFIStepValue, $currNode) {
+	inferTargetTextNode : function (CFIStepValue, $currNode, classBlacklist, elementBlacklist) {
 		
 		var $elementsWithoutMarkers;
 		var currTextNodePosition;
@@ -201,19 +204,7 @@ EPUBcfi.CFIInstructions = {
 		// Remove any cfi marker elements from the set of elements. 
 		// Rationale: A filtering function is used, as simply using a class selector with jquery appears to 
 		//   result in behaviour where text nodes are also filtered out, along with the class element being filtered.
-		// $elementsWithoutMarkers = $currNode.contents().filter(
-		// 	function () {
-
-		// 		if ($(this).filter(".cfiMarker").length !== 0) {
-		// 			return false;
-		// 		}
-		// 		else {
-		// 			return true;
-		// 		}
-		// 	}
-		// );
-
-		$elementsWithoutMarkers = this.applyBlacklist($currNode.contents(), ["cfiMarker"], []);
+		$elementsWithoutMarkers = this.applyBlacklist($currNode.contents(), classBlacklist, elementBlacklist);
 
 		// Convert CFIStepValue to logical index; assumes odd integer for the step value
 		logicalTargetPosition = (parseInt(CFIStepValue) + 1) / 2;
@@ -260,7 +251,7 @@ EPUBcfi.CFIInstructions = {
 		return $targetTextNodeList;
 	},
 
-	applyBlacklist : function ($elements, blacklistClasses, blacklistElements) {
+	applyBlacklist : function ($elements, classBlacklist, elementBlacklist) {
 
         var $filteredElements;
 
@@ -270,27 +261,33 @@ EPUBcfi.CFIInstructions = {
                 var $currElement = $(this);
                 var includeInList = true;
 
-                // Filter each element with the class type
-                $.each(blacklistClasses, function (index, value) {
+                if (classBlacklist) {
 
-                    if ($currElement.hasClass(value)) {
-                    	includeInList = false;
+                	// Filter each element with the class type
+                	$.each(classBlacklist, function (index, value) {
 
-                    	// Break this loop
-                        return false;
-                    }
-                });
+	                    if ($currElement.hasClass(value)) {
+	                    	includeInList = false;
 
-                // For each type of element
-                $.each(blacklistElements, function (index, value) {
+	                    	// Break this loop
+	                        return false;
+	                    }
+                	});
+                }
 
-                    if ($currElement.is(value)) {
-                    	includeInList = false;
+                if (elementBlacklist) {
+                	
+	                // For each type of element
+	                $.each(elementBlacklist, function (index, value) {
 
-                    	// Break this loop
-                        return false;
-                    }
-                });
+	                    if ($currElement.is(value)) {
+	                    	includeInList = false;
+
+	                    	// Break this loop
+	                        return false;
+	                    }
+	                });
+				}
 
                 return includeInList;
             }
