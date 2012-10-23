@@ -63,7 +63,6 @@ EPUBcfi.Generator = {
 
         var $parentNode;
         var $contentsExcludingMarkers;
-        var currIndex;
         var CFIIndex;
         var indexOfTextNode;
         var preAssertion;
@@ -76,9 +75,7 @@ EPUBcfi.Generator = {
         $parentNode = $startTextNode.parent();
         $contentsExcludingMarkers = EPUBcfi.CFIInstructions.applyBlacklist($parentNode.contents(), classBlacklist, elementBlacklist, idBlacklist);
 
-        // Find the text node number in the list, inferring nodes that were originally together
-        // TODO: I don't think the inference of text nodes is being done here; check this
-        // REFACTORING CANDIDATE: Can remove the curr index and just use the jquery index passed as an argument to the anoymous function
+        // Find the text node number in the list, inferring nodes that were originally a single text node
         var prevNodeWasTextNode;
         var indexOfFirstInSequence;
         $.each($contentsExcludingMarkers, 
@@ -128,12 +125,62 @@ EPUBcfi.Generator = {
         // postAssertionEndIndex = (characterOffset + 3 <= textLength) ? characterOffset + 3 : textLength;
         // postAssertion = $startTextNode[0].nodeValue.substring(characterOffset, postAssertionEndIndex);
 
-
         // Gotta infer the correct character offset, as well
 
         // return the constructed text node step
         return "/" + CFIIndex + ":" + characterOffset;
          // + "[" + preAssertion + "," + postAssertion + "]";
+    },
+
+    // Description: A set of adjacent text nodes can be inferred to have been a single text node in the original document. As such, 
+    //   if the character offset is specified for one of the adjacent text nodes, the true offset for the original node must be
+    //   inferred.
+    findOriginalTextNodeCharOffset : function ($startTextNode, specifiedCharacterOffset, classBlacklist, elementBlacklist, idBlacklist) {
+
+        var $parentNode;
+        var $contentsExcludingMarkers;
+        var textLength;
+        
+        // Find text node position in the set of child elements, ignoring any cfi markers 
+        $parentNode = $startTextNode.parent();
+        $contentsExcludingMarkers = EPUBcfi.CFIInstructions.applyBlacklist($parentNode.contents(), classBlacklist, elementBlacklist, idBlacklist);
+
+        // Find the text node number in the list, inferring nodes that were originally a single text node
+        var prevNodeWasTextNode;
+        var originalCharOffset = -1; // So the character offset is a 0-based index; we'll be adding lengths of text nodes to this number
+        $.each($contentsExcludingMarkers, 
+            function (index) {
+
+                // If this is a text node, check if it matches and return the current index
+                if (this.nodeType === 3) {
+
+                    if (this === $startTextNode[0]) {
+
+                        if (prevNodeWasTextNode) {
+                            originalCharOffset = originalCharOffset + specifiedCharacterOffset;
+                        }
+                        else {
+                            originalCharOffset = specifiedCharacterOffset;
+                        }
+
+                        return false; // Break out of .each loop
+                    }
+                    else {
+
+                        originalCharOffset = originalCharOffset + this.length;
+                    }
+
+                    // save this index as the first in sequence of adjacent text nodes, if not set
+                    prevNodeWasTextNode = true;
+                }
+                // This node is not a text node
+                else {
+                    prevNodeWasTextNode = false;
+                }
+            }
+        );
+
+        return originalCharOffset;
     },
 
     // REFACTORING CANDIDATE: Consider putting the handling of the starting text node into the body of the 

@@ -54,6 +54,34 @@ describe("CFI GENERATOR", function () {
         expect(generatedCFI).toEqual("!/4/2[startParent]/3:3"); // [ te,xtn]
     });
 
+    it("calculates the original character offset", function () {
+
+        var dom = 
+            "<html>"
+            +    "<div></div>"
+            +    "<div>"
+            +         "<div id='startParent'>"
+            +             "<div></div>"
+            +             "textnode1.0"
+            +             "<div class='cfi-marker'></div>"
+            +             "textnode1.1"
+            +             "<div class='cfi-marker'></div>"
+            +             "textnode1.2"            
+            +             "<div></div>"
+            +             "textNode2"
+            +             "<div></div>"
+            +         "</div>"
+            +     "</div>"
+            +     "<div></div>"
+            + "</html>";
+        var $dom = $((new window.DOMParser).parseFromString(dom, "text/xml"));
+
+        var orgIndexFromSplitNodes = EPUBcfi.Generator.findOriginalTextNodeCharOffset($($('#startParent', $dom).contents()[3]), 3, ["cfi-marker"]);
+        var orgIndexFromSingleNode = EPUBcfi.Generator.findOriginalTextNodeCharOffset($($('#startParent', $dom).contents()[7]), 3, ["cfi-marker"]);
+        expect(orgIndexFromSplitNodes).toEqual(13);
+        expect(orgIndexFromSingleNode).toEqual(3);
+    });
+
     it("can generate a complete CFI for both the content document and package document", function () {
 
         var packageDocXhtml = 
