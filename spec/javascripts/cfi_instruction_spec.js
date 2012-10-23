@@ -199,6 +199,27 @@ describe("CFI INSTRUCTION OBJECT", function () {
 		expect($result[3].nodeType).toEqual(3);
 		expect($result[4].id).toEqual("survivor-3");
 	});
+
+	it("filters blacklist ids with text nodes", function () {
+
+		var $elements = $(
+			"<div id='survivor-1'></div>"
+			+ "<div id='mathjax'></div>"
+			+ "textNode-1"
+			+ "<div id='survivor-2' class=''></div>"
+			+ "<blacklistElement id='blacklist-1'></blacklistElement>"
+			+ "textNode-2"
+			+ "<div id='survivor-3'></div>"
+			);
+
+		$result = EPUBcfi.CFIInstructions.applyBlacklist($elements, [], [], ["mathjax", "blacklist-1"]);
+
+		expect($result[0].id).toEqual("survivor-1");
+		expect($result[1].nodeType).toEqual(3);
+		expect($result[2].id).toEqual("survivor-2");
+		expect($result[3].nodeType).toEqual(3);
+		expect($result[4].id).toEqual("survivor-3");
+	});
 });
 
 describe('CFI INSTRUCTION ERROR HANDLING', function () {

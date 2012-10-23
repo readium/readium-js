@@ -1442,17 +1442,17 @@ EPUBcfi.CFIInstructions = {
 	//   CDATA and text nodes. When we index into the set of child elements, we are assuming that text nodes have been 
 	//   excluded.
 	// REFACTORING CANDIDATE: This should be called "followIndexStep"
-	getNextNode : function (CFIStepValue, $currNode) {
+	getNextNode : function (CFIStepValue, $currNode, classBlacklist, elementBlacklist, idBlacklist) {
 
 		// Find the jquery index for the current node
 		var $targetNode;
 		if (CFIStepValue % 2 == 0) {
 
-			$targetNode = this.elementNodeStep(CFIStepValue, $currNode);
+			$targetNode = this.elementNodeStep(CFIStepValue, $currNode, classBlacklist, elementBlacklist, idBlacklist);
 		}
 		else {
 
-			$targetNode = this.inferTargetTextNode(CFIStepValue, $currNode);
+			$targetNode = this.inferTargetTextNode(CFIStepValue, $currNode, classBlacklist, elementBlacklist, idBlacklist);
 		}
 
 		return $targetNode;
@@ -1463,10 +1463,11 @@ EPUBcfi.CFIInstructions = {
 	//   depending on the target. 
 	// Note: Iframe indirection will (should) fail if the iframe is not from the same domain as its containing script due to 
 	//   the cross origin security policy
-	followIndirectionStep : function (CFIStepValue, $currNode, $packageDocument) {
+	followIndirectionStep : function (CFIStepValue, $currNode, $packageDocument, classBlacklist, elementBlacklist, idBlacklist) {
 
 		var that = this;
 		var $contentDocument; 
+		var $blacklistExcluded;
 		var $startElement;
 		var $targetNode;
 
@@ -1484,11 +1485,11 @@ EPUBcfi.CFIInstructions = {
 			$contentDocument = $currNode.contents();
 
 			// Go to the first XHTML element, which will be the first child of the top-level document object
-			// REFACTORING CANDIDATE: What if the first element is an excluded class? 
-			$startElement = $($contentDocument.children()[0]);
+			$blacklistExcluded = this.applyBlacklist($contentDocument.children(), classBlacklist, elementBlacklist, idBlacklist);
+			$startElement = $($blacklistExcluded[0]);
 
 			// Follow an index step
-			$targetNode = this.getNextNode(CFIStepValue, $startElement);
+			$targetNode = this.getNextNode(CFIStepValue, $startElement, classBlacklist, elementBlacklist, idBlacklist);
 
 			// Return that shit!
 			return $targetNode; 
@@ -1503,10 +1504,6 @@ EPUBcfi.CFIInstructions = {
 	// Description: Injects an element at the specified text node
 	// Arguments: a cfi text termination string, a jquery object to the current node
 	textTermination : function ($currNode, textOffset, elementToInject) {
-
-		var targetTextNode; 
-		var originalText;
-		var textWithInjection;
 
 		// Get the first node, this should be a text node
 		if ($currNode === undefined) {
@@ -1541,16 +1538,22 @@ EPUBcfi.CFIInstructions = {
 	// ------------------------------------------------------------------------------------ //
 
 	// Description: Step reference for xml element node. Expected that CFIStepValue is an even integer
-	elementNodeStep : function (CFIStepValue, $currNode) {
+	elementNodeStep : function (CFIStepValue, $currNode, classBlacklist, elementBlacklist, idBlacklist) {
 
 		var $targetNode;
+		var $blacklistExcluded;
+		var numElements;
 		var jqueryTargetNodeIndex = (CFIStepValue / 2) - 1;
-		if (this.indexOutOfRange(jqueryTargetNodeIndex, $currNode.children().not('.cfiMarker').length)) {
 
-			throw EPUBcfi.OutOfRangeError(jqueryTargetNodeIndex, $currNode.children().not('.cfiMarker').length - 1, "");
+		$blacklistExcluded = this.applyBlacklist($currNode.children(), classBlacklist, elementBlacklist, idBlacklist);
+		numElements = $blacklistExcluded.length;
+
+		if (this.indexOutOfRange(jqueryTargetNodeIndex, numElements)) {
+
+			throw EPUBcfi.OutOfRangeError(jqueryTargetNodeIndex, numElements - 1, "");
 		}
 
-	    $targetNode = $($currNode.children().not('.cfiMarker')[jqueryTargetNodeIndex]);
+	    $targetNode = $($blacklistExcluded[jqueryTargetNodeIndex]);
 		return $targetNode;
 	},
 
@@ -1619,7 +1622,7 @@ EPUBcfi.CFIInstructions = {
 	// Notes: Passed a current node. This node should have a set of elements under it. This will include at least one text node, 
 	//   element nodes (maybe), or possibly a mix. 
 	// REFACTORING CANDIDATE: This method is pretty long. Worth investigating to see if it can be refactored into something clearer.
-	inferTargetTextNode : function (CFIStepValue, $currNode) {
+	inferTargetTextNode : function (CFIStepValue, $currNode, classBlacklist, elementBlacklist, idBlacklist) {
 		
 		var $elementsWithoutMarkers;
 		var currTextNodePosition;
@@ -1630,17 +1633,7 @@ EPUBcfi.CFIInstructions = {
 		// Remove any cfi marker elements from the set of elements. 
 		// Rationale: A filtering function is used, as simply using a class selector with jquery appears to 
 		//   result in behaviour where text nodes are also filtered out, along with the class element being filtered.
-		$elementsWithoutMarkers = $currNode.contents().filter(
-			function () {
-
-				if ($(this).filter(".cfiMarker").length !== 0) {
-					return false;
-				}
-				else {
-					return true;
-				}
-			}
-		);
+		$elementsWithoutMarkers = this.applyBlacklist($currNode.contents(), classBlacklist, elementBlacklist, idBlacklist);
 
 		// Convert CFIStepValue to logical index; assumes odd integer for the step value
 		logicalTargetPosition = (parseInt(CFIStepValue) + 1) / 2;
@@ -1685,7 +1678,66 @@ EPUBcfi.CFIInstructions = {
 
 		// return the text node list
 		return $targetTextNodeList;
-	}
+	},
+
+	applyBlacklist : function ($elements, classBlacklist, elementBlacklist, idBlacklist) {
+
+        var $filteredElements;
+
+        $filteredElements = $elements.filter(
+            function () {
+
+                var $currElement = $(this);
+                var includeInList = true;
+
+                if (classBlacklist) {
+
+                	// Filter each element with the class type
+                	$.each(classBlacklist, function (index, value) {
+
+	                    if ($currElement.hasClass(value)) {
+	                    	includeInList = false;
+
+	                    	// Break this loop
+	                        return false;
+	                    }
+                	});
+                }
+
+                if (elementBlacklist) {
+                	
+	                // For each type of element
+	                $.each(elementBlacklist, function (index, value) {
+
+	                    if ($currElement.is(value)) {
+	                    	includeInList = false;
+
+	                    	// Break this loop
+	                        return false;
+	                    }
+	                });
+				}
+
+				if (idBlacklist) {
+                	
+	                // For each type of element
+	                $.each(idBlacklist, function (index, value) {
+
+	                    if ($currElement.attr("id") === value) {
+	                    	includeInList = false;
+
+	                    	// Break this loop
+	                        return false;
+	                    }
+	                });
+				}
+
+                return includeInList;
+            }
+        );
+
+        return $filteredElements;
+    }
 };
 
 
@@ -1717,7 +1769,7 @@ EPUBcfi.Interpreter = {
     // Rationale: This method is a part of the API so that the reading system can "interact" the content document 
     //   pointed to by a CFI. If this is not a separate step, the processing of the CFI must be tightly coupled with 
     //   the reading system, as it stands now. 
-    getContentDocHref : function (CFI, packageDocument) {
+    getContentDocHref : function (CFI, packageDocument, classBlacklist, elementBlacklist, idBlacklist) {
 
         // Decode for URI/IRI escape characters
         var $packageDocument = $(packageDocument);
@@ -1733,7 +1785,7 @@ EPUBcfi.Interpreter = {
         var $packageElement = $($("package", $packageDocument)[0]);
 
         // Interpet the path node (the package document step)
-        var $currElement = this.interpretIndexStepNode(CFIAST.cfiString.path, $packageElement);
+        var $currElement = this.interpretIndexStepNode(CFIAST.cfiString.path, $packageElement, classBlacklist, elementBlacklist, idBlacklist);
 
         // Interpret the local_path node, which is a set of steps and and a terminus condition
         var stepNum = 0;
@@ -1743,11 +1795,11 @@ EPUBcfi.Interpreter = {
             nextStepNode = CFIAST.cfiString.localPath.steps[stepNum];
             if (nextStepNode.type === "indexStep") {
 
-                $currElement = this.interpretIndexStepNode(nextStepNode, $currElement);
+                $currElement = this.interpretIndexStepNode(nextStepNode, $currElement, classBlacklist, elementBlacklist, idBlacklist);
             }
             else if (nextStepNode.type === "indirectionStep") {
 
-                $currElement = this.interpretIndirectionStepNode(nextStepNode, $currElement, $packageDocument);
+                $currElement = this.interpretIndirectionStepNode(nextStepNode, $currElement, $packageDocument, classBlacklist, elementBlacklist, idBlacklist);
             }
 
             // Found the content document href referenced by the spine item 
@@ -1762,7 +1814,7 @@ EPUBcfi.Interpreter = {
     },
 
     // Description: Inject an arbirtary html element into a position in a content document referenced by a CFI
-    injectElement : function (CFI, contentDocument, elementToInject) {
+    injectElement : function (CFI, contentDocument, elementToInject, classBlacklist, elementBlacklist, idBlacklist) {
 
         var decodedCFI = decodeURI(CFI);
         var CFIAST = EPUBcfi.Parser.parse(decodedCFI);
@@ -1779,14 +1831,14 @@ EPUBcfi.Interpreter = {
                 // This is now assuming that indirection steps and index steps conform to an interface: an object with stepLength, idAssertion
                 nextStepNode.type = "indexStep";
                 // Getting the html element and creating a jquery object for it; excluding cfiMarkers
-                $currElement = this.interpretIndexStepNode(nextStepNode, $(contentDocument.firstChild));
+                $currElement = this.interpretIndexStepNode(nextStepNode, $(contentDocument.firstChild), classBlacklist, elementBlacklist, idBlacklist);
                 stepNum++ // Increment the step num as this will be passed as the starting point for continuing interpretation
                 break;
             }
         }
 
         // Interpret the rest of the steps
-        $currElement = this.interpretLocalPath(CFIAST.cfiString, stepNum, $currElement);
+        $currElement = this.interpretLocalPath(CFIAST.cfiString, stepNum, $currElement, classBlacklist, elementBlacklist, idBlacklist);
 
         // TODO: detect what kind of terminus; for now, text node termini are the only kind implemented
         $currElement = this.interpretTextTerminusNode(CFIAST.cfiString.localPath.termStep, $currElement, elementToInject);
@@ -1799,7 +1851,7 @@ EPUBcfi.Interpreter = {
     //  "PRIVATE" HELPERS                                                                   //
     // ------------------------------------------------------------------------------------ //
 
-    interpretLocalPath : function (cfiStringNode, startStepNum, $currElement) {
+    interpretLocalPath : function (cfiStringNode, startStepNum, $currElement, classBlacklist, elementBlacklist, idBlacklist) {
 
         var stepNum = startStepNum;
         var nextStepNode;
@@ -1808,18 +1860,18 @@ EPUBcfi.Interpreter = {
             nextStepNode = cfiStringNode.localPath.steps[stepNum];
             if (nextStepNode.type === "indexStep") {
 
-                $currElement = this.interpretIndexStepNode(nextStepNode, $currElement);
+                $currElement = this.interpretIndexStepNode(nextStepNode, $currElement, classBlacklist, elementBlacklist, idBlacklist);
             }
             else if (nextStepNode.type === "indirectionStep") {
 
-                $currElement = this.interpretIndirectionStepNode(nextStepNode, $currElement, $packageDocument);
+                $currElement = this.interpretIndirectionStepNode(nextStepNode, $currElement, $packageDocument, classBlacklist, elementBlacklist, idBlacklist);
             }
         }
 
         return $currElement;
     },
 
-    interpretIndexStepNode : function (indexStepNode, $currElement) {
+    interpretIndexStepNode : function (indexStepNode, $currElement, classBlacklist, elementBlacklist, idBlacklist) {
 
         // Check node type; throw error if wrong type
         if (indexStepNode === undefined || indexStepNode.type !== "indexStep") {
@@ -1828,7 +1880,7 @@ EPUBcfi.Interpreter = {
         }
 
         // Index step
-        var $stepTarget = EPUBcfi.CFIInstructions.getNextNode(indexStepNode.stepLength, $currElement);
+        var $stepTarget = EPUBcfi.CFIInstructions.getNextNode(indexStepNode.stepLength, $currElement, classBlacklist, elementBlacklist, idBlacklist);
 
         // Check the id assertion, if it exists
         if (indexStepNode.idAssertion) {
@@ -1842,7 +1894,7 @@ EPUBcfi.Interpreter = {
         return $stepTarget;
     },
 
-    interpretIndirectionStepNode : function (indirectionStepNode, $currElement, $packageDocument) {
+    interpretIndirectionStepNode : function (indirectionStepNode, $currElement, $packageDocument, classBlacklist, elementBlacklist, idBlacklist) {
 
         // Check node type; throw error if wrong type
         if (indirectionStepNode === undefined || indirectionStepNode.type !== "indirectionStep") {
@@ -1854,7 +1906,9 @@ EPUBcfi.Interpreter = {
         var $stepTarget = EPUBcfi.CFIInstructions.followIndirectionStep(
             indirectionStepNode.stepLength, 
             $currElement,
-            $packageDocument);
+            $packageDocument, 
+            classBlacklist, 
+            elementBlacklist);
 
         // Check the id assertion, if it exists
         if (indirectionStepNode.idAssertion) {
@@ -1955,7 +2009,7 @@ EPUBcfi.CFIAssertionError = function (expectedAssertion, targetElementAssertion,
     // Description: Generates a character offset CFI 
     // Arguments: The text node that contains the offset referenced by the cfi, the offset value, the name of the 
     //   content document that contains the text node, the package document for this EPUB.
-    generateCharacterOffsetCFI : function (startTextNode, characterOffset, contentDocumentName, packageDocument) {
+    generateCharacterOffsetCFI : function (startTextNode, characterOffset, contentDocumentName, packageDocument, classBlacklist, elementBlacklist, idBlacklist) {
 
         // ------------------------------------------------------------------------------------ //
         //  "PUBLIC" METHODS (THE API)                                                          //
@@ -1994,13 +2048,13 @@ EPUBcfi.CFIAssertionError = function (expectedAssertion, targetElementAssertion,
         }
 
         // call the recursive function to get all the steps until the top of the content document
-        contentDocCFI = this.createCFIElementSteps($(startTextNode), characterOffset, 'html');
+        contentDocCFI = this.createCFIElementSteps($(startTextNode), characterOffset, 'html', classBlacklist, elementBlacklist, idBlacklist);
 
         // Get the start node (itemref element) that references the content document
         $itemRefStartNode = $("itemref[idref=" + contentDocumentName + "]", $(packageDocument));
 
         // Get the steps to the top of the package document
-        packageDocCFI = this.createCFIElementSteps($itemRefStartNode, characterOffset, "package");
+        packageDocCFI = this.createCFIElementSteps($itemRefStartNode, characterOffset, "package", classBlacklist, elementBlacklist, idBlacklist);
 
         // Return the CFI with "epubcfi()" appended. Could use the parser to check its validity.
         return "epubcfi(" + packageDocCFI + contentDocCFI + ")";
@@ -2011,7 +2065,7 @@ EPUBcfi.CFIAssertionError = function (expectedAssertion, targetElementAssertion,
     // ------------------------------------------------------------------------------------ //
 
     // REFACTORING CANDIDATE: Some of the parts of this method could be refactored into their own methods. 
-    createCFITextNodeStep : function ($startTextNode, characterOffset) {
+    createCFITextNodeStep : function ($startTextNode, characterOffset, classBlacklist, elementBlacklist, idBlacklist) {
 
         var $parentNode;
         var $contentsExcludingMarkers;
@@ -2026,21 +2080,11 @@ EPUBcfi.CFIAssertionError = function (expectedAssertion, targetElementAssertion,
 
         // Find text node position in the set of child elements, ignoring any cfi markers 
         $parentNode = $startTextNode.parent();
-
-        // REFACTORING CANDIDATE: This code exists in the inferTargetNode method and should be moved into its own method
-        $contentsExcludingMarkers = $parentNode.contents().filter(
-            function () {
-
-                if ($(this).filter(".cfiMarker").length !== 0) {
-                    return false;
-                }
-                else {
-                    return true;
-                }
-            }
-        );
+        $contentsExcludingMarkers = EPUBcfi.CFIInstructions.applyBlacklist($parentNode.contents(), classBlacklist, elementBlacklist, idBlacklist);
 
         // Find the text node number in the list, inferring nodes that were originally together
+        // TODO: I don't think the inference of text nodes is being done here; check this
+        // REFACTORING CANDIDATE: Can remove the curr index and just use the jquery index passed as an argument to the anoymous function
         currIndex = 0;
         $.each($contentsExcludingMarkers, 
             function () {
@@ -2065,24 +2109,29 @@ EPUBcfi.CFIAssertionError = function (expectedAssertion, targetElementAssertion,
         // Convert the text node number to a CFI odd-integer representation
         CFIIndex = (indexOfTextNode * 2) + 1;
 
-        // Add pre- and post- text assertions
-        preAssertionStartIndex = (characterOffset - 3 >= 0) ? characterOffset - 3 : 0;
-        preAssertion = $startTextNode[0].nodeValue.substring(preAssertionStartIndex, characterOffset);
+        // TODO: text assertions are not in the grammar yet, I think, or they're just causing problems. This has
+        //   been temporarily removed. 
 
-        textLength = $startTextNode[0].nodeValue.length;
-        postAssertionEndIndex = (characterOffset + 3 <= textLength) ? characterOffset + 3 : textLength;
-        postAssertion = $startTextNode[0].nodeValue.substring(characterOffset, postAssertionEndIndex);
+        // Add pre- and post- text assertions
+        // preAssertionStartIndex = (characterOffset - 3 >= 0) ? characterOffset - 3 : 0;
+        // preAssertion = $startTextNode[0].nodeValue.substring(preAssertionStartIndex, characterOffset);
+
+        // textLength = $startTextNode[0].nodeValue.length;
+        // postAssertionEndIndex = (characterOffset + 3 <= textLength) ? characterOffset + 3 : textLength;
+        // postAssertion = $startTextNode[0].nodeValue.substring(characterOffset, postAssertionEndIndex);
 
         // return the constructed text node step
-        return "/" + CFIIndex + ":" + characterOffset + "[" + preAssertion + "," + postAssertion + "]";
+        return "/" + CFIIndex + ":" + characterOffset;
+         // + "[" + preAssertion + "," + postAssertion + "]";
     },
 
     // REFACTORING CANDIDATE: Consider putting the handling of the starting text node into the body of the 
     //   generateCharacterOffsetCfi() method; this way the characterOffset argument could be removed, which 
     //   would clarify the abstraction
-    createCFIElementSteps : function ($currNode, characterOffset, topLevelElement) {
+    createCFIElementSteps : function ($currNode, characterOffset, topLevelElement, classBlacklist, elementBlacklist, idBlacklist) {
 
         var textNodeStep;
+        var $blacklistExcluded;
         var $parentNode;
         var currNodePosition;
         var CFIPosition;
@@ -2092,12 +2141,22 @@ EPUBcfi.CFIAssertionError = function (expectedAssertion, targetElementAssertion,
         if ($currNode[0].nodeType === 3) {
 
             textNodeStep = this.createCFITextNodeStep($currNode, characterOffset);
-            return this.createCFIElementSteps($currNode.parent(), characterOffset, topLevelElement) + textNodeStep; 
+            return this.createCFIElementSteps($currNode.parent(), characterOffset, topLevelElement, classBlacklist, elementBlacklist, idBlacklist) + textNodeStep; 
         }
 
-        // Find position of current node in parent list. The use of .index() assumes that only 
-        // xml element nodes are considered (not CDATA, text etc.)
-        currNodePosition = $currNode.index();
+        // Find position of current node in parent list
+        $blacklistExcluded = EPUBcfi.CFIInstructions.applyBlacklist($currNode.parent().children(), classBlacklist, elementBlacklist, idBlacklist);
+        $.each($blacklistExcluded, 
+            function (index, value) {
+
+                if (this === $currNode[0]) {
+
+                    currNodePosition = index;
+
+                    // Break loop
+                    return false;
+                }
+        });
 
         // Convert position to the CFI even-integer representation
         CFIPosition = (currNodePosition + 1) * 2;
@@ -2131,7 +2190,7 @@ EPUBcfi.CFIAssertionError = function (expectedAssertion, targetElementAssertion,
         }
         else {
 
-            return this.createCFIElementSteps($parentNode, characterOffset, topLevelElement) + elementStep;
+            return this.createCFIElementSteps($parentNode, characterOffset, topLevelElement, classBlacklist, elementBlacklist, idBlacklist) + elementStep;
         }
     }
 };

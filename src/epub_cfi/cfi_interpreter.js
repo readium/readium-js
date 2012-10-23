@@ -24,7 +24,7 @@ EPUBcfi.Interpreter = {
     // Rationale: This method is a part of the API so that the reading system can "interact" the content document 
     //   pointed to by a CFI. If this is not a separate step, the processing of the CFI must be tightly coupled with 
     //   the reading system, as it stands now. 
-    getContentDocHref : function (CFI, packageDocument, classBlacklist, elementBlacklist) {
+    getContentDocHref : function (CFI, packageDocument, classBlacklist, elementBlacklist, idBlacklist) {
 
         // Decode for URI/IRI escape characters
         var $packageDocument = $(packageDocument);
@@ -40,7 +40,7 @@ EPUBcfi.Interpreter = {
         var $packageElement = $($("package", $packageDocument)[0]);
 
         // Interpet the path node (the package document step)
-        var $currElement = this.interpretIndexStepNode(CFIAST.cfiString.path, $packageElement, classBlacklist, elementBlacklist);
+        var $currElement = this.interpretIndexStepNode(CFIAST.cfiString.path, $packageElement, classBlacklist, elementBlacklist, idBlacklist);
 
         // Interpret the local_path node, which is a set of steps and and a terminus condition
         var stepNum = 0;
@@ -50,11 +50,11 @@ EPUBcfi.Interpreter = {
             nextStepNode = CFIAST.cfiString.localPath.steps[stepNum];
             if (nextStepNode.type === "indexStep") {
 
-                $currElement = this.interpretIndexStepNode(nextStepNode, $currElement, classBlacklist, elementBlacklist);
+                $currElement = this.interpretIndexStepNode(nextStepNode, $currElement, classBlacklist, elementBlacklist, idBlacklist);
             }
             else if (nextStepNode.type === "indirectionStep") {
 
-                $currElement = this.interpretIndirectionStepNode(nextStepNode, $currElement, $packageDocument, classBlacklist, elementBlacklist);
+                $currElement = this.interpretIndirectionStepNode(nextStepNode, $currElement, $packageDocument, classBlacklist, elementBlacklist, idBlacklist);
             }
 
             // Found the content document href referenced by the spine item 
@@ -69,7 +69,7 @@ EPUBcfi.Interpreter = {
     },
 
     // Description: Inject an arbirtary html element into a position in a content document referenced by a CFI
-    injectElement : function (CFI, contentDocument, elementToInject, classBlacklist, elementBlacklist) {
+    injectElement : function (CFI, contentDocument, elementToInject, classBlacklist, elementBlacklist, idBlacklist) {
 
         var decodedCFI = decodeURI(CFI);
         var CFIAST = EPUBcfi.Parser.parse(decodedCFI);
@@ -86,14 +86,14 @@ EPUBcfi.Interpreter = {
                 // This is now assuming that indirection steps and index steps conform to an interface: an object with stepLength, idAssertion
                 nextStepNode.type = "indexStep";
                 // Getting the html element and creating a jquery object for it; excluding cfiMarkers
-                $currElement = this.interpretIndexStepNode(nextStepNode, $(contentDocument.firstChild), classBlacklist, elementBlacklist);
+                $currElement = this.interpretIndexStepNode(nextStepNode, $(contentDocument.firstChild), classBlacklist, elementBlacklist, idBlacklist);
                 stepNum++ // Increment the step num as this will be passed as the starting point for continuing interpretation
                 break;
             }
         }
 
         // Interpret the rest of the steps
-        $currElement = this.interpretLocalPath(CFIAST.cfiString, stepNum, $currElement, classBlacklist, elementBlacklist);
+        $currElement = this.interpretLocalPath(CFIAST.cfiString, stepNum, $currElement, classBlacklist, elementBlacklist, idBlacklist);
 
         // TODO: detect what kind of terminus; for now, text node termini are the only kind implemented
         $currElement = this.interpretTextTerminusNode(CFIAST.cfiString.localPath.termStep, $currElement, elementToInject);
@@ -106,7 +106,7 @@ EPUBcfi.Interpreter = {
     //  "PRIVATE" HELPERS                                                                   //
     // ------------------------------------------------------------------------------------ //
 
-    interpretLocalPath : function (cfiStringNode, startStepNum, $currElement, classBlacklist, elementBlacklist) {
+    interpretLocalPath : function (cfiStringNode, startStepNum, $currElement, classBlacklist, elementBlacklist, idBlacklist) {
 
         var stepNum = startStepNum;
         var nextStepNode;
@@ -115,18 +115,18 @@ EPUBcfi.Interpreter = {
             nextStepNode = cfiStringNode.localPath.steps[stepNum];
             if (nextStepNode.type === "indexStep") {
 
-                $currElement = this.interpretIndexStepNode(nextStepNode, $currElement, classBlacklist, elementBlacklist);
+                $currElement = this.interpretIndexStepNode(nextStepNode, $currElement, classBlacklist, elementBlacklist, idBlacklist);
             }
             else if (nextStepNode.type === "indirectionStep") {
 
-                $currElement = this.interpretIndirectionStepNode(nextStepNode, $currElement, $packageDocument, classBlacklist, elementBlacklist);
+                $currElement = this.interpretIndirectionStepNode(nextStepNode, $currElement, $packageDocument, classBlacklist, elementBlacklist, idBlacklist);
             }
         }
 
         return $currElement;
     },
 
-    interpretIndexStepNode : function (indexStepNode, $currElement, classBlacklist, elementBlacklist) {
+    interpretIndexStepNode : function (indexStepNode, $currElement, classBlacklist, elementBlacklist, idBlacklist) {
 
         // Check node type; throw error if wrong type
         if (indexStepNode === undefined || indexStepNode.type !== "indexStep") {
@@ -135,7 +135,7 @@ EPUBcfi.Interpreter = {
         }
 
         // Index step
-        var $stepTarget = EPUBcfi.CFIInstructions.getNextNode(indexStepNode.stepLength, $currElement, classBlacklist, elementBlacklist);
+        var $stepTarget = EPUBcfi.CFIInstructions.getNextNode(indexStepNode.stepLength, $currElement, classBlacklist, elementBlacklist, idBlacklist);
 
         // Check the id assertion, if it exists
         if (indexStepNode.idAssertion) {
@@ -149,7 +149,7 @@ EPUBcfi.Interpreter = {
         return $stepTarget;
     },
 
-    interpretIndirectionStepNode : function (indirectionStepNode, $currElement, $packageDocument, classBlacklist, elementBlacklist) {
+    interpretIndirectionStepNode : function (indirectionStepNode, $currElement, $packageDocument, classBlacklist, elementBlacklist, idBlacklist) {
 
         // Check node type; throw error if wrong type
         if (indirectionStepNode === undefined || indirectionStepNode.type !== "indirectionStep") {

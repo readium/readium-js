@@ -3,7 +3,7 @@ EPUBcfi.Generator = {
     // Description: Generates a character offset CFI 
     // Arguments: The text node that contains the offset referenced by the cfi, the offset value, the name of the 
     //   content document that contains the text node, the package document for this EPUB.
-    generateCharacterOffsetCFI : function (startTextNode, characterOffset, contentDocumentName, packageDocument, classBlacklist, elementBlacklist) {
+    generateCharacterOffsetCFI : function (startTextNode, characterOffset, contentDocumentName, packageDocument, classBlacklist, elementBlacklist, idBlacklist) {
 
         // ------------------------------------------------------------------------------------ //
         //  "PUBLIC" METHODS (THE API)                                                          //
@@ -42,13 +42,13 @@ EPUBcfi.Generator = {
         }
 
         // call the recursive function to get all the steps until the top of the content document
-        contentDocCFI = this.createCFIElementSteps($(startTextNode), characterOffset, 'html', classBlacklist, elementBlacklist);
+        contentDocCFI = this.createCFIElementSteps($(startTextNode), characterOffset, 'html', classBlacklist, elementBlacklist, idBlacklist);
 
         // Get the start node (itemref element) that references the content document
         $itemRefStartNode = $("itemref[idref=" + contentDocumentName + "]", $(packageDocument));
 
         // Get the steps to the top of the package document
-        packageDocCFI = this.createCFIElementSteps($itemRefStartNode, characterOffset, "package", classBlacklist, elementBlacklist);
+        packageDocCFI = this.createCFIElementSteps($itemRefStartNode, characterOffset, "package", classBlacklist, elementBlacklist, idBlacklist);
 
         // Return the CFI with "epubcfi()" appended. Could use the parser to check its validity.
         return "epubcfi(" + packageDocCFI + contentDocCFI + ")";
@@ -59,7 +59,7 @@ EPUBcfi.Generator = {
     // ------------------------------------------------------------------------------------ //
 
     // REFACTORING CANDIDATE: Some of the parts of this method could be refactored into their own methods. 
-    createCFITextNodeStep : function ($startTextNode, characterOffset, classBlacklist, elementBlacklist) {
+    createCFITextNodeStep : function ($startTextNode, characterOffset, classBlacklist, elementBlacklist, idBlacklist) {
 
         var $parentNode;
         var $contentsExcludingMarkers;
@@ -74,28 +74,42 @@ EPUBcfi.Generator = {
 
         // Find text node position in the set of child elements, ignoring any cfi markers 
         $parentNode = $startTextNode.parent();
-        $contentsExcludingMarkers = EPUBcfi.CFIInstructions.applyBlacklist($parentNode.contents(), classBlacklist, elementBlacklist);
+        $contentsExcludingMarkers = EPUBcfi.CFIInstructions.applyBlacklist($parentNode.contents(), classBlacklist, elementBlacklist, idBlacklist);
 
         // Find the text node number in the list, inferring nodes that were originally together
         // TODO: I don't think the inference of text nodes is being done here; check this
         // REFACTORING CANDIDATE: Can remove the curr index and just use the jquery index passed as an argument to the anoymous function
-        currIndex = 0;
+        var prevNodeWasTextNode;
+        var indexOfFirstInSequence;
         $.each($contentsExcludingMarkers, 
-            function () {
+            function (index) {
 
                 // If this is a text node, check if it matches and return the current index
                 if (this.nodeType === 3) {
 
                     if (this === $startTextNode[0]) {
 
-                        indexOfTextNode = currIndex;
+                        // Set index of the first in the adjacent sequence, or current node
+                        if (prevNodeWasTextNode) {
+                            indexOfTextNode = indexOfFirstInSequence;
+                        }
+                        else {
+                            indexOfTextNode = index;
+                        }
+                        
                         return false; // Break out of .each loop
                     }
-                }
-                // Increment the index if a non-tex element is hit
-                else {
 
-                    currIndex++;
+                    // save this index as the first in sequence of adjacent text nodes, if not set
+                    prevNodeWasTextNode = true;
+                    if (!indexOfFirstInSequence) {
+                        indexOfFirstInSequence = index;
+                    }
+                }
+                // This node is not a text node
+                else {
+                    prevNodeWasTextNode = false;
+                    indexOfFirstInSequence = undefined;
                 }
             }
         );
@@ -103,22 +117,29 @@ EPUBcfi.Generator = {
         // Convert the text node number to a CFI odd-integer representation
         CFIIndex = (indexOfTextNode * 2) + 1;
 
-        // Add pre- and post- text assertions
-        preAssertionStartIndex = (characterOffset - 3 >= 0) ? characterOffset - 3 : 0;
-        preAssertion = $startTextNode[0].nodeValue.substring(preAssertionStartIndex, characterOffset);
+        // TODO: text assertions are not in the grammar yet, I think, or they're just causing problems. This has
+        //   been temporarily removed. 
 
-        textLength = $startTextNode[0].nodeValue.length;
-        postAssertionEndIndex = (characterOffset + 3 <= textLength) ? characterOffset + 3 : textLength;
-        postAssertion = $startTextNode[0].nodeValue.substring(characterOffset, postAssertionEndIndex);
+        // Add pre- and post- text assertions
+        // preAssertionStartIndex = (characterOffset - 3 >= 0) ? characterOffset - 3 : 0;
+        // preAssertion = $startTextNode[0].nodeValue.substring(preAssertionStartIndex, characterOffset);
+
+        // textLength = $startTextNode[0].nodeValue.length;
+        // postAssertionEndIndex = (characterOffset + 3 <= textLength) ? characterOffset + 3 : textLength;
+        // postAssertion = $startTextNode[0].nodeValue.substring(characterOffset, postAssertionEndIndex);
+
+
+        // Gotta infer the correct character offset, as well
 
         // return the constructed text node step
-        return "/" + CFIIndex + ":" + characterOffset + "[" + preAssertion + "," + postAssertion + "]";
+        return "/" + CFIIndex + ":" + characterOffset;
+         // + "[" + preAssertion + "," + postAssertion + "]";
     },
 
     // REFACTORING CANDIDATE: Consider putting the handling of the starting text node into the body of the 
     //   generateCharacterOffsetCfi() method; this way the characterOffset argument could be removed, which 
     //   would clarify the abstraction
-    createCFIElementSteps : function ($currNode, characterOffset, topLevelElement, classBlacklist, elementBlacklist) {
+    createCFIElementSteps : function ($currNode, characterOffset, topLevelElement, classBlacklist, elementBlacklist, idBlacklist) {
 
         var textNodeStep;
         var $blacklistExcluded;
@@ -130,12 +151,12 @@ EPUBcfi.Generator = {
 
         if ($currNode[0].nodeType === 3) {
 
-            textNodeStep = this.createCFITextNodeStep($currNode, characterOffset);
-            return this.createCFIElementSteps($currNode.parent(), characterOffset, topLevelElement, classBlacklist, elementBlacklist) + textNodeStep; 
+            textNodeStep = this.createCFITextNodeStep($currNode, characterOffset, classBlacklist, elementBlacklist, idBlacklist);
+            return this.createCFIElementSteps($currNode.parent(), characterOffset, topLevelElement, classBlacklist, elementBlacklist, idBlacklist) + textNodeStep; 
         }
 
         // Find position of current node in parent list
-        $blacklistExcluded = EPUBcfi.CFIInstructions.applyBlacklist($currNode.parent().children(), classBlacklist, elementBlacklist);
+        $blacklistExcluded = EPUBcfi.CFIInstructions.applyBlacklist($currNode.parent().children(), classBlacklist, elementBlacklist, idBlacklist);
         $.each($blacklistExcluded, 
             function (index, value) {
 
@@ -180,7 +201,7 @@ EPUBcfi.Generator = {
         }
         else {
 
-            return this.createCFIElementSteps($parentNode, characterOffset, topLevelElement, classBlacklist, elementBlacklist) + elementStep;
+            return this.createCFIElementSteps($parentNode, characterOffset, topLevelElement, classBlacklist, elementBlacklist, idBlacklist) + elementStep;
         }
     }
 };
