@@ -98,7 +98,7 @@ valueNoSpace
         return stringVal.join(''); 
     }
 
-// Removed stringEscapedSpecialChars as it was redundant (sort of). It obviously represented a "string of escaped special comments." 
+// Removed stringEscapedSpecialChars as it was redundant (sort of). It obviously represented a "string of escaped special characters." 
 //   Will have to think about whether it makes sense to replace this with value. 
 value 
   = stringVal:(escapedSpecialChars / character / space)+ { 
@@ -162,4 +162,4 @@ equal
   = "=" { return "="; }
 
 character
-  = charVal:([a-z] / [A-Z] / [0-9]) { return charVal; }
+  = charVal:([a-z] / [A-Z] / [0-9] / "-" / "_") { return charVal; }
