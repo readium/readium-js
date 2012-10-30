@@ -13,14 +13,14 @@ EPUBcfi.Generator = {
         var $itemRefStartNode;
         var packageDocCFI;
 
-        // start text node IS a text node
+        // Check that the text node to start from IS a text node
         if (!startTextNode) {
             throw new EPUBcfi.NodeTypeError(startTextNode, "Cannot generate a character offset from a starting point that is not a text node");
         } else if (startTextNode.nodeType != 3) {
             throw new EPUBcfi.NodeTypeError(startTextNode, "Cannot generate a character offset from a starting point that is not a text node");
         }
 
-        // character offset within a range
+        // Check that the character offset is within a valid range for the text node supplied
         if (characterOffset < 0) {
             throw new EPUBcfi.OutOfRangeError(characterOffset, 0, "Character offset cannot be less than 0");
         }
@@ -28,29 +28,29 @@ EPUBcfi.Generator = {
             throw new EPUBcfi.OutOfRangeError(characterOffset, startTextNode.nodeValue.length - 1, "character offset cannot be greater than the length of the text node");
         }
 
-        // content document name is non-empty
+        // Check that the idref for the content document has been provided
         if (!contentDocumentName) {
             throw new Error("The idref for the content document, as found in the spine, must be supplied");
         }
 
-        // package document is non-empty and contains a package element
+        // Check that the package document is non-empty and contains an itemref element for the supplied idref
         if (!packageDocument) {
             throw new Error("A package document must be supplied to generate a CFI");
         }
-        else if ($($("itemref[idref=" + contentDocumentName + "]", packageDocument)[0]).length === 0) {
+        else if ($($("itemref[idref='" + contentDocumentName + "']", packageDocument)[0]).length === 0) {
             throw new Error("The idref of the content document could not be found in the spine");
         }
 
-        // call the recursive function to get all the steps until the top of the content document
-        contentDocCFI = this.createCFIElementSteps($(startTextNode), characterOffset, 'html', classBlacklist, elementBlacklist, idBlacklist);
+        // Call the recursive method to create all the steps up to the head element of the content document (the "html" element)
+        contentDocCFI = this.createCFIElementSteps($(startTextNode), characterOffset, "html", classBlacklist, elementBlacklist, idBlacklist);
 
         // Get the start node (itemref element) that references the content document
-        $itemRefStartNode = $("itemref[idref=" + contentDocumentName + "]", $(packageDocument));
+        $itemRefStartNode = $("itemref[idref='" + contentDocumentName + "']", $(packageDocument));
 
-        // Get the steps to the top of the package document
+        // Create the steps up to the top element of the package document (the "package" element)
         packageDocCFI = this.createCFIElementSteps($itemRefStartNode, characterOffset, "package", classBlacklist, elementBlacklist, idBlacklist);
 
-        // Return the CFI with "epubcfi()" appended. Could use the parser to check its validity.
+        // Return the CFI wrapped with "epubcfi()"
         return "epubcfi(" + packageDocCFI + contentDocCFI + ")";
     },
 
@@ -58,7 +58,11 @@ EPUBcfi.Generator = {
     //  "PRIVATE" HELPERS                                                                   //
     // ------------------------------------------------------------------------------------ //
 
-    // REFACTORING CANDIDATE: Some of the parts of this method could be refactored into their own methods. 
+    // Description: Creates a CFI terminating step, to a text node, with a character offset
+    // Arguments:
+    // Rationale:
+    // Notes:
+    // REFACTORING CANDIDATE: Some of the parts of this method could be refactored into their own methods
     createCFITextNodeStep : function ($startTextNode, characterOffset, classBlacklist, elementBlacklist, idBlacklist) {
 
         var $parentNode;
@@ -71,11 +75,11 @@ EPUBcfi.Generator = {
         var postAssertion;
         var postAssertionEndIndex;
 
-        // Find text node position in the set of child elements, ignoring any cfi markers 
+        // Find text node position in the set of child elements, ignoring any blacklisted elements 
         $parentNode = $startTextNode.parent();
         $contentsExcludingMarkers = EPUBcfi.CFIInstructions.applyBlacklist($parentNode.contents(), classBlacklist, elementBlacklist, idBlacklist);
 
-        // Find the text node number in the list, inferring nodes that were originally a single text node
+        // Find the text node index in the parent list, inferring nodes that were originally a single text node
         var prevNodeWasTextNode;
         var indexOfFirstInSequence;
         $.each($contentsExcludingMarkers, 
@@ -86,7 +90,8 @@ EPUBcfi.Generator = {
 
                     if (this === $startTextNode[0]) {
 
-                        // Set index of the first in the adjacent sequence, or current node
+                        // Set index as the first in the adjacent sequence of text nodes, or as the index of the current node if this 
+                        //   node is a standard one sandwiched between two element nodes. 
                         if (prevNodeWasTextNode) {
                             indexOfTextNode = indexOfFirstInSequence;
                         }
@@ -94,10 +99,11 @@ EPUBcfi.Generator = {
                             indexOfTextNode = index;
                         }
                         
-                        return false; // Break out of .each loop
+                        // Break out of .each loop
+                        return false; 
                     }
 
-                    // save this index as the first in sequence of adjacent text nodes, if not set
+                    // Save this index as the first in sequence of adjacent text nodes, if it is not already set by this point
                     prevNodeWasTextNode = true;
                     if (!indexOfFirstInSequence) {
                         indexOfFirstInSequence = index;
@@ -111,7 +117,7 @@ EPUBcfi.Generator = {
             }
         );
 
-        // Convert the text node number to a CFI odd-integer representation
+        // Convert the text node index to a CFI odd-integer representation
         CFIIndex = (indexOfTextNode * 2) + 1;
 
         // TODO: text assertions are not in the grammar yet, I think, or they're just causing problems. This has
@@ -127,7 +133,7 @@ EPUBcfi.Generator = {
 
         // Gotta infer the correct character offset, as well
 
-        // return the constructed text node step
+        // Return the constructed CFI text node step
         return "/" + CFIIndex + ":" + characterOffset;
          // + "[" + preAssertion + "," + postAssertion + "]";
     },
@@ -221,11 +227,9 @@ EPUBcfi.Generator = {
 
         // Create CFI step with id assertion, if the element has an id
         if ($currNode.attr("id")) {
-
             elementStep = "/" + CFIPosition + "[" + $currNode.attr("id") + "]";
         }
         else {
-
             elementStep = "/" + CFIPosition;
         }
 
@@ -238,16 +242,13 @@ EPUBcfi.Generator = {
             //   not return an indirection character. Every other type of top-level element may require an indirection
             //   step to navigate to, thus requiring that ! is always prepended. 
             if (topLevelElement === 'html') {
-
                 return "!" + elementStep;
             }
             else {
-
                 return elementStep;
             }
         }
         else {
-
             return this.createCFIElementSteps($parentNode, characterOffset, topLevelElement, classBlacklist, elementBlacklist, idBlacklist) + elementStep;
         }
     }
