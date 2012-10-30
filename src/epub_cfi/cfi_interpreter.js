@@ -86,7 +86,7 @@ EPUBcfi.Interpreter = {
                 // This is now assuming that indirection steps and index steps conform to an interface: an object with stepLength, idAssertion
                 nextStepNode.type = "indexStep";
                 // Getting the html element and creating a jquery object for it; excluding cfiMarkers
-                $currElement = this.interpretIndexStepNode(nextStepNode, $(contentDocument.firstChild), classBlacklist, elementBlacklist, idBlacklist);
+                $currElement = this.interpretIndexStepNode(nextStepNode, $("html", contentDocument), classBlacklist, elementBlacklist, idBlacklist);
                 stepNum++ // Increment the step num as this will be passed as the starting point for continuing interpretation
                 break;
             }
