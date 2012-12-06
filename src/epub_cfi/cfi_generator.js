@@ -1,14 +1,15 @@
 EPUBcfi.Generator = {
 
+    // ------------------------------------------------------------------------------------ //
+    //  "PUBLIC" METHODS (THE API)                                                          //
+    // ------------------------------------------------------------------------------------ //
+
     // Description: Generates a character offset CFI 
     // Arguments: The text node that contains the offset referenced by the cfi, the offset value, the name of the 
     //   content document that contains the text node, the package document for this EPUB.
     generateCharacterOffsetCFI : function (startTextNode, characterOffset, contentDocumentName, packageDocument, classBlacklist, elementBlacklist, idBlacklist) {
 
-        // ------------------------------------------------------------------------------------ //
-        //  "PUBLIC" METHODS (THE API)                                                          //
-        // ------------------------------------------------------------------------------------ //
-
+        var textNodeStep;
         var contentDocCFI;
         var $itemRefStartNode;
         var packageDocCFI;
@@ -28,27 +29,43 @@ EPUBcfi.Generator = {
             throw new EPUBcfi.OutOfRangeError(characterOffset, startTextNode.nodeValue.length - 1, "character offset cannot be greater than the length of the text node");
         }
 
-        // Check that the idref for the content document has been provided
-        if (!contentDocumentName) {
-            throw new Error("The idref for the content document, as found in the spine, must be supplied");
-        }
+        this.validateContentDocumentName(contentDocumentName);
+        this.validatePackageDocument(packageDocument, contentDocumentName);
 
-        // Check that the package document is non-empty and contains an itemref element for the supplied idref
-        if (!packageDocument) {
-            throw new Error("A package document must be supplied to generate a CFI");
-        }
-        else if ($($("itemref[idref='" + contentDocumentName + "']", packageDocument)[0]).length === 0) {
-            throw new Error("The idref of the content document could not be found in the spine");
-        }
+        // Create the text node step
+        textNodeStep = this.createCFITextNodeStep($(startTextNode), characterOffset, classBlacklist, elementBlacklist, idBlacklist);
 
         // Call the recursive method to create all the steps up to the head element of the content document (the "html" element)
-        contentDocCFI = this.createCFIElementSteps($(startTextNode), characterOffset, "html", classBlacklist, elementBlacklist, idBlacklist);
+        contentDocCFI = this.createCFIElementSteps($(startTextNode).parent(), "html", classBlacklist, elementBlacklist, idBlacklist) + textNodeStep;
 
         // Get the start node (itemref element) that references the content document
         $itemRefStartNode = $("itemref[idref='" + contentDocumentName + "']", $(packageDocument));
 
         // Create the steps up to the top element of the package document (the "package" element)
-        packageDocCFI = this.createCFIElementSteps($itemRefStartNode, characterOffset, "package", classBlacklist, elementBlacklist, idBlacklist);
+        packageDocCFI = this.createCFIElementSteps($itemRefStartNode, "package", classBlacklist, elementBlacklist, idBlacklist);
+
+        // Return the CFI wrapped with "epubcfi()"
+        return "epubcfi(" + packageDocCFI + contentDocCFI + ")";
+    },
+
+    // generate element CFI
+    generateElementCFI : function (startElement, contentDocumentName, packageDocument, classBlacklist, elementBlacklist, idBlacklist) {
+
+        var contentDocCFI;
+        var $itemRefStartNode;
+        var packageDocCFI;
+
+        this.validateContentDocumentName(contentDocumentName);
+        this.validatePackageDocument(packageDocument, contentDocumentName);        
+
+        // Call the recursive method to create all the steps up to the head element of the content document (the "html" element)
+        contentDocCFI = this.createCFIElementSteps($(startElement), "html", classBlacklist, elementBlacklist, idBlacklist);
+
+        // Get the start node (itemref element) that references the content document
+        $itemRefStartNode = $("itemref[idref='" + contentDocumentName + "']", $(packageDocument));
+
+        // Create the steps up to the top element of the package document (the "package" element)
+        packageDocCFI = this.createCFIElementSteps($itemRefStartNode, "package", classBlacklist, elementBlacklist, idBlacklist);
 
         // Return the CFI wrapped with "epubcfi()"
         return "epubcfi(" + packageDocCFI + contentDocCFI + ")";
@@ -58,10 +75,26 @@ EPUBcfi.Generator = {
     //  "PRIVATE" HELPERS                                                                   //
     // ------------------------------------------------------------------------------------ //
 
+    validateContentDocumentName : function (contentDocumentName) {
+
+        // Check that the idref for the content document has been provided
+        if (!contentDocumentName) {
+            throw new Error("The idref for the content document, as found in the spine, must be supplied");
+        }
+    },
+
+    validatePackageDocument : function (packageDocument, contentDocumentName) {
+        
+        // Check that the package document is non-empty and contains an itemref element for the supplied idref
+        if (!packageDocument) {
+            throw new Error("A package document must be supplied to generate a CFI");
+        }
+        else if ($($("itemref[idref='" + contentDocumentName + "']", packageDocument)[0]).length === 0) {
+            throw new Error("The idref of the content document could not be found in the spine");
+        }
+    },
+
     // Description: Creates a CFI terminating step, to a text node, with a character offset
-    // Arguments:
-    // Rationale:
-    // Notes:
     // REFACTORING CANDIDATE: Some of the parts of this method could be refactored into their own methods
     createCFITextNodeStep : function ($startTextNode, characterOffset, classBlacklist, elementBlacklist, idBlacklist) {
 
@@ -189,24 +222,14 @@ EPUBcfi.Generator = {
         return originalCharOffset;
     },
 
-    // REFACTORING CANDIDATE: Consider putting the handling of the starting text node into the body of the 
-    //   generateCharacterOffsetCfi() method; this way the characterOffset argument could be removed, which 
-    //   would clarify the abstraction
-    createCFIElementSteps : function ($currNode, characterOffset, topLevelElement, classBlacklist, elementBlacklist, idBlacklist) {
+    createCFIElementSteps : function ($currNode, topLevelElement, classBlacklist, elementBlacklist, idBlacklist) {
 
-        var textNodeStep;
         var $blacklistExcluded;
         var $parentNode;
         var currNodePosition;
         var CFIPosition;
         var idAssertion;
         var elementStep; 
-
-        if ($currNode[0].nodeType === 3) {
-
-            textNodeStep = this.createCFITextNodeStep($currNode, characterOffset, classBlacklist, elementBlacklist, idBlacklist);
-            return this.createCFIElementSteps($currNode.parent(), characterOffset, topLevelElement, classBlacklist, elementBlacklist, idBlacklist) + textNodeStep; 
-        }
 
         // Find position of current node in parent list
         $blacklistExcluded = EPUBcfi.CFIInstructions.applyBlacklist($currNode.parent().children(), classBlacklist, elementBlacklist, idBlacklist);
@@ -249,7 +272,7 @@ EPUBcfi.Generator = {
             }
         }
         else {
-            return this.createCFIElementSteps($parentNode, characterOffset, topLevelElement, classBlacklist, elementBlacklist, idBlacklist) + elementStep;
+            return this.createCFIElementSteps($parentNode, topLevelElement, classBlacklist, elementBlacklist, idBlacklist) + elementStep;
         }
     }
 };

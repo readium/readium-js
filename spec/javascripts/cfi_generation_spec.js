@@ -18,11 +18,8 @@ describe("CFI GENERATOR", function () {
             + "</html>";
         var $dom = $((new window.DOMParser).parseFromString(dom, "text/xml"));
 
-        var generatedCFI = EPUBcfi.Generator.createCFIElementSteps($($('#startParent', $dom).contents()[1]), 3, "html");
-
-        // This should be checked to see if this is what we actually expect, particularly with regards to the character 
-        //   offsets
-        expect(generatedCFI).toEqual("!/4/2[startParent]/3:3"); // [ te,xtn]
+        var generatedCFI = EPUBcfi.Generator.createCFIElementSteps($($('#startParent', $dom).contents()[0]), "html");
+        expect(generatedCFI).toEqual("!/4/2[startParent]/2"); 
     });
 
     it("can infer the presence of a single node from multiple adjacent nodes", function () {
@@ -47,10 +44,10 @@ describe("CFI GENERATOR", function () {
             + "</html>";
         var $dom = $((new window.DOMParser).parseFromString(dom, "text/xml"));
 
-        var generatedCFI = EPUBcfi.Generator.createCFIElementSteps($($('#startParent', $dom).contents()[5]), 3, "html", ["cfi-marker"]);
+        var $startNode = $($('#startParent', $dom).contents()[5]);
+        var textTerminus = EPUBcfi.Generator.createCFITextNodeStep($startNode, 3, ["cfi-marker"]);
+        var generatedCFI = EPUBcfi.Generator.createCFIElementSteps($startNode.parent(), "html", ["cfi-marker"]) + textTerminus;
 
-        // This should be checked to see if this is what we actually expect, particularly with regards to the character 
-        //   offsets
         expect(generatedCFI).toEqual("!/4/2[startParent]/3:3"); // [ te,xtn]
     });
 
@@ -111,13 +108,12 @@ describe("CFI GENERATOR", function () {
         +   "</div>"
         +   "<div></div>"
         + "</html>";
+
         var contentDoc = (new window.DOMParser).parseFromString(contentDocXhtml, "text/xml");
         var packageDoc = (new window.DOMParser).parseFromString(packageDocXhtml, "text/xml");
 
         var generatedCFI = EPUBcfi.Generator.generateCharacterOffsetCFI($('#startParent', contentDoc).contents()[1], 3, "contentDocId", packageDoc);
 
-        // This should be checked to see if this is what we actually expect, particularly with regards to the character 
-        //   offsets
         expect(generatedCFI).toEqual("epubcfi(/6/2/6!/4/2[startParent]/3:3)"); // [ te,xtn]
     });
 

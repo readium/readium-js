@@ -74,7 +74,7 @@ EPUBcfi.Interpreter = {
         var decodedCFI = decodeURI(CFI);
         var CFIAST = EPUBcfi.Parser.parse(decodedCFI);
 
-        // Find the first indirection step in the local path; follow it like a regular step, as the content document it 
+        // Find the first indirection step in the local path; follow it like a regular step, as the step in the content document it 
         //   references is already loaded and has been passed to this method
         var stepNum = 0;
         var nextStepNode;
@@ -102,9 +102,13 @@ EPUBcfi.Interpreter = {
         return $currElement;
     },
 
+    // Return CFI target element
+
     // ------------------------------------------------------------------------------------ //
     //  "PRIVATE" HELPERS                                                                   //
     // ------------------------------------------------------------------------------------ //
+
+    // startInterpretationAtContentDocument 
 
     interpretLocalPath : function (cfiStringNode, startStepNum, $currElement, classBlacklist, elementBlacklist, idBlacklist) {
 

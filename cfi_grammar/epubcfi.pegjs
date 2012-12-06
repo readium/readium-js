@@ -9,7 +9,7 @@
 //   implementation of CFIs require that a CFI be lexed and parsed. This part of the problem is irreducible. As such, it makes sense to //   leverage existing tools and methodologies, rather than build a custom solution. Last but not least, I'm already familiar with 
 //   parser generator tools, which lowers the fixed costs using this tool. 
 
-// Changes from spec grammar: 
+// Changes from EBNF grammar in EPUB CFI specification: 
 // 1) "index step" and "indirection step are differentiated" instead of having the "!" in the local_path non-terminal
 // 2) "Assertion" split into id-assertion and terminating-assertion
 // 3) "CSV" changed to reflect that it should probably only be TWO comma-separated values 
