@@ -129,6 +129,18 @@ describe("CFI GENERATOR", function () {
         expect(generatedCFI).toEqual("epubcfi(/6/14!/4[body1]/2/18[c01p0008]/1:103)"); // [, a,lof]
     });
 
+    it("can generate a CFI without a terminus", function () {
+
+        var contentDocXhtml = jasmine.getFixtures().read("moby_dick_content_doc.xhtml");
+        var contentDoc = (new window.DOMParser).parseFromString(contentDocXhtml, "text/xml");
+        var packageDocXhtml = jasmine.getFixtures().read("moby_dick_package.opf");
+        var packageDoc = (new window.DOMParser).parseFromString(packageDocXhtml, "text/xml");
+
+        var generatedCFI = EPUBcfi.Generator.generateElementCFI($("#c01p0008", contentDoc)[0], "xchapter_001", packageDoc);
+
+        expect(generatedCFI).toEqual("epubcfi(/6/14!/4[body1]/2/18[c01p0008])");
+    });
+
     describe("CFI GENERATOR ERROR HANDLING", function () {
 
         var contentDocXhtml;

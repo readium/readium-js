@@ -34,7 +34,7 @@ EPUBcfi.CFIInstructions = {
 	//   depending on the target. 
 	// Note: Iframe indirection will (should) fail if the iframe is not from the same domain as its containing script due to 
 	//   the cross origin security policy
-	followIndirectionStep : function (CFIStepValue, $currNode, $packageDocument, classBlacklist, elementBlacklist, idBlacklist) {
+	followIndirectionStep : function (CFIStepValue, $currNode, classBlacklist, elementBlacklist, idBlacklist) {
 
 		var that = this;
 		var $contentDocument; 

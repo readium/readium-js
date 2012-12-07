@@ -54,7 +54,7 @@ EPUBcfi.Interpreter = {
             }
             else if (nextStepNode.type === "indirectionStep") {
 
-                $currElement = this.interpretIndirectionStepNode(nextStepNode, $currElement, $packageDocument, classBlacklist, elementBlacklist, idBlacklist);
+                $currElement = this.interpretIndirectionStepNode(nextStepNode, $currElement, classBlacklist, elementBlacklist, idBlacklist);
             }
 
             // Found the content document href referenced by the spine item 
@@ -73,27 +73,19 @@ EPUBcfi.Interpreter = {
 
         var decodedCFI = decodeURI(CFI);
         var CFIAST = EPUBcfi.Parser.parse(decodedCFI);
+        var indirectionNode;
+        var indirectionStepNum;
+        var currStepNum; 
 
-        // Find the first indirection step in the local path; follow it like a regular step, as the step in the content document it 
-        //   references is already loaded and has been passed to this method
-        var stepNum = 0;
-        var nextStepNode;
-        for (stepNum; stepNum <= CFIAST.cfiString.localPath.steps.length - 1 ; stepNum++) {
-        
-            nextStepNode = CFIAST.cfiString.localPath.steps[stepNum];
-            if (nextStepNode.type === "indirectionStep") {
-
-                // This is now assuming that indirection steps and index steps conform to an interface: an object with stepLength, idAssertion
-                nextStepNode.type = "indexStep";
-                // Getting the html element and creating a jquery object for it; excluding cfiMarkers
-                $currElement = this.interpretIndexStepNode(nextStepNode, $("html", contentDocument), classBlacklist, elementBlacklist, idBlacklist);
-                stepNum++ // Increment the step num as this will be passed as the starting point for continuing interpretation
-                break;
-            }
-        }
+        // Rationale: Since the correct content document for this CFI is already being passed, we can skip to the beginning 
+        //   of the indirection step that referenced the content document.
+        // Note: This assumes that indirection steps and index steps conform to an interface: an object with stepLength, idAssertion
+        indirectionStepNum = this.getFirstIndirectionStepNum(CFIAST);
+        indirectionNode = CFIAST.cfiString.localPath.steps[indirectionStepNum];
+        indirectionNode.type = "indexStep";
 
         // Interpret the rest of the steps
-        $currElement = this.interpretLocalPath(CFIAST.cfiString, stepNum, $currElement, classBlacklist, elementBlacklist, idBlacklist);
+        $currElement = this.interpretLocalPath(CFIAST.cfiString, indirectionStepNum, $("html", contentDocument), classBlacklist, elementBlacklist, idBlacklist);
 
         // TODO: detect what kind of terminus; for now, text node termini are the only kind implemented
         $currElement = this.interpretTextTerminusNode(CFIAST.cfiString.localPath.termStep, $currElement, elementToInject);
@@ -102,14 +94,50 @@ EPUBcfi.Interpreter = {
         return $currElement;
     },
 
-    // Return CFI target element
+    // Description: This method will return the element or node (say, a text node) that is the final target of the 
+    //   the CFI. 
+    getTargetElement : function (CFI, contentDocument, classBlacklist, elementBlacklist, idBlacklist) {
+
+        var decodedCFI = decodeURI(CFI);
+        var CFIAST = EPUBcfi.Parser.parse(decodedCFI);
+        var indirectionNode;
+        var indirectionStepNum;
+        var currStepNum; 
+        
+        // Rationale: Since the correct content document for this CFI is already being passed, we can skip to the beginning 
+        //   of the indirection step that referenced the content document.
+        // Note: This assumes that indirection steps and index steps conform to an interface: an object with stepLength, idAssertion
+        indirectionStepNum = this.getFirstIndirectionStepNum(CFIAST);
+        indirectionNode = CFIAST.cfiString.localPath.steps[indirectionStepNum];
+        indirectionNode.type = "indexStep";
+
+        // Interpret the rest of the steps
+        $currElement = this.interpretLocalPath(CFIAST.cfiString, indirectionStepNum, $("html", contentDocument), classBlacklist, elementBlacklist, idBlacklist);
+
+        // Return the element at the end of the CFI
+        return $currElement;
+    },
 
     // ------------------------------------------------------------------------------------ //
     //  "PRIVATE" HELPERS                                                                   //
     // ------------------------------------------------------------------------------------ //
 
-    // startInterpretationAtContentDocument 
+    getFirstIndirectionStepNum : function (CFIAST) {
 
+        // Find the first indirection step in the local path; follow it like a regular step, as the step in the content document it 
+        //   references is already loaded and has been passed to this method
+        var stepNum = 0;
+        for (stepNum; stepNum <= CFIAST.cfiString.localPath.steps.length - 1 ; stepNum++) {
+        
+            nextStepNode = CFIAST.cfiString.localPath.steps[stepNum];
+            if (nextStepNode.type === "indirectionStep") {
+                return stepNum;
+            }
+        }
+    },
+
+    // REFACTORING CANDIDATE: cfiString node and start step num could be merged into one argument, by simply passing the 
+    //   starting step. 
     interpretLocalPath : function (cfiStringNode, startStepNum, $currElement, classBlacklist, elementBlacklist, idBlacklist) {
 
         var stepNum = startStepNum;
@@ -123,7 +151,7 @@ EPUBcfi.Interpreter = {
             }
             else if (nextStepNode.type === "indirectionStep") {
 
-                $currElement = this.interpretIndirectionStepNode(nextStepNode, $currElement, $packageDocument, classBlacklist, elementBlacklist, idBlacklist);
+                $currElement = this.interpretIndirectionStepNode(nextStepNode, $currElement, classBlacklist, elementBlacklist, idBlacklist);
             }
         }
 
@@ -153,7 +181,7 @@ EPUBcfi.Interpreter = {
         return $stepTarget;
     },
 
-    interpretIndirectionStepNode : function (indirectionStepNode, $currElement, $packageDocument, classBlacklist, elementBlacklist, idBlacklist) {
+    interpretIndirectionStepNode : function (indirectionStepNode, $currElement, classBlacklist, elementBlacklist, idBlacklist) {
 
         // Check node type; throw error if wrong type
         if (indirectionStepNode === undefined || indirectionStepNode.type !== "indirectionStep") {
@@ -164,8 +192,7 @@ EPUBcfi.Interpreter = {
         // Indirection step
         var $stepTarget = EPUBcfi.CFIInstructions.followIndirectionStep(
             indirectionStepNode.stepLength, 
-            $currElement,
-            $packageDocument, 
+            $currElement, 
             classBlacklist, 
             elementBlacklist);
 
@@ -181,6 +208,8 @@ EPUBcfi.Interpreter = {
         return $stepTarget;
     },
 
+    // REFACTORING CANDIDATE: The logic here assumes that a user will always want to use this terminus
+    //   to inject content into the found node. This should be changed to be more flexible.
     interpretTextTerminusNode : function (terminusNode, $currElement, elementToInject) {
 
         if (terminusNode === undefined || terminusNode.type !== "textTerminus") {

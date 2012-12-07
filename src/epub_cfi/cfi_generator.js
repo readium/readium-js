@@ -48,7 +48,6 @@ EPUBcfi.Generator = {
         return "epubcfi(" + packageDocCFI + contentDocCFI + ")";
     },
 
-    // generate element CFI
     generateElementCFI : function (startElement, contentDocumentName, packageDocument, classBlacklist, elementBlacklist, idBlacklist) {
 
         var contentDocCFI;

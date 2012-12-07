@@ -1916,7 +1916,7 @@ EPUBcfi.Interpreter = {
         return $stepTarget;
     },
 
-    interpretIndirectionStepNode : function (indirectionStepNode, $currElement, $packageDocument, classBlacklist, elementBlacklist, idBlacklist) {
+    interpretIndirectionStepNode : function (indirectionStepNode, $currElement, classBlacklist, elementBlacklist, idBlacklist) {
 
         // Check node type; throw error if wrong type
         if (indirectionStepNode === undefined || indirectionStepNode.type !== "indirectionStep") {
@@ -1927,8 +1927,7 @@ EPUBcfi.Interpreter = {
         // Indirection step
         var $stepTarget = EPUBcfi.CFIInstructions.followIndirectionStep(
             indirectionStepNode.stepLength, 
-            $currElement,
-            $packageDocument, 
+            $currElement, 
             classBlacklist, 
             elementBlacklist);
 
