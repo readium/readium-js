@@ -255,12 +255,14 @@ EPUBcfi.Generator = {
             elementStep = "/" + CFIPosition;
         }
 
-        // If a parent is an html element return the (last) step for this content document, otherwise, continue
+        // If a parent is an html element return the (last) step for this content document, otherwise, continue.
+        //   Also need to check if the current node is the top-level element. This can occur if the start node is also the
+        //   top level element.
         $parentNode = $currNode.parent();
-        if ($parentNode.is(topLevelElement)) {
+        if ($parentNode.is(topLevelElement) || $currNode.is(topLevelElement)) {
             
             // If the top level node is a type from which an indirection step, add an indirection step character (!)
-            // REFACTORING CANDIDATE: It is possible that this should be changed to if (topLevelElement = 'package') do
+            // REFACTORING CANDIDATE: It is possible that this should be changed to: if (topLevelElement = 'package') do
             //   not return an indirection character. Every other type of top-level element may require an indirection
             //   step to navigate to, thus requiring that ! is always prepended. 
             if (topLevelElement === 'html') {

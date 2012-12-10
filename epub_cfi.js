@@ -1485,7 +1485,7 @@ EPUBcfi.CFIInstructions = {
 	//   depending on the target. 
 	// Note: Iframe indirection will (should) fail if the iframe is not from the same domain as its containing script due to 
 	//   the cross origin security policy
-	followIndirectionStep : function (CFIStepValue, $currNode, $packageDocument, classBlacklist, elementBlacklist, idBlacklist) {
+	followIndirectionStep : function (CFIStepValue, $currNode, classBlacklist, elementBlacklist, idBlacklist) {
 
 		var that = this;
 		var $contentDocument; 
@@ -1821,7 +1821,7 @@ EPUBcfi.Interpreter = {
             }
             else if (nextStepNode.type === "indirectionStep") {
 
-                $currElement = this.interpretIndirectionStepNode(nextStepNode, $currElement, $packageDocument, classBlacklist, elementBlacklist, idBlacklist);
+                $currElement = this.interpretIndirectionStepNode(nextStepNode, $currElement, classBlacklist, elementBlacklist, idBlacklist);
             }
 
             // Found the content document href referenced by the spine item 
@@ -1840,27 +1840,19 @@ EPUBcfi.Interpreter = {
 
         var decodedCFI = decodeURI(CFI);
         var CFIAST = EPUBcfi.Parser.parse(decodedCFI);
+        var indirectionNode;
+        var indirectionStepNum;
+        var currStepNum; 
 
-        // Find the first indirection step in the local path; follow it like a regular step, as the content document it 
-        //   references is already loaded and has been passed to this method
-        var stepNum = 0;
-        var nextStepNode;
-        for (stepNum; stepNum <= CFIAST.cfiString.localPath.steps.length - 1 ; stepNum++) {
-        
-            nextStepNode = CFIAST.cfiString.localPath.steps[stepNum];
-            if (nextStepNode.type === "indirectionStep") {
-
-                // This is now assuming that indirection steps and index steps conform to an interface: an object with stepLength, idAssertion
-                nextStepNode.type = "indexStep";
-                // Getting the html element and creating a jquery object for it; excluding cfiMarkers
-                $currElement = this.interpretIndexStepNode(nextStepNode, $("html", contentDocument), classBlacklist, elementBlacklist, idBlacklist);
-                stepNum++ // Increment the step num as this will be passed as the starting point for continuing interpretation
-                break;
-            }
-        }
+        // Rationale: Since the correct content document for this CFI is already being passed, we can skip to the beginning 
+        //   of the indirection step that referenced the content document.
+        // Note: This assumes that indirection steps and index steps conform to an interface: an object with stepLength, idAssertion
+        indirectionStepNum = this.getFirstIndirectionStepNum(CFIAST);
+        indirectionNode = CFIAST.cfiString.localPath.steps[indirectionStepNum];
+        indirectionNode.type = "indexStep";
 
         // Interpret the rest of the steps
-        $currElement = this.interpretLocalPath(CFIAST.cfiString, stepNum, $currElement, classBlacklist, elementBlacklist, idBlacklist);
+        $currElement = this.interpretLocalPath(CFIAST.cfiString, indirectionStepNum, $("html", contentDocument), classBlacklist, elementBlacklist, idBlacklist);
 
         // TODO: detect what kind of terminus; for now, text node termini are the only kind implemented
         $currElement = this.interpretTextTerminusNode(CFIAST.cfiString.localPath.termStep, $currElement, elementToInject);
@@ -1869,10 +1861,50 @@ EPUBcfi.Interpreter = {
         return $currElement;
     },
 
+    // Description: This method will return the element or node (say, a text node) that is the final target of the 
+    //   the CFI. 
+    getTargetElement : function (CFI, contentDocument, classBlacklist, elementBlacklist, idBlacklist) {
+
+        var decodedCFI = decodeURI(CFI);
+        var CFIAST = EPUBcfi.Parser.parse(decodedCFI);
+        var indirectionNode;
+        var indirectionStepNum;
+        var currStepNum; 
+        
+        // Rationale: Since the correct content document for this CFI is already being passed, we can skip to the beginning 
+        //   of the indirection step that referenced the content document.
+        // Note: This assumes that indirection steps and index steps conform to an interface: an object with stepLength, idAssertion
+        indirectionStepNum = this.getFirstIndirectionStepNum(CFIAST);
+        indirectionNode = CFIAST.cfiString.localPath.steps[indirectionStepNum];
+        indirectionNode.type = "indexStep";
+
+        // Interpret the rest of the steps
+        $currElement = this.interpretLocalPath(CFIAST.cfiString, indirectionStepNum, $("html", contentDocument), classBlacklist, elementBlacklist, idBlacklist);
+
+        // Return the element at the end of the CFI
+        return $currElement;
+    },
+
     // ------------------------------------------------------------------------------------ //
     //  "PRIVATE" HELPERS                                                                   //
     // ------------------------------------------------------------------------------------ //
 
+    getFirstIndirectionStepNum : function (CFIAST) {
+
+        // Find the first indirection step in the local path; follow it like a regular step, as the step in the content document it 
+        //   references is already loaded and has been passed to this method
+        var stepNum = 0;
+        for (stepNum; stepNum <= CFIAST.cfiString.localPath.steps.length - 1 ; stepNum++) {
+        
+            nextStepNode = CFIAST.cfiString.localPath.steps[stepNum];
+            if (nextStepNode.type === "indirectionStep") {
+                return stepNum;
+            }
+        }
+    },
+
+    // REFACTORING CANDIDATE: cfiString node and start step num could be merged into one argument, by simply passing the 
+    //   starting step. 
     interpretLocalPath : function (cfiStringNode, startStepNum, $currElement, classBlacklist, elementBlacklist, idBlacklist) {
 
         var stepNum = startStepNum;
@@ -1886,7 +1918,7 @@ EPUBcfi.Interpreter = {
             }
             else if (nextStepNode.type === "indirectionStep") {
 
-                $currElement = this.interpretIndirectionStepNode(nextStepNode, $currElement, $packageDocument, classBlacklist, elementBlacklist, idBlacklist);
+                $currElement = this.interpretIndirectionStepNode(nextStepNode, $currElement, classBlacklist, elementBlacklist, idBlacklist);
             }
         }
 
@@ -1943,6 +1975,8 @@ EPUBcfi.Interpreter = {
         return $stepTarget;
     },
 
+    // REFACTORING CANDIDATE: The logic here assumes that a user will always want to use this terminus
+    //   to inject content into the found node. This should be changed to be more flexible.
     interpretTextTerminusNode : function (terminusNode, $currElement, elementToInject) {
 
         if (terminusNode === undefined || terminusNode.type !== "textTerminus") {
@@ -2027,15 +2061,16 @@ EPUBcfi.CFIAssertionError = function (expectedAssertion, targetElementAssertion,
 
     EPUBcfi.Generator = {
 
+    // ------------------------------------------------------------------------------------ //
+    //  "PUBLIC" METHODS (THE API)                                                          //
+    // ------------------------------------------------------------------------------------ //
+
     // Description: Generates a character offset CFI 
     // Arguments: The text node that contains the offset referenced by the cfi, the offset value, the name of the 
     //   content document that contains the text node, the package document for this EPUB.
     generateCharacterOffsetCFI : function (startTextNode, characterOffset, contentDocumentName, packageDocument, classBlacklist, elementBlacklist, idBlacklist) {
 
-        // ------------------------------------------------------------------------------------ //
-        //  "PUBLIC" METHODS (THE API)                                                          //
-        // ------------------------------------------------------------------------------------ //
-
+        var textNodeStep;
         var contentDocCFI;
         var $itemRefStartNode;
         var packageDocCFI;
@@ -2055,27 +2090,42 @@ EPUBcfi.CFIAssertionError = function (expectedAssertion, targetElementAssertion,
             throw new EPUBcfi.OutOfRangeError(characterOffset, startTextNode.nodeValue.length - 1, "character offset cannot be greater than the length of the text node");
         }
 
-        // Check that the idref for the content document has been provided
-        if (!contentDocumentName) {
-            throw new Error("The idref for the content document, as found in the spine, must be supplied");
-        }
+        this.validateContentDocumentName(contentDocumentName);
+        this.validatePackageDocument(packageDocument, contentDocumentName);
 
-        // Check that the package document is non-empty and contains an itemref element for the supplied idref
-        if (!packageDocument) {
-            throw new Error("A package document must be supplied to generate a CFI");
-        }
-        else if ($($("itemref[idref='" + contentDocumentName + "']", packageDocument)[0]).length === 0) {
-            throw new Error("The idref of the content document could not be found in the spine");
-        }
+        // Create the text node step
+        textNodeStep = this.createCFITextNodeStep($(startTextNode), characterOffset, classBlacklist, elementBlacklist, idBlacklist);
 
         // Call the recursive method to create all the steps up to the head element of the content document (the "html" element)
-        contentDocCFI = this.createCFIElementSteps($(startTextNode), characterOffset, "html", classBlacklist, elementBlacklist, idBlacklist);
+        contentDocCFI = this.createCFIElementSteps($(startTextNode).parent(), "html", classBlacklist, elementBlacklist, idBlacklist) + textNodeStep;
 
         // Get the start node (itemref element) that references the content document
         $itemRefStartNode = $("itemref[idref='" + contentDocumentName + "']", $(packageDocument));
 
         // Create the steps up to the top element of the package document (the "package" element)
-        packageDocCFI = this.createCFIElementSteps($itemRefStartNode, characterOffset, "package", classBlacklist, elementBlacklist, idBlacklist);
+        packageDocCFI = this.createCFIElementSteps($itemRefStartNode, "package", classBlacklist, elementBlacklist, idBlacklist);
+
+        // Return the CFI wrapped with "epubcfi()"
+        return "epubcfi(" + packageDocCFI + contentDocCFI + ")";
+    },
+
+    generateElementCFI : function (startElement, contentDocumentName, packageDocument, classBlacklist, elementBlacklist, idBlacklist) {
+
+        var contentDocCFI;
+        var $itemRefStartNode;
+        var packageDocCFI;
+
+        this.validateContentDocumentName(contentDocumentName);
+        this.validatePackageDocument(packageDocument, contentDocumentName);        
+
+        // Call the recursive method to create all the steps up to the head element of the content document (the "html" element)
+        contentDocCFI = this.createCFIElementSteps($(startElement), "html", classBlacklist, elementBlacklist, idBlacklist);
+
+        // Get the start node (itemref element) that references the content document
+        $itemRefStartNode = $("itemref[idref='" + contentDocumentName + "']", $(packageDocument));
+
+        // Create the steps up to the top element of the package document (the "package" element)
+        packageDocCFI = this.createCFIElementSteps($itemRefStartNode, "package", classBlacklist, elementBlacklist, idBlacklist);
 
         // Return the CFI wrapped with "epubcfi()"
         return "epubcfi(" + packageDocCFI + contentDocCFI + ")";
@@ -2085,10 +2135,26 @@ EPUBcfi.CFIAssertionError = function (expectedAssertion, targetElementAssertion,
     //  "PRIVATE" HELPERS                                                                   //
     // ------------------------------------------------------------------------------------ //
 
+    validateContentDocumentName : function (contentDocumentName) {
+
+        // Check that the idref for the content document has been provided
+        if (!contentDocumentName) {
+            throw new Error("The idref for the content document, as found in the spine, must be supplied");
+        }
+    },
+
+    validatePackageDocument : function (packageDocument, contentDocumentName) {
+        
+        // Check that the package document is non-empty and contains an itemref element for the supplied idref
+        if (!packageDocument) {
+            throw new Error("A package document must be supplied to generate a CFI");
+        }
+        else if ($($("itemref[idref='" + contentDocumentName + "']", packageDocument)[0]).length === 0) {
+            throw new Error("The idref of the content document could not be found in the spine");
+        }
+    },
+
     // Description: Creates a CFI terminating step, to a text node, with a character offset
-    // Arguments:
-    // Rationale:
-    // Notes:
     // REFACTORING CANDIDATE: Some of the parts of this method could be refactored into their own methods
     createCFITextNodeStep : function ($startTextNode, characterOffset, classBlacklist, elementBlacklist, idBlacklist) {
 
@@ -2216,24 +2282,14 @@ EPUBcfi.CFIAssertionError = function (expectedAssertion, targetElementAssertion,
         return originalCharOffset;
     },
 
-    // REFACTORING CANDIDATE: Consider putting the handling of the starting text node into the body of the 
-    //   generateCharacterOffsetCfi() method; this way the characterOffset argument could be removed, which 
-    //   would clarify the abstraction
-    createCFIElementSteps : function ($currNode, characterOffset, topLevelElement, classBlacklist, elementBlacklist, idBlacklist) {
+    createCFIElementSteps : function ($currNode, topLevelElement, classBlacklist, elementBlacklist, idBlacklist) {
 
-        var textNodeStep;
         var $blacklistExcluded;
         var $parentNode;
         var currNodePosition;
         var CFIPosition;
         var idAssertion;
         var elementStep; 
-
-        if ($currNode[0].nodeType === 3) {
-
-            textNodeStep = this.createCFITextNodeStep($currNode, characterOffset, classBlacklist, elementBlacklist, idBlacklist);
-            return this.createCFIElementSteps($currNode.parent(), characterOffset, topLevelElement, classBlacklist, elementBlacklist, idBlacklist) + textNodeStep; 
-        }
 
         // Find position of current node in parent list
         $blacklistExcluded = EPUBcfi.CFIInstructions.applyBlacklist($currNode.parent().children(), classBlacklist, elementBlacklist, idBlacklist);
@@ -2260,12 +2316,14 @@ EPUBcfi.CFIAssertionError = function (expectedAssertion, targetElementAssertion,
             elementStep = "/" + CFIPosition;
         }
 
-        // If a parent is an html element return the (last) step for this content document, otherwise, continue
+        // If a parent is an html element return the (last) step for this content document, otherwise, continue.
+        //   Also need to check if the current node is the top-level element. This can occur if the start node is also the
+        //   top level element.
         $parentNode = $currNode.parent();
-        if ($parentNode.is(topLevelElement)) {
+        if ($parentNode.is(topLevelElement) || $currNode.is(topLevelElement)) {
             
             // If the top level node is a type from which an indirection step, add an indirection step character (!)
-            // REFACTORING CANDIDATE: It is possible that this should be changed to if (topLevelElement = 'package') do
+            // REFACTORING CANDIDATE: It is possible that this should be changed to: if (topLevelElement = 'package') do
             //   not return an indirection character. Every other type of top-level element may require an indirection
             //   step to navigate to, thus requiring that ! is always prepended. 
             if (topLevelElement === 'html') {
@@ -2276,7 +2334,7 @@ EPUBcfi.CFIAssertionError = function (expectedAssertion, targetElementAssertion,
             }
         }
         else {
-            return this.createCFIElementSteps($parentNode, characterOffset, topLevelElement, classBlacklist, elementBlacklist, idBlacklist) + elementStep;
+            return this.createCFIElementSteps($parentNode, topLevelElement, classBlacklist, elementBlacklist, idBlacklist) + elementStep;
         }
     }
 };
