@@ -8,7 +8,7 @@ The library may be extended to include other sorts of behaviour as the use cases
 
 # Using the library for linking with CFIs
 
-1. Get a copy of the library. Currently, a development version of the [library](https://github.com/justinHume/EPUBCFI/blob/master/epub_cfi.js) is available in the Github repository. When the library becomes more stable, a minified version will also be made available as a separate download. 
+1. Get a copy of the library. Currently, a development version of the [library](https://github.com/readium/EPUBCFI/blob/master/epub_cfi.js) is available in the Github repository. When the library becomes more stable, a minified version will also be made available as a separate download. 
 
 2. Add the CFI library to your code using a script tag, and make sure you have jQuery:
 
