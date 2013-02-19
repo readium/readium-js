@@ -2068,13 +2068,58 @@ EPUBcfi.CFIAssertionError = function (expectedAssertion, targetElementAssertion,
     // Description: Generates a character offset CFI 
     // Arguments: The text node that contains the offset referenced by the cfi, the offset value, the name of the 
     //   content document that contains the text node, the package document for this EPUB.
-    generateCharacterOffsetCFI : function (startTextNode, characterOffset, contentDocumentName, packageDocument, classBlacklist, elementBlacklist, idBlacklist) {
+    generateCharacterOffsetCFIComponent : function (startTextNode, characterOffset, classBlacklist, elementBlacklist, idBlacklist) {
 
         var textNodeStep;
         var contentDocCFI;
         var $itemRefStartNode;
         var packageDocCFI;
 
+        this.validateStartTextNode(startTextNode, characterOffset);
+
+        // Create the text node step
+        textNodeStep = this.createCFITextNodeStep($(startTextNode), characterOffset, classBlacklist, elementBlacklist, idBlacklist);
+
+        // Call the recursive method to create all the steps up to the head element of the content document (the "html" element)
+        contentDocCFI = this.createCFIElementSteps($(startTextNode).parent(), "html", classBlacklist, elementBlacklist, idBlacklist) + textNodeStep;
+        return contentDocCFI;
+    },
+
+    generateElementCFIComponent : function (startElement, classBlacklist, elementBlacklist, idBlacklist) {
+
+        var contentDocCFI;
+        var $itemRefStartNode;
+        var packageDocCFI;
+
+        // Call the recursive method to create all the steps up to the head element of the content document (the "html" element)
+        contentDocCFI = this.createCFIElementSteps($(startElement), "html", classBlacklist, elementBlacklist, idBlacklist);
+        return contentDocCFI;
+    },
+
+    generatePackageDocumentCFIComponent : function (contentDocumentName, packageDocument, classBlacklist, elementBlacklist, idBlacklist) {
+
+        this.validateContentDocumentName(contentDocumentName);
+        this.validatePackageDocument(packageDocument, contentDocumentName);
+
+        // Get the start node (itemref element) that references the content document
+        $itemRefStartNode = $("itemref[idref='" + contentDocumentName + "']", $(packageDocument));
+
+        // Create the steps up to the top element of the package document (the "package" element)
+        packageDocCFIComponent = this.createCFIElementSteps($itemRefStartNode, "package", classBlacklist, elementBlacklist, idBlacklist);
+        return packageDocCFIComponent;
+    },
+
+    generateCompleteCFI : function (packageDocumentCFIComponent, contentDocumentCFIComponent) {
+
+        return "epubcfi(" + packageDocumentCFIComponent + contentDocumentCFIComponent + ")";  
+    },
+
+    // ------------------------------------------------------------------------------------ //
+    //  "PRIVATE" HELPERS                                                                   //
+    // ------------------------------------------------------------------------------------ //
+
+    validateStartTextNode : function (startTextNode, characterOffset) {
+        
         // Check that the text node to start from IS a text node
         if (!startTextNode) {
             throw new EPUBcfi.NodeTypeError(startTextNode, "Cannot generate a character offset from a starting point that is not a text node");
@@ -2089,51 +2134,7 @@ EPUBcfi.CFIAssertionError = function (expectedAssertion, targetElementAssertion,
         else if (characterOffset > startTextNode.nodeValue.length) {
             throw new EPUBcfi.OutOfRangeError(characterOffset, startTextNode.nodeValue.length - 1, "character offset cannot be greater than the length of the text node");
         }
-
-        this.validateContentDocumentName(contentDocumentName);
-        this.validatePackageDocument(packageDocument, contentDocumentName);
-
-        // Create the text node step
-        textNodeStep = this.createCFITextNodeStep($(startTextNode), characterOffset, classBlacklist, elementBlacklist, idBlacklist);
-
-        // Call the recursive method to create all the steps up to the head element of the content document (the "html" element)
-        contentDocCFI = this.createCFIElementSteps($(startTextNode).parent(), "html", classBlacklist, elementBlacklist, idBlacklist) + textNodeStep;
-
-        // Get the start node (itemref element) that references the content document
-        $itemRefStartNode = $("itemref[idref='" + contentDocumentName + "']", $(packageDocument));
-
-        // Create the steps up to the top element of the package document (the "package" element)
-        packageDocCFI = this.createCFIElementSteps($itemRefStartNode, "package", classBlacklist, elementBlacklist, idBlacklist);
-
-        // Return the CFI wrapped with "epubcfi()"
-        return "epubcfi(" + packageDocCFI + contentDocCFI + ")";
     },
-
-    generateElementCFI : function (startElement, contentDocumentName, packageDocument, classBlacklist, elementBlacklist, idBlacklist) {
-
-        var contentDocCFI;
-        var $itemRefStartNode;
-        var packageDocCFI;
-
-        this.validateContentDocumentName(contentDocumentName);
-        this.validatePackageDocument(packageDocument, contentDocumentName);        
-
-        // Call the recursive method to create all the steps up to the head element of the content document (the "html" element)
-        contentDocCFI = this.createCFIElementSteps($(startElement), "html", classBlacklist, elementBlacklist, idBlacklist);
-
-        // Get the start node (itemref element) that references the content document
-        $itemRefStartNode = $("itemref[idref='" + contentDocumentName + "']", $(packageDocument));
-
-        // Create the steps up to the top element of the package document (the "package" element)
-        packageDocCFI = this.createCFIElementSteps($itemRefStartNode, "package", classBlacklist, elementBlacklist, idBlacklist);
-
-        // Return the CFI wrapped with "epubcfi()"
-        return "epubcfi(" + packageDocCFI + contentDocCFI + ")";
-    },
-
-    // ------------------------------------------------------------------------------------ //
-    //  "PRIVATE" HELPERS                                                                   //
-    // ------------------------------------------------------------------------------------ //
 
     validateContentDocumentName : function (contentDocumentName) {
 
