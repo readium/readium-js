@@ -16,7 +16,10 @@ src_files:
     - lib/json2.js # Not entirely sure this is a dependency
     - lib/underscore.js # This is a backbone dependency
     - lib/backbone.js
-    - src/epub/**/*.js
+    - src/epub/models/toc.js # The ncx_toc and xhtml_toc depend on this being loaded first
+    - src/epub/models/manifest_item.js # The manifest collection depends on this being loaded first
+    - src/epub/models/spine_item.js # The spine collection depends on this being loaded first
+    - src/epub/**/*.js 
 
 # stylesheets
 #

@@ -3,8 +3,8 @@ Epub.PackageDocument = Backbone.Model.extend({
 
     initialize : function (attributes, options) {
 
-        this.Manifest = new Readium.Collections.Manifest({ });
-        this.Spine = new Readium.Collections.Spine({ });
+        // this.Manifest = new Readium.Collections.Manifest({ });
+        // this.Spine = new Readium.Collections.Spine({ });
     },
 
     getManifestItemById : function(id) {

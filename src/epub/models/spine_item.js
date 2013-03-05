@@ -1,51 +1,26 @@
 Epub.SpineItem = Epub.ManifestItem.extend({
 
-    defaults : {
-        "height" : 0,
-        "width" : 0,
-        "page_class" : undefined,
-        "uri" : undefined,
-        "href" : undefined,
-        "id" : undefined,
-        "idref" : undefined,
-        "media_overlay" : undefined,
-        "media_type" : undefined,
-        "page_prog_dir" : "ltr",
-        "properties" : "",
-        "spine_index" : undefined
+    initialize : function () {
+
+        // if (this.isFixedLayout()) {
+        //     this.on("change:content", this.parseMetaTags, this);
+        //     this.loadContent();
+        // }
     },
 
-    initialize: function() {
-        if (this.isFixedLayout()) {
-            this.on("change:content", this.parseMetaTags, this);
-            this.loadContent();
-        }
-    },
+    // REFACTORING CANDIDATE: The meta tags thing has to be worked out
+    toJSON : function () {
 
-    // this method creates the JSON representation of a manifest item
-    // that is used to render out a page view.
-    buildSectionJSON: function(manifest_item, spine_index) {
-        if (!manifest_item) {
-            return null;
-        }
-        var section = Object.create(null);
-        section.width = this.get("meta_width") || 0;
-        section.height = this.get("meta_height") || 0;
-        section.uri = this.packageDocument.resolveUri(manifest_item.get('href'));
-        section.page_class = this.getPageSpreadClass(manifest_item, spine_index);
-        return section;
-    },
+        // if (this.isFixedLayout()) {
+        //     this.parseMetaTags();
+        // }
 
-    toJSON: function() {
-        if (this.isFixedLayout()) {
-            this.parseMetaTags();
-        }
-        var json = {};
-        json.width = this.get("meta_width") || 0;
-        json.height = this.get("meta_height") || 0;
-        json.uri = this.resolveUri(this.get('href'));
-        json.page_class = this.getPageSpreadClass();
-        return json;
+        // var json = {};
+        // json.width = this.get("meta_width") || 0;
+        // json.height = this.get("meta_height") || 0;
+        // json.uri = this.resolveUri(this.get('href'));
+        // json.page_class = this.getPageSpreadClass();
+        // return json;
     },
 
     // when rendering fixed layout pages we need to determine whether the page
@@ -54,7 +29,7 @@ Epub.SpineItem = Epub.ManifestItem.extend({
     //  right_page:     render on the right side
     //  center_page:    always center the page horizontally
     // REFACTORING CANDIDATE: This method is too long. 
-    getPageSpreadClass: function() {
+    getPageSpreadClass : function () {
         var book = this.collection.packageDocument.get("book");
         var spine_index = this.get("spine_index");
         var pageSpreadProperty;
@@ -62,16 +37,9 @@ Epub.SpineItem = Epub.ManifestItem.extend({
         var numPagesBetween;
         var lastSpecifiedPageSpread;
 
-        if(book.get("apple_fixed")) {
-            // the logic for apple fixed layout is a little different:
-            /*
-            if(!book.get("open_to_spread")) {
-                // page spread is disabled for this book
-                return  "center_page"
-            }
-            else if(spine_index === 0) {
-                */
-            if(spine_index === 0) {
+        if (book.get("apple_fixed")) {
+
+            if (spine_index === 0) {
                 // for ibooks, odd pages go on the right. This means
                 // the first page (0th index) will always be on the right
                 // without a left counterpart, so center it
@@ -161,27 +129,31 @@ Epub.SpineItem = Epub.ManifestItem.extend({
         }
     },
 
+    // REFACTORING CANDIDATE: This should also be included on the package document
+
     pageProgressionDirection : function () {
 
-        var book = this.collection.packageDocument.get("book");
-        book.get("page_prog_dir");
+        // var book = this.collection.packageDocument.get("book");
+        // book.get("page_prog_dir");
     },
 
-    isFixedLayout: function() {
+    // REFACTORING CANDIDATE: This needs to change
 
-        // if it an svg or image then it is fixed layout
-        if(this.isSvg() || this.isImage()) {
-            return true;
-        }
+    // isFixedLayout : function () {
 
-        // if there is a fixed_flow property, then it takes precedence
-        if(typeof this.get("fixed_flow") !== 'undefined') {
-            return this.get('fixed_flow');
-        }
+    //     // if it an svg or image then it is fixed layout
+    //     if (this.isSvg() || this.isImage()) {
+    //         return true;
+    //     }
 
-        // nothing special about this spine item, fall back to the books settings
-        return this.collection.isBookFixedLayout();
-    },
+    //     // if there is a fixed_flow property, then it takes precedence
+    //     if (typeof this.get("fixed_flow") !== 'undefined') {
+    //         return this.get("fixed_flow");
+    //     }
+
+    //     // nothing special about this spine item, fall back to the books settings
+    //     return this.collection.isBookFixedLayout();
+    // },
 
     // Description: Determines if the first page of the content document should be offset in a synthetic layout
     firstPageOffset : function () {
@@ -217,26 +189,33 @@ Epub.SpineItem = Epub.ManifestItem.extend({
         return false;
     },
 
+
+    // NOTE: This is going to get removed, I want to leave it here temporarily to remind me that this 
+    //   functionality existed
+
     // REFACTORING CANDIDATE: caching the the fixed layout views. I do not remember the reason that
     // we are doing this. Possible that it is not necessary...
-    getPageView: function() {
-        if(!this.view) {
-            if(this.isImage()) {
-                this.view = new Readium.Views.ImagePageView({model: this});
-            }
-            else {
-                this.view = new Readium.Views.FixedPageView({model: this}); 
-            }
+    // getPageView : function() {
+    //     if(!this.view) {
+    //         if(this.isImage()) {
+    //             this.view = new Readium.Views.ImagePageView({model: this});
+    //         }
+    //         else {
+    //             this.view = new Readium.Views.FixedPageView({model: this}); 
+    //         }
             
-        }
-        return this.view;
-    },
+    //     }
+    //     return this.view;
+    // },
     
-    hasMediaOverlay: function() {
-        return !!this.get("media_overlay") && !!this.getMediaOverlay();
-    },
+
+    // NOTE: Media overlays have been disabled for the time being, which is why these methods are commented out. 
+
+    // hasMediaOverlay : function() {
+    //     return !!this.get("media_overlay") && !!this.getMediaOverlay();
+    // },
     
-    getMediaOverlay: function() {
-        return this.collection.getMediaOverlay(this.get("media_overlay"));
-    }
+    // getMediaOverlay : function() {
+    //     return this.collection.getMediaOverlay(this.get("media_overlay"));
+    // }
 });
