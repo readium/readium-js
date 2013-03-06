@@ -1,5 +1,5 @@
 
-describe ('CFI INTERPRETER OBJECT', function () {
+describe('CFI INTERPRETER OBJECT', function () {
 
     var CFI;
     var CFIAST;
@@ -84,6 +84,17 @@ describe ('CFI INTERPRETER OBJECT', function () {
 
         var result = EPUBcfi.Interpreter.getContentDocHref(CFI, $packageDocument);
         expect(result).toEqual("chapter_001.xhtml");
+    });
+
+    describe('The hack zone! Interpretation of partial CFIs', function () {
+
+        it('can interpret a partial CFI for a content document', function () {
+
+            var CFI = "epubcfi(/4/2/14)";
+            var expectedResult = 'c01p0006';
+            var $result = EPUBcfi.Interpreter.getTargetElementWithPartialCFI(CFI, contentDocument);
+            expect($result.attr("id")).toEqual(expectedResult);
+        });
     });
 });
 
