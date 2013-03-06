@@ -1842,7 +1842,6 @@ EPUBcfi.Interpreter = {
         var CFIAST = EPUBcfi.Parser.parse(decodedCFI);
         var indirectionNode;
         var indirectionStepNum;
-        var currStepNum; 
 
         // Rationale: Since the correct content document for this CFI is already being passed, we can skip to the beginning 
         //   of the indirection step that referenced the content document.
@@ -1869,7 +1868,6 @@ EPUBcfi.Interpreter = {
         var CFIAST = EPUBcfi.Parser.parse(decodedCFI);
         var indirectionNode;
         var indirectionStepNum;
-        var currStepNum; 
         
         // Rationale: Since the correct content document for this CFI is already being passed, we can skip to the beginning 
         //   of the indirection step that referenced the content document.
@@ -1883,6 +1881,32 @@ EPUBcfi.Interpreter = {
 
         // Return the element at the end of the CFI
         return $currElement;
+    },
+
+    // Description: This method allows a "partial" CFI to be used to reference a target in a content document, without a 
+    //   package document CFI component. 
+    // Arguments: {
+    //     contentDocumentCFI : This is a partial CFI that represents a path in a content document only. This partial must be 
+    //        syntactically valid, even though it references a path starting at the top of a content document (which is a CFI that
+    //        that has no defined meaning in the spec.)
+    //     contentDocument : A DOM representation of the content document to which the partial CFI refers. 
+    // }
+    // Rationale: This method exists to meet the requirements of the Readium-SDK and should be used with care
+    getTargetElementWithPartialCFI : function (contentDocumentCFI, contentDocument, classBlacklist, elementBlacklist, idBlacklist) {
+
+        var decodedCFI = decodeURI(contentDocumentCFI);
+        var CFIAST = EPUBcfi.Parser.parse(decodedCFI);
+        var indirectionNode;
+        var indirectionStepNum;
+        
+        // Interpet the path node 
+        var $currElement = this.interpretIndexStepNode(CFIAST.cfiString.path, $("html", contentDocument), classBlacklist, elementBlacklist, idBlacklist);
+
+        // Interpret the rest of the steps
+        $currElement = this.interpretLocalPath(CFIAST.cfiString, 0, $currElement, classBlacklist, elementBlacklist, idBlacklist);
+
+        // Return the element at the end of the CFI
+        return $currElement;        
     },
 
     // ------------------------------------------------------------------------------------ //
