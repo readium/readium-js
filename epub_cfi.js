@@ -1525,6 +1525,7 @@ EPUBcfi.CFIInstructions = {
 
 	// Description: Injects an element at the specified text node
 	// Arguments: a cfi text termination string, a jquery object to the current node
+	// REFACTORING CANDIDATE: Rename this to indicate that it injects into a text terminus
 	textTermination : function ($currNode, textOffset, elementToInject) {
 
 		// Get the first node, this should be a text node
@@ -1835,7 +1836,7 @@ EPUBcfi.Interpreter = {
         //   the package document is messed up.
     },
 
-    // Description: Inject an arbirtary html element into a position in a content document referenced by a CFI
+    // Description: Inject an arbitrary html element into a position in a content document referenced by a CFI
     injectElement : function (CFI, contentDocument, elementToInject, classBlacklist, elementBlacklist, idBlacklist) {
 
         var decodedCFI = decodeURI(CFI);
@@ -1861,7 +1862,7 @@ EPUBcfi.Interpreter = {
     },
 
     // Description: This method will return the element or node (say, a text node) that is the final target of the 
-    //   the CFI. 
+    //   the CFI.
     getTargetElement : function (CFI, contentDocument, classBlacklist, elementBlacklist, idBlacklist) {
 
         var decodedCFI = decodeURI(CFI);
@@ -1897,9 +1898,8 @@ EPUBcfi.Interpreter = {
         var decodedCFI = decodeURI(contentDocumentCFI);
         var CFIAST = EPUBcfi.Parser.parse(decodedCFI);
         var indirectionNode;
-        var indirectionStepNum;
         
-        // Interpet the path node 
+        // Interpret the path node 
         var $currElement = this.interpretIndexStepNode(CFIAST.cfiString.path, $("html", contentDocument), classBlacklist, elementBlacklist, idBlacklist);
 
         // Interpret the rest of the steps
@@ -1907,6 +1907,35 @@ EPUBcfi.Interpreter = {
 
         // Return the element at the end of the CFI
         return $currElement;        
+    },
+
+    // Description: This method allows a "partial" CFI to be used, with a content document, to return the text node and offset 
+    //    referenced by the partial CFI.
+    // Arguments: {
+    //     contentDocumentCFI : This is a partial CFI that represents a path in a content document only. This partial must be 
+    //        syntactically valid, even though it references a path starting at the top of a content document (which is a CFI that
+    //        that has no defined meaning in the spec.)
+    //     contentDocument : A DOM representation of the content document to which the partial CFI refers. 
+    // }
+    // Rationale: This method exists to meet the requirements of the Readium-SDK and should be used with care
+    getTextTerminusInfoWithPartialCFI : function (contentDocumentCFI, contentDocument, classBlacklist, elementBlacklist, idBlacklist) {
+
+        var decodedCFI = decodeURI(contentDocumentCFI);
+        var CFIAST = EPUBcfi.Parser.parse(decodedCFI);
+        var indirectionNode;
+        var textOffset;
+        
+        // Interpret the path node 
+        var $currElement = this.interpretIndexStepNode(CFIAST.cfiString.path, $("html", contentDocument), classBlacklist, elementBlacklist, idBlacklist);
+
+        // Interpret the rest of the steps
+        $currElement = this.interpretLocalPath(CFIAST.cfiString, 0, $currElement, classBlacklist, elementBlacklist, idBlacklist);
+
+        // Return the element at the end of the CFI
+        textOffset = parseInt(CFIAST.cfiString.localPath.termStep.offsetValue);
+        return { textNode : $currElement,
+                 textOffset : textOffset
+            };
     },
 
     // ------------------------------------------------------------------------------------ //
