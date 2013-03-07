@@ -21,7 +21,7 @@ EPUBcfi.Generator = {
 
         // Call the recursive method to create all the steps up to the head element of the content document (the "html" element)
         contentDocCFI = this.createCFIElementSteps($(startTextNode).parent(), "html", classBlacklist, elementBlacklist, idBlacklist) + textNodeStep;
-        return contentDocCFI;
+        return contentDocCFI.substring(1, contentDocCFI.length);
     },
 
     generateElementCFIComponent : function (startElement, classBlacklist, elementBlacklist, idBlacklist) {
@@ -32,7 +32,9 @@ EPUBcfi.Generator = {
 
         // Call the recursive method to create all the steps up to the head element of the content document (the "html" element)
         contentDocCFI = this.createCFIElementSteps($(startElement), "html", classBlacklist, elementBlacklist, idBlacklist);
-        return contentDocCFI;
+
+        // Remove the ! 
+        return contentDocCFI.substring(1, contentDocCFI.length);
     },
 
     generatePackageDocumentCFIComponent : function (contentDocumentName, packageDocument, classBlacklist, elementBlacklist, idBlacklist) {
@@ -45,7 +47,9 @@ EPUBcfi.Generator = {
 
         // Create the steps up to the top element of the package document (the "package" element)
         packageDocCFIComponent = this.createCFIElementSteps($itemRefStartNode, "package", classBlacklist, elementBlacklist, idBlacklist);
-        return packageDocCFIComponent;
+
+        // Append an !; this assumes that a CFI content document CFI component will be appended at some point
+        return packageDocCFIComponent + "!";
     },
 
     generateCompleteCFI : function (packageDocumentCFIComponent, contentDocumentCFIComponent) {
