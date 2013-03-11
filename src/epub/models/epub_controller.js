@@ -18,7 +18,7 @@ Epub.EPUBController = Backbone.Model.extend({
 	//  "PUBLIC" METHODS (THE API)                                                          //
 	// ------------------------------------------------------------------------------------ //
 
-	initialize: function() {
+	initialize : function() {
 
 		// capture context for use in callback functions
 		var that = this;
@@ -459,5 +459,42 @@ Epub.EPUBController = Backbone.Model.extend({
 				delete activeCFIs[currCFI];
 			}
 		});
-	}
+	},
+
+	// REFACTORING CANDIDATE: I think this should get moved up to the epub controller
+    resolveUri : function(rel_uri) {
+        uri = new URI(rel_uri);
+        return uri.resolve(this.uri_obj).toString();
+    },
+
+    // REFACTORING CANDIDATE: I think this should get moved up to the epub controller
+    // reslove a relative file path to relative to this the
+    // the path of this pack docs file path
+    resolvePath : function(path) {
+        var suffix;
+        var pack_doc_path = this.file_path;
+        if (path.indexOf("../") === 0) {
+            suffix = path.substr(3);
+        }
+        else {
+            suffix = path;
+        }
+        var ind = pack_doc_path.lastIndexOf("/")
+        return pack_doc_path.substr(0, ind) + "/" + suffix;
+    },
+
+    // Hmmmmmmmmm..... maybe move this one up to the epub controller 
+    spineIndexFromHref : function (href) {
+
+        var spine = this.get("res_spine");
+        href = this.resolveUri(href).replace(/#.*$/, "");
+        for (var i = 0; i < spine.length; i++) {
+            var path = spine.at(i).get("href");
+            path = this.resolveUri(path).replace(/#.*$/, "");
+            if(path === href) {
+                return i;
+            }
+        }
+        return -1;
+    }
 });

@@ -3,84 +3,180 @@ Epub.PackageDocument = Backbone.Model.extend({
 
     initialize : function (attributes, options) {
 
-        // this.Manifest = new Readium.Collections.Manifest({ });
-        // this.Spine = new Readium.Collections.Spine({ });
+        this.manifest = new Epub.Manifest(this.get("packageDocumentObject").manifest);
+        this.spine = new Epub.Spine(this.get("packageDocumentObject").spine);
+        this.metadata = new Epub.Metadata(this.get("packageDocumentObject").metadata);
     },
 
-    getManifestItemById : function(id) {
-        return this.get("manifest").find(function(x) { 
-                    if(x.get("id") === id) return x;
-                });
+    getManifestItemById : function (id) {
+
+        var foundManifestItem = this.manifest.find(
+            function (manifestItem) { 
+                if (manifestItem.get("id") === id) {
+                    return manifestItem;
+                }
+            });
+        return foundManifestItem;
     },
 
-    getSpineItem : function(index) {
-        return this.get("res_spine").at(index);
+    getManifestItemByIdref : function (idref) {
+
+        var foundManifestItem = this.getManifestItemById(idref);
+        return foundManifestItem;
     },
 
-    spineLength : function() {
-        return this.get("res_spine").length;
+
+    // Not sure if this method is that useful.
+    // getSpineItemById : function (id) {
+
+    //     var foundSpineItem = this.spine.find(
+    //         function (spineItem) { 
+    //             if (spineItem.get("id") === id) {
+    //                 return spineItem;
+    //             }
+    //         });
+    //     return foundSpineItem;
+    // },
+
+    getSpineItem : function (spineIndex) {
+        return this.spine.at(spineIndex);
     },
 
-    // gets the next position in the spine for which the
-    // spineItem does not have `linear='false'`. The start
+    spineLength : function () {
+        return this.spine.length;
+    },
+
+    // Description: gets the next position in the spine for which the
+    // spineItem does not have `linear='no'`. The start
     // param is the non-inclusive position to begin the search
     // from. If start is not supplied, the search will begin at
     // postion 0. If no linear position can be found, this 
-    // funciton returns -1
-    getNextLinearSpinePostition : function(start) {
-        var spine = this.get("res_spine");
-        if(start === undefined || start < -1) {
-            start = -1;
-        }
+    // function returns undefined
+    getNextLinearSpinePosition : function (currSpineIndex) {
 
-        while(start < spine.length - 1) {
-            start += 1;
-            if(spine.at(start).get("linear") !== "no") {
-                return start;
+        var spine = this.spine;
+        if (currSpineIndex === undefined || currSpineIndex < 0) {
+            currSpineIndex = 0;
+
+            if (spine.at(currSpineIndex).get("linear") !== "no") {
+                return currSpineIndex;
             }
         }
 
-        return -1;
+        while (currSpineIndex < this.spineLength() - 1) {
+            currSpineIndex += 1;
+            if (spine.at(currSpineIndex).get("linear") !== "no") {
+                return currSpineIndex;
+            }
+        }
+
+        // No next linear spine position.
+        return undefined; 
     },
 
-    // gets the previous position in the spine for which the
-    // spineItem does not have `linear='false'`. The start
+    // Description: gets the previous position in the spine for which the
+    // spineItem does not have `linear='no'`. The start
     // param is the non-inclusive position to begin the search
     // from. If start is not supplied, the search will begin at
     // the end of the spine. If no linear position can be found, 
-    // this function returns -1
-    getPrevLinearSpinePostition : function(start) {
-        var spine = this.get("res_spine");
-        if(start === undefined || start > spine.length) {
-            start = spine.length;
-        }
+    // this function returns undefined
+    getPrevLinearSpinePosition : function(currSpineIndex) {
 
-        while(start > 0) {
-            start -= 1;
-            if(spine.at(start).get("linear") !== "no") {
-                return start;
+        var spine = this.spine;
+        if (currSpineIndex === undefined || currSpineIndex > this.spineLength() - 1) {
+            currSpineIndex = this.spineLength() - 1;
+
+            if (spine.at(currSpineIndex).get("linear") !== "no") {
+                return currSpineIndex;
             }
         }
 
-        return -1;
-    },
-
-    spineIndexFromHref : function(href) {
-        var spine = this.get("res_spine");
-        href = this.resolveUri(href).replace(/#.*$/, "");
-        for(var i = 0; i < spine.length; i++) {
-            var path = spine.at(i).get("href");
-            path = this.resolveUri(path).replace(/#.*$/, "");
-            if(path === href) {
-                return i;
+        while (currSpineIndex > 0) {
+            currSpineIndex -= 1;
+            if (spine.at(currSpineIndex).get("linear") !== "no") {
+                return currSpineIndex;
             }
         }
-        return -1;
+
+        // No previous linear spine position.
+        return undefined;
     },
 
+    pageProgressionDirection : function () {
+
+        if (this.metadata.get("page_prog_dir") === "rtl") {
+            return "rtl";
+        }
+        else if (this.metadata.get("page_prog_dir") === "default") {
+            return "default";
+        }
+        else {
+            return "ltr";
+        }
+    },
+
+
+    // ----------------------- PRIVATE HELPERS -------------------------------- //
+
+
+    // when rendering fixed layout pages we need to determine whether the page
+    // should be on the left or the right in two up mode, options are:
+    //  left_page:      render on the left side
+    //  right_page:     render on the right side
+    //  center_page:    always center the page horizontally
+    // NOTE: Look into how spine items with the linear="no" property affect this algorithm 
+
+    assignPageSpreadClass : function () {
+        var book = this.collection.packageDocument.get("book");
+        var spine_index = this.get("spine_index");
+        var pageSpreadProperty;
+        var spineItems = this.collection;
+        var numPagesBetween;
+        var lastSpecifiedPageSpread;
+
+        // If the epub is apple fixed layout
+        if (this.metadata.get("apple_fixed")) {
+
+            var numSpineItems = this.spine.length;
+            this.spine.each(function (spineItem, spineIndex) {
+
+
+                spineItem.set({ pageSpreadClass : });
+            });
+        }
+        else {
+            // For each spine item
+            this.spine.each(function (spineItem, spineIndex) {
+
+                // If the page spread property has been set for this spine item, return 
+                // the name of the appropriate spread class. 
+                // Note: As there are only three valid values (left, right, center) for the page
+                // spread property in ePub 3.0, if the property is set and 
+                // it is not "left" or "right, "center" will always be assumed. 
+                if (spineItem.get("page_spread")) {
+
+                    var manifestItem = this.getManifestItemByIdref(spineItem.get("idref"));
+                    pageSpreadProperty = manifestItem.get("page_spread");
+                    // Then get the delegate to return the appropriate page spread class
+                }
+                // If the page spread property is not set, we must iterate back through the EPUB's spine items to find 
+                //   the last spine item with a page-spread value set. We can use that value, whether there are an even or odd
+                //   number of pages between this spine item and the "last" one, and the page progression direction of the EPUB
+                //   to determine the appropriate page spread value for this spine item. 
+                else {
+
+                    this.inferPageSpread(spineItem, spineIndex);
+                }
+            });
+        }
+    },
+
+
+    // This doesn't work at the moment.
     getTocItem : function() {
         var manifest = this.get("manifest");
         var spine_id = this.get("metadata").ncx;
+
         var item = manifest.find(function(item){
 
             if (item.get("properties").indexOf("nav") !== -1) {
@@ -104,58 +200,11 @@ Epub.PackageDocument = Backbone.Model.extend({
         return null;
     },
 
-    getMediaOverlayItem : function(idref) {
-        // just look up the object in the mo_map
-        var map = this.get("mo_map");
-        return map && map[idref];
-    },
 
-    // combine the spine item data with the corresponding manifest
-    // data to build useful set of backbone objects
-    crunchSpine : function(spine, manifest) {
-        //var bbSpine = new Readium.Collections.Spine(spine, {packageDocument: this});
-        var that = this;
-        var index = -1; // to keep track of the index of each spine item
-        
-        var bbSpine = _.map(spine, function(spineItem) {
-            index += 1;
-            
-            var manItem = manifest.find(function(x) {
-                if(x.get("id") === spineItem["idref"]) return x;
-            });
-
-            // crunch spine attrs and manifest attrs together into one obj
-            var book = that.get("book");
-            return _.extend({}, spineItem, manItem.attributes, {"spine_index": index}, {"page_prog_dir": book.get("page_prog_dir")});
-        });
-
-        // Add the index of the spine item to the manifest item's id to prevent the backbone collection
-        //   from finding duplicate manifest items when different itemref elements in the spine reference
-        //   the same manifest item through the "idref" attribute.
-        $.each(bbSpine, function () {
-            this.id = this.id + this.spine_index;
-        });
-
-        return new Readium.Collections.Spine(bbSpine, {packageDocument: this});
-    },
-
-    resolveUri : function(rel_uri) {
-        uri = new URI(rel_uri);
-        return uri.resolve(this.uri_obj).toString();
-    },
-
-    // reslove a relative file path to relative to this the
-    // the path of this pack docs file path
-    resolvePath : function(path) {
-        var suffix;
-        var pack_doc_path = this.file_path;
-        if(path.indexOf("../") === 0) {
-            suffix = path.substr(3);
-        }
-        else {
-            suffix = path;
-        }
-        var ind = pack_doc_path.lastIndexOf("/")
-        return pack_doc_path.substr(0, ind) + "/" + suffix;
-    }
+    // NOTE: Media overlays are temporarily disabled
+    // getMediaOverlayItem : function(idref) {
+    //     // just look up the object in the mo_map
+    //     var map = this.get("mo_map");
+    //     return map && map[idref];
+    // },
 });

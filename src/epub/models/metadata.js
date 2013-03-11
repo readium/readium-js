@@ -1,0 +1,1 @@
+Epub.Metadata = Backbone.Model.extend({});
