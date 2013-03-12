@@ -141,7 +141,7 @@ Epub.PackageDocument = Backbone.Model.extend({
             this.spine.each(function (spineItem, spineIndex) {
 
 
-                spineItem.set({ pageSpreadClass : });
+                // spineItem.set({ pageSpreadClass : });
             });
         }
         else {
