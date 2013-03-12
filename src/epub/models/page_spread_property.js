@@ -18,23 +18,23 @@ Epub.PageSpreadProperty = Backbone.Model.extend({
         // without a left counterpart, so center it
         if (pageNum === 1) {
             
-            return "center_page";
+            return this.CENTER_PAGE;
         }
         // Rationale: If the last spine item in the book would be on the left, then
         //   it would have no left counterpart, so center it
         else if (pageNum % 2 === 0 && pageNum === numSpineItems) { 
             
-            return "center_page";
+            return this.CENTER_PAGE;
         }
         // Rationale: Otherwise first page goes on the right, and then alternate
         // left - right - left - right etc
         else {
 
             if (pageNum % 2 === 1) {
-                return "right_page";
+                return this.RIGHT_PAGE;
             }
             else {
-                return "left_page";
+                return this.LEFT_PAGE;
             }
         }
     },
@@ -43,19 +43,20 @@ Epub.PageSpreadProperty = Backbone.Model.extend({
 
         if (pageSpreadProperty === "left") {
 
-            return "left_page";
+            return this.LEFT_PAGE;
         }
         else if (pageSpreadProperty === "right") {
 
-            return "right_page";
+            return this.RIGHT_PAGE;
         }
         else {
 
-            return "center_page";
+            return this.CENTER_PAGE;
         }
     },
 
     // NOTE: This method still cannot infer the page spread value when center pages are sporadically specified
+    // REFACTORING CANDIDATE: Could still use some refactoring to enhance the clarity of the algorithm
     inferUnassignedPageSpread : function (spineIndex, spine, pageProgDirection) {
 
         var lastSpecifiedPageSpread;
@@ -70,7 +71,7 @@ Epub.PageSpreadProperty = Backbone.Model.extend({
         // If this is the first spine item, assign left or right based on page progression direction
         else if (spineIndex === 0) {
 
-            return pageProgDirection === "rtl" ? "right_page" : "left_page";
+            return pageProgDirection === "rtl" ? this.RIGHT_PAGE : this.LEFT_PAGE;
         }
         else {
 
@@ -92,16 +93,16 @@ Epub.PageSpreadProperty = Backbone.Model.extend({
                     // Even number of pages between current and last spine item
                     if (numPagesBetween % 2 === 0) {
 
-                        return lastSpecifiedPageSpread === "left" ? "left_page" : 
-                            lastSpecifiedPageSpread === "right" ? "right_page" :
-                            pageProgDirection === "rtl" ? "left_page" : "right_page";
+                        return lastSpecifiedPageSpread === "left" ? this.LEFT_PAGE : 
+                            lastSpecifiedPageSpread === "right" ? this.RIGHT_PAGE :
+                            pageProgDirection === "rtl" ? this.LEFT_PAGE : this.RIGHT_PAGE;
                     }
                     // Odd number of pages between current and last spine item with a specified page-spread value
                     else {
 
-                        return lastSpecifiedPageSpread === "left" ? "right_page" :
-                            lastSpecifiedPageSpread === "right" ? "left_page" :
-                            pageProgDirection === "rtl" ? "right_page" : "left_page";
+                        return lastSpecifiedPageSpread === "left" ? this.RIGHT_PAGE :
+                            lastSpecifiedPageSpread === "right" ? this.LEFT_PAGE :
+                            pageProgDirection === "rtl" ? this.RIGHT_PAGE : this.LEFT_PAGE;
                     }
                 }
             }
