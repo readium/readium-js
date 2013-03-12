@@ -9,9 +9,13 @@ Epub.PackageDocument = Backbone.Model.extend({
         this.pageSpreadProperty = new Epub.PageSpreadProperty();
 
         // If this book is fixed layout, assign the page spread class
-        // if (this.metadata.get("fixed_layout")) {
+        if (this.isFixedLayout()) {
+            this.assignPageSpreadClass();
+        }
+    },
 
-        // }
+    isFixedLayout : function () {
+        return this.metadata.get("fixed_layout");
     },
 
     getManifestItemById : function (id) {
