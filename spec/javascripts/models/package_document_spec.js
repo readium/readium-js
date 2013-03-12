@@ -245,11 +245,83 @@ describe('Epub.PackageDocument', function() {
 
     describe("private helpers", function () {
 
+        // These are basic tests, as each of these cases is tested more thoroughly for the page spread property delegate
         describe("assignPageSpreadClass()", function () {
 
-            
+             describe("FXL epub is Apple fixed", function () {
 
+                beforeEach(function () {
+
+                    var packageDocumentJson = JSON.parse(jasmine.getFixtures().read("package_document_apple_fixed.json"));
+                    this.packageDocument = new Epub.PackageDocument({ packageDocumentObject : packageDocumentJson });
+                    this.packageDocument.assignPageSpreadClass();
+                });
+
+                it("infers page-1 is right", function () {
+
+                    this.packageDocument.spine.at(0).get("pageSpreadClass") === "right_page";
+                });
+
+                it("infers page-2 is left", function () {
+
+                    this.packageDocument.spine.at(1).get("pageSpreadClass") === "left_page";
+                });
+
+                it("infers page-3 is right", function () {
+
+                    this.packageDocument.spine.at(2).get("pageSpreadClass") === "right_page";
+                });
+             });
+
+             describe("FXL epub; page-1:right; page-2:right; page-3:left", function () {
+
+                beforeEach(function () {
+
+                    var packageDocumentJson = JSON.parse(jasmine.getFixtures().read("package_document_FXL_specified.json"));
+                    this.packageDocument = new Epub.PackageDocument({ packageDocumentObject : packageDocumentJson });
+                    this.packageDocument.assignPageSpreadClass();
+                });
+
+                it("infers page-1 is right", function () {
+
+                    this.packageDocument.spine.at(0).get("pageSpreadClass") === "right_page";
+                });
+
+                it("infers page-2 is right", function () {
+
+                    this.packageDocument.spine.at(1).get("pageSpreadClass") === "right_page";
+                });
+
+                it("infers page-3 is left", function () {
+
+                    this.packageDocument.spine.at(2).get("pageSpreadClass") === "left_page";
+                });
+             });
+
+             describe("FXL epub has no page-spread specified", function () {
+
+                beforeEach(function () {
+
+                    var packageDocumentJson = JSON.parse(jasmine.getFixtures().read("package_document_FXL_not_specified.json"));
+                    this.packageDocument = new Epub.PackageDocument({ packageDocumentObject : packageDocumentJson });
+                    this.packageDocument.assignPageSpreadClass();
+                });
+
+                it("infers page-1 is left", function () {
+
+                    this.packageDocument.spine.at(0).get("pageSpreadClass") === "left_page";
+                });
+
+                it("infers page-2 is right", function () {
+
+                    this.packageDocument.spine.at(1).get("pageSpreadClass") === "right_page";
+                });
+
+                it("infers page-3 is left", function () {
+
+                    this.packageDocument.spine.at(2).get("pageSpreadClass") === "left_page";
+                });
+             });
         });      
-
     });
 });

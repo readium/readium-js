@@ -6,6 +6,12 @@ Epub.PackageDocument = Backbone.Model.extend({
         this.manifest = new Epub.Manifest(this.get("packageDocumentObject").manifest);
         this.spine = new Epub.Spine(this.get("packageDocumentObject").spine);
         this.metadata = new Epub.Metadata(this.get("packageDocumentObject").metadata);
+        this.pageSpreadProperty = new Epub.PageSpreadProperty();
+
+        // If this book is fixed layout, assign the page spread class
+        // if (this.metadata.get("fixed_layout")) {
+
+        // }
     },
 
     getManifestItemById : function (id) {
@@ -119,20 +125,17 @@ Epub.PackageDocument = Backbone.Model.extend({
     // ----------------------- PRIVATE HELPERS -------------------------------- //
 
 
-    // when rendering fixed layout pages we need to determine whether the page
-    // should be on the left or the right in two up mode, options are:
-    //  left_page:      render on the left side
-    //  right_page:     render on the right side
-    //  center_page:    always center the page horizontally
+    // Description: When rendering fixed layout pages we need to determine whether the page
+    //   should be on the left or the right in two up mode, options are:
+    //     left_page:      render on the left side
+    //     right_page:     render on the right side
+    //     center_page:    always center the page horizontally
+    //   This property must be assigned when the package document is initialized
     // NOTE: Look into how spine items with the linear="no" property affect this algorithm 
-
     assignPageSpreadClass : function () {
-        var book = this.collection.packageDocument.get("book");
-        var spine_index = this.get("spine_index");
-        var pageSpreadProperty;
-        var spineItems = this.collection;
-        var numPagesBetween;
-        var lastSpecifiedPageSpread;
+
+        var that = this;
+        var pageSpreadClass;
 
         // If the epub is apple fixed layout
         if (this.metadata.get("apple_fixed")) {
@@ -140,37 +143,27 @@ Epub.PackageDocument = Backbone.Model.extend({
             var numSpineItems = this.spine.length;
             this.spine.each(function (spineItem, spineIndex) {
 
-
-                // spineItem.set({ pageSpreadClass : });
+                pageSpreadClass = that.pageSpreadProperty.inferiBooksPageSpread(spineIndex, numSpineItems);
+                spineItem.set({ pageSpreadClass : pageSpreadClass });
             });
         }
         else {
             // For each spine item
             this.spine.each(function (spineItem, spineIndex) {
 
-                // If the page spread property has been set for this spine item, return 
-                // the name of the appropriate spread class. 
-                // Note: As there are only three valid values (left, right, center) for the page
-                // spread property in ePub 3.0, if the property is set and 
-                // it is not "left" or "right, "center" will always be assumed. 
                 if (spineItem.get("page_spread")) {
 
-                    var manifestItem = this.getManifestItemByIdref(spineItem.get("idref"));
-                    pageSpreadProperty = manifestItem.get("page_spread");
-                    // Then get the delegate to return the appropriate page spread class
+                    pageSpreadClass = that.pageSpreadProperty.getPageSpreadFromProperties(spineItem.get("page_spread"));
+                    spineItem.set({ pageSpreadClass : pageSpreadClass });
                 }
-                // If the page spread property is not set, we must iterate back through the EPUB's spine items to find 
-                //   the last spine item with a page-spread value set. We can use that value, whether there are an even or odd
-                //   number of pages between this spine item and the "last" one, and the page progression direction of the EPUB
-                //   to determine the appropriate page spread value for this spine item. 
                 else {
 
-                    this.inferPageSpread(spineItem, spineIndex);
+                    pageSpreadClass = that.pageSpreadProperty.inferUnassignedPageSpread(spineIndex, that.spine, that.pageProgressionDirection());
+                    spineItem.set({ pageSpreadClass : pageSpreadClass });
                 }
             });
         }
     },
-
 
     // This doesn't work at the moment.
     getTocItem : function() {

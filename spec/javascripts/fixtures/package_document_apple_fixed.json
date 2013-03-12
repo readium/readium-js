@@ -1,5 +1,6 @@
 {
     "metadata": {
+            "apple_fixed":"true",
             "active_class":"-epub-media-overlay-active",
             "author":"",
             "description":"Lorem Ipsum Dolor sed",
@@ -22,28 +23,15 @@
     "spine":[{
             "idref":"Page_1",
             "linear":"",
-            "properties":"rendition:layout-pre-paginated",
-            "page_spread":""
+            "properties":"rendition:layout-pre-paginated"
         },
         {
             "idref":"Page_2",
             "linear":"",
-            "properties":"rendition:layout-pre-paginated",
-            "page_spread":"left"
-        },
-        {
-            "idref":"Page_3",
-            "linear":"",
             "properties":"rendition:layout-pre-paginated"
         },
         {
-            "idref":"Page_4",
-            "linear":"",
-            "properties":"rendition:layout-pre-paginated",
-            "page_spread":"right"
-        },
-        {
-            "idref":"Page_5",
+            "idref":"Page_3",
             "linear":"",
             "properties":"rendition:layout-pre-paginated"
         }],

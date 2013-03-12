@@ -49,14 +49,23 @@ Epub.PageSpreadProperty = Backbone.Model.extend({
 
             return this.RIGHT_PAGE;
         }
-        else {
+        else if (pageSpreadProperty === "center") {
 
             return this.CENTER_PAGE;
+        }
+        else {
+
+            return "";
         }
     },
 
     // NOTE: This method still cannot infer the page spread value when center pages are sporadically specified
     // REFACTORING CANDIDATE: Could still use some refactoring to enhance the clarity of the algorithm
+    
+    // Rationale: If the page spread property is not set, we must iterate back through the EPUB's spine items to find 
+    //   the last spine item with a page-spread value set. We can use that value, whether there are an even or odd
+    //   number of pages between this spine item and the "last" one, and the page progression direction of the EPUB
+    //   to determine the appropriate page spread value for this spine item. 
     inferUnassignedPageSpread : function (spineIndex, spine, pageProgDirection) {
 
         var lastSpecifiedPageSpread;

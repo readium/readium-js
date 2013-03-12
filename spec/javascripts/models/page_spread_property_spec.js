@@ -75,12 +75,12 @@ describe("Epub.PageSpreadProperty", function () {
             expect(pageSpreadClass).toBe("center_page")
         });
 
-        it("assigns center_page for all other property values", function () {
+        it("assigns '' for all other property values", function () {
             
             var pageSpreadProperty = "unspecified property value";
             var pageSpreadClass = this.pageSpreadDelegate.getPageSpreadFromProperties(pageSpreadProperty);
 
-            expect(pageSpreadClass).toBe("center_page");
+            expect(pageSpreadClass).toBe("");
         });
     });
 
@@ -240,7 +240,7 @@ describe("Epub.PageSpreadProperty", function () {
                     expect(pageSpreadClass).toBe("right_page");
                 });
 
-                it("infers page-5 is right", function () {
+                it("infers page-5 is left", function () {
 
                     var pageSpreadClass = this.pageSpreadProperty.inferUnassignedPageSpread(4, this.packageDocument.spine, "rtl");
                     expect(pageSpreadClass).toBe("left_page");
