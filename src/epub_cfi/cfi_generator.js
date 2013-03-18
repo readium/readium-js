@@ -30,6 +30,8 @@ EPUBcfi.Generator = {
         var $itemRefStartNode;
         var packageDocCFI;
 
+        this.validateStartElement(startElement);
+
         // Call the recursive method to create all the steps up to the head element of the content document (the "html" element)
         contentDocCFI = this.createCFIElementSteps($(startElement), "html", classBlacklist, elementBlacklist, idBlacklist);
 
@@ -76,6 +78,17 @@ EPUBcfi.Generator = {
         }
         else if (characterOffset > startTextNode.nodeValue.length) {
             throw new EPUBcfi.OutOfRangeError(characterOffset, startTextNode.nodeValue.length - 1, "character offset cannot be greater than the length of the text node");
+        }
+    },
+
+    validateStartElement : function (startElement) {
+
+        if (!startElement) {
+            throw new EPUBcfi.NodeTypeError(startElement, "CFI target element is undefined");
+        }
+
+        if (!(startElement.nodeType && startElement.nodeType === 1)) {
+            throw new EPUBcfi.NodeTypeError(startElement, "CFI target element is not an HTML element");
         }
     },
 

@@ -178,7 +178,6 @@ describe("CFI GENERATOR", function () {
             startTextNode = $("#c01p0008", contentDoc)[0].firstChild;
         });
 
-        // Throws text node start point error
         it("throws an error if a text node is not supplied as a starting point", function () {
 
             expect(function () {
@@ -188,7 +187,6 @@ describe("CFI GENERATOR", function () {
             );
         });
 
-        // Character offset is outside an acceptable range
         it("throws an error if the character offset is less then 0", function () {
 
            expect(function () {
@@ -198,7 +196,6 @@ describe("CFI GENERATOR", function () {
             ); 
         });
 
-        // Character offset is outside an acceptable range
         it("throws an error if the character offset is greater than the length of the text node", function () {
 
            expect(function () {
@@ -211,7 +208,6 @@ describe("CFI GENERATOR", function () {
             ); 
         });
 
-        // Content document name is within 
         it("throws an error if an idref is not supplied", function () {
 
             expect(function () {
@@ -221,7 +217,6 @@ describe("CFI GENERATOR", function () {
             );
         });
 
-        // non-empty package document
         it("throws an error if a package document is not supplied", function () {
 
             expect(function () {
@@ -231,13 +226,30 @@ describe("CFI GENERATOR", function () {
             );
         });
 
-        // idref matches
         it("throws an error if the idref does not match any idref attribute on itemref elements in the spine", function () {
 
             expect(function () {
                 EPUBcfi.Generator.generatePackageDocumentCFIComponent("xchapter_", packageDoc)})
             .toThrow(
                 Error("The idref of the content document could not be found in the spine")
+            );
+        });
+
+        it("throws an error if target element is undefined", function () {
+
+            expect(function () {
+                EPUBcfi.Generator.validateStartElement(undefined)})
+            .toThrow(
+                Error("CFI target element is undefined")
+            );
+        });
+
+        it("throws an error if target element is not an HTML element", function () {
+
+            expect(function () {
+                EPUBcfi.Generator.validateStartElement(document.createTextNode("a text node"))})
+            .toThrow(
+                Error("CFI target element is not an HTML element")
             );
         });
     });
