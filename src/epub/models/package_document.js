@@ -112,6 +112,17 @@ Epub.PackageDocument = Backbone.Model.extend({
         return undefined;
     },
 
+    // TEST THESE
+    hasNextSection: function() {
+        var start = this.get("spine_position");
+        return this.packageDocument.getNextLinearSpinePostition(start) > -1;
+    },
+
+    hasPrevSection: function() {
+        var start = this.get("spine_position");
+        return this.packageDocument.getPrevLinearSpinePostition(start) > -1;
+    },
+
     pageProgressionDirection : function () {
 
         if (this.metadata.get("page_prog_dir") === "rtl") {
