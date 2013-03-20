@@ -1,38 +1,31 @@
 
 describe("EpubParser.PackageDocumentParser", function() {
-  
+
     beforeEach(function() {
 
-        var uri_object;
         this.xml_string = jasmine.getFixtures().read('package_document.xml');
-        this.xml = new window.DOMParser().parseFromString(this.xml_string, 'text/xml');
-        uri_object = new URI("http://google.com");
-        return this.parser = new EpubParser.PackageDocumentParser({ uriObject : uri_object });
+        this.parser = new EpubParser.PackageDocumentParser({ packageDocumentXML : this.xml_string });
     });
-
+  
     describe("initialization", function() {
 
         it('exists in the proper namespace', function() {
-            return expect(EpubParser.PackageDocumentParser).toBeDefined();
+            expect(EpubParser.PackageDocumentParser).toBeDefined();
         });
 
         it('can be initialized', function() {
-            var parser;
-            parser = new EpubParser.PackageDocumentParser({});
-            return expect(typeof parser).toEqual("object");
+            expect(typeof this.parser).toEqual("object");
         });
 
-        it('assign the parameter as uri_obj', function() {
-            var parser;
-            parser = new EpubParser.PackageDocumentParser({uriObject : "banana"});
-            return expect(parser.get("uriObject")).toEqual("banana");
+        it('assigns the package document xml', function() {
+            expect(this.parser.get("packageDocumentXML")).toEqual(this.xml_string);
         });
     });
 
     describe("getJsonSpine", function () {
 
         beforeEach(function () {
-            this.spine = this.parser.getJsonSpine(this.xml);
+            this.spine = this.parser.getJsonSpine();
             this.arbitrarySpineItemToTest = this.spine[0];
         });
 
@@ -56,7 +49,7 @@ describe("EpubParser.PackageDocumentParser", function() {
     describe("getJsonMetadata", function () {
 
         beforeEach(function () {
-            this.metadata = this.parser.getJsonMetadata(this.xml);
+            this.metadata = this.parser.getJsonMetadata();
         });
 
         it("parses the active class property", function () {
@@ -127,7 +120,7 @@ describe("EpubParser.PackageDocumentParser", function() {
     describe("getJsonManifest", function () {
 
         beforeEach(function () {
-            this.manifest = this.parser.getJsonManifest(this.xml);
+            this.manifest = this.parser.getJsonManifest();
             this.arbitraryManifestItemToTest = this.manifest[3];
         });
 
@@ -159,7 +152,7 @@ describe("EpubParser.PackageDocumentParser", function() {
     describe("getJsonBindings", function () {
 
         beforeEach(function () {
-            this.bindings = this.parser.getJsonBindings(this.xml);
+            this.bindings = this.parser.getJsonBindings();
             this.arbitraryBindingToTest = this.bindings[0];
         });
 
@@ -180,22 +173,21 @@ describe("EpubParser.PackageDocumentParser", function() {
 
         it("returns a javascript object", function() {
             var type;
-            this.result = this.parser.parse(this.xml);
+            this.result = this.parser.parse();
             type = typeof this.result;
-            return expect(type).toEqual("object");
+            expect(type).toEqual("object");
         });
 
         it("parses spine item properties", function() {
             var res;
             spyOn(this.parser, "parseSpineProperties");
-            res = this.parser.parse(this.xml);
-            return expect(this.parser.parseSpineProperties).toHaveBeenCalled();
+            res = this.parser.parse();
+            expect(this.parser.parseSpineProperties).toHaveBeenCalled();
         });
 
         it("parses the media:active-class metadata", function() {
-            var res;
-            res = this.parser.parse(this.xml);
-            return expect(res.metadata.active_class).toEqual("-epub-media-overlay-active");
+            var res = this.parser.parse();
+            expect(res.metadata.active_class).toEqual("-epub-media-overlay-active");
         });
     });
 
@@ -214,43 +206,45 @@ describe("EpubParser.PackageDocumentParser", function() {
                 properties: ''
             }
             ];
-            return this.res = this.parser.parseSpineProperties(this.spine);
+            this.res = this.parser.parseSpineProperties(this.spine);
         });
 
         it("returns an array", function() {
-            return expect(this.res.length).toBeDefined();
+            expect(this.res.length).toBeDefined();
         });
 
         it("add properties to the spine item if they exist", function() {
             expect(this.res[0].page_spread).toEqual('right');
-            return expect(this.res[0].fixed_flow).toEqual(true);
+            expect(this.res[0].fixed_flow).toEqual(true);
         });
 
         it("leaves the properties string entact", function() {
-            return expect(this.res[0].properties).toEqual('page-spread-right rendition:layout-pre-paginated');
+            expect(this.res[0].properties).toEqual('page-spread-right rendition:layout-pre-paginated');
         });
     });
 
     describe("paginateBackwards()", function() {
 
         it("returns false the page-progression-direction attr is not present", function() {
-            var result;
-            result = this.parser.paginateBackwards(this.xml);
-            return expect(result).toBeFalsy();
+
+            this.xml_string = jasmine.getFixtures().read('package_document.xml');
+            this.parser = new EpubParser.PackageDocumentParser({ packageDocumentXML : this.xml_string });
+            var result = this.parser.paginateBackwards();
+            expect(result).toBe(false);
         });
 
         it("returns false if the page-progression-direction attr is ltr", function() {
-            var result;
-            $('spine', this.xml).attr('page-progression-direction', 'rtl');
-            result = this.parser.paginateBackwards(this.xml);
-            return expect(result).toBeFalsy();
+            this.xml_string = jasmine.getFixtures().read('package_document_ltr.xml');
+            this.parser = new EpubParser.PackageDocumentParser({ packageDocumentXML : this.xml_string });
+            var result = this.parser.paginateBackwards();
+            expect(result).toBe(false);
         });
 
         it("returns true if the page-progression-direction attr is rtl", function() {
-            var result;
-            $('spine', this.xml).attr('page-progression-direction', 'ltr');
-            result = this.parser.paginateBackwards(this.xml);
-            return expect(result).toBeTruthy();
+            this.xml_string = jasmine.getFixtures().read('package_document_rtl.xml');
+            this.parser = new EpubParser.PackageDocumentParser({ packageDocumentXML : this.xml_string });
+            var result = this.parser.paginateBackwards();
+            expect(result).toBe(true);
         });
     });
 });

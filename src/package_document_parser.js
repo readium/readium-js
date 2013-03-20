@@ -4,20 +4,23 @@
 EpubParser.PackageDocumentParser = Backbone.Model.extend({
 
     initialize : function (attributes, options) {
-        this.uri_obj = this.get("uriObject");
+
+        var xml = this.get("packageDocumentXML");
+        if (typeof(xml) === "string" ) {
+            var parser = new window.DOMParser;
+            xmlDom = parser.parseFromString(xml, 'text/xml');
+            this.set({ xmlDom : xmlDom });
+        }
+        else {
+            throw new Error("XML string representation of package document is required");
+        }
     },
 
     // Parse an XML package document into a javascript object
-    parse : function(xml_content) {
+    parse : function() {
 
         var json, manifest, cover, xmlDom;
-        if (typeof(xml_content) === "string" ) {
-            var parser = new window.DOMParser;
-            xmlDom = parser.parseFromString(xml_content, 'text/xml');
-        }
-        else {
-            xmlDom = xml_content;
-        }
+        var xmlDom = this.get("xmlDom");
 
         json = {};
         json.metadata = this.getJsonMetadata(xmlDom);
@@ -31,7 +34,7 @@ EpubParser.PackageDocumentParser = Backbone.Model.extend({
         // try to find a cover image
         cover = this.getCoverHref(xmlDom);
         if (cover) {
-            json.metadata.cover_href = this.resolveUri(cover);
+            json.metadata.cover_href = cover;
         }       
         if (json.metadata.layout === "pre-paginated") {
             json.metadata.fixed_layout = true;
@@ -48,10 +51,11 @@ EpubParser.PackageDocumentParser = Backbone.Model.extend({
         return json;
     },
 
-    getJsonSpine : function (xmlDom) {
+    getJsonSpine : function () {
 
         var $spineElements;
         var jsonSpine = [];
+        var xmlDom = this.get("xmlDom");
 
         $spineElements = $("spine", xmlDom).children();
         $.each($spineElements, function (spineElementIndex, currSpineElement) {
@@ -70,8 +74,9 @@ EpubParser.PackageDocumentParser = Backbone.Model.extend({
         return jsonSpine;
     },
 
-    getJsonMetadata : function (xmlDom) {
+    getJsonMetadata : function () {
 
+        var xmlDom = this.get("xmlDom");
         var $metadata = $("metadata", xmlDom);
         var jsonMetadata = {};
 
@@ -95,8 +100,9 @@ EpubParser.PackageDocumentParser = Backbone.Model.extend({
         return jsonMetadata;
     },
 
-    getJsonManifest : function (xmlDom) {
+    getJsonManifest : function () {
 
+        var xmlDom = this.get("xmlDom");
         var $manifestItems = $("manifest", xmlDom).children(); 
         var jsonManifest = [];
 
@@ -118,8 +124,9 @@ EpubParser.PackageDocumentParser = Backbone.Model.extend({
         return jsonManifest;
     },
 
-    getJsonBindings : function (xmlDom) {
+    getJsonBindings : function () {
 
+        var xmlDom = this.get("xmlDom");
         var $bindings = $("bindings", xmlDom).children();
         var jsonBindings = [];
 
@@ -138,7 +145,9 @@ EpubParser.PackageDocumentParser = Backbone.Model.extend({
         return jsonBindings;
     },
 
-    getCoverHref : function(dom) {
+    getCoverHref : function() {
+
+        var dom = this.get("xmlDom");
         var manifest; var $imageNode;
         manifest = dom.getElementsByTagName('manifest')[0];
 
@@ -194,7 +203,7 @@ EpubParser.PackageDocumentParser = Backbone.Model.extend({
             
         }
 
-        for(var i = 0; i < spine.length; i++) {
+        for (var i = 0; i < spine.length; i++) {
             var props = parseProperiesString(spine[i].properties);
             // add all the properties to the spine item
             _.extend(spine[i], props);
@@ -225,13 +234,9 @@ EpubParser.PackageDocumentParser = Backbone.Model.extend({
     // },
 
     // parse the EPUB3 `page-progression-direction` attribute
-    paginateBackwards : function(xmlDom) {
-        return $('spine', xmlDom).attr('page-progression-direction') === "ltr";
-    },
+    paginateBackwards : function() {
 
-    // convert a relative uri to a fully resolved one
-    resolveUri : function(rel_uri) {
-        uri = new URI(rel_uri);
-        return uri.resolve(this.get("uriObject")).toString();
+        var xmlDom = this.get("xmlDom");
+        return $('spine', xmlDom).attr('page-progression-direction') === "rtl";
     }
 });
