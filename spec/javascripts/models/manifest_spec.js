@@ -7,15 +7,12 @@ describe("Epub.Manifest", function () {
         this.manifest = new Epub.Manifest(this.manifestJson);
     });
 
-    describe("module structure", function () {
+    describe("initialization", function () {
 
         it("exists in namespace", function () {
 
             expect(Epub.Manifest).toBeDefined();
         });
-    });
-
-    describe("initialization", function () {
 
         it("adds each manifest item", function () {
 

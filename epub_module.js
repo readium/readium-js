@@ -1,6 +1,7 @@
 var EpubModule = function(packageDocumentObject) {
     
     var Epub = {};
+
     // Rationale: The order of these matters
     Epub.ManifestItem = Backbone.Model.extend({
 
@@ -171,11 +172,7 @@ Epub.PageSpreadProperty = Backbone.Model.extend({
     },
 
     // REFACTORING CANDIDATE: The meta tags thing has to be worked out
-    toJSON : function () {
-
-        // if (this.isFixedLayout()) {
-        //     this.parseMetaTags();
-        // }
+    // toJSON : function () {
 
         // var json = {};
         // json.width = this.get("meta_width") || 0;
@@ -183,7 +180,7 @@ Epub.PageSpreadProperty = Backbone.Model.extend({
         // json.uri = this.resolveUri(this.get('href'));
         // json.page_class = this.getPageSpreadClass();
         // return json;
-    },
+    // },
 
     // REFACTORING CANDIDATE: This needs to change
 
@@ -305,29 +302,46 @@ Epub.PackageDocument = Backbone.Model.extend({
                     return manifestItem;
                 }
             });
-        return foundManifestItem;
+
+        if (foundManifestItem) {
+            return foundManifestItem.toJSON();
+        }
+        else {
+            return undefined;
+        }
     },
 
     getManifestItemByIdref : function (idref) {
 
         var foundManifestItem = this.getManifestItemById(idref);
-        return foundManifestItem;
+        if (foundManifestItem) {
+            return foundManifestItem;
+        }
+        else {
+            return undefined;
+        }
     },
 
-    // Not sure if this method is that useful.
     getSpineItemByIdref : function (idref) {
 
-        var foundSpineItem = this.spine.find(
-            function (spineItem) { 
-                if (spineItem.get("idref") === idref) {
-                    return spineItem;
-                }
-            });
-        return foundSpineItem;
+        var foundSpineItem = this.getSpineModelByIdref(idref);
+
+        if (foundSpineItem) {
+            return foundSpineItem.toJSON();
+        }
+        else {
+            return undefined;
+        }
     },
 
     getSpineItem : function (spineIndex) {
-        return this.spine.at(spineIndex);
+        var spineItem = this.spine.at(spineIndex);
+        if (spineItem) {
+            return spineItem.toJSON();
+        }
+        else {
+            return undefined;
+        }
     },
 
     spineLength : function () {
@@ -390,15 +404,28 @@ Epub.PackageDocument = Backbone.Model.extend({
         return undefined;
     },
 
-    // TEST THESE
-    hasNextSection: function() {
-        var start = this.get("spine_position");
-        return this.packageDocument.getNextLinearSpinePostition(start) > -1;
+    hasNextSection: function(currSpineIndex) {
+
+        if (currSpineIndex >= 0 &&
+            currSpineIndex <= this.spineLength() - 1) {
+            
+            return this.getNextLinearSpinePosition(currSpineIndex) > -1;
+        }
+        else {
+            return false;
+        }
     },
 
-    hasPrevSection: function() {
-        var start = this.get("spine_position");
-        return this.packageDocument.getPrevLinearSpinePostition(start) > -1;
+    hasPrevSection: function(currSpineIndex) {
+
+        if (currSpineIndex >= 0 &&
+            currSpineIndex <= this.spineLength() - 1) {
+
+            return this.getPrevLinearSpinePosition(currSpineIndex) > -1;    
+        }
+        else {
+            return false;
+        }
     },
 
     pageProgressionDirection : function () {
@@ -414,9 +441,9 @@ Epub.PackageDocument = Backbone.Model.extend({
         }
     },
 
-    getSpineIndexFromHref : function (manifestHref) {
+    getSpineIndexByHref : function (manifestHref) {
 
-        var spineItem = this.getSpineItemFromHref(manifestHref);
+        var spineItem = this.getSpineModelFromHref(manifestHref);
         return this.getSpineIndex(spineItem);
     },
 
@@ -437,22 +464,39 @@ Epub.PackageDocument = Backbone.Model.extend({
 
     // ----------------------- PRIVATE HELPERS -------------------------------- //
 
-    getSpineItemFromHref : function (manifestHref) {
+    // Refactoring candidate: This search will always iterate through entire manifest; this should be modified to 
+    //   return when the manifest item is found.
+    getSpineModelFromHref : function (manifestHref) {
 
         var that = this;
         var resourceURI = new URI(manifestHref);
         var resourceName = resourceURI.filename();
+        var foundSpineModel; 
 
         this.manifest.each(function (manifestItem) {
 
             var manifestItemURI = new URI(manifestItem.get("href"));
             var manifestItemName = manifestItemURI.filename();
-            var spineItem;
 
+            // Rationale: Return a spine model based on the manifest item id, which is the idref of the spine item
             if (manifestItemName === resourceName) {
-                return that.getSpineItemByIdref(manifestItem.get("idref"));
+                foundSpineModel = that.getSpineModelByIdref(manifestItem.get("id"));
             }
         });
+
+        return foundSpineModel;
+    },
+
+    getSpineModelByIdref : function (idref) {
+
+        var foundSpineItem = this.spine.find(
+            function (spineItem) { 
+                if (spineItem.get("idref") === idref) {
+                    return spineItem;
+                }
+            });
+
+        return foundSpineItem;
     },
 
     getSpineIndex : function (spineItem) {
@@ -502,32 +546,32 @@ Epub.PackageDocument = Backbone.Model.extend({
     },
 
     // This doesn't work at the moment.
-    getTocItem : function() {
-        var manifest = this.get("manifest");
-        var spine_id = this.get("metadata").ncx;
+    // getTocItem : function() {
+    //     var manifest = this.get("manifest");
+    //     var spine_id = this.get("metadata").ncx;
 
-        var item = manifest.find(function(item){
+    //     var item = manifest.find(function(item){
 
-            if (item.get("properties").indexOf("nav") !== -1) {
-                return true;
-            }
-            else {
-                return false;
-            }
-        });
+    //         if (item.get("properties").indexOf("nav") !== -1) {
+    //             return true;
+    //         }
+    //         else {
+    //             return false;
+    //         }
+    //     });
 
-        if( item ) {
-            return item;
-        }
+    //     if( item ) {
+    //         return item;
+    //     }
 
-        if( spine_id && spine_id.length > 0 ) {
-            return manifest.find(function(item) {
-                return item.get("id") === spine_id;
-            });
-        }
+    //     if( spine_id && spine_id.length > 0 ) {
+    //         return manifest.find(function(item) {
+    //             return item.get("id") === spine_id;
+    //         });
+    //     }
 
-        return null;
-    },
+    //     return null;
+    // },
 
 
     // NOTE: Media overlays are temporarily disabled
@@ -541,20 +585,20 @@ Epub.PackageDocument = Backbone.Model.extend({
 
     var packageDoc = new Epub.PackageDocument({ packageDocumentObject : packageDocumentObject });
 
-    // This is the public interface
+    // Description: The public interface
     return {
 
         isFixedLayout : function () { return packageDoc.isFixedLayout.call(packageDoc); },
         getManifestItemById : function (id) { return packageDoc.getManifestItemById.call(packageDoc, id); },
         getManifestItemByIdref : function (idref) { return packageDoc.getManifestItemByIdref.call(packageDoc, idref); }, 
         getSpineItemByIdref : function (idref) { return packageDoc.getSpineItemByIdref.call(packageDoc, idref); },
-        getSpineItem : function (spineIndex) { return packageDoc.getSpineItem.call(packageDoc, spineIndex); }, 
+        getSpineItemByIndex : function (spineIndex) { return packageDoc.getSpineItem.call(packageDoc, spineIndex); }, 
         spineLength : function () { return packageDoc.spineLength.call(packageDoc); }, 
-        getNextLinearSpinePosition : function () { return packageDoc.getNextLinearSpinePosition.call(packageDoc, currSpineIndex); },
-        getPrevLinearSpinePosition : function () { return packageDoc.getPrevLinearSpinePosition.call(packageDoc, currSpineIndex); }, 
-        hasNextSection : function () { return packageDoc.hasNextSection.call(packageDoc); }, 
-        hasPrevSection : function () { return packageDoc.hasPrevSection.call(packageDoc); }, 
+        getNextLinearSpinePosition : function (currSpineIndex) { return packageDoc.getNextLinearSpinePosition.call(packageDoc, currSpineIndex); },
+        getPrevLinearSpinePosition : function (currSpineIndex) { return packageDoc.getPrevLinearSpinePosition.call(packageDoc, currSpineIndex); }, 
+        hasNextSection : function (currSpineIndex) { return packageDoc.hasNextSection.call(packageDoc, currSpineIndex); }, 
+        hasPrevSection : function (currSpineIndex) { return packageDoc.hasPrevSection.call(packageDoc, currSpineIndex); }, 
         pageProgressionDirection : function () { return packageDoc.pageProgressionDirection.call(packageDoc); },
-        getSpineIndexFromHref : function () { return packageDoc.getSpineIndexFromHref.call(packageDoc, manifestHref); } 
+        getSpineIndexByHref : function (manifestHref) { return packageDoc.getSpineIndexByHref.call(packageDoc, manifestHref); } 
     };
 };

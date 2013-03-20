@@ -13,11 +13,7 @@ Epub.SpineItem = Epub.ManifestItem.extend({
     },
 
     // REFACTORING CANDIDATE: The meta tags thing has to be worked out
-    toJSON : function () {
-
-        // if (this.isFixedLayout()) {
-        //     this.parseMetaTags();
-        // }
+    // toJSON : function () {
 
         // var json = {};
         // json.width = this.get("meta_width") || 0;
@@ -25,7 +21,7 @@ Epub.SpineItem = Epub.ManifestItem.extend({
         // json.uri = this.resolveUri(this.get('href'));
         // json.page_class = this.getPageSpreadClass();
         // return json;
-    },
+    // },
 
     // REFACTORING CANDIDATE: This needs to change
 

@@ -18,28 +18,40 @@ describe("Epub.ManifestItem", function() {
 
             expect(this.manifestItem).toBeDefined();
         });
+    });
 
-        describe("attributes", function () {
+    describe("attributes", function () {
+        
+        beforeEach(function() {
 
-            it("creates href", function () {
-                expect(this.manifestItem.get("href")).toBe("Font/Helvetica-0850.otf");
-            });
+            this.manifestItemJson = {
+                href: "Font/Helvetica-0850.otf",
+                id: "id4",
+                media_overlay: "mo.smil",
+                media_type: "image/svg+xml",
+                properties: "arbitrary string"
+            };
+            this.manifestItem = new Epub.ManifestItem(this.manifestItemJson);
+        });
 
-            it("creates id", function () {
-                expect(this.manifestItem.get("id")).toBe("id4");
-            });
+        it("creates href", function () {
+            expect(this.manifestItem.get("href")).toBe("Font/Helvetica-0850.otf");
+        });
 
-            it("creates media_overlay", function () {
-                expect(this.manifestItem.get("media_overlay")).toBe("mo.smil");
-            });
+        it("creates id", function () {
+            expect(this.manifestItem.get("id")).toBe("id4");
+        });
 
-            it("creates media_type", function () {
-                expect(this.manifestItem.get("media_type")).toBe("image/svg+xml");
-            });
+        it("creates media_overlay", function () {
+            expect(this.manifestItem.get("media_overlay")).toBe("mo.smil");
+        });
 
-            it("creates properties", function () {
-                expect(this.manifestItem.get("properties")).toBe("arbitrary string");
-            });
+        it("creates media_type", function () {
+            expect(this.manifestItem.get("media_type")).toBe("image/svg+xml");
+        });
+
+        it("creates properties", function () {
+            expect(this.manifestItem.get("properties")).toBe("arbitrary string");
         });
     });
 
