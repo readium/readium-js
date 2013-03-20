@@ -1,4 +1,4 @@
-// `PackageDocumentParser` are used to parse the xml of an epub package
+// `PackageDocumentParser` is used to parse the xml of an epub package
 // document and build a javascript object. The constructor accepts an
 // instance of `URI` that is used to resolve paths during the process
 EpubParser.PackageDocumentParser = Backbone.Model.extend({
