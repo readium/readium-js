@@ -15,7 +15,13 @@ Epub.PackageDocument = Backbone.Model.extend({
     },
 
     isFixedLayout : function () {
-        return this.metadata.get("fixed_layout");
+
+        if (this.metadata.get("fixed_layout")) {
+            return true; 
+        }
+        else {
+            return false;
+        }
     },
 
     getManifestItemById : function (id) {
@@ -35,18 +41,16 @@ Epub.PackageDocument = Backbone.Model.extend({
         return foundManifestItem;
     },
 
+    getSpineItemByIdref : function (idref) {
 
-    // Not sure if this method is that useful.
-    // getSpineItemById : function (id) {
-
-    //     var foundSpineItem = this.spine.find(
-    //         function (spineItem) { 
-    //             if (spineItem.get("id") === id) {
-    //                 return spineItem;
-    //             }
-    //         });
-    //     return foundSpineItem;
-    // },
+        var foundSpineItem = this.spine.find(
+            function (spineItem) { 
+                if (spineItem.get("idref") === idref) {
+                    return spineItem;
+                }
+            });
+        return foundSpineItem;
+    },
 
     getSpineItem : function (spineIndex) {
         return this.spine.at(spineIndex);
@@ -136,9 +140,51 @@ Epub.PackageDocument = Backbone.Model.extend({
         }
     },
 
+    getSpineIndexFromHref : function (manifestHref) {
+
+        var spineItem = this.getSpineItemFromHref(manifestHref);
+        return this.getSpineIndex(spineItem);
+    },
+
+    // getToc: function() {
+    //  var item = this.packageDocument.getTocItem();
+    //  if(!item) {
+    //      return null;
+    //  }
+    //  else {
+    //      var that = this;
+    //      return Epub.Toc.getToc(item, {
+    //          file_path: that.resolvePath(item.get("href")),
+    //          book: that
+    //      });
+    //  }
+    // },
+
 
     // ----------------------- PRIVATE HELPERS -------------------------------- //
 
+    getSpineItemFromHref : function (manifestHref) {
+
+        var that = this;
+        var resourceURI = new URI(manifestHref);
+        var resourceName = resourceURI.filename();
+
+        this.manifest.each(function (manifestItem) {
+
+            var manifestItemURI = new URI(manifestItem.get("href"));
+            var manifestItemName = manifestItemURI.filename();
+            var spineItem;
+
+            if (manifestItemName === resourceName) {
+                return that.getSpineItemByIdref(manifestItem.get("idref"));
+            }
+        });
+    },
+
+    getSpineIndex : function (spineItem) {
+
+        return this.spine.indexOf(spineItem);
+    },
 
     // Description: When rendering fixed layout pages we need to determine whether the page
     //   should be on the left or the right in two up mode, options are:
@@ -151,11 +197,12 @@ Epub.PackageDocument = Backbone.Model.extend({
 
         var that = this;
         var pageSpreadClass;
+        var numSpineItems;
 
         // If the epub is apple fixed layout
         if (this.metadata.get("apple_fixed")) {
 
-            var numSpineItems = this.spine.length;
+            numSpineItems = this.spine.length;
             this.spine.each(function (spineItem, spineIndex) {
 
                 pageSpreadClass = that.pageSpreadProperty.inferiBooksPageSpread(spineIndex, numSpineItems);

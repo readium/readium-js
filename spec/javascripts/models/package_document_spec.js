@@ -68,7 +68,6 @@ describe('Epub.PackageDocument', function() {
                 expect(manifestItem.get("id")).toBe(manifestItemIdFromFixture);
             });
 
-            // id is not found
             it("is undefined when manifest item is not found", function () {
 
                 var nonExistentId = "this id does not exist";
@@ -87,7 +86,7 @@ describe('Epub.PackageDocument', function() {
 
                 expect(manifestItem).toBeDefined();
                 expect(manifestItem.get("id")).toBe(manifestItemIdrefFromFixture);
-            });            
+            });
         });
 
         describe("getSpineItem()", function () {
@@ -240,6 +239,36 @@ describe('Epub.PackageDocument', function() {
 
         describe("pageProgressionDirection()", function () {
 
+        });
+
+        describe("hasNextSection()", function () {
+
+        });
+
+        describe("hasPrevSection()", function () {
+
+        });
+
+        describe("getSpineItemByIdref()", function () {
+
+            it("finds a spine item with idref", function () {
+
+                var manifestItemIdrefFromFixture = "Page_1";
+                var spineItem = this.packageDocument.getSpineItemByIdref(manifestItemIdrefFromFixture);
+
+                expect(spineItem).toBeDefined();
+                expect(spineItem.get("idref")).toBe(manifestItemIdrefFromFixture);
+            });
+        });
+
+        describe("getSpineIndex()", function () {
+
+            it("gets the index of a spine item", function () {
+
+                var spineItem = this.packageDocument.getSpineItemByIdref("Page_2");
+
+                expect(this.packageDocument.getSpineIndex(spineItem)).toBe(1);
+            });
         });
     });
 
