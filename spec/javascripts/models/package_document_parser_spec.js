@@ -1,6 +1,26 @@
 
 describe("EpubParser.PackageDocumentParser", function() {
 
+    describe("epub_parser_module.js", function () {
+
+        it("can be instantiated", function () {
+
+            var xmlString = jasmine.getFixtures().read("package_document.xml");
+            var parser = new EpubParserModule(xmlString);
+
+            expect(typeof parser).toEqual("object");
+        });
+
+        it("parses", function () {
+
+            var xmlString = jasmine.getFixtures().read("package_document.xml");
+            var parser = new EpubParserModule(xmlString);
+            var parsingResult = parser.parse();
+
+            expect(typeof parsingResult).toEqual("object");
+        });
+    });
+
     beforeEach(function() {
 
         this.xml_string = jasmine.getFixtures().read('package_document.xml');
@@ -234,6 +254,7 @@ describe("EpubParser.PackageDocumentParser", function() {
         });
 
         it("returns false if the page-progression-direction attr is ltr", function() {
+
             this.xml_string = jasmine.getFixtures().read('package_document_ltr.xml');
             this.parser = new EpubParser.PackageDocumentParser({ packageDocumentXML : this.xml_string });
             var result = this.parser.paginateBackwards();
@@ -241,6 +262,7 @@ describe("EpubParser.PackageDocumentParser", function() {
         });
 
         it("returns true if the page-progression-direction attr is rtl", function() {
+
             this.xml_string = jasmine.getFixtures().read('package_document_rtl.xml');
             this.parser = new EpubParser.PackageDocumentParser({ packageDocumentXML : this.xml_string });
             var result = this.parser.paginateBackwards();

@@ -17,6 +17,7 @@ src_files:
     - lib/underscore.js
     - lib/backbone.js
     - src/**/*.js
+    - epub_parser_module.js
 
 # stylesheets
 #

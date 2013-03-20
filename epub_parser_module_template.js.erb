@@ -1,0 +1,13 @@
+var EpubParserModule = function(packageDocumentXML) {
+    
+    var EpubParser = {};
+    <%= package_document_parser %>
+
+    var packageDocParser = new EpubParser.PackageDocumentParser({ packageDocumentXML : packageDocumentXML });
+
+    // Description: The public interface
+    return {
+
+        parse : function () { return packageDocParser.parse.call(packageDocParser); }
+    };
+};
