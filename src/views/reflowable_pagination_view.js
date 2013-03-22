@@ -126,7 +126,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 	},
     
 	// indicateMoIsPlaying: function () {
-	// 	var moHelper = new Readium.Models.MediaOverlayViewHelper({epubController : this.model});
+	// 	var moHelper = new EpubReflowable.MediaOverlayViewHelper({epubController : this.model});
 	// 	moHelper.renderReflowableMoPlaying(
 	// 		this.model.get("current_theme"),
 	// 		this.mediaOverlayController.get("active_mo"),
@@ -135,7 +135,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 	// },
 
 	// highlightText: function () {
-	// 	var moHelper = new Readium.Models.MediaOverlayViewHelper({epubController : this.model});
+	// 	var moHelper = new EpubReflowable.MediaOverlayViewHelper({epubController : this.model});
 	// 	moHelper.renderReflowableMoFragHighlight(
 	// 		this.model.get("current_theme"),
 	// 		this,

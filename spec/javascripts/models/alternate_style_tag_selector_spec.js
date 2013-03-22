@@ -1,4 +1,4 @@
-describe("Readium.Models.AlternateStyleTagSelector", function() {
+describe("EpubReflowable.AlternateStyleTagSelector", function() {
 
 	var getEPubContentDom = function () {
 		
@@ -33,7 +33,7 @@ describe("Readium.Models.AlternateStyleTagSelector", function() {
 			$('head', testEPubDom)[0].appendChild($(styles)[0]);
 			$('head', testEPubDom)[0].appendChild($(styles)[1]);
 
-			selector = new Readium.Models.AlternateStyleTagSelector;
+			selector = new EpubReflowable.AlternateStyleTagSelector;
 			selector.activateAlternateStyleSet(["day"], testEPubDom);
 
 			expect($('link[title="day_orig"]', testEPubDom)[0]).toEqual(undefined);
@@ -51,7 +51,7 @@ describe("Readium.Models.AlternateStyleTagSelector", function() {
 			$('head', testEPubDom)[0].appendChild($(styles)[0]);
 			$('head', testEPubDom)[0].appendChild($(styles)[1]);
 
-			selector = new Readium.Models.AlternateStyleTagSelector;
+			selector = new EpubReflowable.AlternateStyleTagSelector;
 			selector.activateAlternateStyleSet(["day"], testEPubDom);
 
 			expect($('link[title="night"]', testEPubDom)[0].disabled).toEqual(true);
@@ -81,7 +81,7 @@ describe("Readium.Models.AlternateStyleTagSelector", function() {
 			$('head', testEPubDom)[0].appendChild($(styles)[6]);
 			$('head', testEPubDom)[0].appendChild($(styles)[7]);
 
-			selector = new Readium.Models.AlternateStyleTagSelector;
+			selector = new EpubReflowable.AlternateStyleTagSelector;
 			selector.activateAlternateStyleSet(["night"], testEPubDom);
 
 			expect($($('link[title="Vertical Day"]', testEPubDom)[0])[0].disabled).toEqual(true);
@@ -117,7 +117,7 @@ describe("Readium.Models.AlternateStyleTagSelector", function() {
 			$('head', testEPubDom)[0].appendChild($(styles)[6]);
 			$('head', testEPubDom)[0].appendChild($(styles)[7]);
 
-			selector = new Readium.Models.AlternateStyleTagSelector;
+			selector = new EpubReflowable.AlternateStyleTagSelector;
 			selector.activateAlternateStyleSet(["night"], testEPubDom);
 
 			expect($($('link[title="Vertical Day"]', testEPubDom)[0])[0].disabled).toEqual(true);
@@ -153,7 +153,7 @@ describe("Readium.Models.AlternateStyleTagSelector", function() {
 			$('head', testEPubDom)[0].appendChild($(styles)[6]);
 			$('head', testEPubDom)[0].appendChild($(styles)[7]);
 
-			selector = new Readium.Models.AlternateStyleTagSelector;
+			selector = new EpubReflowable.AlternateStyleTagSelector;
 			selector.activateAlternateStyleSet(["night", "horizontal"], testEPubDom);
 
 			expect($($('link[title="Vertical Day"]', testEPubDom)[0])[0].disabled).toEqual(true);
@@ -189,7 +189,7 @@ describe("Readium.Models.AlternateStyleTagSelector", function() {
 			$('head', testEPubDom)[0].appendChild($(styles)[6]);
 			$('head', testEPubDom)[0].appendChild($(styles)[7]);
 
-			selector = new Readium.Models.AlternateStyleTagSelector;
+			selector = new EpubReflowable.AlternateStyleTagSelector;
 			selector.activateAlternateStyleSet(["horizontal"], testEPubDom);
 
 			expect($($('link[title="Vertical Day"]', testEPubDom)[0])[0].disabled).toEqual(true);
@@ -225,7 +225,7 @@ describe("Readium.Models.AlternateStyleTagSelector", function() {
 			$('head', testEPubDom)[0].appendChild($(styles)[6]);
 			$('head', testEPubDom)[0].appendChild($(styles)[7]);
 
-			selector = new Readium.Models.AlternateStyleTagSelector;
+			selector = new EpubReflowable.AlternateStyleTagSelector;
 			selector.activateAlternateStyleSet(["vertical", "night"], testEPubDom);
 
 			expect($($('link[title="Vertical Day"]', testEPubDom)[0])[0].disabled).toEqual(true);
@@ -261,7 +261,7 @@ describe("Readium.Models.AlternateStyleTagSelector", function() {
 			$('head', testEPubDom)[0].appendChild($(styles)[6]);
 			$('head', testEPubDom)[0].appendChild($(styles)[7]);
 
-			selector = new Readium.Models.AlternateStyleTagSelector;
+			selector = new EpubReflowable.AlternateStyleTagSelector;
 			selector.activateAlternateStyleSet(["horizontal", "day"], testEPubDom);
 
 			expect($($('link[title="Horizontal Day 2"]', testEPubDom)[0])[0].disabled).toEqual(true);
@@ -297,7 +297,7 @@ describe("Readium.Models.AlternateStyleTagSelector", function() {
 			$('head', testEPubDom)[0].appendChild($(styles)[6]);
 			$('head', testEPubDom)[0].appendChild($(styles)[7]);
 
-			selector = new Readium.Models.AlternateStyleTagSelector;
+			selector = new EpubReflowable.AlternateStyleTagSelector;
 			selector.activateAlternateStyleSet(["horizontal", "day"], testEPubDom);
 
 			expect($($('link[title="Vertical Day"]', testEPubDom)[0])[0].disabled).toEqual(true);
@@ -333,7 +333,7 @@ describe("Readium.Models.AlternateStyleTagSelector", function() {
 			$('head', testEPubDom)[0].appendChild($(styles)[6]);
 			$('head', testEPubDom)[0].appendChild($(styles)[7]);
 
-			selector = new Readium.Models.AlternateStyleTagSelector;
+			selector = new EpubReflowable.AlternateStyleTagSelector;
 			selector.activateAlternateStyleSet([], testEPubDom);
 
 			expect($($('link[title="Vertical Day"]', testEPubDom)[0])[0].disabled).toEqual(false);
@@ -369,7 +369,7 @@ describe("Readium.Models.AlternateStyleTagSelector", function() {
 			$('head', testEPubDom)[0].appendChild($(styles)[6]);
 			$('head', testEPubDom)[0].appendChild($(styles)[7]);
 
-			selector = new Readium.Models.AlternateStyleTagSelector;
+			selector = new EpubReflowable.AlternateStyleTagSelector;
 			selector.activateAlternateStyleSet(["blah", "somethingElse"], testEPubDom);
 
 			expect($($('link[title="Vertical Day"]', testEPubDom)[0])[0].disabled).toEqual(false);
@@ -405,7 +405,7 @@ describe("Readium.Models.AlternateStyleTagSelector", function() {
 			$('head', testEPubDom)[0].appendChild($(styles)[6]);
 			$('head', testEPubDom)[0].appendChild($(styles)[7]);
 
-			selector = new Readium.Models.AlternateStyleTagSelector;
+			selector = new EpubReflowable.AlternateStyleTagSelector;
 			selector.activateAlternateStyleSet(["vertical", "night"], testEPubDom);
 
 			expect($($('link[title="Vertical Day"]', testEPubDom)[0])[0].disabled).toEqual(true);
@@ -449,7 +449,7 @@ describe("Readium.Models.AlternateStyleTagSelector", function() {
 			$('head', testEPubDom)[0].appendChild($(styles)[10]);
 			$('head', testEPubDom)[0].appendChild($(styles)[11]);
 
-			selector = new Readium.Models.AlternateStyleTagSelector;
+			selector = new EpubReflowable.AlternateStyleTagSelector;
 			selector.activateAlternateStyleSet(["vertical", "night"], testEPubDom);
 
 			expect($('link[href="someStyle1.css"]', testEPubDom)[0].disabled).toEqual(false);
@@ -482,7 +482,7 @@ describe("Readium.Models.AlternateStyleTagSelector", function() {
 
 			var $bookStyleSheets = $('link[rel*="stylesheet"]', testEPubDom);
 
-			selector = new Readium.Models.AlternateStyleTagSelector;
+			selector = new EpubReflowable.AlternateStyleTagSelector;
 			$bookStyleSheets = selector._activateStyleSet($bookStyleSheets, "styleSet2");
 
 			expect($($bookStyleSheets[0])[0].disabled).toEqual(true);
@@ -514,7 +514,7 @@ describe("Readium.Models.AlternateStyleTagSelector", function() {
 
 			var $bookStyleSheets = $('link[rel*="stylesheet"]', testEPubDom);
 
-			selector = new Readium.Models.AlternateStyleTagSelector;
+			selector = new EpubReflowable.AlternateStyleTagSelector;
 			$bookStyleSheets = selector._activateStyleSet($bookStyleSheets, "styleSet2");
 
 			expect($($bookStyleSheets[0])[0].disabled).toEqual(false);
@@ -544,7 +544,7 @@ describe("Readium.Models.AlternateStyleTagSelector", function() {
 			expect($($bookStyleSheets[0]).data("orig-rel")).toEqual(undefined);
 			expect($($bookStyleSheets[1]).data("orig-rel")).toEqual(undefined);
 
-			selector = new Readium.Models.AlternateStyleTagSelector;
+			selector = new EpubReflowable.AlternateStyleTagSelector;
 			$bookStyleSheets = selector._storeOriginalAttributes($bookStyleSheets);
 
 			expect($($bookStyleSheets[0]).data("orig-rel")).toEqual("stylesheet");
@@ -564,7 +564,7 @@ describe("Readium.Models.AlternateStyleTagSelector", function() {
 
 			var $bookStyleSheets = $('link[rel*="stylesheet"]', testEPubDom);
 
-			selector = new Readium.Models.AlternateStyleTagSelector;
+			selector = new EpubReflowable.AlternateStyleTagSelector;
 			$bookStyleSheets = selector._storeOriginalAttributes($bookStyleSheets);
 
 			expect($($bookStyleSheets[0]).data("orig-rel")).toEqual("correct value 1");
@@ -597,7 +597,7 @@ describe("Readium.Models.AlternateStyleTagSelector", function() {
 
 		it ("finds the style set based on tags", function() {
 
-			selector = new Readium.Models.AlternateStyleTagSelector;
+			selector = new EpubReflowable.AlternateStyleTagSelector;
 			var $bookStyleSheets = $("link[rel*='stylesheet']", testEPubDom);
 			var selectedStyle = selector._getStyleSetTitleToActivate($bookStyleSheets, selector._getStyleSetTitles($bookStyleSheets), ["day", "vertical"]);
 
@@ -606,7 +606,7 @@ describe("Readium.Models.AlternateStyleTagSelector", function() {
 
 		it ("finds the style set based on tag subset", function() {
 
-			selector = new Readium.Models.AlternateStyleTagSelector;
+			selector = new EpubReflowable.AlternateStyleTagSelector;
 			var $bookStyleSheets = $("link[rel*='stylesheet']", testEPubDom);
 			var selectedStyle = selector._getStyleSetTitleToActivate($bookStyleSheets, selector._getStyleSetTitles($bookStyleSheets), ["day"]);
 
@@ -615,7 +615,7 @@ describe("Readium.Models.AlternateStyleTagSelector", function() {
 
 		it ("finds the style set from a set of rel='stylesheet alternate' style sets", function() {
 
-			selector = new Readium.Models.AlternateStyleTagSelector;
+			selector = new EpubReflowable.AlternateStyleTagSelector;
 			var $bookStyleSheets = $("link[rel*='stylesheet']", testEPubDom);
 			var selectedStyle = selector._getStyleSetTitleToActivate($bookStyleSheets, selector._getStyleSetTitles($bookStyleSheets), ["vertical"]);
 
@@ -624,7 +624,7 @@ describe("Readium.Models.AlternateStyleTagSelector", function() {
 
 		it ("returns null if no style tags are provided", function() {
 
-			selector = new Readium.Models.AlternateStyleTagSelector;
+			selector = new EpubReflowable.AlternateStyleTagSelector;
 			var $bookStyleSheets = $("link[rel*='stylesheet']", testEPubDom);
 			var selectedStyle = selector._getStyleSetTitleToActivate($bookStyleSheets, selector._getStyleSetTitles($bookStyleSheets), []);
 
@@ -633,7 +633,7 @@ describe("Readium.Models.AlternateStyleTagSelector", function() {
 
 		it ("returns the style set even if extra tags are specified", function() {
 
-			selector = new Readium.Models.AlternateStyleTagSelector;
+			selector = new EpubReflowable.AlternateStyleTagSelector;
 			var $bookStyleSheets = $("link[rel*='stylesheet']", testEPubDom);
 			var selectedStyle = selector._getStyleSetTitleToActivate($bookStyleSheets, selector._getStyleSetTitles($bookStyleSheets), ["horizontal", "night", "otherTag"]);
 
@@ -651,7 +651,7 @@ describe("Readium.Models.AlternateStyleTagSelector", function() {
 
 		it ("returns null if the style tags cannot be found", function () {
 
-			selector = new Readium.Models.AlternateStyleTagSelector;
+			selector = new EpubReflowable.AlternateStyleTagSelector;
 			var $bookStyleSheets = $("link[rel*='stylesheet']", testShortEPubDom);
 			var selectedStyle = selector._getStyleSetTitleToActivate($bookStyleSheets, selector._getStyleSetTitles($bookStyleSheets), ["night"]);
 
@@ -680,7 +680,7 @@ describe("Readium.Models.AlternateStyleTagSelector", function() {
 
 		it('gets a unique list of titles', function () {
 
-			selector = new Readium.Models.AlternateStyleTagSelector;
+			selector = new EpubReflowable.AlternateStyleTagSelector;
 			var $bookStyleSheets = $("link[rel*='stylesheet']", testEPubDom);
 			var styleSetTitles = selector._getStyleSetTitles($bookStyleSheets);
 
@@ -704,7 +704,7 @@ describe("Readium.Models.AlternateStyleTagSelector", function() {
 		
 		it ('matched a single alternate style tag', function () {
 
-			selector = new Readium.Models.AlternateStyleTagSelector;
+			selector = new EpubReflowable.AlternateStyleTagSelector;
 			styleSet = $("link[title='nightStyle']", testEPubDom);
 
 			var numTagMatches = selector._getNumAltStyleTagMatches(styleSet, ["night"]);			
@@ -718,7 +718,7 @@ describe("Readium.Models.AlternateStyleTagSelector", function() {
 
 		it ('matched multiple alternate style tags within a style set', function () {
 
-			selector = new Readium.Models.AlternateStyleTagSelector;
+			selector = new EpubReflowable.AlternateStyleTagSelector;
 			styleSet = $("link[title='nightStyle']", testEPubDom);
 
 			var numTagMatches = selector._getNumAltStyleTagMatches(styleSet, ["night", "vertical"]);			
@@ -727,7 +727,7 @@ describe("Readium.Models.AlternateStyleTagSelector", function() {
 
 		it ('ignored extra tags that are not included', function () {
 
-			selector = new Readium.Models.AlternateStyleTagSelector;
+			selector = new EpubReflowable.AlternateStyleTagSelector;
 			styleSet = $("link[title='nightStyle']", testEPubDom);
 
 			var numTagMatches = selector._getNumAltStyleTagMatches(styleSet, ["night", "vertical", "extraTag"]);			
@@ -749,7 +749,7 @@ describe("Readium.Models.AlternateStyleTagSelector", function() {
 			$('head', testEPubDom)[0].appendChild($(styles)[1]);
 			var $styleSet = $("link[title='nightStyle']", testEPubDom);
 
-			selector = new Readium.Models.AlternateStyleTagSelector;
+			selector = new EpubReflowable.AlternateStyleTagSelector;
 			$styleSet = selector._removeMutuallyExclusiveAltTags($styleSet);
 
 			var mutuallyExclTagsRemoved = false;
@@ -776,7 +776,7 @@ describe("Readium.Models.AlternateStyleTagSelector", function() {
 			$('head', testEPubDom)[0].appendChild($(styles)[1]);
 			var $styleSet = $("link[title='nightStyle']", testEPubDom);
 
-			selector = new Readium.Models.AlternateStyleTagSelector;
+			selector = new EpubReflowable.AlternateStyleTagSelector;
 			$styleSet = selector._removeMutuallyExclusiveAltTags($styleSet);
 
 			var mutuallyExclTagsRemoved = true;
@@ -808,7 +808,7 @@ describe("Readium.Models.AlternateStyleTagSelector", function() {
 
 			var that = this;
 
-			selector = new Readium.Models.AlternateStyleTagSelector;
+			selector = new EpubReflowable.AlternateStyleTagSelector;
 			$styleSet = selector._removeMutuallyExclusiveAltTags($styleSet);
 
 			var mutuallyExclTagsRemoved = true;
@@ -846,7 +846,7 @@ describe("Readium.Models.AlternateStyleTagSelector", function() {
 
 			var that = this;
 
-			selector = new Readium.Models.AlternateStyleTagSelector;
+			selector = new EpubReflowable.AlternateStyleTagSelector;
 			$styleSet = selector._removeMutuallyExclusiveAltTags($styleSet);
 
 			var mutuallyExclTagsRemoved = true;
