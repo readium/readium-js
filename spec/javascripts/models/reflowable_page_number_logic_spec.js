@@ -1,9 +1,9 @@
-describe("Readium.Models.ReflowablePageNumberLogic", function () {
+describe("EpubReflowable.ReflowablePageNumberLogic", function () {
 
-    describe("going to pages", function () {
+    describe("getGotoPageNumsToDisplay()", function () {
 
         beforeEach(function () {
-            this.pageNumSelector = new Readium.Models.ReflowablePageNumberLogic();
+            this.pageNumSelector = new EpubReflowable.ReflowablePageNumberLogic();
 
             // Rationale: This function will make these sets of repetitive tests clearer - as in, the conditions of the 
             //   EPUB, the page to go to and the expected result.
@@ -82,10 +82,10 @@ describe("Readium.Models.ReflowablePageNumberLogic", function () {
         });
     });
 
-    describe("getting previous page", function () {
+    describe("getPrevPageNumsToDisplay()", function () {
 
         beforeEach(function () {
-            this.pageNumSelector = new Readium.Models.ReflowablePageNumberLogic();
+            this.pageNumSelector = new EpubReflowable.ReflowablePageNumberLogic();
 
             // Rationale: This function will make these sets of repetitive tests clearer - as in, the conditions of the 
             //   EPUB, the page to navigate to, and the expected result.
@@ -131,10 +131,10 @@ describe("Readium.Models.ReflowablePageNumberLogic", function () {
         });
     });
 
-    describe("getting next page", function () {
+    describe("getNextPageNumsToDisplay()", function () {
 
         beforeEach(function () {
-            this.pageNumSelector = new Readium.Models.ReflowablePageNumberLogic();
+            this.pageNumSelector = new EpubReflowable.ReflowablePageNumberLogic();
 
             // Rationale: This function will make these sets of repetitive tests clearer - as in, the conditions of the 
             //   EPUB, the page to navigate to, and the expected result.
@@ -180,10 +180,10 @@ describe("Readium.Models.ReflowablePageNumberLogic", function () {
         });
     });
 
-    describe("toggling two-up pages", function () {
+    describe("getPageNumsForTwoUp()", function () {
 
         beforeEach(function () {
-            this.pageNumSelector = new Readium.Models.ReflowablePageNumberLogic();
+            this.pageNumSelector = new EpubReflowable.ReflowablePageNumberLogic();
 
             // Rationale: This function will make these sets of repetitive tests clearer - as in, the conditions of the 
             //   EPUB, the page to navigate to, and the expected result.
