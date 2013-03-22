@@ -1,3 +1,7 @@
+// REFACTORING CANDIDATE: You can infer whether the layout is one or two pages based on the length of the 
+//   the current_page array. However, the possibility exists that this could become out of sync with the
+//   viewer settings (this state would be maintained in two places). Perhaps better still that the paramater
+//   is passed to the public methods? 
 
 EpubReflowable.ReflowablePagination = Backbone.Model.extend({ 
 
@@ -12,7 +16,7 @@ EpubReflowable.ReflowablePagination = Backbone.Model.extend({
 
     initialize: function () {
 
-        this.epubController = this.get("model");
+        // this.epubController = this.get("model");
 
         // Instantiate an object responsible for deciding which pages to display
         this.pageNumberDisplayLogic = new EpubReflowable.ReflowablePageNumberLogic();
@@ -25,18 +29,18 @@ EpubReflowable.ReflowablePagination = Backbone.Model.extend({
 
     // Description: This method determines which page numbers to display when switching
     //   between a single page and side-by-side page views and vice versa.
-    toggleTwoUp: function() {
+    toggleTwoUp: function (twoUp, firstPageIsOffset) {
 
-        if (this.epubController.epub.get("can_two_up")) {
+        // if (this.epubController.epub.get("can_two_up")) {
 
             var newPages = this.pageNumberDisplayLogic.getPageNumbersForTwoUp (
-                this.epubController.get("two_up"), 
+                twoUp, 
                 this.get("current_page"),
-                this.epubController.getCurrentSection().firstPageOffset()
+                firstPageIsOffset
                 );
 
             this.set({current_page: newPages});
-        }   
+        // }   
     },
 
     // REFACTORING CANDIDATE: This needs to be investigated, but I bet if the prevPage and nextPage methods were 
@@ -47,33 +51,33 @@ EpubReflowable.ReflowablePagination = Backbone.Model.extend({
     // Description: turn pages in the rightward direction
     //   ie progression direction is dependent on 
     //   page progression dir
-    goRight: function() {
-        if (this.epubController.epub.get("page_prog_dir") === "rtl") {
-            this.prevPage();
+    goRight: function (twoUp, pageProgressionDirection) {
+        if (pageProgressionDirection === "rtl") {
+            this.prevPage(twoUp);
         }
         else {
-            this.nextPage();    
+            this.nextPage(twoUp);
         }
     },
 
     // Description: Turn pages in the leftward direction
     //   ie progression direction is dependent on 
     //   page progression dir
-    goLeft: function() {
-        if (this.epubController.epub.get("page_prog_dir") === "rtl") {
-            this.nextPage();
+    goLeft: function (twoUp, pageProgressionDirection) {
+        if (pageProgressionDirection === "rtl") {
+            this.nextPage(twoUp);
         }
         else {
-            this.prevPage();    
+            this.prevPage(twoUp);
         }
     },
 
-    goToPage: function(gotoPageNumber) {
+    goToPage: function(gotoPageNumber, twoUp, firstPageIsOffset) {
 
         var pagesToGoto = this.pageNumberDisplayLogic.getGotoPageNumsToDisplay(
                             gotoPageNumber,
-                            this.epubController.get("two_up"),
-                            this.epubController.getCurrentSection().firstPageOffset()
+                            twoUp,
+                            firstPageIsOffset
                             );
         this.set("current_page", pagesToGoto);
     },
@@ -88,12 +92,12 @@ EpubReflowable.ReflowablePagination = Backbone.Model.extend({
     // REFACTORING CANDIDATE: prevPage and nextPage are public but not sure it should be; it's called from the navwidget and viewer.js.
     //   Additionally the logic in this method, as well as that in nextPage(), could be refactored to more clearly represent that 
     //   multiple different cases involved in switching pages.
-    prevPage: function() {
+    prevPage: function(twoUp) {
 
         var previousPage = this.get("current_page")[0] - 1;
 
         // Single page navigation
-        if (!this.epubController.get("two_up")){
+        if (!twoUp){
 
             this.set("current_page", [previousPage]);
         }
@@ -107,13 +111,13 @@ EpubReflowable.ReflowablePagination = Backbone.Model.extend({
         }
     },
 
-    nextPage: function() {
+    nextPage: function(twoUp) {
 
         var curr_pg = this.get("current_page");
         var firstPage = curr_pg[curr_pg.length - 1] + 1;
 
         // Single page is up
-        if (!this.epubController.get("two_up")) {
+        if (!twoUp) {
 
             this.set("current_page", [firstPage]);
         }
@@ -136,7 +140,7 @@ EpubReflowable.ReflowablePagination = Backbone.Model.extend({
     adjustCurrentPage: function() {
         var cp = this.get("current_page");
         // Removing this appears to cause a problem with backbone, somehow. This method should eventually be removed. 
-        Acc.page = '#' + cp;
+        // Acc.page = '#' + cp;
 
     },  
 

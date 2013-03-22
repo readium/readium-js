@@ -1,10 +1,21 @@
-
 // API: 
 //  Methods that can be called when viewer settings change
 //  Methods that can be called to do things, such as move to the next page, go to a hash fragment, etc.
 //  Will probably also need to pass in a link click handler
 
 EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
+
+    el : "<div class='flowing-wrapper clearfix'>
+            <iframe scrolling='no' 
+                    frameborder='0' 
+                    marginwidth='0' 
+                    marginheight='0' 
+                    width='50%' 
+                    height='100%' 
+                    class='readium-flowing-content'>
+            </iframe>
+            <div class='reflowing-spine-divider'></div>
+          </div>",
 
 	initialize : function (options) {
 
@@ -18,6 +29,8 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 		this.reflowablePaginator = new EpubReflowable.ReflowablePaginator();
 		this.reflowableElementsInfo = new EpubReflowable.ReflowableElementInfo();
 		this.pages = new EpubReflowable.ReflowablePagination({model : this.epubController});
+
+        // So this can be any callback, doesn't have to be the epub controller
 		this.annotations = new EpubReflowable.ReflowableAnnotations({
 			saveCallback : this.epubController.addLastPageCFI,
 			callbackContext : this.epubController
@@ -39,7 +52,6 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 		this.epubController.on("repagination_event", this.windowSizeChangeHandler, this);
 		this.viewerModel.on("change:current_theme", this.themeChangeHandler, this);
 	},
-
 	
 	destruct : function() {
 	
@@ -70,11 +82,13 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 	render : function (goToLastPage, hashFragmentId) {
 
 		var that = this;
-		// var json = this.model.getCurrentSection().toJSON();
 		var json = this.spineItemModel.toJSON();
-		this.setElement( Handlebars.templates.reflowing_template(json) ); // set element as iframe 
-		
-		$(this.getReadiumBookViewEl()).html(this.el);
+
+        $("iframe", this.el).attr("src", json.uri);
+        $("iframe", this.el).attr("title", json.title);
+
+		// this.setElement( Handlebars.templates.reflowing_template(json) ); // set element as iframe 
+		// $(this.getReadiumBookViewEl()).html(this.el);
 
 		// Wait for iframe to load EPUB content document
 		$(this.getReadiumFlowingContent()).on("load", function (e) {
@@ -107,6 +121,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
             }
 		});
 		
+        // This needs to return this.el
 		return [this.model.get("spine_position")];
 	},
     
@@ -285,9 +300,8 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 		else {
 			this.epubController.goToHref(href);
 		}
-	},	
+	},
 
-	// REFACTORING CANDIDATE: Don't really need to repaginate, could just show that page!
 	pageChangeHandler: function() {
 
         var that = this;
