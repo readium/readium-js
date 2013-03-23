@@ -9,7 +9,7 @@ EpubReflowable.ReflowableLayout = Backbone.Model.extend({
     //  "PUBLIC" METHODS (THE API)                                                          //
     // ------------------------------------------------------------------------------------ //
 
-    initializeContentDocument : function (epubContentDocument, epubCFIs, currSpinePosition, readiumFlowingContent, packageDocument, bindingTemplate, linkClickHandler, handlerContext, currentTheme, flowingWrapper, readiumFlowingContent, keydownHandler) {
+    initializeContentDocument : function (epubContentDocument, epubCFIs, currSpinePosition, readiumFlowingContent, linkClickHandler, handlerContext, currentTheme, flowingWrapper, readiumFlowingContent, keydownHandler, bindings) {
 
         var triggers;
         var lastPageElementId = this.injectCFIElements(
@@ -18,13 +18,13 @@ EpubReflowable.ReflowableLayout = Backbone.Model.extend({
             currSpinePosition
             );
 
-        this.applyBindings( readiumFlowingContent, epubContentDocument, packageDocument, bindingTemplate );
+        // this.applyBindings( readiumFlowingContent, epubContentDocument );
         this.applySwitches( epubContentDocument, readiumFlowingContent ); 
-        this.injectMathJax(epubContentDocument);
+        // this.injectMathJax(epubContentDocument);
         this.injectLinkHandler(epubContentDocument, linkClickHandler, handlerContext);
         triggers = this.parseTriggers(epubContentDocument);
         this.applyTriggers(epubContentDocument, triggers);
-        $(epubContentDocument).attr('title', Acc.page + ' - ' + Acc.title);
+        $(epubContentDocument).attr('title');//, Acc.page + ' - ' + Acc.title);
 
         this.injectTheme(
             currentTheme, 
@@ -64,15 +64,15 @@ EpubReflowable.ReflowableLayout = Backbone.Model.extend({
         }, 100);
     },
 
-    resetEl : function (epubContentDocument, readiumBookViewEl, spineDivider, zoomer) {
+    resetEl : function (epubContentDocument, flowingWrapper, spineDivider, zoomer) {
 
         $("body", epubContentDocument).removeClass("apple-fixed-layout");
-        $(readiumBookViewEl).attr("style", "");
-        $(readiumBookViewEl).toggleClass("two-up", false);
+        $(flowingWrapper).attr("style", "");
+        $(flowingWrapper).toggleClass("two-up", false);
         $(spineDivider).toggle(false);
         // zoomer.reset();
 
-        $(readiumBookViewEl).css({
+        $(flowingWrapper).css({
             "position": "relative",
             "right": "0px", 
             "top": "0px",
@@ -119,7 +119,7 @@ EpubReflowable.ReflowableLayout = Backbone.Model.extend({
         //   content document specified by the href returned by the CFI.
 
         // Inject elements for all the CFIs that reference this content document
-        epubCFIs = epubCFIs;
+        epubCFIs = epubCFIs; // What is this about? 
         _.each(epubCFIs, function (cfi, key) {
 
             if (cfi.contentDocSpinePos === currSpinePosition) {
@@ -149,38 +149,52 @@ EpubReflowable.ReflowableLayout = Backbone.Model.extend({
         return lastPageElementId;
     },
 
-    // REFACTORING CANDIDATE: It looks like this could go on the package document itself
-    getBindings: function (packageDocument) {
-        var packDoc = packageDocument;
-        var bindings = packDoc.get('bindings');
-        return bindings.map(function(binding) {
-            binding.selector = 'object[type="' + binding.media_type + '"]';
-            binding.url = packDoc.getManifestItemById(binding.handler).get('href');
-            binding.url = packDoc.resolveUri(binding.url);
-            return binding;
-        })
-    },
+    // // REFACTORING CANDIDATE: It looks like this could go on the package document itself
+    // getBindings: function (packageDocument) {
+    //     var packDoc = packageDocument;
+    //     var bindings = packDoc.get('bindings');
+    //     return bindings.map(function(binding) {
+    //         binding.selector = 'object[type="' + binding.media_type + '"]';
+    //         binding.url = packDoc.getManifestItemById(binding.handler).get('href');
+    //         binding.url = packDoc.resolveUri(binding.url);
+    //         return binding;
+    //     })
+    // },
 
-    applyBindings: function (readiumFlowingContent, epubContentDocument, packageDocument, bindingTemplate) {
+    // Binding expected by this:
+    //   binding.selector
+    //   binding.url
+    //   binding.media_type
+    // applyBindings: function (readiumFlowingContent, epubContentDocument, bindings) {
 
-        var bindings = this.getBindings(packageDocument);
-        var i = 0;
-        for(var i = 0; i < bindings.length; i++) {
-            $(bindings[i].selector, epubContentDocument.parentNode).each(function() {
-                var params = [];
-                var $el = $(readiumFlowingContent);
-                var data = $el.attr('data');
-                var url;
-                params.push("src=" + packageDocument.resolveUri(data));
-                params.push('type=' + bindings[i].media_type);
-                url = bindings[i].url + "?" + params.join('&');
-                var content = $(bindingTemplate({}));
-                // must set src attr separately
-                content.attr('src', url);
-                $el.html(content);
-            });
-        }
-    },
+    //     var bindingHtml = "<iframe scrolling='no' \
+    //                             frameborder='0' \
+    //                             marginwidth='0' \
+    //                             marginheight='0' \
+    //                             width='100%' \
+    //                             height='100%' \
+    //                             class='binding-sandbox'> \
+    //                        </iframe>";
+
+    //     // var bindings = this.getBindings(packageDocument);
+    //     var i = 0;
+    //     for(var i = 0; i < bindings.length; i++) {
+    //         $(bindings[i].selector, epubContentDocument.parentNode).each(function() {
+    //             var params = [];
+    //             var $el = $(readiumFlowingContent);
+    //             var data = $el.attr('data');
+    //             var url;
+    //             // params.push("src=" + packageDocument.resolveUri(data)); // Not sure what this is doing
+    //             params.push('type=' + bindings[i].media_type);
+    //             url = bindings[i].url + "?" + params.join('&');
+    //             // var content = $(bindingTemplate({}));
+    //             var content = $(bindingHtml);
+    //             // must set src attr separately
+    //             content.attr('src', url);
+    //             $el.html(content);
+    //         });
+    //     }
+    // },
 
     applyTriggers: function (epubContentDocument, triggers) {
         for(var i = 0 ; i < triggers.length; i++) {

@@ -185,7 +185,7 @@ EpubReflowable.ReflowableElementInfo = Backbone.Model.extend({
         return $firstVisibleTextNode;
     },
 
-    findVisiblePageElements: function(readiumBookViewEl, epubContentDocument) {
+    findVisiblePageElements: function(flowingWrapper, epubContentDocument) {
 
         var $elements = $(epubContentDocument).find("[id]");
         var doc = epubContentDocument;
@@ -194,7 +194,7 @@ EpubReflowable.ReflowableElementInfo = Backbone.Model.extend({
         var doc_right = doc_left + $(doc).width();
         var doc_bottom = doc_top + $(doc).height();
         
-        var visibleElms = this.filterElementsByPosition(readiumBookViewEl, $elements, doc_top, doc_bottom, doc_left, doc_right);
+        var visibleElms = this.filterElementsByPosition(flowingWrapper, $elements, doc_top, doc_bottom, doc_left, doc_right);
             
         return visibleElms;
     },
@@ -204,13 +204,13 @@ EpubReflowable.ReflowableElementInfo = Backbone.Model.extend({
     // ------------------------------------------------------------------------------------ //
 
     // returns all the elements in the set that are inside the box
-    filterElementsByPosition: function(readiumBookViewEl, $elements, documentTop, documentBottom, documentLeft, documentRight) {
+    filterElementsByPosition: function(flowingWrapper, $elements, documentTop, documentBottom, documentLeft, documentRight) {
         
         var $visibleElms = $elements.filter(function(idx) {
-            var elm_top = $(readiumBookViewEl).offset().top;
-            var elm_left = $(readiumBookViewEl).offset().left;
-            var elm_right = elm_left + $(readiumBookViewEl).width();
-            var elm_bottom = elm_top + $(readiumBookViewEl).height();
+            var elm_top = $(flowingWrapper).offset().top;
+            var elm_left = $(flowingWrapper).offset().left;
+            var elm_right = elm_left + $(flowingWrapper).width();
+            var elm_bottom = elm_top + $(flowingWrapper).height();
             
             var is_ok_x = elm_left >= documentLeft && elm_right <= documentRight;
             var is_ok_y = elm_top >= documentTop && elm_bottom <= documentBottom;

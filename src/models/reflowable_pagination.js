@@ -16,8 +16,6 @@ EpubReflowable.ReflowablePagination = Backbone.Model.extend({
 
     initialize: function () {
 
-        // this.epubController = this.get("model");
-
         // Instantiate an object responsible for deciding which pages to display
         this.pageNumberDisplayLogic = new EpubReflowable.ReflowablePageNumberLogic();
         

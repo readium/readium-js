@@ -9,10 +9,10 @@ EpubReflowable.ReflowablePaginator = Backbone.Model.extend({
     //  "PUBLIC" METHODS (THE API)                                                          //
     // ------------------------------------------------------------------------------------ //
 
-    paginateContentDocument : function (readiumBookViewEl, spineDivider, isTwoUp, offsetDir, epubContentDocument, readiumFlowingContent, flowingWrapper, firstPageOffset, currentPages, ppd, currentMargin, fontSize) {
+    paginateContentDocument : function (spineDivider, isTwoUp, offsetDir, epubContentDocument, readiumFlowingContent, flowingWrapper, firstPageOffset, currentPages, ppd, currentMargin, fontSize) {
 
         this.toggleSyntheticLayout(
-            readiumBookViewEl, 
+            flowingWrapper, 
             spineDivider, 
             isTwoUp
             );
@@ -69,9 +69,9 @@ EpubReflowable.ReflowablePaginator = Backbone.Model.extend({
     // ------------------------------------------------------------------------------------ //
 
     // Description: Changes the html to make either 1 or 2 pages visible in their iframes
-    toggleSyntheticLayout : function (readiumBookViewEl, spineDivider, isTwoUp) {
+    toggleSyntheticLayout : function (flowingWrapper, spineDivider, isTwoUp) {
 
-        $(readiumBookViewEl).toggleClass("two-up", isTwoUp);
+        $(flowingWrapper).toggleClass("two-up", isTwoUp);
         $(spineDivider).toggle(isTwoUp);
     },
 

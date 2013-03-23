@@ -5,36 +5,46 @@
 
 EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
-    el : "<div class='flowing-wrapper clearfix'>
-            <iframe scrolling='no' 
-                    frameborder='0' 
-                    marginwidth='0' 
-                    marginheight='0' 
-                    width='50%' 
-                    height='100%' 
-                    class='readium-flowing-content'>
-            </iframe>
-            <div class='reflowing-spine-divider'></div>
+    el : "<div class='flowing-wrapper clearfix'> \
+            <iframe scrolling='no' \
+                    frameborder='0' \
+                    marginwidth='0' \
+                    marginheight='0' \
+                    width='50%' \
+                    height='100%' \
+                    class='readium-flowing-content'> \
+            </iframe> \
+            <div class='reflowing-spine-divider'></div> \
           </div>",
+
+    // The spine json
+    // Save annotation callback, context
+    // EpubCFIs
+    // Bindings
+    // Viewer settings? 
 
 	initialize : function (options) {
 
-		this.viewerModel = options.viewerModel;
-		this.spineItemModel = options.spineItemModel;
+        var ViewerModel = Backbone.Model.extend({});
+        var SpineItemModel = Backbone.Model.extend({});
 
-		this.epubController = this.model;
+        this.viewerModel = new ViewerModel(options.viewerSettings);
+        this.spineItemModel = new SpineItemModel(options.spineItem);
+        this.epubCFIs = options.contentDocumentCFIs;
+        this.bindings = options.bindings;
 
 		// Initalize delegates and other models
 		this.reflowableLayout = new EpubReflowable.ReflowableLayout();
 		this.reflowablePaginator = new EpubReflowable.ReflowablePaginator();
 		this.reflowableElementsInfo = new EpubReflowable.ReflowableElementInfo();
-		this.pages = new EpubReflowable.ReflowablePagination({model : this.epubController});
+		this.pages = new EpubReflowable.ReflowablePagination();
 
         // So this can be any callback, doesn't have to be the epub controller
 		this.annotations = new EpubReflowable.ReflowableAnnotations({
-			saveCallback : this.epubController.addLastPageCFI,
-			callbackContext : this.epubController
+			saveCallback : undefined,
+			callbackContext : undefined
 		});
+
 		// this.zoomer = options.zoomer;
         // this.mediaOverlayController = this.model.get("media_overlay_controller");
         // this.mediaOverlayController.setPages(this.pages);
@@ -43,14 +53,14 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         // Initialize handlers
 		// this.mediaOverlayController.on("change:mo_text_id", this.highlightText, this);
         // this.mediaOverlayController.on("change:active_mo", this.indicateMoIsPlaying, this);
-		this.viewerModel.on("change:font_size", this.rePaginationHandler, this);
-		this.viewerModel.on("change:two_up", this.pages.toggleTwoUp, this.pages);
-		this.viewerModel.on("change:two_up", this.rePaginationHandler, this);
-		this.viewerModel.on("change:current_margin", this.rePaginationHandler, this);
+		this.viewerModel.on("change:fontSize", this.rePaginationHandler, this);
+		this.viewerModel.on("change:twoUp", this.pages.toggleTwoUp, this.pages);
+		this.viewerModel.on("change:twoUp", this.rePaginationHandler, this);
+		this.viewerModel.on("change:currentMargin", this.rePaginationHandler, this);
 		this.pages.on("change:current_page", this.pageChangeHandler, this);
-		this.viewerModel.on("change:toc_visible", this.windowSizeChangeHandler, this);
-		this.epubController.on("repagination_event", this.windowSizeChangeHandler, this);
-		this.viewerModel.on("change:current_theme", this.themeChangeHandler, this);
+		this.viewerModel.on("change:tocVisible", this.windowSizeChangeHandler, this);
+		// this.epubController.on("repagination_event", this.windowSizeChangeHandler, this);
+		this.viewerModel.on("change:currentTheme", this.themeChangeHandler, this);
 	},
 	
 	destruct : function() {
@@ -58,14 +68,14 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 		// Remove all handlers so they don't hang around in memory	
 		// this.mediaOverlayController.off("change:mo_text_id", this.highlightText, this);
   		// this.mediaOverlayController.off("change:active_mo", this.indicateMoIsPlaying, this);
-		this.viewerModel.off("change:font_size", this.rePaginationHandler, this);
-		this.viewerModel.off("change:two_up", this.pages.toggleTwoUp, this.pages);
-		this.viewerModel.off("change:two_up", this.rePaginationHandler, this);
-		this.viewerModel.off("change:current_margin", this.rePaginationHandler, this);
+		this.viewerModel.off("change:fontSize", this.rePaginationHandler, this);
+		this.viewerModel.off("change:twoUp", this.pages.toggleTwoUp, this.pages);
+		this.viewerModel.off("change:twoUp", this.rePaginationHandler, this);
+		this.viewerModel.off("change:currentMargin", this.rePaginationHandler, this);
 		this.pages.off("change:current_page", this.pageChangeHandler, this);
-		this.viewerModel.off("change:toc_visible", this.windowSizeChangeHandler, this);
-		this.epubController.off("repagination_event", this.windowSizeChangeHandler, this);
-		this.viewerModel.off("change:current_theme", this.themeChangeHandler, this);
+		this.viewerModel.off("change:tocVisible", this.windowSizeChangeHandler, this);
+		// this.epubController.off("repagination_event", this.windowSizeChangeHandler, this);
+		this.viewerModel.off("change:currentTheme", this.themeChangeHandler, this);
 
         this.reflowableLayout.resetEl(
         	this.getEpubContentDocument(), 
@@ -84,10 +94,9 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 		var that = this;
 		var json = this.spineItemModel.toJSON();
 
-        $("iframe", this.el).attr("src", json.uri);
+        $("iframe", this.el).attr("src", json.contentDocumentUri);
         $("iframe", this.el).attr("title", json.title);
 
-		// this.setElement( Handlebars.templates.reflowing_template(json) ); // set element as iframe 
 		// $(this.getReadiumBookViewEl()).html(this.el);
 
 		// Wait for iframe to load EPUB content document
@@ -121,8 +130,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
             }
 		});
 		
-        // This needs to return this.el
-		return [this.model.get("spine_position")];
+		return this.el;
 	},
     
 	// indicateMoIsPlaying: function () {
@@ -143,35 +151,37 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 	// 	);
 	// },
 
-    // Description: Generates a CFI for an element is that is currently visible on the page. This CFI and a last-page payload
-    //   is then saved for the current EPUB.
-    savePosition : function () {
+    // The package document needs to get passed into the view, or the API needs to change. This is not critical at the moment.
+    //
+    // // Description: Generates a CFI for an element is that is currently visible on the page. This CFI and a last-page payload
+    // //   is then saved for the current EPUB.
+    // savePosition : function () {
 
-        var $visibleTextNode;
-        var CFI;
+    //     var $visibleTextNode;
+    //     var CFI;
 
-        // Get first visible element with a text node 
-        $visibleTextNode = this.reflowableElementsInfo.findVisibleTextNode(
-            this.getEpubContentDocument(), 
-            this.viewerModel.get("two_up"),
-            // REFACTORING CANDIDATE: These two properties should be stored another way. This should be 
-            //   temporary.
-            this.reflowablePaginator.gap_width,
-            this.reflowablePaginator.page_width
-            );
+    //     // Get first visible element with a text node 
+    //     $visibleTextNode = this.reflowableElementsInfo.findVisibleTextNode(
+    //         this.getEpubContentDocument(), 
+    //         this.viewerModel.get("two_up"),
+    //         // REFACTORING CANDIDATE: These two properties should be stored another way. This should be 
+    //         //   temporary.
+    //         this.reflowablePaginator.gap_width,
+    //         this.reflowablePaginator.page_width
+    //         );
 
-        CFI = this.annotations.findExistingLastPageMarker($visibleTextNode);
-        if (!CFI) {
+    //     CFI = this.annotations.findExistingLastPageMarker($visibleTextNode);
+    //     if (!CFI) {
 
-        	CFI = this.annotations.generateCharacterOffsetCFI(
-        		this.reflowableElementsInfo.findVisibleCharacterOffset($visibleTextNode, this.getEpubContentDocument()),
-				$visibleTextNode[0],
-				this.spineItemModel.get("idref"),
-				this.epubController.getPackageDocumentDOM()
-	        	);
-        }
-        this.annotations.saveAnnotation(CFI, this.spineItemModel.get("spine_index"));
-    },
+    //     	CFI = this.annotations.generateCharacterOffsetCFI(
+    //     		this.reflowableElementsInfo.findVisibleCharacterOffset($visibleTextNode, this.getEpubContentDocument()),
+				// $visibleTextNode[0],
+				// this.spineItemModel.get("idref"),
+				// this.epubController.getPackageDocumentDOM()
+	   //      	);
+    //     }
+    //     this.annotations.saveAnnotation(CFI, this.spineItemModel.get("spine_index"));
+    // },
 
 	// Description: Find an element with this specified id and show the page that contains the element.
 	goToHashFragment: function(hashFragmentId) {
@@ -241,10 +251,6 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 	//  PRIVATE GETTERS FOR VIEW                                                            //
 	// ------------------------------------------------------------------------------------ //    
 
-	getReadiumBookViewEl : function () {
-		return $("#readium-book-view-el");
-	},
-
 	getFlowingWrapper : function () {
 		return this.el;
 	},
@@ -276,31 +282,33 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         }
     },
 
-	// Description: Handles clicks of anchor tags by navigating to
-	//   the proper location in the epub spine, or opening
-	//   a new window for external links
-	linkClickHandler : function (e) {
 
-		var href;
-		e.preventDefault();
+    // This is a handler that needs to be passed in as a callback
+	// // Description: Handles clicks of anchor tags by navigating to
+	// //   the proper location in the epub spine, or opening
+	// //   a new window for external links
+	// linkClickHandler : function (e) {
 
-		// Check for both href and xlink:href attribute and get value
-		if (e.currentTarget.attributes["xlink:href"]) {
-			href = e.currentTarget.attributes["xlink:href"].value;
-		}
-		else {
-			href = e.currentTarget.attributes["href"].value;
-		}
+	// 	var href;
+	// 	e.preventDefault();
 
-		// Resolve the relative path for the requested resource.
-		href = this.resolveRelativeURI(href);
-		if (href.match(/^http(s)?:/)) {
-			window.open(href);
-		} 
-		else {
-			this.epubController.goToHref(href);
-		}
-	},
+	// 	// Check for both href and xlink:href attribute and get value
+	// 	if (e.currentTarget.attributes["xlink:href"]) {
+	// 		href = e.currentTarget.attributes["xlink:href"].value;
+	// 	}
+	// 	else {
+	// 		href = e.currentTarget.attributes["href"].value;
+	// 	}
+
+	// 	// Resolve the relative path for the requested resource.
+	// 	href = this.resolveRelativeURI(href);
+	// 	if (href.match(/^http(s)?:/)) {
+	// 		window.open(href);
+	// 	} 
+	// 	else {
+	// 		this.epubController.goToHref(href);
+	// 	}
+	// },
 
 	pageChangeHandler: function() {
 
@@ -320,7 +328,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 		this.paginateContentDocument();
 		
 		// Make sure we return to the correct position in the epub (This also requires clearing the hash fragment) on resize.
-		this.goToHashFragment(this.epubController.get("hash_fragment"));
+		// this.goToHashFragment(this.epubController.get("hash_fragment"));
 	},
     
 	rePaginationHandler: function() {
@@ -331,7 +339,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 	themeChangeHandler : function () {
 
 		this.reflowableLayout.injectTheme(
-			this.viewerModel.get("current_theme"), 
+			this.viewerModel.get("currentTheme"), 
 			this.getEpubContentDocument(), 
 			this.getFlowingWrapper());
 	},
@@ -344,18 +352,17 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 	paginateContentDocument : function () {
 
 		var pageInfo = this.reflowablePaginator.paginateContentDocument(
-			this.getReadiumBookViewEl(),
 			this.getSpineDivider(),
-			this.viewerModel.get("two_up"),
+			this.viewerModel.get("twoUp"),
 			this.offsetDirection(),
 			this.getEpubContentDocument(),
 			this.getReadiumFlowingContent(),
 			this.getFlowingWrapper(),
-			this.spineItemModel.firstPageOffset(),
+			this.spineItemModel.get("firstPageIsOffset"),
 			this.pages.get("current_page"),
-			this.spineItemModel.get("page_prog_dir"),
-			this.viewerModel.get("current_margin"),
-			this.viewerModel.get("font_size")
+			this.spineItemModel.get("pageProgressionDirection"),
+			this.viewerModel.get("currentMargin"),
+			this.viewerModel.get("fontSize")
 			);
 
 		this.pages.set("num_pages", pageInfo[0]);
@@ -367,17 +374,16 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
 		var elementId = this.reflowableLayout.initializeContentDocument(
 			this.getEpubContentDocument(), 
-			this.epubController.get("epubCFIs"), 
+			this.epubCFIs, 
 			this.spineItemModel.get("spine_index"), 
 			this.getReadiumFlowingContent(), 
-			this.epubController.packageDocument, 
-			Handlebars.templates.bindingTemplate, 
 			this.linkClickHandler, 
 			this, 
-			this.viewerModel.get("current_theme"), 
+			this.viewerModel.get("currentTheme"), 
 			this.getFlowingWrapper(), 
 			this.getReadiumFlowingContent(), 
-			this.keydownHandler
+			this.keydownHandler,
+            this.bindings
 			);
 
 		return elementId;
@@ -389,11 +395,11 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 		$(this.getEpubContentDocument()).css(this.offsetDirection(), "-" + offset);
 		this.showContent();
         
-        if (this.viewerModel.get("two_up") == false || 
-            (this.viewerModel.get("two_up") && page % 2 === 1)) {
-                // when we change the page, we have to tell MO to update its position
-                // this.mediaOverlayController.reflowPageChanged();
-        }
+        // if (this.viewerModel.get("twoUp") == false || 
+        //     (this.viewerModel.get("twoUp") && page % 2 === 1)) {
+        //         // when we change the page, we have to tell MO to update its position
+        //         // this.mediaOverlayController.reflowPageChanged();
+        // }
 	},
 	
 	// Rationale: For the purpose of looking up EPUB resources in the package document manifest, Readium expects that 
@@ -425,7 +431,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
 		// if this book does right to left pagination we need to set the
 		// offset on the right
-		if (this.spineItemModel.pageProgressionDirection() === "rtl") {
+		if (this.spineItemModel.get("pageProgressionDirection") === "rtl") {
 			return "right";
 		}
 		else {

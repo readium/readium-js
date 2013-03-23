@@ -1,0 +1,31 @@
+var EpubReflowableModule = function(spineObject, viewerSettingsObject, CFIAnnotations, bindings) {
+    
+    var EpubReflowable = {};
+
+    // Rationale: The order of these matters
+    <%= alternate_style_tag_selector %>
+    <%= reflowable_annotations %>
+    <%= reflowable_element_info %>
+    <%= reflowable_layout %>
+    <%= reflowable_page_number_logic %>
+    <%= reflowable_pagination %>
+    <%= reflowable_paginator %>
+    <%= trigger %>
+    <%= reflowable_pagination_view %> 
+
+    var reflowableView = new EpubReflowable.ReflowablePaginationView({  
+        spineItem : spineObject, 
+        viewerSettings : viewerSettingsObject, 
+        contentDocumentCFIs : CFIAnnotations, 
+        bindings : bindings
+    });
+
+    // Description: The public interface
+    return {
+
+        view : reflowableView,
+        render : function (goToLastPage, hashFragmentId) { return reflowableView.render.call(reflowableView, goToLastPage, hashFragmentId); },
+        nextPage : function () { return reflowableView.pages.goRight.call(reflowableView.pages); },
+        prevPage : function () { return reflowableView.pages.goLeft.call(reflowableView.pages); }
+    };
+};
