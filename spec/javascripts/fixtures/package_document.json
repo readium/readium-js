@@ -40,6 +40,13 @@
             "properties":""
         }],
     "manifest":[{
+            "href":"fig_gal.xhtml",
+            "id":"figure-gallery-impl",
+            "media_overlay":"",
+            "media_type":"application/xhtml+xml",
+            "properties":""
+        },
+        {
             "href":"Page_1.html",
             "id":"Page_1",
             "media_overlay":"",
