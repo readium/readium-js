@@ -4,7 +4,7 @@ describe("Epub.Spine", function () {
 
         var packageDocumentJson = JSON.parse(jasmine.getFixtures().read("package_document.json"));
         this.spineJson = packageDocumentJson.spine;
-        this.spine = new Epub.Manifest(this.spineJson);
+        this.spine = new Epub.Spine(this.spineJson);
     });
 
     describe("module structure", function () {

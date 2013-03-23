@@ -6,6 +6,7 @@ Epub.PackageDocument = Backbone.Model.extend({
         this.manifest = new Epub.Manifest(this.get("packageDocumentObject").manifest);
         this.spine = new Epub.Spine(this.get("packageDocumentObject").spine);
         this.metadata = new Epub.Metadata(this.get("packageDocumentObject").metadata);
+        this.bindings = new Epub.Spine(this.get("packageDocumentObject").bindings);
         this.pageSpreadProperty = new Epub.PageSpreadProperty();
 
         // If this book is fixed layout, assign the page spread class
@@ -176,6 +177,25 @@ Epub.PackageDocument = Backbone.Model.extend({
         var spineItem = this.getSpineModelFromHref(manifestHref);
         return this.getSpineIndex(spineItem);
     },
+
+    getBindingByHandler : function (handler) {
+
+        var binding = this.bindings.find(
+            function (binding) {
+
+                if (binding.get("handler") === handler) {
+                    return binding;
+                }
+            });
+
+        if (binding) {
+            return binding.toJSON();
+        }
+        else {
+            return undefined;
+        }
+    },
+
 
     // getToc: function() {
     //  var item = this.packageDocument.getTocItem();

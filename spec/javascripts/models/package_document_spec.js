@@ -39,7 +39,7 @@ describe('Epub.PackageDocument', function() {
 
         it("adds all the manifest items", function () {
 
-            var numManifestItemsInFixture = 10;
+            var numManifestItemsInFixture = 11;
             expect(this.packageDocument.manifest.length).toBe(numManifestItemsInFixture);
         });
 
@@ -297,6 +297,12 @@ describe('Epub.PackageDocument', function() {
 
         describe("getSpineItemByIdref()", function () {
 
+            beforeEach(function() {
+
+                var packageDocumentJson = JSON.parse(jasmine.getFixtures().read("package_document.json"));
+                this.packageDocument = new Epub.PackageDocument({ packageDocumentObject : packageDocumentJson });
+            });
+
             it("finds a spine item with idref", function () {
 
                 var manifestItemIdrefFromFixture = "Page_1";
@@ -308,6 +314,12 @@ describe('Epub.PackageDocument', function() {
         });
 
         describe("getSpineIndex()", function () {
+            
+            beforeEach(function() {
+
+                var packageDocumentJson = JSON.parse(jasmine.getFixtures().read("package_document.json"));
+                this.packageDocument = new Epub.PackageDocument({ packageDocumentObject : packageDocumentJson });
+            });
 
             it("gets the index of a spine item", function () {
 
@@ -317,11 +329,63 @@ describe('Epub.PackageDocument', function() {
         });
 
         describe("getSpineIndexByHref()", function () {
+            
+            beforeEach(function() {
+
+                var packageDocumentJson = JSON.parse(jasmine.getFixtures().read("package_document.json"));
+                this.packageDocument = new Epub.PackageDocument({ packageDocumentObject : packageDocumentJson });
+            });
 
             it("get the index of a spine item", function () {
 
                 var manifestHref = "Page_1.html";
                 expect(this.packageDocument.getSpineIndexByHref(manifestHref)).toBe(0);
+            });
+        });
+
+        describe("getBindingByHandler()", function () {
+
+            beforeEach(function() {
+
+                var packageDocumentJson = JSON.parse(jasmine.getFixtures().read("package_document.json"));
+                this.packageDocument = new Epub.PackageDocument({ packageDocumentObject : packageDocumentJson });
+            });
+
+            it("gets the binding", function () {
+
+                var handler = "figure-gallery-impl";
+                var foundHandler = this.packageDocument.getBindingByHandler(handler);
+                expect(foundHandler.handler).toBe(handler);
+            });
+
+            it("is undefined when binding doesn't exist", function () {
+
+                var handler = "";
+                var foundHandler = this.packageDocument.getBindingByHandler(handler);
+                expect(foundHandler).not.toBeDefined(); 
+            });
+        });
+
+        describe("getBindingByIdref()", function () {
+
+            beforeEach(function() {
+
+                var packageDocumentJson = JSON.parse(jasmine.getFixtures().read("package_document.json"));
+                this.packageDocument = new Epub.PackageDocument({ packageDocumentObject : packageDocumentJson });
+            });
+
+            it("gets the binding", function () {
+
+                var handler = "figure-gallery-impl";
+                var foundHandler = this.packageDocument.getBindingByHandler(handler);
+                expect(foundHandler.handler).toBe(handler);
+            });
+
+            it("is undefined when binding doesn't exist", function () {
+
+                var handler = "";
+                var foundHandler = this.packageDocument.getBindingByHandler(handler);
+                expect(foundHandler).not.toBeDefined(); 
             });
         });
     });

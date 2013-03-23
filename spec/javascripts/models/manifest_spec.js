@@ -16,7 +16,7 @@ describe("Epub.Manifest", function () {
 
         it("adds each manifest item", function () {
 
-            var manifestItemsInFixture = 10;
+            var manifestItemsInFixture = 11;
             expect(this.manifest.length).toBe(manifestItemsInFixture);
         });
     });
