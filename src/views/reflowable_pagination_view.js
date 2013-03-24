@@ -122,10 +122,10 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
             else {
 
                 if (goToLastPage) {
-                    that.pages.goToLastPage();
+                    that.pages.goToLastPage(that.viewerModel.get("twoUp"), that.spineItemModel.get("firstPageIsOffset"));
                 }
                 else {
-                    that.pages.goToPage(1);
+                    that.pages.goToPage(1, that.viewerModel.get("twoUp"), that.spineItemModel.get("firstPageIsOffset"));
                 }       
             }
 		});
@@ -210,7 +210,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
             if (page > 0) {
                 //console.log(fragment + " is on page " + page);
-                this.pages.goToPage(page);	
+                this.pages.goToPage(page, this.viewerSettingsModel.get("twoUp"), this.spineItemModel.get("firstPageIsOffset"));	
 			}
             else {
                 // Throw an exception here 
@@ -245,6 +245,19 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         else {
             return false;
         }
+    },
+
+    showPage : function(page) {
+
+        var offset = this.calcPageOffset(page).toString() + "px";
+        $(this.getEpubContentDocument()).css(this.offsetDirection(), "-" + offset);
+        this.showContent();
+        
+        // if (this.viewerModel.get("twoUp") == false || 
+        //     (this.viewerModel.get("twoUp") && page % 2 === 1)) {
+        //         // when we change the page, we have to tell MO to update its position
+        //         // this.mediaOverlayController.reflowPageChanged();
+        // }
     },
 
 	// ------------------------------------------------------------------------------------ //
@@ -317,7 +330,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 		setTimeout(function () {
 
 			that.showPage(that.pages.get("current_page")[0]);
-			that.savePosition();
+			// that.savePosition();
 			that.showContent();
 
 		}, 150);
@@ -367,7 +380,6 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
 		this.pages.set("num_pages", pageInfo[0]);
 		this.showPage(pageInfo[1]);
-		// this.savePosition(); Hmmmm, this might have to be here? 
 	},
 
 	initializeContentDocument : function () {
@@ -389,19 +401,6 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 		return elementId;
 	},
 
-	showPage: function(page) {
-
-		var offset = this.calcPageOffset(page).toString() + "px";
-		$(this.getEpubContentDocument()).css(this.offsetDirection(), "-" + offset);
-		this.showContent();
-        
-        // if (this.viewerModel.get("twoUp") == false || 
-        //     (this.viewerModel.get("twoUp") && page % 2 === 1)) {
-        //         // when we change the page, we have to tell MO to update its position
-        //         // this.mediaOverlayController.reflowPageChanged();
-        // }
-	},
-	
 	// Rationale: For the purpose of looking up EPUB resources in the package document manifest, Readium expects that 
 	//   all relative links be specified as relative to the package document URI (or absolute references). However, it is 
 	//   valid XHTML for a link to another resource in the EPUB to be specfied relative to the current document's

@@ -1127,6 +1127,10 @@ EpubReflowable.ReflowablePagination = Backbone.Model.extend({
         return this.get("current_page").indexOf(pageNum) !== -1;
     },
 
+    // ------------------------------------------------------------------------------------ //  
+    //  "PRIVATE" HELPERS                                                                   //
+    // ------------------------------------------------------------------------------------ //
+
     // REFACTORING CANDIDATE: prevPage and nextPage are public but not sure it should be; it's called from the navwidget and viewer.js.
     //   Additionally the logic in this method, as well as that in nextPage(), could be refactored to more clearly represent that 
     //   multiple different cases involved in switching pages.
@@ -1169,10 +1173,6 @@ EpubReflowable.ReflowablePagination = Backbone.Model.extend({
         }
     },
 
-    // ------------------------------------------------------------------------------------ //
-    //  "PRIVATE" HELPERS                                                                   //
-    // ------------------------------------------------------------------------------------ //
-
     // REFACTORING CANDIDATE: This method seems to correct the page position if the current page number 
     //   exceeds the number of pages, which should not happen. 
     adjustCurrentPage: function() {
@@ -1184,9 +1184,9 @@ EpubReflowable.ReflowablePagination = Backbone.Model.extend({
 
     // REFACTORING CANDIDATE: this is strange in that it does not seem to account for 
     //   possibly crossing over a section boundary
-    goToLastPage: function() {
+    goToLastPage: function(twoUp, firstPageIsOffset) {
         var page = this.get("num_pages");
-        this.goToPage(page);
+        this.goToPage(page, twoUp, firstPageIsOffset);
     }
 });
     
@@ -1604,10 +1604,10 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
             else {
 
                 if (goToLastPage) {
-                    that.pages.goToLastPage();
+                    that.pages.goToLastPage(that.viewerModel.get("twoUp"), that.spineItemModel.get("firstPageIsOffset"));
                 }
                 else {
-                    that.pages.goToPage(1);
+                    that.pages.goToPage(1, that.viewerModel.get("twoUp"), that.spineItemModel.get("firstPageIsOffset"));
                 }       
             }
 		});
@@ -1692,7 +1692,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
             if (page > 0) {
                 //console.log(fragment + " is on page " + page);
-                this.pages.goToPage(page);	
+                this.pages.goToPage(page, this.viewerSettingsModel.get("twoUp"), this.spineItemModel.get("firstPageIsOffset"));	
 			}
             else {
                 // Throw an exception here 
@@ -1727,6 +1727,19 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         else {
             return false;
         }
+    },
+
+    showPage : function(page) {
+
+        var offset = this.calcPageOffset(page).toString() + "px";
+        $(this.getEpubContentDocument()).css(this.offsetDirection(), "-" + offset);
+        this.showContent();
+        
+        // if (this.viewerModel.get("twoUp") == false || 
+        //     (this.viewerModel.get("twoUp") && page % 2 === 1)) {
+        //         // when we change the page, we have to tell MO to update its position
+        //         // this.mediaOverlayController.reflowPageChanged();
+        // }
     },
 
 	// ------------------------------------------------------------------------------------ //
@@ -1799,7 +1812,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 		setTimeout(function () {
 
 			that.showPage(that.pages.get("current_page")[0]);
-			that.savePosition();
+			// that.savePosition();
 			that.showContent();
 
 		}, 150);
@@ -1849,7 +1862,6 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
 		this.pages.set("num_pages", pageInfo[0]);
 		this.showPage(pageInfo[1]);
-		// this.savePosition(); Hmmmm, this might have to be here? 
 	},
 
 	initializeContentDocument : function () {
@@ -1871,19 +1883,6 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 		return elementId;
 	},
 
-	showPage: function(page) {
-
-		var offset = this.calcPageOffset(page).toString() + "px";
-		$(this.getEpubContentDocument()).css(this.offsetDirection(), "-" + offset);
-		this.showContent();
-        
-        // if (this.viewerModel.get("twoUp") == false || 
-        //     (this.viewerModel.get("twoUp") && page % 2 === 1)) {
-        //         // when we change the page, we have to tell MO to update its position
-        //         // this.mediaOverlayController.reflowPageChanged();
-        // }
-	},
-	
 	// Rationale: For the purpose of looking up EPUB resources in the package document manifest, Readium expects that 
 	//   all relative links be specified as relative to the package document URI (or absolute references). However, it is 
 	//   valid XHTML for a link to another resource in the EPUB to be specfied relative to the current document's
@@ -1935,6 +1934,18 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         view : reflowableView,
         render : function (goToLastPage, hashFragmentId) { return reflowableView.render.call(reflowableView, goToLastPage, hashFragmentId); },
         nextPage : function () { return reflowableView.pages.goRight.call(reflowableView.pages); },
-        prevPage : function () { return reflowableView.pages.goLeft.call(reflowableView.pages); }
+        previousPage : function () { return reflowableView.pages.goLeft.call(reflowableView.pages); },
+        showPageByHashFragment : function (hashFragmentId) { return reflowableView.goToHashFragment.call(reflowableView, hashFragmentId); },
+        showPageByNumber : function (pageNumber) { return reflowableView.showPage.call(reflowableView, pageNumber); },
+        onFirstPage : function () { return reflowableView.onFirstPage.call(reflowableView); },
+        onLastPage : function () { return reflowableView.onLastPage.call(reflowableView); },
+        showPagesView : function () {
+            // Not implemented yet
+        },
+        hidePagesView : function () { 
+            // Not implemented yet
+        },
+        numberOfPages : function () { return reflowableView.pages.get("num_pages"); },
+        currentPage : function () { return reflowableView.pages.get("current_page"); }
     };
 };
