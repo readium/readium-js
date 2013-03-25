@@ -1,0 +1,17 @@
+var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSettings) {
+    
+    var EpubReader = {};
+
+    // Rationale: The order of these matters
+    <%= epub_reader %>
+
+    var epubReader = new EpubReader.EpubReader({  
+        spineInfo : spineInfo
+    });
+
+    // Description: The public interface
+    return {
+
+        render : function () { return epubReader.call(epubReader); },
+    };
+};

@@ -1,4 +1,4 @@
-Readium.Models.EpubReader = Backbone.Model.extend({
+EpubReader.EpubReader = Backbone.Model.extend({
 
     defaults : {
         "renderedPageViews" : {},
@@ -14,8 +14,6 @@ Readium.Models.EpubReader = Backbone.Model.extend({
 
         // Rendering strategy option
         // 
-
-
 
         this.loadSpineItems(options.epubController, options.viewerSettings);
         this.showSpineItem(currentSpineItem);
