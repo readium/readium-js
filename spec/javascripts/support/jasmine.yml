@@ -16,6 +16,7 @@ src_files:
     - lib/json2.js
     - lib/underscore.js
     - lib/backbone.js
+    - lib/URI.js
     - src/**/*.js
     - epub_parser_module.js
 

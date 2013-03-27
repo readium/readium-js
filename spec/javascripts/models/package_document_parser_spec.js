@@ -24,7 +24,10 @@ describe("EpubParser.PackageDocumentParser", function() {
     beforeEach(function() {
 
         this.xml_string = jasmine.getFixtures().read('package_document.xml');
-        this.parser = new EpubParser.PackageDocumentParser({ packageDocumentXML : this.xml_string });
+        this.parser = new EpubParser.PackageDocumentParser({ 
+            packageDocumentURI : "path/to/packageDocument.xml",
+            packageDocumentXML : this.xml_string 
+        });
     });
   
     describe("initialization", function() {
@@ -152,6 +155,10 @@ describe("EpubParser.PackageDocumentParser", function() {
             expect(this.arbitraryManifestItemToTest.href).toEqual("Page_4.html");
         });
 
+        it("parses the contentDocumentUri property", function () {
+            expect(this.arbitraryManifestItemToTest.contentDocumentUri).toEqual("path/to/Page_4.html");
+        });
+
         it("parses the id property", function () {
             expect(this.arbitraryManifestItemToTest.id).toEqual("Page_4");
         });
@@ -211,7 +218,7 @@ describe("EpubParser.PackageDocumentParser", function() {
         });
     });
 
-    describe("parseSpineProperties", function() {
+    describe("parseSpineProperties()", function() {
 
         beforeEach(function() {
             this.spine = [
@@ -267,6 +274,30 @@ describe("EpubParser.PackageDocumentParser", function() {
             this.parser = new EpubParser.PackageDocumentParser({ packageDocumentXML : this.xml_string });
             var result = this.parser.paginateBackwards();
             expect(result).toBe(true);
+        });
+    });
+
+    describe("resolveURI", function () {
+
+        beforeEach(function() {
+
+            this.xml_string = jasmine.getFixtures().read('package_document.xml');
+            this.parser = new EpubParser.PackageDocumentParser({ 
+                packageDocumentURI : "path/to/packageDoc.xml",
+                packageDocumentXML : this.xml_string 
+            });
+        });
+
+        it("produces absolute path to epub resource", function () {
+
+            var absURI = this.parser.resolveURI("something/something/resource.xhtml");
+            expect(absURI).toBe("path/to/something/something/resource.xhtml");
+        });
+
+        it("produces absolute path with backward path steps", function () {
+
+            var absURI = this.parser.resolveURI("../../resource.xhtml");
+            expect(absURI).toBe("resource.xhtml");
         });
     });
 });

@@ -5,6 +5,7 @@ EpubParser.PackageDocumentParser = Backbone.Model.extend({
 
     initialize : function (attributes, options) {
 
+        this.packageDocumentURI = new URI(this.get("packageDocumentURI"));
         var xml = this.get("packageDocumentXML");
         if (typeof(xml) === "string" ) {
             var parser = new window.DOMParser;
@@ -102,6 +103,7 @@ EpubParser.PackageDocumentParser = Backbone.Model.extend({
 
     getJsonManifest : function () {
 
+        var that = this;
         var xmlDom = this.get("xmlDom");
         var $manifestItems = $("manifest", xmlDom).children(); 
         var jsonManifest = [];
@@ -109,9 +111,11 @@ EpubParser.PackageDocumentParser = Backbone.Model.extend({
         $.each($manifestItems, function (manifestElementIndex, currManifestElement) {
 
             var $currManifestElement = $(currManifestElement);
+            var currManifestElementHref = $currManifestElement.attr("href") ? $currManifestElement.attr("href") : "";
             var manifestItem = {
 
-                href : $currManifestElement.attr("href") ? $currManifestElement.attr("href") : "",
+                contentDocumentUri : that.resolveURI(currManifestElementHref),
+                href : currManifestElementHref,
                 id : $currManifestElement.attr("id") ? $currManifestElement.attr("id") : "", 
                 media_overlay : $currManifestElement.attr("media-overlay") ? $currManifestElement.attr("media-overlay") : "",
                 media_type : $currManifestElement.attr("media-type") ? $currManifestElement.attr("media-type") : "",
@@ -238,5 +242,13 @@ EpubParser.PackageDocumentParser = Backbone.Model.extend({
 
         var xmlDom = this.get("xmlDom");
         return $('spine', xmlDom).attr('page-progression-direction') === "rtl";
+    },
+
+    resolveURI : function (epubResourceURI) {
+
+        // Make absolute to the package document path
+        var epubResourceRelURI = new URI(epubResourceURI);
+        var epubResourceAbsURI = epubResourceRelURI.absoluteTo(this.packageDocumentURI);
+        return epubResourceAbsURI.toString();
     }
 });
