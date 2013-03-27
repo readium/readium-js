@@ -9,7 +9,6 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
     defaults : function () { 
         return {
             "loadedPagesViews" : [],
-            "numRenderedPagesViews" : 0,
             "currentPagesViewIndex" : 0
         };
     },
@@ -63,9 +62,17 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
 
             this.set({"currentPagesViewIndex" : pagesViewIndex});
             pagesViewInfo = this.getCurrentPagesViewInfo();
-            pagesViewInfo.isRendered = true;
-            viewElement = pagesViewInfo.pagesView.render(renderLast, hashFragmentId);
-            return viewElement;
+
+            if (pagesViewInfo.isRendered) {
+                
+                return pagesViewInfo.pagesView;
+            }
+            else {
+
+                pagesViewInfo.isRendered = true;
+                viewElement = pagesViewInfo.pagesView.render(renderLast, hashFragmentId);
+                return viewElement;
+            }            
         }
         else {
             return undefined;
@@ -219,29 +226,29 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
     showPageByElementId : function (spineIndex, elementId) { 
 
         // Rationale: Try to locate the element before switching to a new page view try/catch
-        this.reader.getCurrentPageView().goToHashFragment(elementId);
+        this.reader.getCurrentPagesView().goToHashFragment(elementId);
         this.showSpineItem(spineIndex);
     },
 
     nextPage : function () {
 
-        var currentPageView = this.reader.getCurrentPageView();
-        if (currentPageView.onLastPage()) {
-            this.renderNextPageView();
+        var currentPagesView = this.reader.getCurrentPagesView();
+        if (currentPagesView.onLastPage()) {
+            this.renderNextPagesView();
         }
         else {
-            currentPageView.nextPage();
+            currentPagesView.nextPage();
         }
     },
 
     previousPage : function () {
 
-        var currentPageView = this.getCurrentPageView();
-        if (currentPageView.onFirstPage()) {
-            this.renderPreviousPageView();
+        var currentPagesView = this.reader.getCurrentPagesView();
+        if (currentPagesView.onFirstPage()) {
+            this.renderPreviousPagesView();
         }
         else {
-            currentPageView.previousPage();
+            currentPagesView.previousPage();
         }
     },
 
@@ -253,21 +260,21 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
 
     // ----------------------- Private Helpers -----------------------------------------------------------
 
-    renderNextPageView : function () {
+    renderNextPagesView : function () {
 
-        var nextPageViewIndex;
-        if (this.reader.hasNextPageView()) {
-            nextPageViewIndex = this.reader.get("currentPagesViewIndex") + 1;
-            this.reader.renderPagesView(nextPageViewIndex, false, undefined);
+        var nextPagesViewIndex;
+        if (this.reader.hasNextPagesView()) {
+            nextPagesViewIndex = this.reader.get("currentPagesViewIndex") + 1;
+            this.reader.renderPagesView(nextPagesViewIndex, false, undefined);
         }
     },
 
-    renderPreviousPageView : function () {
+    renderPreviousPagesView : function () {
 
-        var previousPageViewIndex;
-        if (this.reader.hasPreviousPageView()) {
-            previousPageViewIndex = this.reader.get("currentPagesViewIndex") - 1;
-            this.reader.renderPagesView(previousPageViewIndex, true, undefined);
+        var previousPagesViewIndex;
+        if (this.reader.hasPreviousPagesView()) {
+            previousPagesViewIndex = this.reader.get("currentPagesViewIndex") - 1;
+            this.reader.renderPagesView(previousPagesViewIndex, true, undefined);
         }
     }
 });
