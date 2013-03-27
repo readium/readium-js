@@ -6,7 +6,7 @@ describe("EpubParser.PackageDocumentParser", function() {
         it("can be instantiated", function () {
 
             var xmlString = jasmine.getFixtures().read("package_document.xml");
-            var parser = new EpubParserModule(xmlString);
+            var parser = new EpubParserModule("path/to/packageDocument.xml", xmlString);
 
             expect(typeof parser).toEqual("object");
         });
@@ -14,7 +14,7 @@ describe("EpubParser.PackageDocumentParser", function() {
         it("parses", function () {
 
             var xmlString = jasmine.getFixtures().read("package_document.xml");
-            var parser = new EpubParserModule(xmlString);
+            var parser = new EpubParserModule("path/to/packageDocument.xml", xmlString);
             var parsingResult = parser.parse();
 
             expect(typeof parsingResult).toEqual("object");
