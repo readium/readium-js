@@ -57,6 +57,18 @@ describe('Epub.PackageDocument', function() {
             this.packageDocument = new Epub.PackageDocument({ packageDocumentObject : packageDocumentJson });
         });
 
+        describe("getSpineInfo()", function () {
+
+            it("generates the spine info", function () {
+
+                var spineInfo = this.packageDocument.getSpineInfo();
+
+                expect(spineInfo.spine[0].contentDocumentURI).toBe("path/to/Page_1.html");
+                expect(spineInfo.spine[2].contentDocumentURI).toBe("path/to/Page_3.html");
+                expect(spineInfo.bindings[0].handler).toBe("figure-gallery-impl");
+            });
+        });
+
         describe("getManifestItemById()", function () {
 
             it("finds a manifest item", function () {

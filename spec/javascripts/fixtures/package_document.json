@@ -47,6 +47,7 @@
             "properties":""
         },
         {
+            "contentDocumentURI":"path/to/Page_1.html",
             "href":"Page_1.html",
             "id":"Page_1",
             "media_overlay":"",
@@ -54,6 +55,7 @@
             "properties":""
         },
         {
+            "contentDocumentURI":"path/to/Page_2.html",
             "href":"Page_2.html",
             "id":"Page_2",
             "media_overlay":"",
@@ -61,6 +63,7 @@
             "properties":""
         },
         {
+            "contentDocumentURI":"path/to/Page_3.html",
             "href":"Page_3.html",
             "id":"Page_3",
             "media_overlay":"",
@@ -68,6 +71,7 @@
             "properties":""
         },
         {
+            "contentDocumentURI":"path/to/Page_4.html",
             "href":"Page_4.html",
             "id":"Page_4",
             "media_overlay":"Page_4_MO",

@@ -276,12 +276,28 @@ Epub.PackageDocument = Backbone.Model.extend({
         this.manifest = new Epub.Manifest(this.get("packageDocumentObject").manifest);
         this.spine = new Epub.Spine(this.get("packageDocumentObject").spine);
         this.metadata = new Epub.Metadata(this.get("packageDocumentObject").metadata);
+        this.bindings = new Epub.Spine(this.get("packageDocumentObject").bindings);
         this.pageSpreadProperty = new Epub.PageSpreadProperty();
 
         // If this book is fixed layout, assign the page spread class
         if (this.isFixedLayout()) {
             this.assignPageSpreadClass();
         }
+    },
+
+    getSpineInfo : function () {
+
+        var that = this;
+        var spineInfo = [];
+        this.spine.each(function (spineItem) {
+
+            spineInfo.push(that.generateSpineInfo(spineItem));
+        });
+
+        return {
+            spine : spineInfo, 
+            bindings : this.bindings.toJSON()
+        };
     },
 
     isFixedLayout : function () {
@@ -325,7 +341,6 @@ Epub.PackageDocument = Backbone.Model.extend({
     getSpineItemByIdref : function (idref) {
 
         var foundSpineItem = this.getSpineModelByIdref(idref);
-
         if (foundSpineItem) {
             return foundSpineItem.toJSON();
         }
@@ -335,6 +350,7 @@ Epub.PackageDocument = Backbone.Model.extend({
     },
 
     getSpineItem : function (spineIndex) {
+
         var spineItem = this.spine.at(spineIndex);
         if (spineItem) {
             return spineItem.toJSON();
@@ -447,6 +463,24 @@ Epub.PackageDocument = Backbone.Model.extend({
         return this.getSpineIndex(spineItem);
     },
 
+    getBindingByHandler : function (handler) {
+
+        var binding = this.bindings.find(
+            function (binding) {
+
+                if (binding.get("handler") === handler) {
+                    return binding;
+                }
+            });
+
+        if (binding) {
+            return binding.toJSON();
+        }
+        else {
+            return undefined;
+        }
+    },
+
     // getToc: function() {
     //  var item = this.packageDocument.getTocItem();
     //  if(!item) {
@@ -545,6 +579,18 @@ Epub.PackageDocument = Backbone.Model.extend({
         }
     },
 
+    generateSpineInfo : function (spineItem) {
+
+        return {
+            contentDocumentURI : this.getManifestItemByIdref(spineItem.get("idref")).contentDocumentURI,
+            title : this.metadata.get("title"),
+            firstPageIsOffset : false, // This needs to be determined
+            pageProgressionDirection : this.pageProgressionDirection(),
+            spineIndex : this.getSpineIndex(spineItem),
+            pageSpread : spineItem.get("page_spread")
+        };
+    }
+
     // This doesn't work at the moment.
     // getTocItem : function() {
     //     var manifest = this.get("manifest");
@@ -588,6 +634,7 @@ Epub.PackageDocument = Backbone.Model.extend({
     // Description: The public interface
     return {
 
+        getSpineInfo : function () { return packageDoc.getSpineInfo.call(packageDoc); }
         isFixedLayout : function () { return packageDoc.isFixedLayout.call(packageDoc); },
         getManifestItemById : function (id) { return packageDoc.getManifestItemById.call(packageDoc, id); },
         getManifestItemByIdref : function (idref) { return packageDoc.getManifestItemByIdref.call(packageDoc, idref); }, 

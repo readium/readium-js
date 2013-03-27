@@ -15,6 +15,21 @@ Epub.PackageDocument = Backbone.Model.extend({
         }
     },
 
+    getSpineInfo : function () {
+
+        var that = this;
+        var spineInfo = [];
+        this.spine.each(function (spineItem) {
+
+            spineInfo.push(that.generateSpineInfo(spineItem));
+        });
+
+        return {
+            spine : spineInfo, 
+            bindings : this.bindings.toJSON()
+        };
+    },
+
     isFixedLayout : function () {
 
         if (this.metadata.get("fixed_layout")) {
@@ -56,7 +71,6 @@ Epub.PackageDocument = Backbone.Model.extend({
     getSpineItemByIdref : function (idref) {
 
         var foundSpineItem = this.getSpineModelByIdref(idref);
-
         if (foundSpineItem) {
             return foundSpineItem.toJSON();
         }
@@ -66,6 +80,7 @@ Epub.PackageDocument = Backbone.Model.extend({
     },
 
     getSpineItem : function (spineIndex) {
+
         var spineItem = this.spine.at(spineIndex);
         if (spineItem) {
             return spineItem.toJSON();
@@ -196,7 +211,6 @@ Epub.PackageDocument = Backbone.Model.extend({
         }
     },
 
-
     // getToc: function() {
     //  var item = this.packageDocument.getTocItem();
     //  if(!item) {
@@ -294,6 +308,18 @@ Epub.PackageDocument = Backbone.Model.extend({
             });
         }
     },
+
+    generateSpineInfo : function (spineItem) {
+
+        return {
+            contentDocumentURI : this.getManifestItemByIdref(spineItem.get("idref")).contentDocumentURI,
+            title : this.metadata.get("title"),
+            firstPageIsOffset : false, // This needs to be determined
+            pageProgressionDirection : this.pageProgressionDirection(),
+            spineIndex : this.getSpineIndex(spineItem),
+            pageSpread : spineItem.get("page_spread")
+        };
+    }
 
     // This doesn't work at the moment.
     // getTocItem : function() {
