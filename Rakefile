@@ -16,7 +16,8 @@ end
 def render_epub_reader_module_template(templatePath, outputPath)
 
     # Read each of the library components
-    alternate_style_tag_selector = File.read('src/models/epub_reader.js')
+    epub_reader = File.read('src/models/epub_reader.js')
+    epub_reader_view = File.read('src/views/epub_reader_view.js')
 
     template = File.read(templatePath)
     erb = ERB.new(template)
@@ -30,5 +31,5 @@ end
 desc "render the epub reader module erb template"
 task :gen_epub_reader_module do
     puts "rendering the epub reader module"
-    render_epub_reflowable_module_template("epub_reader_module_template.js.erb", "epub_reader_module.js")
+    render_epub_reader_module_template("epub_reader_module_template.js.erb", "epub_reader_module.js")
 end

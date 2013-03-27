@@ -80,10 +80,9 @@ var initializationTest = function () {
         annotations : annotations,
     };
 
-    this.view = new EpubReader(
+    return new EpubReaderModule(
+        $("#reader"),
         epubSpineInfo,
-        viewerSettings,
+        viewerSettings
     );
-
-    $("#reader").html(this.view.render(false, undefined));
 };

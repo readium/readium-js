@@ -4,14 +4,22 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
 
     // Rationale: The order of these matters
     <%= epub_reader %>
+    <%= epub_reader_view %>
 
-    var epubReader = new EpubReader.EpubReader({  
-        spineInfo : spineInfo
+    var epubReaderView = new EpubReader.EpubReaderView({
+        readerElement : readerBoundElement,
+        spineInfo : epubSpineInfo,
+        viewerSettings : viewerSettings
     });
 
     // Description: The public interface
     return {
 
-        render : function () { return epubReader.call(epubReader); },
+        render : function () { return epubReaderView.render.call(epubReaderView); },
+        showSpineItem : function (spineIndex) { return epubReaderView.showSpineItem.call(epubReaderView, spineIndex); },
+        showPageByCFI : function (CFI) { return epubReaderView.showPageByCFI.call(epubReaderView, CFI); },
+        showPageByElementId : function (spineIndex, hashFragmentId) { return epubReaderView.showPageByElementId.call(epubReaderView, spineIndex, hashFragmentId); },
+        nextPage : function () { return epubReaderView.nextPage.call(epubReaderView); },
+        previousPage : function () { return epubReaderView.previousPage.call(epubReaderView); }
     };
 };
