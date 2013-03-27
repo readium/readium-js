@@ -52,6 +52,8 @@ EpubReader.EpubReader = Backbone.Model.extend({
 
     renderPagesView : function (pagesViewIndex, renderLast, hashFragmentId) {
 
+        this.hideRenderedViews();
+
         var pagesView;
         if (pagesViewIndex >= 0 && pagesViewIndex < this.numberOfLoadedPagesViews()) {
 
@@ -59,8 +61,8 @@ EpubReader.EpubReader = Backbone.Model.extend({
             pagesViewInfo = this.getCurrentPagesViewInfo();
 
             if (pagesViewInfo.isRendered) {
-                
-                return pagesViewInfo.pagesView;
+
+                return pagesViewInfo.pagesView.$el.show();
             }
             else {
 
@@ -144,7 +146,19 @@ EpubReader.EpubReader = Backbone.Model.extend({
     getCurrentPagesViewInfo : function () {
 
         return this.get("loadedPagesViews")[this.get("currentPagesViewIndex")];
+    },
+
+    hideRenderedViews : function () {
+
+        _.each(this.reader.get("loadedPagesViews"), function (pagesViewInfo) {
+
+            if (pagesViewInfo.isRendered) {
+                pagesViewInfo.pagesView.$el.hide();
+            }
+        });
     }
+
+
 
 
     // initialize: function() {
