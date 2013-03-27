@@ -60,12 +60,13 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         var pagesView;
         if (pagesViewIndex >= 0 && pagesViewIndex < this.numberOfLoadedPagesViews()) {
 
+            this.hideRenderedViews();
             this.set({"currentPagesViewIndex" : pagesViewIndex});
             pagesViewInfo = this.getCurrentPagesViewInfo();
 
             if (pagesViewInfo.isRendered) {
-                
-                return pagesViewInfo.pagesView;
+
+                return pagesViewInfo.pagesView.showPagesView();
             }
             else {
 
@@ -149,7 +150,19 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
     getCurrentPagesViewInfo : function () {
 
         return this.get("loadedPagesViews")[this.get("currentPagesViewIndex")];
+    },
+
+    hideRenderedViews : function () {
+
+        _.each(this.get("loadedPagesViews"), function (pagesViewInfo) {
+
+            if (pagesViewInfo.isRendered) {
+                pagesViewInfo.pagesView.hidePagesView();
+            }
+        });
     }
+
+
 
 
     // initialize: function() {
@@ -211,7 +224,11 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
     showSpineItem : function (spineIndex) {
 
         var pagesViewElement = this.reader.renderPagesView(spineIndex, false, undefined);
-        this.$el.append(pagesViewElement);
+
+        // Only append if a pages view was returned, otherwise do nothing
+        if (pagesViewElement) {
+            this.$el.append(pagesViewElement);
+        }
     },
 
     // Rationale: As with the CFI library API, it is up to calling code to ensure that the content document CFI component is

@@ -26,7 +26,11 @@ EpubReader.EpubReaderView = Backbone.View.extend({
     showSpineItem : function (spineIndex) {
 
         var pagesViewElement = this.reader.renderPagesView(spineIndex, false, undefined);
-        this.$el.append(pagesViewElement);
+
+        // Only append if a pages view was returned, otherwise do nothing
+        if (pagesViewElement) {
+            this.$el.append(pagesViewElement);
+        }
     },
 
     // Rationale: As with the CFI library API, it is up to calling code to ensure that the content document CFI component is
