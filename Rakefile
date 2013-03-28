@@ -29,4 +29,5 @@ desc "render the epub parser module erb template"
 task :gen_epub_parser_module do
     puts "rendering the epub parser module"
     render_epub_parser_module_template("epub_parser_module_template.js.erb", "epub_parser_module.js")
+    render_epub_parser_module_template("epub_parser_module_template.js.erb", "../sample-app/app/assets/javascripts/lib/epub_parser_module.js")
 end

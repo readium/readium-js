@@ -114,7 +114,7 @@ EpubParser.PackageDocumentParser = Backbone.Model.extend({
             var currManifestElementHref = $currManifestElement.attr("href") ? $currManifestElement.attr("href") : "";
             var manifestItem = {
 
-                contentDocumentUri : that.resolveURI(currManifestElementHref),
+                contentDocumentURI : that.resolveURI(currManifestElementHref),
                 href : currManifestElementHref,
                 id : $currManifestElement.attr("id") ? $currManifestElement.attr("id") : "", 
                 media_overlay : $currManifestElement.attr("media-overlay") ? $currManifestElement.attr("media-overlay") : "",
