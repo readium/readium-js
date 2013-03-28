@@ -10,7 +10,6 @@ EpubReader.EpubReader = Backbone.Model.extend({
     initialize : function (attributes, options) {
 
         var spineInfo = this.get("spineInfo");
-        // Attributes: 
         this.set("spine", spineInfo.spine);
         this.set("bindings", spineInfo.bindings);
         this.set("annotations", spineInfo.annotations);
@@ -55,7 +54,6 @@ EpubReader.EpubReader = Backbone.Model.extend({
             pagesViewInfo = this.getCurrentPagesViewInfo();
 
             if (pagesViewInfo.isRendered) {
-
                 return pagesViewInfo.pagesView.showPagesView();
             }
             else {
@@ -151,19 +149,4 @@ EpubReader.EpubReader = Backbone.Model.extend({
             }
         });
     }
-
-    // toggleFullScreen: function() {
-    //     var fullScreen = this.get("full_screen");
-    //     this.set({full_screen: !fullScreen});
-    // },
-
-    // increaseFont: function() {
-    //     var size = this.get("font_size");
-    //     this.set({font_size: size + 1})
-    // },
-
-    // decreaseFont: function() {
-    //     var size = this.get("font_size");
-    //     this.set({font_size: size - 1})
-    // },
 });

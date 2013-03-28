@@ -15,7 +15,6 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
     initialize : function (attributes, options) {
 
         var spineInfo = this.get("spineInfo");
-        // Attributes: 
         this.set("spine", spineInfo.spine);
         this.set("bindings", spineInfo.bindings);
         this.set("annotations", spineInfo.annotations);
@@ -60,7 +59,6 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
             pagesViewInfo = this.getCurrentPagesViewInfo();
 
             if (pagesViewInfo.isRendered) {
-
                 return pagesViewInfo.pagesView.showPagesView();
             }
             else {
@@ -156,21 +154,6 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
             }
         });
     }
-
-    // toggleFullScreen: function() {
-    //     var fullScreen = this.get("full_screen");
-    //     this.set({full_screen: !fullScreen});
-    // },
-
-    // increaseFont: function() {
-    //     var size = this.get("font_size");
-    //     this.set({font_size: size + 1})
-    // },
-
-    // decreaseFont: function() {
-    //     var size = this.get("font_size");
-    //     this.set({font_size: size - 1})
-    // },
 });
     EpubReader.EpubReaderView = Backbone.View.extend({
 
@@ -202,6 +185,7 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         var pagesViewElement = this.reader.renderPagesView(spineIndex, false, undefined);
 
         // Only append if a pages view was returned, otherwise do nothing
+        // REFACTORING CANDIDATE: This will duplicate rendered spine items, I believe
         if (pagesViewElement) {
             this.$el.append(pagesViewElement);
         }
@@ -245,11 +229,36 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         }
     },
 
-    // changeMargin()
-    // changeFontSize()
-    // changeTheme()
-    // addSpine() ---- not sure about this. Maybe just do the initialize
-    // toggleTOC() <---- I don't think this should actually be part of it
+    // REFACTORING CANDIDATE: I don't like that we're maintaining viewer state in the epub object; better that
+    //   each time a view was shown, the settings are applied if required
+
+    setFontSize : function (fontSize) {
+
+        var currentView = this.reader.getCurrentPagesView();
+        currentView.setFontSize(fontSize);
+        this.reader.set({"fontSize" : fontSize});
+    },
+
+    setMargin : function (margin) {
+
+        var currentView = this.reader.getCurrentPagesView();
+        currentView.setMargin(margin);
+        this.reader.set({"margin" : margin});
+    },
+
+    setTheme : function (theme) {
+
+        var currentView = this.reader.getCurrentPagesView();
+        currentView.setTheme(theme);
+        this.reader.set({"theme" : theme});
+    },
+
+    setSyntheticLayout : function (isSynthetic) {
+
+        var currentView = this.reader.getCurrentPagesView();
+        currentView.setSyntheticLayout(isSynthetic);
+        this.reader.set({"syntheticLayout" : isSynthetic});
+    },
 
     // ----------------------- Private Helpers -----------------------------------------------------------
 
@@ -286,6 +295,10 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         showPageByCFI : function (CFI) { return epubReaderView.showPageByCFI.call(epubReaderView, CFI); },
         showPageByElementId : function (spineIndex, hashFragmentId) { return epubReaderView.showPageByElementId.call(epubReaderView, spineIndex, hashFragmentId); },
         nextPage : function () { return epubReaderView.nextPage.call(epubReaderView); },
-        previousPage : function () { return epubReaderView.previousPage.call(epubReaderView); }
+        previousPage : function () { return epubReaderView.previousPage.call(epubReaderView); },
+        setFontSize : function (fontSize) { return epubReaderView.setFontSize.call(epubReaderView, fontSize); },
+        setMargin : function (margin) { return epubReaderView.setMargin.call(epubReaderView, margin); },
+        setTheme : function (theme) { return epubReaderView.setTheme.call(epubReaderView, theme); },
+        setSyntheticLayout : function (isSynthetic) { return epubReaderView.setSyntheticLayout.call(epubReaderView, isSynthetic); }
     };
 };

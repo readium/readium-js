@@ -66,6 +66,22 @@ describe("EpubReader.EpubReaderView", function () {
 
             // Needs tests
         });
+
+        describe("setFontSize()", function () {
+
+        });
+
+        describe("setMargin()", function () {
+
+        });
+
+        describe("setTheme()", function () {
+
+        });
+
+        describe("setSyntheticLayout()", function () {
+
+        });
     });
 
     describe("private helpers", function () {

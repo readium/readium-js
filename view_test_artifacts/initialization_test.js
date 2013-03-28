@@ -42,8 +42,7 @@ var initializationTest = function () {
         syntheticLayout : false,
         currentMargin : 3,
         tocVisible : false,
-        currentTheme : "default",
-        twoUp : true
+        currentTheme : "default"
     };
 
     var annotations = [

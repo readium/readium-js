@@ -1536,7 +1536,6 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 		// this.mediaOverlayController.on("change:mo_text_id", this.highlightText, this);
         // this.mediaOverlayController.on("change:active_mo", this.indicateMoIsPlaying, this);
 		this.viewerModel.on("change:fontSize", this.rePaginationHandler, this);
-		this.viewerModel.on("change:twoUp", this.pages.toggleTwoUp, this.pages);
 		this.viewerModel.on("change:twoUp", this.rePaginationHandler, this);
 		this.viewerModel.on("change:currentMargin", this.rePaginationHandler, this);
 		this.pages.on("change:current_page", this.pageChangeHandler, this);
@@ -1551,7 +1550,6 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 		// this.mediaOverlayController.off("change:mo_text_id", this.highlightText, this);
   		// this.mediaOverlayController.off("change:active_mo", this.indicateMoIsPlaying, this);
 		this.viewerModel.off("change:fontSize", this.rePaginationHandler, this);
-		this.viewerModel.off("change:twoUp", this.pages.toggleTwoUp, this.pages);
 		this.viewerModel.off("change:twoUp", this.rePaginationHandler, this);
 		this.viewerModel.off("change:currentMargin", this.rePaginationHandler, this);
 		this.pages.off("change:current_page", this.pageChangeHandler, this);
@@ -1750,6 +1748,23 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         // }
     },
 
+    setFontSize : function (fontSize) {
+        this.viewerModel.set({ fontSize : fontSize });
+    },
+
+    setMargin : function (margin) {
+        this.viewerModel.set({ currentMargin : margin });
+    },
+
+    setTheme : function (theme) {
+        this.viewerModel.set({ currentTheme : theme });
+    },
+
+    setSyntheticLayout : function (isSynthetic) {
+        this.viewerModel.set({ twoUp : isSynthetic });
+        this.pages.toggleTwoUp(isSynthetic, this.spineItemModel.get("firstPageIsOffset"));
+    },
+
 	// ------------------------------------------------------------------------------------ //
 	//  PRIVATE GETTERS FOR VIEW                                                            //
 	// ------------------------------------------------------------------------------------ //    
@@ -1762,6 +1777,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 		return $(this.el).children()[0];
 	},
 
+    // REFACTORING CANDIDATE: That's a lot of chaining right there. Too much. 
 	getEpubContentDocument : function () {
 		return $($($(this.el).children()[0]).contents()[0]).children()[0];
 	},
@@ -1939,7 +1955,6 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
     // Description: The public interface
     return {
 
-        view : reflowableView,
         render : function (goToLastPage, hashFragmentId) { return reflowableView.render.call(reflowableView, goToLastPage, hashFragmentId); },
         nextPage : function () { return reflowableView.pages.goRight.call(reflowableView.pages); },
         previousPage : function () { return reflowableView.pages.goLeft.call(reflowableView.pages); },
@@ -1950,6 +1965,10 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         showPagesView : function () { return reflowableView.showView.call(reflowableView); },
         hidePagesView : function () { return reflowableView.hideView.call(reflowableView); },
         numberOfPages : function () { return reflowableView.pages.get("num_pages"); },
-        currentPage : function () { return reflowableView.pages.get("current_page"); }
+        currentPage : function () { return reflowableView.pages.get("current_page"); },
+        setFontSize : function (fontSize) { return reflowableView.setFontSize.call(reflowableView, fontSize); },
+        setMargin : function (margin) { return reflowableView.setMargin.call(reflowableView, margin); },
+        setTheme : function (theme) { return reflowableView.setTheme.call(reflowableView, theme); },
+        setSyntheticLayout : function (isSynthetic) { return reflowableView.setSyntheticLayout.call(reflowableView, isSynthetic); }
     };
 };
