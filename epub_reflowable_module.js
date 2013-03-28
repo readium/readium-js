@@ -1576,7 +1576,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 		var that = this;
 		var json = this.spineItemModel.toJSON();
 
-        $("iframe", this.el).attr("src", json.contentDocumentUri);
+        $("iframe", this.el).attr("src", json.contentDocumentURI);
         $("iframe", this.el).attr("title", json.title);
 
 		// $(this.getReadiumBookViewEl()).html(this.el);

@@ -29,11 +29,6 @@ describe("EpubReader.EpubReader", function () {
 
                 expect(this.reader.get("currentPagesViewIndex")).toBe(0);
             });
-
-            it("sets number of rendered pages views to 0", function () {
-
-                expect(this.reader.get("numRenderedPagesViews")).toBe(0);
-            });
         });
 
         describe("expected attributes", function () {

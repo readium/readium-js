@@ -5,7 +5,6 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
     // Rationale: The order of these matters
     EpubReader.EpubReader = Backbone.Model.extend({
 
-    // Rationale: 
     defaults : function () { 
         return {
             "loadedPagesViews" : [],
@@ -17,13 +16,9 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
 
         var spineInfo = this.get("spineInfo");
         // Attributes: 
-        //   current spine position
-        //   spine
         this.set("spine", spineInfo.spine);
         this.set("bindings", spineInfo.bindings);
         this.set("annotations", spineInfo.annotations);
-        //   viewer settings
-        //   bindings
 
         // Rendering strategy options could be implemented here
 
@@ -161,25 +156,6 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
             }
         });
     }
-
-
-
-
-    // initialize: function() {
-
-    //     var self = this;
-    //     this.model = this.get("book");
-    //     this.zoomer = new Readium.Views.FixedLayoutBookZoomer();
-    //     this.model.on("change:pagination_mode", function() { self.renderSpineItems(); });       
-    // },
-
-    // updatePaginationSettings: function() {
-    //     if (this.get("pagination_mode") == "facing") {
-    //         this.set("two_up", true);
-    //     } else {
-    //         this.set("two_up", false);
-    //     }
-    // },
 
     // toggleFullScreen: function() {
     //     var fullScreen = this.get("full_screen");
