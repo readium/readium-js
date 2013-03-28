@@ -1,11 +1,12 @@
 var initializationTest = function () {
     
     var spineItem = {
-        contentDocumentUri : "epub_content/accessible_epub_3/EPUB/ch01.xhtml",
+        contentDocumentURI : "epub_content/accessible_epub_3/EPUB/ch01.xhtml",
         title : "Test from Accessible Epub 3.0", 
         firstPageIsOffset : false,
         pageProgressionDirection : "ltr", 
-        spineIndex : 1 
+        spineIndex : 1,
+        isFixedLayout : false
     };
 
     var viewerSettings = {

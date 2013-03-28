@@ -1576,7 +1576,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 		var that = this;
 		var json = this.spineItemModel.toJSON();
 
-        $("iframe", this.el).attr("src", json.contentDocumentUri);
+        $("iframe", this.el).attr("src", json.contentDocumentURI);
         $("iframe", this.el).attr("title", json.title);
 
 		// $(this.getReadiumBookViewEl()).html(this.el);
@@ -1664,6 +1664,14 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
     //     }
     //     this.annotations.saveAnnotation(CFI, this.spineItemModel.get("spine_index"));
     // },
+
+    showView : function () {
+        this.$el.show();
+    },
+
+    hideView : function () {
+        this.$el.hide();
+    },
 
 	// Description: Find an element with this specified id and show the page that contains the element.
 	goToHashFragment: function(hashFragmentId) {
@@ -1939,12 +1947,8 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         showPageByNumber : function (pageNumber) { return reflowableView.showPage.call(reflowableView, pageNumber); },
         onFirstPage : function () { return reflowableView.onFirstPage.call(reflowableView); },
         onLastPage : function () { return reflowableView.onLastPage.call(reflowableView); },
-        showPagesView : function () {
-            // Not implemented yet
-        },
-        hidePagesView : function () { 
-            // Not implemented yet
-        },
+        showPagesView : function () { return reflowableView.showView.call(reflowableView); },
+        hidePagesView : function () { return reflowableView.hideView.call(reflowableView); },
         numberOfPages : function () { return reflowableView.pages.get("num_pages"); },
         currentPage : function () { return reflowableView.pages.get("current_page"); }
     };
