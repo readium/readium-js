@@ -54,17 +54,32 @@ EpubReader.EpubReader = Backbone.Model.extend({
             pagesViewInfo = this.getCurrentPagesViewInfo();
 
             if (pagesViewInfo.isRendered) {
-                return pagesViewInfo.pagesView.showPagesView();
+                pagesViewInfo.pagesView.showPagesView();
             }
             else {
-
-                pagesViewInfo.isRendered = true;
+                
                 viewElement = pagesViewInfo.pagesView.render(renderLast, hashFragmentId);
-                return viewElement;
-            }            
+                $(this.get("parentElement")).append(viewElement);
+                pagesViewInfo.isRendered = true;
+            }
         }
-        else {
-            return undefined;
+    },
+
+    renderNextPagesView : function () {
+
+        var nextPagesViewIndex;
+        if (this.hasNextPagesView()) {
+            nextPagesViewIndex = this.get("currentPagesViewIndex") + 1;
+            this.renderPagesView(nextPagesViewIndex, false, undefined);
+        }
+    },
+
+    renderPreviousPagesView : function () {
+
+        var previousPagesViewIndex;
+        if (this.hasPreviousPagesView()) {
+            previousPagesViewIndex = this.get("currentPagesViewIndex") - 1;
+            this.renderPagesView(previousPagesViewIndex, true, undefined);
         }
     },
 

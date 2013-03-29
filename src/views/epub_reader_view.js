@@ -6,7 +6,8 @@ EpubReader.EpubReaderView = Backbone.View.extend({
         var currSpineIndex = 0;
         this.reader = new EpubReader.EpubReader({
             spineInfo : options.spineInfo,
-            viewerSettings : options.viewerSettings
+            viewerSettings : options.viewerSettings,
+            parentElement : options.readerElement
         });
         this.readerBoundElement = options.readerElement;
     },
@@ -25,13 +26,7 @@ EpubReader.EpubReaderView = Backbone.View.extend({
     //   abstraction will include more.
     showSpineItem : function (spineIndex) {
 
-        var pagesViewElement = this.reader.renderPagesView(spineIndex, false, undefined);
-
-        // Only append if a pages view was returned, otherwise do nothing
-        // REFACTORING CANDIDATE: This will duplicate rendered spine items, I believe
-        if (pagesViewElement) {
-            this.$el.append(pagesViewElement);
-        }
+        this.reader.renderPagesView(spineIndex, false, undefined);
     },
 
     // Rationale: As with the CFI library API, it is up to calling code to ensure that the content document CFI component is
@@ -54,7 +49,7 @@ EpubReader.EpubReaderView = Backbone.View.extend({
 
         var currentPagesView = this.reader.getCurrentPagesView();
         if (currentPagesView.onLastPage()) {
-            this.renderNextPagesView();
+            this.reader.renderNextPagesView();
         }
         else {
             currentPagesView.nextPage();
@@ -65,7 +60,7 @@ EpubReader.EpubReaderView = Backbone.View.extend({
 
         var currentPagesView = this.reader.getCurrentPagesView();
         if (currentPagesView.onFirstPage()) {
-            this.renderPreviousPagesView();
+            this.reader.renderPreviousPagesView();
         }
         else {
             currentPagesView.previousPage();
@@ -101,25 +96,8 @@ EpubReader.EpubReaderView = Backbone.View.extend({
         var currentView = this.reader.getCurrentPagesView();
         currentView.setSyntheticLayout(isSynthetic);
         this.reader.set({"syntheticLayout" : isSynthetic});
-    },
+    }
 
     // ----------------------- Private Helpers -----------------------------------------------------------
-
-    renderNextPagesView : function () {
-
-        var nextPagesViewIndex;
-        if (this.reader.hasNextPagesView()) {
-            nextPagesViewIndex = this.reader.get("currentPagesViewIndex") + 1;
-            this.reader.renderPagesView(nextPagesViewIndex, false, undefined);
-        }
-    },
-
-    renderPreviousPagesView : function () {
-
-        var previousPagesViewIndex;
-        if (this.reader.hasPreviousPagesView()) {
-            previousPagesViewIndex = this.reader.get("currentPagesViewIndex") - 1;
-            this.reader.renderPagesView(previousPagesViewIndex, true, undefined);
-        }
-    }
+    
 });
