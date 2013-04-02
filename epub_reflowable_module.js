@@ -1327,16 +1327,13 @@ EpubReflowable.ReflowablePaginator = Backbone.Model.extend({
     setFrameSize : function (flowingWrapperWidth, flowingWrapperHeight, readiumFlowingContent, currentMargin, isTwoUp) {
 
         var width = this.getFrameWidth(flowingWrapperWidth, currentMargin, isTwoUp).toString() + "px";
-
         var height = flowingWrapperHeight.toString() + "px"; 
 
-        // $(readiumFlowingContent).parent().attr("width", width);
-        // $(readiumFlowingContent).parent().attr("height", height);
+        // Rationale: Set the width for both the iframe (epub content) and its parent. The parent width must be provided so 
+        //   that the iframe content can be centered within it, using CSS (margin-left/right: auto; display:block)
         $(readiumFlowingContent).parent().css("width", width);
         $(readiumFlowingContent).parent().css("height", height);
 
-        // $(readiumFlowingContent).attr("width", width);
-        // $(readiumFlowingContent).attr("height", height);
         $(readiumFlowingContent).css("width", width);
         $(readiumFlowingContent).css("height", height);
     },
@@ -1408,7 +1405,9 @@ EpubReflowable.ReflowablePaginator = Backbone.Model.extend({
         var $frame = $(readiumFlowingContent);
         var page;
 
-        this.setFrameSize($(flowingWrapper).width(), $(flowingWrapper).height(), readiumFlowingContent, currentMargin, isTwoUp);
+        // Rationale: Get width and height of the flowing wrapper parent, as the (application-specific) parent element dimensions are what the epub
+        //   content should be sized to fit into.
+        this.setFrameSize($(flowingWrapper).parent().width(), $(flowingWrapper).parent().height(), readiumFlowingContent, currentMargin, isTwoUp);
 
         this.frame_width = parseInt($frame.width(), 10);
         this.frame_height = parseInt($frame.height(), 10);
