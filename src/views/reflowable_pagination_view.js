@@ -26,6 +26,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         var SpineItemModel = Backbone.Model.extend({});
 
         this.viewerModel = new ViewerModel(options.viewerSettings);
+        this.viewerModel.set({ twoUp : options.viewerSettings.syntheticLayout });
         this.spineItemModel = new SpineItemModel(options.spineItem);
         this.epubCFIs = options.contentDocumentCFIs;
         this.bindings = options.bindings;
