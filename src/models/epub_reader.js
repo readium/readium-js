@@ -55,11 +55,13 @@ EpubReader.EpubReader = Backbone.Model.extend({
 
             if (pagesViewInfo.isRendered) {
                 pagesViewInfo.pagesView.showPagesView();
+                this.applyPreferences(pagesViewInfo.pagesView);
             }
             else {
                 
                 viewElement = pagesViewInfo.pagesView.render(renderLast, hashFragmentId);
                 $(this.get("parentElement")).append(viewElement);
+                this.applyPreferences(pagesViewInfo.pagesView);
                 pagesViewInfo.isRendered = true;
             }
         }
@@ -163,5 +165,14 @@ EpubReader.EpubReader = Backbone.Model.extend({
                 pagesViewInfo.pagesView.hidePagesView();
             }
         });
+    },
+
+    applyPreferences : function (pagesView) {
+
+        var preferences = this.get("viewerSettings");
+        pagesView.setSyntheticLayout(preferences.syntheticLayout);
+        pagesView.setMargin(preferences.currentMargin);
+        pagesView.setTheme(preferences.currentTheme);
+        pagesView.setFontSize(preferences.fontSize);
     }
 });

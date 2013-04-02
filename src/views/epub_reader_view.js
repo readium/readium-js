@@ -74,28 +74,28 @@ EpubReader.EpubReaderView = Backbone.View.extend({
 
         var currentView = this.reader.getCurrentPagesView();
         currentView.setFontSize(fontSize);
-        this.reader.set({"fontSize" : fontSize});
+        this.reader.get("viewerSettings").fontSize = fontSize;
     },
 
     setMargin : function (margin) {
 
         var currentView = this.reader.getCurrentPagesView();
         currentView.setMargin(margin);
-        this.reader.set({"margin" : margin});
+        this.reader.get("viewerSettings").currentMargin = margin;
     },
 
     setTheme : function (theme) {
 
         var currentView = this.reader.getCurrentPagesView();
         currentView.setTheme(theme);
-        this.reader.set({"theme" : theme});
+        this.reader.get("viewerSettings").currentTheme = theme
     },
 
     setSyntheticLayout : function (isSynthetic) {
 
         var currentView = this.reader.getCurrentPagesView();
         currentView.setSyntheticLayout(isSynthetic);
-        this.reader.set({"syntheticLayout" : isSynthetic});
+        this.reader.get("viewerSettings").syntheticLayout = isSynthetic;
     }
 
     // ----------------------- Private Helpers -----------------------------------------------------------

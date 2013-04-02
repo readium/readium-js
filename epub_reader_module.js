@@ -60,11 +60,13 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
 
             if (pagesViewInfo.isRendered) {
                 pagesViewInfo.pagesView.showPagesView();
+                this.applyPreferences(pagesViewInfo.pagesView);
             }
             else {
                 
                 viewElement = pagesViewInfo.pagesView.render(renderLast, hashFragmentId);
                 $(this.get("parentElement")).append(viewElement);
+                this.applyPreferences(pagesViewInfo.pagesView);
                 pagesViewInfo.isRendered = true;
             }
         }
@@ -168,6 +170,15 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
                 pagesViewInfo.pagesView.hidePagesView();
             }
         });
+    },
+
+    applyPreferences : function (pagesView) {
+
+        var preferences = this.get("viewerSettings");
+        pagesView.setSyntheticLayout(preferences.syntheticLayout);
+        pagesView.setMargin(preferences.currentMargin);
+        pagesView.setTheme(preferences.currentTheme);
+        pagesView.setFontSize(preferences.fontSize);
     }
 });
     EpubReader.EpubReaderView = Backbone.View.extend({
@@ -246,28 +257,28 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
 
         var currentView = this.reader.getCurrentPagesView();
         currentView.setFontSize(fontSize);
-        this.reader.set({"fontSize" : fontSize});
+        this.reader.get("viewerSettings").fontSize = fontSize;
     },
 
     setMargin : function (margin) {
 
         var currentView = this.reader.getCurrentPagesView();
         currentView.setMargin(margin);
-        this.reader.set({"margin" : margin});
+        this.reader.get("viewerSettings").currentMargin = margin;
     },
 
     setTheme : function (theme) {
 
         var currentView = this.reader.getCurrentPagesView();
         currentView.setTheme(theme);
-        this.reader.set({"theme" : theme});
+        this.reader.get("viewerSettings").currentTheme = theme
     },
 
     setSyntheticLayout : function (isSynthetic) {
 
         var currentView = this.reader.getCurrentPagesView();
         currentView.setSyntheticLayout(isSynthetic);
-        this.reader.set({"syntheticLayout" : isSynthetic});
+        this.reader.get("viewerSettings").syntheticLayout = isSynthetic;
     }
 
     // ----------------------- Private Helpers -----------------------------------------------------------
