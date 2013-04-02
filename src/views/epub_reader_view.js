@@ -96,7 +96,17 @@ EpubReader.EpubReaderView = Backbone.View.extend({
         var currentView = this.reader.getCurrentPagesView();
         currentView.setSyntheticLayout(isSynthetic);
         this.reader.get("viewerSettings").syntheticLayout = isSynthetic;
-    }
+    },
+
+    getNumberOfPages : function () {
+
+        return this.reader.calculatePageNumberInfo().numPages;
+    },
+
+    getCurrentPage : function () {
+
+        return this.reader.calculatePageNumberInfo().currentPage;
+    },
 
     // ----------------------- Private Helpers -----------------------------------------------------------
     

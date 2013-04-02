@@ -8,28 +8,28 @@ var initializationTest = function () {
             spineIndex : 0
         },
         {
-            contentDocumentURI : "epub_content/accessible_epub_3/EPUB/ch02.xhtml",
+            contentDocumentURI : "epub_content/accessible_epub_3/EPUB/ch01s02.xhtml",
             title : "Chapter 2", 
             firstPageIsOffset : false,
             pageProgressionDirection : "ltr", 
             spineIndex : 1 
         },
         {
-            contentDocumentURI : "epub_content/accessible_epub_3/EPUB/ch03.xhtml",
+            contentDocumentURI : "epub_content/accessible_epub_3/EPUB/ch02.xhtml",
             title : "Chapter 3", 
             firstPageIsOffset : false,
             pageProgressionDirection : "ltr", 
             spineIndex : 2 
         },
         {
-            contentDocumentURI : "epub_content/accessible_epub_3/EPUB/ch04.xhtml",
+            contentDocumentURI : "epub_content/accessible_epub_3/EPUB/ch02s02.xhtml",
             title : "Chapter 4", 
             firstPageIsOffset : false,
             pageProgressionDirection : "ltr", 
             spineIndex : 3 
         },
         {
-            contentDocumentURI : "epub_content/accessible_epub_3/EPUB/ch05.xhtml",
+            contentDocumentURI : "epub_content/accessible_epub_3/EPUB/ch02s03.xhtml",
             title : "Chapter 5", 
             firstPageIsOffset : false,
             pageProgressionDirection : "ltr", 

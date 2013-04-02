@@ -24,6 +24,8 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         setFontSize : function (fontSize) { return epubReaderView.setFontSize.call(epubReaderView, fontSize); },
         setMargin : function (margin) { return epubReaderView.setMargin.call(epubReaderView, margin); },
         setTheme : function (theme) { return epubReaderView.setTheme.call(epubReaderView, theme); },
-        setSyntheticLayout : function (isSynthetic) { return epubReaderView.setSyntheticLayout.call(epubReaderView, isSynthetic); }
+        setSyntheticLayout : function (isSynthetic) { return epubReaderView.setSyntheticLayout.call(epubReaderView, isSynthetic); },
+        getNumberOfPages : function () { return epubReaderView.getNumberOfPages.call(epubReaderView); },
+        getCurrentPage : function () { return epubReaderView.getCurrentPage.call(epubReaderView); },
     };
 };

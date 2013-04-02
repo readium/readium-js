@@ -19,10 +19,11 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         this.set("bindings", spineInfo.bindings);
         this.set("annotations", spineInfo.annotations);
 
-        // Rendering strategy options could be implemented here
-
         // A mechanism to determine whether a reflowable content document should scroll needs to be determined
         this.loadSpineItems();
+
+        // Rendering strategy options could be implemented here
+        this.renderAllStrategy();
     },
 
     // ------------------------------------------------------------------------------------ //  
@@ -172,6 +173,42 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         });
     },
 
+    renderAllStrategy : function () {
+
+        var that = this;
+        _.each(this.get("loadedPagesViews"), function (pagesViewInfo) {
+
+            viewElement = pagesViewInfo.pagesView.render(false, undefined);
+            $(that.get("parentElement")).append(viewElement);
+            pagesViewInfo.pagesView.hidePagesView();
+            pagesViewInfo.isRendered = true;
+        });
+    },
+
+    calculatePageNumberInfo : function () {
+
+        var that = this;
+        var numPages = 0;
+        var currentPage;
+        _.each(this.get("loadedPagesViews"), function (pagesViewInfo) {
+
+            // Calculate current page number
+            if (that.getCurrentPagesView() === pagesViewInfo.pagesView) {
+                currentPage = numPages + pagesViewInfo.pagesView.currentPage()[0];
+            }
+
+            // Sum up number of pages
+            if (pagesViewInfo.isRendered) {
+                numPages += pagesViewInfo.pagesView.numberOfPages();
+            }
+        });
+
+        return { 
+            numPages : numPages,
+            currentPage : currentPage
+        };
+    },
+
     applyPreferences : function (pagesView) {
 
         var preferences = this.get("viewerSettings");
@@ -279,7 +316,17 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         var currentView = this.reader.getCurrentPagesView();
         currentView.setSyntheticLayout(isSynthetic);
         this.reader.get("viewerSettings").syntheticLayout = isSynthetic;
-    }
+    },
+
+    getNumberOfPages : function () {
+
+        return this.reader.calculatePageNumberInfo().numPages;
+    },
+
+    getCurrentPage : function () {
+
+        return this.reader.calculatePageNumberInfo().currentPage;
+    },
 
     // ----------------------- Private Helpers -----------------------------------------------------------
     
@@ -303,6 +350,8 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         setFontSize : function (fontSize) { return epubReaderView.setFontSize.call(epubReaderView, fontSize); },
         setMargin : function (margin) { return epubReaderView.setMargin.call(epubReaderView, margin); },
         setTheme : function (theme) { return epubReaderView.setTheme.call(epubReaderView, theme); },
-        setSyntheticLayout : function (isSynthetic) { return epubReaderView.setSyntheticLayout.call(epubReaderView, isSynthetic); }
+        setSyntheticLayout : function (isSynthetic) { return epubReaderView.setSyntheticLayout.call(epubReaderView, isSynthetic); },
+        getNumberOfPages : function () { return epubReaderView.getNumberOfPages.call(epubReaderView); },
+        getCurrentPage : function () { return epubReaderView.getCurrentPage.call(epubReaderView); },
     };
 };
