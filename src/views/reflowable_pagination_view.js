@@ -5,12 +5,9 @@
 
 EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
-    el : "<div class='flowing-wrapper clearfix'> \
+    el : "<div class='flowing-wrapper clearfix' style='display:block;margin-left:auto;margin-right:auto'> \
             <iframe scrolling='no' \
                     frameborder='0' \
-                    marginwidth='0' \
-                    marginheight='0' \
-                    width='50%' \
                     height='100%' \
                     class='readium-flowing-content'> \
             </iframe> \

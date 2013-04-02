@@ -136,11 +136,13 @@ EpubReflowable.ReflowablePaginator = Backbone.Model.extend({
     setFrameSize : function (flowingWrapperWidth, flowingWrapperHeight, readiumFlowingContent, currentMargin, isTwoUp) {
 
         var width = this.getFrameWidth(flowingWrapperWidth, currentMargin, isTwoUp).toString() + "px";
-
         var height = flowingWrapperHeight.toString() + "px"; 
 
-        $(readiumFlowingContent).attr("width", width);
-        $(readiumFlowingContent).attr("height", height);
+        // Rationale: Set the width for both the iframe (epub content) and its parent. The parent width must be provided so 
+        //   that the iframe content can be centered within it, using CSS (margin-left/right: auto; display:block)
+        $(readiumFlowingContent).parent().css("width", width);
+        $(readiumFlowingContent).parent().css("height", height);
+
         $(readiumFlowingContent).css("width", width);
         $(readiumFlowingContent).css("height", height);
     },
