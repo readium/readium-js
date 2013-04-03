@@ -10,6 +10,11 @@ EpubReader.EpubReaderView = Backbone.View.extend({
             parentElement : options.readerElement
         });
         this.readerBoundElement = options.readerElement;
+
+        // Fire event on this object
+        this.reader.on("epubLoaded", function () {
+            this.trigger("epubLoaded");
+        }, this);
     },
 
     render : function () {

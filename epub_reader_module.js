@@ -176,13 +176,26 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
     renderAllStrategy : function () {
 
         var that = this;
+        var numPagesViewsToLoad = this.get("loadedPagesViews").length;
+        
         _.each(this.get("loadedPagesViews"), function (pagesViewInfo) {
 
+            pagesViewInfo.pagesView.on("contentDocumentLoaded", function () { numPagesViewsToLoad = numPagesViewsToLoad - 1; });
             viewElement = pagesViewInfo.pagesView.render(false, undefined);
             $(that.get("parentElement")).append(viewElement);
             pagesViewInfo.pagesView.hidePagesView();
             pagesViewInfo.isRendered = true;
         });
+
+        setTimeout(function () { 
+            
+            if (numPagesViewsToLoad === 0) {
+                that.trigger("epubLoaded");
+            } else {
+                // throw an exception
+            }
+
+        }, 1000);
     },
 
     calculatePageNumberInfo : function () {
@@ -230,6 +243,11 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
             parentElement : options.readerElement
         });
         this.readerBoundElement = options.readerElement;
+
+        // Fire event on this object
+        this.reader.on("epubLoaded", function () {
+            this.trigger("epubLoaded");
+        }, this);
     },
 
     render : function () {
@@ -353,5 +371,6 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         setSyntheticLayout : function (isSynthetic) { return epubReaderView.setSyntheticLayout.call(epubReaderView, isSynthetic); },
         getNumberOfPages : function () { return epubReaderView.getNumberOfPages.call(epubReaderView); },
         getCurrentPage : function () { return epubReaderView.getCurrentPage.call(epubReaderView); },
+        on : function (eventName, callback, callbackContext) { return epubReaderView.on.call(epubReaderView, eventName, callback, callbackContext); }
     };
 };

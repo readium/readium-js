@@ -171,13 +171,26 @@ EpubReader.EpubReader = Backbone.Model.extend({
     renderAllStrategy : function () {
 
         var that = this;
+        var numPagesViewsToLoad = this.get("loadedPagesViews").length;
+        
         _.each(this.get("loadedPagesViews"), function (pagesViewInfo) {
 
+            pagesViewInfo.pagesView.on("contentDocumentLoaded", function () { numPagesViewsToLoad = numPagesViewsToLoad - 1; });
             viewElement = pagesViewInfo.pagesView.render(false, undefined);
             $(that.get("parentElement")).append(viewElement);
             pagesViewInfo.pagesView.hidePagesView();
             pagesViewInfo.isRendered = true;
         });
+
+        setTimeout(function () { 
+            
+            if (numPagesViewsToLoad === 0) {
+                that.trigger("epubLoaded");
+            } else {
+                // throw an exception
+            }
+
+        }, 1000);
     },
 
     calculatePageNumberInfo : function () {

@@ -13,6 +13,7 @@
 
             $(document).ready(function () {
                 this.view = initializationTest();
+                this.view.on("epubLoaded", function () { alert("epub loaded"); }, this);
                 this.view.render();
                 this.view.showSpineItem(0);
             });
