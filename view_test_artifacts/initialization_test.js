@@ -52,5 +52,11 @@ var initializationTest = function () {
         bindings
     );
 
+    var testCallback = function () { 
+        alert('pwe pew content document loaded event fires'); 
+        };
+
+    this.view.on("contentDocumentLoaded", testCallback , this);
+
     $("#reader").html(this.view.render(false, undefined));
 };

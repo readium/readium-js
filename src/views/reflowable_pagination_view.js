@@ -93,8 +93,6 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         $("iframe", this.el).attr("src", json.contentDocumentURI);
         $("iframe", this.el).attr("title", json.title);
 
-		// $(this.getReadiumBookViewEl()).html(this.el);
-
 		// Wait for iframe to load EPUB content document
 		$(this.getReadiumFlowingContent()).on("load", function (e) {
 
@@ -122,10 +120,11 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
                 }
                 else {
                     that.pages.goToPage(1, that.viewerModel.get("twoUp"), that.spineItemModel.get("firstPageIsOffset"));
-                }       
+                }
             }
 		});
 		
+        that.trigger("contentDocumentLoaded");
 		return this.el;
 	},
     
