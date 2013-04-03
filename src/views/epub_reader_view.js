@@ -2,24 +2,27 @@ EpubReader.EpubReaderView = Backbone.View.extend({
 
     initialize : function (options) {
 
+        var that = this;
         // Initialize the spine info thing, or whatever it's going to be called
         var currSpineIndex = 0;
+
         this.reader = new EpubReader.EpubReader({
             spineInfo : options.spineInfo,
             viewerSettings : options.viewerSettings,
             parentElement : options.readerElement
         });
-        this.readerBoundElement = options.readerElement;
-
         // Fire event on this object
         this.reader.on("epubLoaded", function () {
-            this.trigger("epubLoaded");
+            that.trigger("epubLoaded");
         }, this);
+        
+        this.readerBoundElement = options.readerElement;
     },
 
     render : function () {
 
         // Set the element that this view will be bound to
+        this.reader.loadSpineItems();
         this.setElement(this.readerBoundElement);
         return this.el;
     },

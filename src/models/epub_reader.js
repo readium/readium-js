@@ -13,12 +13,6 @@ EpubReader.EpubReader = Backbone.Model.extend({
         this.set("spine", spineInfo.spine);
         this.set("bindings", spineInfo.bindings);
         this.set("annotations", spineInfo.annotations);
-
-        // A mechanism to determine whether a reflowable content document should scroll needs to be determined
-        this.loadSpineItems();
-
-        // Rendering strategy options could be implemented here
-        this.renderAllStrategy();
     },
 
     // ------------------------------------------------------------------------------------ //  
@@ -133,6 +127,9 @@ EpubReader.EpubReader = Backbone.Model.extend({
                 this.loadReflowableSpineItem(currSpineItem, this.get("viewerSettings"), undefined, this.get("bindings"));
             }
         }
+
+        // Rendering strategy options could be implemented here
+        this.renderAllStrategy();
     },
 
     loadReflowableSpineItem : function (spineItem) {
@@ -175,7 +172,13 @@ EpubReader.EpubReader = Backbone.Model.extend({
         
         _.each(this.get("loadedPagesViews"), function (pagesViewInfo) {
 
-            pagesViewInfo.pagesView.on("contentDocumentLoaded", function () { numPagesViewsToLoad = numPagesViewsToLoad - 1; });
+            pagesViewInfo.pagesView.on("contentDocumentLoaded", function () { 
+                numPagesViewsToLoad = numPagesViewsToLoad - 1; 
+                if (numPagesViewsToLoad === 0) {
+                    that.trigger("epubLoaded");
+                }
+            });
+
             viewElement = pagesViewInfo.pagesView.render(false, undefined);
             $(that.get("parentElement")).append(viewElement);
             pagesViewInfo.pagesView.hidePagesView();
@@ -184,9 +187,7 @@ EpubReader.EpubReader = Backbone.Model.extend({
 
         setTimeout(function () { 
             
-            if (numPagesViewsToLoad === 0) {
-                that.trigger("epubLoaded");
-            } else {
+            if (numPagesViewsToLoad != 0) {
                 // throw an exception
             }
 

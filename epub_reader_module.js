@@ -18,12 +18,6 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         this.set("spine", spineInfo.spine);
         this.set("bindings", spineInfo.bindings);
         this.set("annotations", spineInfo.annotations);
-
-        // A mechanism to determine whether a reflowable content document should scroll needs to be determined
-        this.loadSpineItems();
-
-        // Rendering strategy options could be implemented here
-        this.renderAllStrategy();
     },
 
     // ------------------------------------------------------------------------------------ //  
@@ -138,6 +132,9 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
                 this.loadReflowableSpineItem(currSpineItem, this.get("viewerSettings"), undefined, this.get("bindings"));
             }
         }
+
+        // Rendering strategy options could be implemented here
+        this.renderAllStrategy();
     },
 
     loadReflowableSpineItem : function (spineItem) {
@@ -180,7 +177,13 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         
         _.each(this.get("loadedPagesViews"), function (pagesViewInfo) {
 
-            pagesViewInfo.pagesView.on("contentDocumentLoaded", function () { numPagesViewsToLoad = numPagesViewsToLoad - 1; });
+            pagesViewInfo.pagesView.on("contentDocumentLoaded", function () { 
+                numPagesViewsToLoad = numPagesViewsToLoad - 1; 
+                if (numPagesViewsToLoad === 0) {
+                    that.trigger("epubLoaded");
+                }
+            });
+
             viewElement = pagesViewInfo.pagesView.render(false, undefined);
             $(that.get("parentElement")).append(viewElement);
             pagesViewInfo.pagesView.hidePagesView();
@@ -189,9 +192,7 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
 
         setTimeout(function () { 
             
-            if (numPagesViewsToLoad === 0) {
-                that.trigger("epubLoaded");
-            } else {
+            if (numPagesViewsToLoad != 0) {
                 // throw an exception
             }
 
@@ -235,24 +236,27 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
 
     initialize : function (options) {
 
+        var that = this;
         // Initialize the spine info thing, or whatever it's going to be called
         var currSpineIndex = 0;
+
         this.reader = new EpubReader.EpubReader({
             spineInfo : options.spineInfo,
             viewerSettings : options.viewerSettings,
             parentElement : options.readerElement
         });
-        this.readerBoundElement = options.readerElement;
-
         // Fire event on this object
         this.reader.on("epubLoaded", function () {
-            this.trigger("epubLoaded");
+            that.trigger("epubLoaded");
         }, this);
+        
+        this.readerBoundElement = options.readerElement;
     },
 
     render : function () {
 
         // Set the element that this view will be bound to
+        this.reader.loadSpineItems();
         this.setElement(this.readerBoundElement);
         return this.el;
     },
