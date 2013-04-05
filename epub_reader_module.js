@@ -177,17 +177,18 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         
         _.each(this.get("loadedPagesViews"), function (pagesViewInfo) {
 
-            pagesViewInfo.pagesView.on("contentDocumentLoaded", function () { 
+            pagesViewInfo.pagesView.on("contentDocumentLoaded", function (viewElement) { 
+
+                pagesViewInfo.isRendered = true;
+                pagesViewInfo.pagesView.hidePagesView();
+
                 numPagesViewsToLoad = numPagesViewsToLoad - 1; 
                 if (numPagesViewsToLoad === 0) {
                     that.trigger("epubLoaded");
                 }
             });
-
-            viewElement = pagesViewInfo.pagesView.render(false, undefined);
-            $(that.get("parentElement")).append(viewElement);
-            pagesViewInfo.pagesView.hidePagesView();
-            pagesViewInfo.isRendered = true;
+            
+            $(that.get("parentElement")).append(pagesViewInfo.pagesView.render(false, undefined));
         });
 
         setTimeout(function () { 

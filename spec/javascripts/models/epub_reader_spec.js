@@ -65,6 +65,7 @@ describe("EpubReader.EpubReader", function () {
                     spineInfo : spineInfo, 
                     viewerSettings : viewerSettings 
                 });
+                this.reader.loadSpineItems();
             });
 
             it("loads the correct number of spine items", function () {
@@ -96,6 +97,7 @@ describe("EpubReader.EpubReader", function () {
                 spineInfo : spineInfo, 
                 viewerSettings : viewerSettings 
             });
+            this.reader.loadSpineItems();
         });
 
         describe("numberOfLoadedPagesViews()", function () {
