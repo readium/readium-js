@@ -1,23 +1,27 @@
-(function(global) {
+var EpubCFIModule = function () {
     
     var EPUBcfi = {};
 
     <%= cfi_parser %> 
-
     <%= cfi_interpreter %>
-
     <%= cfi_instructions %>
-
     <%= runtime_errors %>
-
     <%= cfi_generator %>
 
-    if (global.EPUBcfi) {
+    var interpreter = EPUBcfi.Interpreter;
+    var generator = EPUBcfi.Generator;
 
-        throw new Error('The EPUB cfi library has already been defined');
-    }
-    else {
+    // The public interface
+    return {
 
-        global.EPUBcfi = EPUBcfi;
-    }
-}) (typeof window === 'undefined' ? this : window);
+        getContentDocHref : function (CFI, packageDocument) { return interpreter.getContentDocHref.call(interpreter, CFI, packageDocument); },
+        injectElement : function (CFI, contentDocument, elementToInject) { return interpreter.injectElement.call(interpreter, CFI, contentDocument, elementToInject); },
+        getTargetElement : function (CFI, contentDocument) { return interpreter.getTargetElement.call(interpreter, CFI, contentDocument); },
+        getTargetElementWithPartialCFI : function (contentDocumentCFI, contentDocument) { return interpreter.getTargetElementWithPartialCFI.call(interpreter, contentDocumentCFI, contentDocument); },
+        getTextTerminusInfoWithPartialCFI : function (contentDocumentCFI, contentDocument) { return interpreter.getTextTerminusInfoWithPartialCFI.call(interpreter, contentDocumentCFI, contentDocument); }, 
+        generateCharacterOffsetCFIComponent : function (startTextNode, characterOffset) { return generator.generateCharacterOffsetCFIComponent.call(generator, startTextNode, characterOffset); },
+        generateElementCFIComponent : function (startElement) { return generator.generateElementCFIComponent.call(generator, startElement); },
+        generatePackageDocumentCFIComponent : function (contentDocumentName, packageDocument) { return generator.generatePackageDocumentCFIComponent.call(generator, contentDocumentName, packageDocument); }, 
+        generateCompleteCFI : function (packageDocumentCFIComponent, contentDocumentCFIComponent) { return generator.generateCompleteCFI.call(generator, packageDocumentCFIComponent, contentDocumentCFIComponent); }
+    };
+};

@@ -1,4 +1,4 @@
-(function(global) {
+var EpubCFIModule = function () {
     
     var EPUBcfi = {};
 
@@ -1448,7 +1448,6 @@
   return result;
 })();
  
-
     // Description: This model contains the implementation for "instructions" included in the EPUB CFI domain specific language (DSL). 
 //   Lexing and parsing a CFI produces a set of executable instructions for processing a CFI (represented in the AST). 
 //   This object contains a set of functions that implement each of the executable instructions in the AST. 
@@ -1765,7 +1764,6 @@ EPUBcfi.CFIInstructions = {
 
 
 
-
     // Description: This is an interpreter that inteprets an Abstract Syntax Tree (AST) for a CFI. The result of executing the interpreter
 //   is to inject an element, or set of elements, into an EPUB content document (which is just an XHTML document). These element(s) will
 //   represent the position or area in the EPUB referenced by a CFI.
@@ -2045,7 +2043,6 @@ EPUBcfi.Interpreter = {
         return $elementInjectedInto;
     }
 };
-
     // Description: This is a set of runtime errors that the CFI interpreter can throw. 
 // Rationale: These error types extend the basic javascript error object so error things like the stack trace are 
 //   included with the runtime errors. 
@@ -2111,7 +2108,6 @@ EPUBcfi.CFIAssertionError = function (expectedAssertion, targetElementAssertion,
     return new CFIAssertionError();
 };
 
-
     EPUBcfi.Generator = {
 
     // ------------------------------------------------------------------------------------ //
@@ -2143,6 +2139,8 @@ EPUBcfi.CFIAssertionError = function (expectedAssertion, targetElementAssertion,
         var contentDocCFI;
         var $itemRefStartNode;
         var packageDocCFI;
+
+        this.validateStartElement(startElement);
 
         // Call the recursive method to create all the steps up to the head element of the content document (the "html" element)
         contentDocCFI = this.createCFIElementSteps($(startElement), "html", classBlacklist, elementBlacklist, idBlacklist);
@@ -2190,6 +2188,17 @@ EPUBcfi.CFIAssertionError = function (expectedAssertion, targetElementAssertion,
         }
         else if (characterOffset > startTextNode.nodeValue.length) {
             throw new EPUBcfi.OutOfRangeError(characterOffset, startTextNode.nodeValue.length - 1, "character offset cannot be greater than the length of the text node");
+        }
+    },
+
+    validateStartElement : function (startElement) {
+
+        if (!startElement) {
+            throw new EPUBcfi.NodeTypeError(startElement, "CFI target element is undefined");
+        }
+
+        if (!(startElement.nodeType && startElement.nodeType === 1)) {
+            throw new EPUBcfi.NodeTypeError(startElement, "CFI target element is not an HTML element");
         }
     },
 
@@ -2397,12 +2406,20 @@ EPUBcfi.CFIAssertionError = function (expectedAssertion, targetElementAssertion,
     }
 };
 
-    if (global.EPUBcfi) {
+    var interpreter = EPUBcfi.Interpreter;
+    var generator = EPUBcfi.Generator;
 
-        throw new Error('The EPUB cfi library has already been defined');
-    }
-    else {
+    // The public interface
+    return {
 
-        global.EPUBcfi = EPUBcfi;
-    }
-}) (typeof window === 'undefined' ? this : window);
+        getContentDocHref : function (CFI, packageDocument) { return interpreter.getContentDocHref.call(interpreter, CFI, packageDocument); },
+        injectElement : function (CFI, contentDocument, elementToInject) { return interpreter.injectElement.call(interpreter, CFI, contentDocument, elementToInject); },
+        getTargetElement : function (CFI, contentDocument) { return interpreter.getTargetElement.call(interpreter, CFI, contentDocument); },
+        getTargetElementWithPartialCFI : function (contentDocumentCFI, contentDocument) { return interpreter.getTargetElementWithPartialCFI.call(interpreter, contentDocumentCFI, contentDocument); },
+        getTextTerminusInfoWithPartialCFI : function (contentDocumentCFI, contentDocument) { return interpreter.getTextTerminusInfoWithPartialCFI.call(interpreter, contentDocumentCFI, contentDocument); }, 
+        generateCharacterOffsetCFIComponent : function (startTextNode, characterOffset) { return generator.generateCharacterOffsetCFIComponent.call(generator, startTextNode, characterOffset); },
+        generateElementCFIComponent : function (startElement) { return generator.generateElementCFIComponent.call(generator, startElement); },
+        generatePackageDocumentCFIComponent : function (contentDocumentName, packageDocument) { return generator.generatePackageDocumentCFIComponent.call(generator, contentDocumentName, packageDocument); }, 
+        generateCompleteCFI : function (packageDocumentCFIComponent, contentDocumentCFIComponent) { return generator.generateCompleteCFI.call(generator, packageDocumentCFIComponent, contentDocumentCFIComponent); }
+    };
+};
