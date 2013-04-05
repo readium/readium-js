@@ -122,9 +122,10 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
                     that.pages.goToPage(1, that.viewerModel.get("twoUp"), that.spineItemModel.get("firstPageIsOffset"));
                 }
             }
+
+            that.trigger("contentDocumentLoaded", that.el);
 		});
-		
-        that.trigger("contentDocumentLoaded");
+        
 		return this.el;
 	},
     
