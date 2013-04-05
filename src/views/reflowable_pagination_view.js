@@ -277,8 +277,12 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
     },
 
     setSyntheticLayout : function (isSynthetic) {
-        this.viewerModel.set({ twoUp : isSynthetic });
-        this.pages.toggleTwoUp(isSynthetic, this.spineItemModel.get("firstPageIsOffset"));
+    
+        // Rationale: Only toggle the layout if a change is required        
+        if (isSynthetic !== this.viewerModel.get("twoUp")) {
+            this.viewerModel.set({ twoUp : isSynthetic });
+            this.pages.toggleTwoUp(isSynthetic, this.spineItemModel.get("firstPageIsOffset"));
+        }
     },
 
 	// ------------------------------------------------------------------------------------ //

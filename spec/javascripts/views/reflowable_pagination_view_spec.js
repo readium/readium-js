@@ -183,6 +183,12 @@ describe("EpubReflowable.ReflowablePaginationView", function () {
                 this.view.setSyntheticLayout(true);
                 expect(this.view.pages.toggleTwoUp).toHaveBeenCalled();
             });
+
+            it("does nothing if the layout is the same", function () {
+
+                this.view.setSyntheticLayout(false);
+                expect(this.view.pages.toggleTwoUp).not.toHaveBeenCalled();
+            });
         });
     });
 });
