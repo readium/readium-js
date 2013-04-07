@@ -481,6 +481,25 @@ Epub.PackageDocument = Backbone.Model.extend({
         }
     },
 
+    generateSpineInfo : function (spineItem) {
+
+        return {
+            contentDocumentURI : this.getManifestItemByIdref(spineItem.get("idref")).contentDocumentURI,
+            title : this.metadata.get("title"),
+            firstPageIsOffset : false, // This needs to be determined
+            pageProgressionDirection : this.pageProgressionDirection(),
+            spineIndex : this.getSpineIndex(spineItem),
+            pageSpread : spineItem.get("page_spread")
+        };
+    },
+
+    getPackageDocumentDOM : function () {
+
+        var parser = new window.DOMParser;
+        var packageDocumentDom = parser.parseFromString(this.get("packageDocument"), "text/xml");
+        return packageDocumentDom;
+    },
+
     // getToc: function() {
     //  var item = this.packageDocument.getTocItem();
     //  if(!item) {
@@ -577,18 +596,6 @@ Epub.PackageDocument = Backbone.Model.extend({
                 }
             });
         }
-    },
-
-    generateSpineInfo : function (spineItem) {
-
-        return {
-            contentDocumentURI : this.getManifestItemByIdref(spineItem.get("idref")).contentDocumentURI,
-            title : this.metadata.get("title"),
-            firstPageIsOffset : false, // This needs to be determined
-            pageProgressionDirection : this.pageProgressionDirection(),
-            spineIndex : this.getSpineIndex(spineItem),
-            pageSpread : spineItem.get("page_spread")
-        };
     }
 
     // This doesn't work at the moment.
