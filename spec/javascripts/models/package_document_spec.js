@@ -400,6 +400,25 @@ describe('Epub.PackageDocument', function() {
                 expect(foundHandler).not.toBeDefined(); 
             });
         });
+
+        describe("getPackageDocumentDOM", function () {
+
+            beforeEach(function() {
+
+                var packageDocumentJson = JSON.parse(jasmine.getFixtures().read("package_document.json"));
+                var packageDocumentXML = jasmine.getFixtures().read("package_document.xml");
+                this.packageDocument = new Epub.PackageDocument({ 
+                    packageDocumentObject : packageDocumentJson,
+                    packageDocument : packageDocumentXML
+                });
+            });
+
+            it("gets the package document dom", function () {
+
+                var packageDocumentDOM = this.packageDocument.getPackageDocumentDOM();
+                expect(packageDocumentDOM).toBeDefined();
+            });
+        });
     });
 
     describe("private helpers", function () {
