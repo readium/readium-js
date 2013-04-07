@@ -45,7 +45,6 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
         this.cfi = new EpubCFIModule();
 
-		// this.zoomer = options.zoomer;
         // this.mediaOverlayController = this.model.get("media_overlay_controller");
         // this.mediaOverlayController.setPages(this.pages);
         // this.mediaOverlayController.setView(this);
@@ -58,7 +57,6 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 		this.viewerModel.on("change:currentMargin", this.rePaginationHandler, this);
 		this.pages.on("change:current_page", this.pageChangeHandler, this);
 		this.viewerModel.on("change:tocVisible", this.windowSizeChangeHandler, this);
-		// this.epubController.on("repagination_event", this.windowSizeChangeHandler, this);
 		this.viewerModel.on("change:currentTheme", this.themeChangeHandler, this);
 	},
 	
@@ -72,15 +70,12 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 		this.viewerModel.off("change:currentMargin", this.rePaginationHandler, this);
 		this.pages.off("change:current_page", this.pageChangeHandler, this);
 		this.viewerModel.off("change:tocVisible", this.windowSizeChangeHandler, this);
-		// this.epubController.off("repagination_event", this.windowSizeChangeHandler, this);
 		this.viewerModel.off("change:currentTheme", this.themeChangeHandler, this);
 
         this.reflowableLayout.resetEl(
         	this.getEpubContentDocument(), 
         	this.el, 
         	this.getSpineDivider());
-        	// ,
-        	// this.zoomer);
 	},
 
 	// ------------------------------------------------------------------------------------ //
@@ -152,9 +147,12 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
     showPageByPartialCFI : function (contentDocumentCFI, callback, callbackContext) {
 
         // Errors have to be handled from the library
-        var targetElement = this.cfi.getTargetElementWithPartialCFI(contentDocumentCFI, $(this.getEpubContentDocument()).parent()[0]);
-        if (!targetElement) {
-            throw new Error("Could not find the specified element");
+        try {
+            var targetElement = this.cfi.getTargetElementWithPartialCFI(contentDocumentCFI, $(this.getEpubContentDocument()).parent()[0]);
+        }
+        catch (error) {
+            // Maybe check error type
+            throw error;
         }
 
         // Find the page number for the first element that the CFI refers to
