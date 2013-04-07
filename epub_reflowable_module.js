@@ -1529,6 +1529,8 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 			callbackContext : undefined
 		});
 
+        this.cfi = new EpubCFIModule();
+
 		// this.zoomer = options.zoomer;
         // this.mediaOverlayController = this.model.get("media_overlay_controller");
         // this.mediaOverlayController.setPages(this.pages);
@@ -1633,6 +1635,36 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 	// 	);
 	// },
 
+    showPageForCFI : function (contentDocumentCFI, callback, callbackContext) {
+
+        // Get the type of the CFI, and/or derefernece it
+        var targetElement = this.cfi.getTargetElementWithPartialCFI(contentDocumentCFI, $(this.getEpubContentDocument()).parent()[0]);
+
+        if (!targetElement) {
+            throw new Error();
+        }
+
+        // Find the page number for the first element that the CFI refers to
+        var page = this.reflowableElementsInfo.getElemPageNumber(
+            targetElement[0], 
+            this.offsetDirection(), 
+            this.reflowablePaginator.page_width, 
+            this.reflowablePaginator.gap_width,
+            this.getEpubContentDocument());
+
+        if (page > 0) {
+            this.pages.goToPage(page, this.viewerModel.get("twoUp"), this.spineItemModel.get("firstPageIsOffset")); 
+        }
+        else {
+            // Throw an exception here 
+        }
+
+        // Show that page and execute the callback
+        callback.call(callbackContext, targetElement[0]);
+    },
+
+
+
     // The package document needs to get passed into the view, or the API needs to change. This is not critical at the moment.
     //
     // // Description: Generates a CFI for an element is that is currently visible on the page. This CFI and a last-page payload
@@ -1674,7 +1706,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
     },
 
 	// Description: Find an element with this specified id and show the page that contains the element.
-	goToHashFragment: function(hashFragmentId) {
+	goToHashFragment : function(hashFragmentId) {
 
 		// this method is triggered in response to 
 		var fragment = hashFragmentId;
@@ -1700,7 +1732,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
             if (page > 0) {
                 //console.log(fragment + " is on page " + page);
-                this.pages.goToPage(page, this.viewerSettingsModel.get("twoUp"), this.spineItemModel.get("firstPageIsOffset"));	
+                this.pages.goToPage(page, this.viewerModel.get("twoUp"), this.spineItemModel.get("firstPageIsOffset"));	
 			}
             else {
                 // Throw an exception here 
@@ -1966,6 +1998,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         previousPage : function () { return reflowableView.pages.goLeft.call(reflowableView.pages); },
         showPageByHashFragment : function (hashFragmentId) { return reflowableView.goToHashFragment.call(reflowableView, hashFragmentId); },
         showPageByNumber : function (pageNumber) { return reflowableView.showPage.call(reflowableView, pageNumber); },
+        showPageByPartialCFI : function (contentDocumentCFI, callback, callbackContext) { reflowableView.showPageForCFI(contentDocumentCFI, callback, callbackContext); }, 
         onFirstPage : function () { return reflowableView.onFirstPage.call(reflowableView); },
         onLastPage : function () { return reflowableView.onLastPage.call(reflowableView); },
         showPagesView : function () { return reflowableView.showView.call(reflowableView); },

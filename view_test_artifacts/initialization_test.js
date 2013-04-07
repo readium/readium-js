@@ -53,10 +53,10 @@ var initializationTest = function () {
     );
 
     var testCallback = function () { 
-        alert('pwe pew content document loaded event fires'); 
+        // alert('pwe pew content document loaded event fires'); 
         };
 
-    this.view.on("contentDocumentLoaded", testCallback , this);
+    this.view.on("contentDocumentLoaded", testCallback, this);
 
     $("#reader").html(this.view.render(false, undefined));
 };

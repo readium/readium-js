@@ -190,5 +190,11 @@ describe("EpubReflowable.ReflowablePaginationView", function () {
                 expect(this.view.pages.toggleTwoUp).not.toHaveBeenCalled();
             });
         });
+
+        describe("showPageForCFI", function () {
+
+            it("shows the page", function () {
+            });
+        });
     });
 });
