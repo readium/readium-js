@@ -31,11 +31,14 @@ describe("EpubReader.EpubReaderView", function () {
 
             var spineInfo = JSON.parse(jasmine.getFixtures().read("spine_info.json"));
             var viewerSettings = JSON.parse(jasmine.getFixtures().read("viewer_settings.json"));
+            var parser = new window.DOMParser()
+            var packageDocumentDOM = parser.parseFromString(jasmine.getFixtures().read("package_document.xml"), "text/xml");
 
             this.readerViewer = new EpubReader.EpubReaderView({ 
                 readerElement : $("body"),
                 spineInfo : spineInfo, 
-                viewerSettings : viewerSettings
+                viewerSettings : viewerSettings,
+                packageDocumentDOM : packageDocumentDOM
             });
         });
 
@@ -49,7 +52,12 @@ describe("EpubReader.EpubReaderView", function () {
 
         describe("showPageByCFI()", function () {
             
-            // This method is currently unspecified
+            it("calls show spine item with the correct spine index", function () {
+
+                spyOn(this.readerViewer, "showSpineItem");
+                this.readerViewer.showPageByCFI("epubcfi(/6/20)");
+                expect(this.readerViewer.showSpineItem).toHaveBeenCalledWith(0);
+            });
         });
 
         describe("showPageByElementId()", function () {

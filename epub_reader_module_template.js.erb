@@ -1,4 +1,4 @@
-var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSettings) {
+var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSettings, packageDocumentDOM) {
     
     var EpubReader = {};
 
@@ -9,7 +9,8 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
     var epubReaderView = new EpubReader.EpubReaderView({
         readerElement : readerBoundElement,
         spineInfo : epubSpineInfo,
-        viewerSettings : viewerSettings
+        viewerSettings : viewerSettings,
+        packageDocumentDOM : packageDocumentDOM
     });
 
     // Description: The public interface

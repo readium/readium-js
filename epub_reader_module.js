@@ -1,4 +1,4 @@
-var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSettings) {
+var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSettings, packageDocumentDOM) {
     
     var EpubReader = {};
 
@@ -200,6 +200,8 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         }, 1000);
     },
 
+    // REFACTORING CANDIDATE: The each method is causing numPages and currentPage to be hoisted into the global
+    //   namespace, I believe. Bad bad. Check this.
     calculatePageNumberInfo : function () {
 
         var that = this;
@@ -224,6 +226,25 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         };
     },
 
+    // REFACTORING CANDIDATE: This method should be replaced when the epub reader api is changed to have an 
+    //   instantiated epub module passed to it. 
+    findSpineIndex : function (contentDocumentHref) {
+
+        var contentDocHref = contentDocumentHref;
+        var foundSpineItem;
+
+        foundSpineItem = _.find(this.get("spine"), function (spineItem, index) { 
+
+            var uri = new URI(spineItem.contentDocumentURI);
+            var filename = uri.filename();
+            if (contentDocumentHref.trim() === filename.trim()) {
+                return true;
+            }
+        });
+
+        return foundSpineItem.spineIndex;
+    },
+
     applyPreferences : function (pagesView) {
 
         var preferences = this.get("viewerSettings");
@@ -238,20 +259,19 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
     initialize : function (options) {
 
         var that = this;
-        // Initialize the spine info thing, or whatever it's going to be called
-        var currSpineIndex = 0;
-
+        this.packageDocumentDOM = options.packageDocumentDOM;
         this.reader = new EpubReader.EpubReader({
             spineInfo : options.spineInfo,
             viewerSettings : options.viewerSettings,
             parentElement : options.readerElement
         });
-        // Fire event on this object
+        // Rationale: Propagate the loaded event after all the content documents are loaded
         this.reader.on("epubLoaded", function () {
             that.trigger("epubLoaded");
         }, this);
         
         this.readerBoundElement = options.readerElement;
+        this.cfi = new EpubCFIModule();
     },
 
     render : function () {
@@ -274,7 +294,23 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
 
     // Rationale: As with the CFI library API, it is up to calling code to ensure that the content document CFI component is
     //   is a reference into the content document pointed to by the supplied spine index. 
-    showPageByCFI : function (spineIndex, contentDocumentCFIComponent) {
+    showPageByCFI : function (CFI) {
+
+        // Dereference CFI, get the content document href
+        var contentDocHref;
+        var spineIndex;
+        try {   
+            contentDocHref = this.cfi.getContentDocHref(CFI, this.packageDocumentDOM);
+        } 
+        catch (error) {
+            throw error; 
+        }
+
+        // Get the spine index for the content document href
+        spineIndex = this.reader.findSpineIndex(contentDocHref);
+        
+        // render the appropriate pages view
+        // show the page, based on the cfi
 
         this.showSpineItem(spineIndex);
 
@@ -349,16 +385,17 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
     getCurrentPage : function () {
 
         return this.reader.calculatePageNumberInfo().currentPage;
-    },
+    }
 
     // ----------------------- Private Helpers -----------------------------------------------------------
-    
+
 });
 
     var epubReaderView = new EpubReader.EpubReaderView({
         readerElement : readerBoundElement,
         spineInfo : epubSpineInfo,
-        viewerSettings : viewerSettings
+        viewerSettings : viewerSettings,
+        packageDocumentDOM : packageDocumentDOM
     });
 
     // Description: The public interface

@@ -6,16 +6,18 @@
         <script src="../lib/json2.js" type="text/javascript"></script>
         <script src="../lib/underscore.js" type="text/javascript"></script>
         <script src="../lib/backbone.js" type="text/javascript"></script>
+        <script src="../lib/URI.js" type="text/javascript"></script>
         <script src="../epub_reflowable_module.js" type="text/javascript"></script>
         <script src="../epub_reader_module.js" type="text/javascript"></script>
         <script src="initialization_test.js" type="text/javascript"></script>
+        <script src="../epub_cfi.js" type="text/javascript"></script>
         <script type="text/javascript">
 
             $(document).ready(function () {
 
                 this.view = initializationTest();
                 this.view.on("epubLoaded", function () { 
-                    this.view.showSpineItem(0);
+                    this.view.showSpineItem(2);
                     alert("epub loaded");
                 }, this);
 

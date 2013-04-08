@@ -3,20 +3,19 @@ EpubReader.EpubReaderView = Backbone.View.extend({
     initialize : function (options) {
 
         var that = this;
-        // Initialize the spine info thing, or whatever it's going to be called
-        var currSpineIndex = 0;
-
+        this.packageDocumentDOM = options.packageDocumentDOM;
         this.reader = new EpubReader.EpubReader({
             spineInfo : options.spineInfo,
             viewerSettings : options.viewerSettings,
             parentElement : options.readerElement
         });
-        // Fire event on this object
+        // Rationale: Propagate the loaded event after all the content documents are loaded
         this.reader.on("epubLoaded", function () {
             that.trigger("epubLoaded");
         }, this);
         
         this.readerBoundElement = options.readerElement;
+        this.cfi = new EpubCFIModule();
     },
 
     render : function () {
@@ -39,7 +38,23 @@ EpubReader.EpubReaderView = Backbone.View.extend({
 
     // Rationale: As with the CFI library API, it is up to calling code to ensure that the content document CFI component is
     //   is a reference into the content document pointed to by the supplied spine index. 
-    showPageByCFI : function (spineIndex, contentDocumentCFIComponent) {
+    showPageByCFI : function (CFI) {
+
+        // Dereference CFI, get the content document href
+        var contentDocHref;
+        var spineIndex;
+        try {   
+            contentDocHref = this.cfi.getContentDocHref(CFI, this.packageDocumentDOM);
+        } 
+        catch (error) {
+            throw error; 
+        }
+
+        // Get the spine index for the content document href
+        spineIndex = this.reader.findSpineIndex(contentDocHref);
+        
+        // render the appropriate pages view
+        // show the page, based on the cfi
 
         this.showSpineItem(spineIndex);
 
@@ -114,8 +129,8 @@ EpubReader.EpubReaderView = Backbone.View.extend({
     getCurrentPage : function () {
 
         return this.reader.calculatePageNumberInfo().currentPage;
-    },
+    }
 
     // ----------------------- Private Helpers -----------------------------------------------------------
-    
+
 });

@@ -19,6 +19,7 @@ src_files:
     - lib/backbone.js
     - lib/URI.js
     - src/**/*.js
+    - epub_cfi.js
 
 # stylesheets
 #
