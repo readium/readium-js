@@ -1,4 +1,4 @@
-var EpubModule = function(packageDocumentObject) {
+var EpubModule = function(packageDocumentObject, packageDocumentXML) {
     
     var Epub = {};
 
@@ -636,7 +636,10 @@ Epub.PackageDocument = Backbone.Model.extend({
 });
 
 
-    var packageDoc = new Epub.PackageDocument({ packageDocumentObject : packageDocumentObject });
+    var packageDoc = new Epub.PackageDocument({ 
+        packageDocumentObject : packageDocumentObject,
+        packageDocument : packageDocumentXML
+    });
 
     // Description: The public interface
     return {
@@ -653,6 +656,7 @@ Epub.PackageDocument = Backbone.Model.extend({
         hasNextSection : function (currSpineIndex) { return packageDoc.hasNextSection.call(packageDoc, currSpineIndex); }, 
         hasPrevSection : function (currSpineIndex) { return packageDoc.hasPrevSection.call(packageDoc, currSpineIndex); }, 
         pageProgressionDirection : function () { return packageDoc.pageProgressionDirection.call(packageDoc); },
-        getSpineIndexByHref : function (manifestHref) { return packageDoc.getSpineIndexByHref.call(packageDoc, manifestHref); } 
+        getSpineIndexByHref : function (manifestHref) { return packageDoc.getSpineIndexByHref.call(packageDoc, manifestHref); },
+        getPackageDocumentDOM : function () { return packageDoc.getPackageDocumentDOM.call(packageDoc); } 
     };
 };
