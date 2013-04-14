@@ -16,6 +16,7 @@ src_files:
     - lib/json2.js
     - lib/underscore.js
     - lib/backbone.js
+    - epub_cfi.js
     - src/**/*.js
 
 # stylesheets

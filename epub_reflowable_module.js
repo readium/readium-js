@@ -323,6 +323,21 @@ EpubReflowable.AlternateStyleTagSelector = Backbone.Model.extend({
         saveAnnotation.call(this.get("callbackContext"), CFI, spinePosition);
     },
 
+    getSelectionInfo : function (selectedRange) {
+
+        // Get start and end text nodes and offsets
+        debugger;
+        var startTextNode = "";
+        var endTextNode = "";
+
+        // Generate CFI for selected text
+        var CFI = "";
+
+        // Add start and end text nodes and offsets to the info object
+
+        // Return a list of selected text nodes and the CFI
+    },
+
     generateCharacterOffsetCFI : function (characterOffset, $startElement, spineItemIdref, packageDocumentDom) {
 
         // Save the position marker
@@ -1692,6 +1707,31 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
     //     this.annotations.saveAnnotation(CFI, this.spineItemModel.get("spine_index"));
     // },
 
+    insertSelectionMarkers : function () {
+
+        // Get currently selected range
+        var annotationInfo;
+        var currentSelectionRange = this.getCurrentSelectionRange();
+
+        if (currentSelectionRange) {
+
+            // Get info about the selection
+            this.annotations.getSelectionInfo(currentSelectionRange);
+
+            // insert the markers
+            
+            // return the relevant info about the selection for showing annotations
+            annotationInfo = {
+
+            };
+
+            return annotationInfo;
+        }
+        else {
+            throw new Error();
+        }
+    },
+
     showView : function () {
         this.$el.show();
     },
@@ -1975,7 +2015,27 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 		else {
 			return "left";
 		}
-	}
+	},
+
+    // Rationale: This is a cross-browser method to get the currently selected text
+    getCurrentSelectionRange : function () {
+
+        var currentSelection;
+        var iframeDocument = this.getEpubContentDocument().parentNode;
+        if (iframeDocument.getSelection) {
+            currentSelection = iframeDocument.getSelection();
+
+            if (currentSelection.rangeCount) {
+                return currentSelection.getRangeAt(0);
+            }
+        }
+        else if (iframeDocument.selection) {
+            return iframeDocument.selection.createRange();
+        }
+        else {
+            return undefined;
+        }
+    }
 }); 
 
     var reflowableView = new EpubReflowable.ReflowablePaginationView({  
@@ -2004,6 +2064,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         setMargin : function (margin) { return reflowableView.setMargin.call(reflowableView, margin); },
         setTheme : function (theme) { return reflowableView.setTheme.call(reflowableView, theme); },
         setSyntheticLayout : function (isSynthetic) { return reflowableView.setSyntheticLayout.call(reflowableView, isSynthetic); },
-        on : function (eventName, callback, callbackContext) { return reflowableView.on.call(reflowableView, eventName, callback, callbackContext); }
+        on : function (eventName, callback, callbackContext) { return reflowableView.on.call(reflowableView, eventName, callback, callbackContext); },
+        insertSelectionMarkers : function () { return reflowableView.insertSelectionMarkers.call(reflowableView); }
     };
 };

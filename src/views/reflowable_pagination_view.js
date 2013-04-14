@@ -206,6 +206,33 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
     //     this.annotations.saveAnnotation(CFI, this.spineItemModel.get("spine_index"));
     // },
 
+    insertSelectionMarkers : function () {
+
+        // Get currently selected range
+        var annotationInfo;
+        var currentSelectionRange = this.getCurrentSelectionRange();
+
+        if (currentSelectionRange) {
+
+            // insert the markers first? 
+
+            // Get info about the selection
+            this.annotations.getSelectionInfo(currentSelectionRange);
+
+            // insert the markers
+            
+            // return the relevant info about the selection for showing annotations
+            annotationInfo = {
+
+            };
+
+            return annotationInfo;
+        }
+        else {
+            throw new Error();
+        }
+    },
+
     showView : function () {
         this.$el.show();
     },
@@ -489,5 +516,25 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 		else {
 			return "left";
 		}
-	}
+	},
+
+    // Rationale: This is a cross-browser method to get the currently selected text
+    getCurrentSelectionRange : function () {
+
+        var currentSelection;
+        var iframeDocument = this.getEpubContentDocument().parentNode;
+        if (iframeDocument.getSelection) {
+            currentSelection = iframeDocument.getSelection();
+
+            if (currentSelection.rangeCount) {
+                return currentSelection.getRangeAt(0);
+            }
+        }
+        else if (iframeDocument.selection) {
+            return iframeDocument.selection.createRange();
+        }
+        else {
+            return undefined;
+        }
+    }
 });
