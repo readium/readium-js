@@ -49,7 +49,7 @@ EPUBcfi.Interpreter = {
         
             nextStepNode = CFIAST.cfiString.localPath.steps[stepNum];
             if (nextStepNode.type === "indexStep") {
-
+                
                 $currElement = this.interpretIndexStepNode(nextStepNode, $currElement, classBlacklist, elementBlacklist, idBlacklist);
             }
             else if (nextStepNode.type === "indirectionStep") {

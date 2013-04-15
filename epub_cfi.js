@@ -1815,7 +1815,7 @@ EPUBcfi.Interpreter = {
         
             nextStepNode = CFIAST.cfiString.localPath.steps[stepNum];
             if (nextStepNode.type === "indexStep") {
-
+                
                 $currElement = this.interpretIndexStepNode(nextStepNode, $currElement, classBlacklist, elementBlacklist, idBlacklist);
             }
             else if (nextStepNode.type === "indirectionStep") {
@@ -2408,6 +2408,7 @@ EPUBcfi.CFIAssertionError = function (expectedAssertion, targetElementAssertion,
 
     var interpreter = EPUBcfi.Interpreter;
     var generator = EPUBcfi.Generator;
+    var instructions = EPUBcfi.CFIInstructions;
 
     // The public interface
     return {
@@ -2420,6 +2421,7 @@ EPUBcfi.CFIAssertionError = function (expectedAssertion, targetElementAssertion,
         generateCharacterOffsetCFIComponent : function (startTextNode, characterOffset) { return generator.generateCharacterOffsetCFIComponent.call(generator, startTextNode, characterOffset); },
         generateElementCFIComponent : function (startElement) { return generator.generateElementCFIComponent.call(generator, startElement); },
         generatePackageDocumentCFIComponent : function (contentDocumentName, packageDocument) { return generator.generatePackageDocumentCFIComponent.call(generator, contentDocumentName, packageDocument); }, 
-        generateCompleteCFI : function (packageDocumentCFIComponent, contentDocumentCFIComponent) { return generator.generateCompleteCFI.call(generator, packageDocumentCFIComponent, contentDocumentCFIComponent); }
+        generateCompleteCFI : function (packageDocumentCFIComponent, contentDocumentCFIComponent) { return generator.generateCompleteCFI.call(generator, packageDocumentCFIComponent, contentDocumentCFIComponent); },
+        injectElementAtOffset : function ($textNodeList, textOffset, elementToInject) { return instructions.injectCFIMarkerIntoText.call(instructions, $textNodeList, textOffset, elementToInject); }
     };
 };
