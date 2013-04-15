@@ -385,6 +385,13 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
     getCurrentPage : function () {
 
         return this.reader.calculatePageNumberInfo().currentPage;
+    },
+
+    getCurrentSelectionInfo : function () {
+
+        var currentView = this.reader.getCurrentPagesView();
+        annotationInfo = currentView.insertSelectionMarkers();
+        return annotationInfo;
     }
 
     // ----------------------- Private Helpers -----------------------------------------------------------
@@ -413,6 +420,7 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         setSyntheticLayout : function (isSynthetic) { return epubReaderView.setSyntheticLayout.call(epubReaderView, isSynthetic); },
         getNumberOfPages : function () { return epubReaderView.getNumberOfPages.call(epubReaderView); },
         getCurrentPage : function () { return epubReaderView.getCurrentPage.call(epubReaderView); },
-        on : function (eventName, callback, callbackContext) { return epubReaderView.on.call(epubReaderView, eventName, callback, callbackContext); }
+        on : function (eventName, callback, callbackContext) { return epubReaderView.on.call(epubReaderView, eventName, callback, callbackContext); },
+        getCurrentSelectionInfo : function () { return epubReaderView.getCurrentSelectionInfo.call(epubReaderView); }
     };
 };

@@ -15,6 +15,7 @@
 
             $(document).ready(function () {
 
+                var that = this;
                 this.view = initializationTest();
                 this.view.on("epubLoaded", function () { 
                     this.view.showSpineItem(2);

@@ -315,7 +315,9 @@ EpubReflowable.AlternateStyleTagSelector = Backbone.Model.extend({
         "callbackContext" : undefined
     },
 
-    initialize : function () {},
+    initialize : function () {
+        this.epubCFI = new EpubCFIModule();
+    },
 
     saveAnnotation : function (CFI, spinePosition) {
 
@@ -391,7 +393,7 @@ EpubReflowable.AlternateStyleTagSelector = Backbone.Model.extend({
         }
     },
 
-    // REFACTORING CANDIDATE: Convert this to jquery, and think about moving it to its own model
+    // REFACTORING CANDIDATE: Convert this to jquery
     findSelectedElements : function (currElement, startElement, endElement, intervalState, selectedElements, elementTypes) {
 
         if (currElement === startElement) {
@@ -425,9 +427,91 @@ EpubReflowable.AlternateStyleTagSelector = Backbone.Model.extend({
     addElement : function (currElement, selectedElements, elementTypes) {
 
         // Check if the node is one of the types
-        if (currElement.tagName === "P") {
+        if (currElement.nodeType === Node.TEXT_NODE) {
             selectedElements.push(currElement);
         }
+    },
+
+    injectHighlightMarkers : function (selectionRange) {
+
+        var highlightRange;
+        if (selectionRange.startContainer === selectionRange.endContainer) {
+            highlightRange = this.injectHighlightInSameNode(selectionRange);
+        } else {
+            highlightRange = this.injectHighlightsInDifferentNodes(selectionRange);
+        }
+
+        return highlightRange;
+    },
+
+    injectHighlightInSameNode : function (selectionRange) {
+
+        var startNode;
+        var startOffset = selectionRange.startOffset;
+        var endNode = selectionRange.endContainer;
+        var endOffset = selectionRange.endOffset;
+        var $startMarker = $("<span id='highlight-start-epubcfi(1)'></span>");
+        var $endMarker = $("<span id='highlight-start-epubcfi(2)'></span>");
+        var highlightRange;
+
+        // Rationale: The end marker is injected before the start marker because when the text node is split by the 
+        //   end marker first, the offset for the start marker will still be the same and we do not need to recalculate 
+        //   the offset for the newly created end node.
+
+        // inject end marker
+        this.epubCFI.injectElementAtOffset(
+            $(endNode), 
+            endOffset,
+            $endMarker
+        );
+
+        startNode = $endMarker[0].previousSibling;
+
+        // inject start marker
+        this.epubCFI.injectElementAtOffset(
+            $(startNode), 
+            startOffset,
+            $startMarker
+        );
+
+        // reconstruct range
+        highlightRange = document.createRange();
+        highlightRange.setStart($startMarker[0].nextSibling, 0);
+        highlightRange.setEnd($endMarker[0].previousSibling, $endMarker[0].previousSibling.length - 1);
+
+        return highlightRange;
+    },
+
+    injectHighlightsInDifferentNodes : function (selectionRange) {
+
+        var startNode = selectionRange.startContainer;
+        var startOffset = selectionRange.startOffset;
+        var endNode = selectionRange.endContainer;
+        var endOffset = selectionRange.endOffset;
+        var $startMarker = $("<span id='highlight-start-epubcfi(1)'></span>");
+        var $endMarker = $("<span id='highlight-start-epubcfi(2)'></span>");
+        var highlightRange;
+
+        // inject start
+        this.epubCFI.injectElementAtOffset(
+            $(startNode), 
+            startOffset,
+            $startMarker
+        );
+
+        // inject end
+        this.epubCFI.injectElementAtOffset(
+            $(endNode), 
+            endOffset,
+            $endMarker
+        );
+
+        // reconstruct range
+        highlightRange = document.createRange();
+        highlightRange.setStart($startMarker[0].nextSibling, 0);
+        highlightRange.setEnd($endMarker[0].previousSibling, $endMarker[0].previousSibling.length - 1);
+
+        return highlightRange;
     }
 });
 
@@ -1765,27 +1849,16 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         var annotationInfo;
         var startNode; 
         var endNode;
+        var highlightSelection;
 
         var currentSelectionRange = this.getCurrentSelectionRange();
 
         if (currentSelectionRange) {
 
-            // Inject marker at end node
-            epubCFI.injectElementAtOffset(
-                $(currentSelectionRange.endContainer), 
-                currentSelectionRange.endOffset, 
-                $("<span id='highlight-start-epubcfi(2)'></span>")
-                );
-
-            // Inject marker at start node
-            epubCFI.injectElementAtOffset(
-                $(currentSelectionRange.startContainer), 
-                currentSelectionRange.startOffset, 
-                $("<span id='highlight-start-epubcfi(1)'></span>")
-                );
+            highlightSelection = this.annotations.injectHighlightMarkers(currentSelectionRange)
 
             // Get info about the selection
-            annotationInfo = this.annotations.getSelectionInfo(currentSelectionRange);
+            annotationInfo = this.annotations.getSelectionInfo(highlightSelection);
             return annotationInfo;
         }
         else {

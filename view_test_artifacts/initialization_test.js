@@ -34,6 +34,13 @@ var initializationTest = function () {
             firstPageIsOffset : false,
             pageProgressionDirection : "ltr", 
             spineIndex : 4 
+        },
+        {
+            contentDocumentURI : "epub_content/accessible_epub_3/EPUB/bk01-toc.xhtml",
+            title : "Index", 
+            firstPageIsOffset : false,
+            pageProgressionDirection : "ltr", 
+            spineIndex : 5 
         }
     ];
 

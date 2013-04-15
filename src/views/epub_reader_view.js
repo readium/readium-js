@@ -129,6 +129,13 @@ EpubReader.EpubReaderView = Backbone.View.extend({
     getCurrentPage : function () {
 
         return this.reader.calculatePageNumberInfo().currentPage;
+    },
+
+    getCurrentSelectionInfo : function () {
+
+        var currentView = this.reader.getCurrentPagesView();
+        annotationInfo = currentView.insertSelectionMarkers();
+        return annotationInfo;
     }
 
     // ----------------------- Private Helpers -----------------------------------------------------------
