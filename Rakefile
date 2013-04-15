@@ -40,5 +40,6 @@ task :gen_epub_reflowable_module do
     puts "rendering the epub reflowable module"
     render_epub_reflowable_module_template("epub_reflowable_module_template.js.erb", "epub_reflowable_module.js")
     render_epub_reflowable_module_template("epub_reflowable_module_template.js.erb", "../epub-reader/epub_reflowable_module.js")
+    render_epub_reflowable_module_template("epub_reflowable_module_template.js.erb", "../annotations/epub_reflowable_module.js")
     render_epub_reflowable_module_template("epub_reflowable_module_template.js.erb", "../sample-app/app/assets/javascripts/lib/epub_reflowable_module.js")
 end

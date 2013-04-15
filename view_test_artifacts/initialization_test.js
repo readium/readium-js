@@ -1,7 +1,7 @@
 var initializationTest = function () {
     
     var spineItem = {
-        contentDocumentURI : "epub_content/accessible_epub_3/EPUB/bk01-toc.xhtml",
+        contentDocumentURI : "epub_content/accessible_epub_3/EPUB/ch01.xhtml",
         title : "Test from Accessible Epub 3.0", 
         firstPageIsOffset : false,
         pageProgressionDirection : "ltr", 

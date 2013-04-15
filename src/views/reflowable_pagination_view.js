@@ -213,17 +213,16 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         var annotationInfo;
         var startNode; 
         var endNode;
+        var highlightSelection;
 
         var currentSelectionRange = this.getCurrentSelectionRange();
 
         if (currentSelectionRange) {
 
-            
-
-            // reconstruct range, how are you going to do this?? I do not know. 
+            highlightSelection = this.annotations.injectHighlightMarkers(currentSelectionRange)
 
             // Get info about the selection
-            annotationInfo = this.annotations.getSelectionInfo(currentSelectionRange);
+            annotationInfo = this.annotations.getSelectionInfo(highlightSelection);
             return annotationInfo;
         }
         else {

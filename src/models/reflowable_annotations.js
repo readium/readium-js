@@ -117,7 +117,7 @@ EpubReflowable.ReflowableAnnotations = Backbone.Model.extend({
     addElement : function (currElement, selectedElements, elementTypes) {
 
         // Check if the node is one of the types
-        if (currElement.tagName === "P" || currElement.tagName === "DIV") {
+        if (currElement.nodeType === Node.TEXT_NODE) {
             selectedElements.push(currElement);
         }
     },
