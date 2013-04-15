@@ -209,23 +209,21 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
     insertSelectionMarkers : function () {
 
         // Get currently selected range
+        var epubCFI = new EpubCFIModule();
         var annotationInfo;
+        var startNode; 
+        var endNode;
+
         var currentSelectionRange = this.getCurrentSelectionRange();
 
         if (currentSelectionRange) {
 
-            // insert the markers first? 
+            
+
+            // reconstruct range, how are you going to do this?? I do not know. 
 
             // Get info about the selection
-            this.annotations.getSelectionInfo(currentSelectionRange);
-
-            // insert the markers
-            
-            // return the relevant info about the selection for showing annotations
-            annotationInfo = {
-
-            };
-
+            annotationInfo = this.annotations.getSelectionInfo(currentSelectionRange);
             return annotationInfo;
         }
         else {

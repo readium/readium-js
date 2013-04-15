@@ -43,7 +43,7 @@ describe("EpubReflowable.ReflowableAnnotations", function () {
             it("returns an annotation info object", function () {
 
                 var annotationInfo;
-                var selectedElements;
+                var selectedElements = [];
                 var selection = document.createRange();
                 selection.setStart($("#b", this.$elements)[0]);
                 selection.setEnd($("#h", this.$elements)[0]);
@@ -86,6 +86,33 @@ describe("EpubReflowable.ReflowableAnnotations", function () {
                 expect(selectedElements[4].id).toBe("f");
                 expect(selectedElements[5].id).toBe("g");
                 expect(selectedElements[6].id).toBe("h");
+            });
+        });
+
+        describe("injectHighlightMarkers", function () {
+
+            it("injects markers when start and end node are the same", function () {
+
+                var highlightSelection;
+                var selection = document.createRange();
+                selection.setStart($("#b", this.$elements)[0].firstChild, 10);
+                selection.setEnd($("#b", this.$elements)[0].firstChild, 15);
+
+                highlightSelection = this.reflowingAnnotations.injectHighlightMarkers(selection);
+
+                expect($("#b", this.$elements).contents().length).toBe(5);
+            });
+
+            it("injects markers when start and end node are different", function () {
+
+                var selection = document.createRange();
+                selection.setStart($("#b", this.$elements)[0].firstChild, 10);
+                selection.setEnd($("#c", this.$elements)[0].firstChild, 10);
+
+                highlightSelection = this.reflowingAnnotations.injectHighlightMarkers(selection);
+
+                expect($("#b", this.$elements).contents().length).toBe(3);
+                expect($("#c", this.$elements).contents().length).toBe(3);
             });
         });
     });

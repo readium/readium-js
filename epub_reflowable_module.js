@@ -325,17 +325,28 @@ EpubReflowable.AlternateStyleTagSelector = Backbone.Model.extend({
 
     getSelectionInfo : function (selectedRange) {
 
-        // Get start and end text nodes and offsets
-        debugger;
-        var startTextNode = "";
-        var endTextNode = "";
-
         // Generate CFI for selected text
         var CFI = "";
+        var intervalState = {
+            startElementFound : false,
+            endElementFound : false
+        };
+        var selectedElements = [];
 
-        // Add start and end text nodes and offsets to the info object
+        this.findSelectedElements(
+            selectedRange.commonAncestorContainer, 
+            selectedRange.startContainer, 
+            selectedRange.endContainer,
+            intervalState,
+            selectedElements, 
+            "p"
+            );
 
         // Return a list of selected text nodes and the CFI
+        return {
+            CFI : CFI,
+            selectedElements : selectedElements
+        };
     },
 
     generateCharacterOffsetCFI : function (characterOffset, $startElement, spineItemIdref, packageDocumentDom) {
@@ -378,8 +389,48 @@ EpubReflowable.AlternateStyleTagSelector = Backbone.Model.extend({
             // No need to execute the rest of the save position method if the first visible element is not a text node
             return undefined;
         }
+    },
+
+    // REFACTORING CANDIDATE: Convert this to jquery, and think about moving it to its own model
+    findSelectedElements : function (currElement, startElement, endElement, intervalState, selectedElements, elementTypes) {
+
+        if (currElement === startElement) {
+            intervalState.startElementFound = true;
+        }
+
+        if (intervalState.startElementFound === true) {
+            this.addElement(currElement, selectedElements, elementTypes);
+        }
+
+        if (currElement === endElement) {
+            intervalState.endElementFound = true;
+            return;
+        }
+
+        if (currElement.firstChild) {
+            this.findSelectedElements(currElement.firstChild, startElement, endElement, intervalState, selectedElements, elementTypes);
+            if (intervalState.endElementFound) {
+                return;
+            }
+        }
+
+        if (currElement.nextSibling) {
+            this.findSelectedElements(currElement.nextSibling, startElement, endElement, intervalState, selectedElements, elementTypes);
+            if (intervalState.endElementFound) {
+                return;
+            }
+        }
+    },
+
+    addElement : function (currElement, selectedElements, elementTypes) {
+
+        // Check if the node is one of the types
+        if (currElement.tagName === "P") {
+            selectedElements.push(currElement);
+        }
     }
 });
+
     
 EpubReflowable.ReflowableElementInfo = Backbone.Model.extend({
 
@@ -1710,21 +1761,31 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
     insertSelectionMarkers : function () {
 
         // Get currently selected range
+        var epubCFI = new EpubCFIModule();
         var annotationInfo;
+        var startNode; 
+        var endNode;
+
         var currentSelectionRange = this.getCurrentSelectionRange();
 
         if (currentSelectionRange) {
 
+            // Inject marker at end node
+            epubCFI.injectElementAtOffset(
+                $(currentSelectionRange.endContainer), 
+                currentSelectionRange.endOffset, 
+                $("<span id='highlight-start-epubcfi(2)'></span>")
+                );
+
+            // Inject marker at start node
+            epubCFI.injectElementAtOffset(
+                $(currentSelectionRange.startContainer), 
+                currentSelectionRange.startOffset, 
+                $("<span id='highlight-start-epubcfi(1)'></span>")
+                );
+
             // Get info about the selection
-            this.annotations.getSelectionInfo(currentSelectionRange);
-
-            // insert the markers
-            
-            // return the relevant info about the selection for showing annotations
-            annotationInfo = {
-
-            };
-
+            annotationInfo = this.annotations.getSelectionInfo(currentSelectionRange);
             return annotationInfo;
         }
         else {

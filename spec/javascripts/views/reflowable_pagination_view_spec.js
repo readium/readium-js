@@ -191,9 +191,45 @@ describe("EpubReflowable.ReflowablePaginationView", function () {
             });
         });
 
-        describe("showPageForCFI", function () {
+        describe("showPageForCFI()", function () {
 
             it("shows the page", function () {
+            });
+        });
+
+        describe("insertSelectionMarkers", function () {
+
+            beforeEach(function () {
+
+                var elements = "<div id='ancestor'> \
+                                    <div id='a'> \
+                                        <div id='b'> start start start \
+                                        </div> \
+                                        <div id='c'> \
+                                        </div> \
+                                        <div id='d'> \
+                                        </div> \
+                                    </div> \
+                                    <div id='e'> \
+                                        <div id ='f'> \
+                                            <div id ='g'> end end end \
+                                            </div> \
+                                        </div> \
+                                        <div id='h'> \
+                                        </div> \
+                                    </div> \
+                                </div>";
+
+                this.$elements = $(elements);
+                this.selection = document.createRange();
+                this.selection.setStart($("#b", this.$elements)[0].firstChild);
+                this.selection.setEnd($("#g", this.$elements)[0].firstChild);
+            });
+
+            it("inserts the start and end marker", function () {
+
+                spyOn(this.view, "getCurrentSelectionRange").andReturn(this.selection);
+                this.view.insertSelectionMarkers();
             });
         });
     });
