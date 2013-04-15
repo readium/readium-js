@@ -323,6 +323,32 @@ EpubReflowable.AlternateStyleTagSelector = Backbone.Model.extend({
         saveAnnotation.call(this.get("callbackContext"), CFI, spinePosition);
     },
 
+    getSelectionInfo : function (selectedRange) {
+
+        // Generate CFI for selected text
+        var CFI = "";
+        var intervalState = {
+            startElementFound : false,
+            endElementFound : false
+        };
+        var selectedElements = [];
+
+        this.findSelectedElements(
+            selectedRange.commonAncestorContainer, 
+            selectedRange.startContainer, 
+            selectedRange.endContainer,
+            intervalState,
+            selectedElements, 
+            "p"
+            );
+
+        // Return a list of selected text nodes and the CFI
+        return {
+            CFI : CFI,
+            selectedElements : selectedElements
+        };
+    },
+
     generateCharacterOffsetCFI : function (characterOffset, $startElement, spineItemIdref, packageDocumentDom) {
 
         // Save the position marker
@@ -363,8 +389,48 @@ EpubReflowable.AlternateStyleTagSelector = Backbone.Model.extend({
             // No need to execute the rest of the save position method if the first visible element is not a text node
             return undefined;
         }
+    },
+
+    // REFACTORING CANDIDATE: Convert this to jquery, and think about moving it to its own model
+    findSelectedElements : function (currElement, startElement, endElement, intervalState, selectedElements, elementTypes) {
+
+        if (currElement === startElement) {
+            intervalState.startElementFound = true;
+        }
+
+        if (intervalState.startElementFound === true) {
+            this.addElement(currElement, selectedElements, elementTypes);
+        }
+
+        if (currElement === endElement) {
+            intervalState.endElementFound = true;
+            return;
+        }
+
+        if (currElement.firstChild) {
+            this.findSelectedElements(currElement.firstChild, startElement, endElement, intervalState, selectedElements, elementTypes);
+            if (intervalState.endElementFound) {
+                return;
+            }
+        }
+
+        if (currElement.nextSibling) {
+            this.findSelectedElements(currElement.nextSibling, startElement, endElement, intervalState, selectedElements, elementTypes);
+            if (intervalState.endElementFound) {
+                return;
+            }
+        }
+    },
+
+    addElement : function (currElement, selectedElements, elementTypes) {
+
+        // Check if the node is one of the types
+        if (currElement.tagName === "P") {
+            selectedElements.push(currElement);
+        }
     }
 });
+
     
 EpubReflowable.ReflowableElementInfo = Backbone.Model.extend({
 
@@ -1692,6 +1758,41 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
     //     this.annotations.saveAnnotation(CFI, this.spineItemModel.get("spine_index"));
     // },
 
+    insertSelectionMarkers : function () {
+
+        // Get currently selected range
+        var epubCFI = new EpubCFIModule();
+        var annotationInfo;
+        var startNode; 
+        var endNode;
+
+        var currentSelectionRange = this.getCurrentSelectionRange();
+
+        if (currentSelectionRange) {
+
+            // Inject marker at end node
+            epubCFI.injectElementAtOffset(
+                $(currentSelectionRange.endContainer), 
+                currentSelectionRange.endOffset, 
+                $("<span id='highlight-start-epubcfi(2)'></span>")
+                );
+
+            // Inject marker at start node
+            epubCFI.injectElementAtOffset(
+                $(currentSelectionRange.startContainer), 
+                currentSelectionRange.startOffset, 
+                $("<span id='highlight-start-epubcfi(1)'></span>")
+                );
+
+            // Get info about the selection
+            annotationInfo = this.annotations.getSelectionInfo(currentSelectionRange);
+            return annotationInfo;
+        }
+        else {
+            throw new Error();
+        }
+    },
+
     showView : function () {
         this.$el.show();
     },
@@ -1975,7 +2076,27 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 		else {
 			return "left";
 		}
-	}
+	},
+
+    // Rationale: This is a cross-browser method to get the currently selected text
+    getCurrentSelectionRange : function () {
+
+        var currentSelection;
+        var iframeDocument = this.getEpubContentDocument().parentNode;
+        if (iframeDocument.getSelection) {
+            currentSelection = iframeDocument.getSelection();
+
+            if (currentSelection.rangeCount) {
+                return currentSelection.getRangeAt(0);
+            }
+        }
+        else if (iframeDocument.selection) {
+            return iframeDocument.selection.createRange();
+        }
+        else {
+            return undefined;
+        }
+    }
 }); 
 
     var reflowableView = new EpubReflowable.ReflowablePaginationView({  
@@ -2004,6 +2125,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         setMargin : function (margin) { return reflowableView.setMargin.call(reflowableView, margin); },
         setTheme : function (theme) { return reflowableView.setTheme.call(reflowableView, theme); },
         setSyntheticLayout : function (isSynthetic) { return reflowableView.setSyntheticLayout.call(reflowableView, isSynthetic); },
-        on : function (eventName, callback, callbackContext) { return reflowableView.on.call(reflowableView, eventName, callback, callbackContext); }
+        on : function (eventName, callback, callbackContext) { return reflowableView.on.call(reflowableView, eventName, callback, callbackContext); },
+        insertSelectionMarkers : function () { return reflowableView.insertSelectionMarkers.call(reflowableView); }
     };
 };
