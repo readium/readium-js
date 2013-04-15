@@ -15,19 +15,28 @@ EpubReflowable.ReflowableAnnotations = Backbone.Model.extend({
 
     getSelectionInfo : function (selectedRange) {
 
-        // Get start and end text nodes and offsets
-        debugger;
-        var startTextNode = "";
-        var endTextNode = "";
-
         // Generate CFI for selected text
         var CFI = "";
+        var intervalState = {
+            startElementFound : false,
+            endElementFound : false
+        };
+        var selectedElements = [];
 
-        this.findSelectedElements(selectedRange.startContainer, selectedRange.endContainer);
-
-        // Add start and end text nodes and offsets to the info object
+        this.findSelectedElements(
+            selectedRange.commonAncestorContainer, 
+            selectedRange.startContainer, 
+            selectedRange.endContainer,
+            intervalState,
+            selectedElements, 
+            "p"
+            );
 
         // Return a list of selected text nodes and the CFI
+        return {
+            CFI : CFI,
+            selectedElements : selectedElements
+        };
     },
 
     generateCharacterOffsetCFI : function (characterOffset, $startElement, spineItemIdref, packageDocumentDom) {
@@ -75,7 +84,6 @@ EpubReflowable.ReflowableAnnotations = Backbone.Model.extend({
     // REFACTORING CANDIDATE: Convert this to jquery, and think about moving it to its own model
     findSelectedElements : function (currElement, startElement, endElement, intervalState, selectedElements, elementTypes) {
 
-        // Check if this is the start node
         if (currElement === startElement) {
             intervalState.startElementFound = true;
         }
