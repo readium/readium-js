@@ -36,6 +36,7 @@ task :gen_cfi_library do
   render_cfi_library_template("cfi_library_template.js.erb", "epub_cfi.js")
   render_cfi_library_template("cfi_library_template.js.erb", "../sample-app/app/assets/javascripts/lib/epub_cfi.js")
   render_cfi_library_template("cfi_library_template.js.erb", "../epub-reader/epub_cfi.js")
+  render_cfi_library_template("cfi_library_template.js.erb", "../annotations/epub_cfi.js")
   render_cfi_library_template("cfi_library_template.js.erb", "../epub-reflowable/epub_cfi.js")
 end
 
