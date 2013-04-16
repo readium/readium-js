@@ -38,6 +38,7 @@ EPUBcfi.Parser = (function(){
     parse: function(input, startRule) {
       var parseFunctions = {
         "fragment": parse_fragment,
+        "range": parse_range,
         "path": parse_path,
         "local_path": parse_local_path,
         "indexStep": parse_indexStep,
@@ -132,7 +133,10 @@ EPUBcfi.Parser = (function(){
           }
         }
         if (result0 !== null) {
-          result1 = parse_path();
+          result1 = parse_range();
+          if (result1 === null) {
+            result1 = parse_path();
+          }
           if (result1 !== null) {
             if (input.charCodeAt(pos) === 41) {
               result2 = ")";
@@ -158,10 +162,81 @@ EPUBcfi.Parser = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, pathVal) { 
+          result0 = (function(offset, fragmentVal) { 
                 
-                return { type:"CFIAST", cfiString:pathVal }; 
+                return { type:"CFIAST", cfiString:fragmentVal };
             })(pos0, result0[1]);
+        }
+        if (result0 === null) {
+          pos = pos0;
+        }
+        return result0;
+      }
+      
+      function parse_range() {
+        var result0, result1, result2, result3, result4, result5;
+        var pos0, pos1;
+        
+        pos0 = pos;
+        pos1 = pos;
+        result0 = parse_indexStep();
+        if (result0 !== null) {
+          result1 = parse_local_path();
+          if (result1 !== null) {
+            if (input.charCodeAt(pos) === 44) {
+              result2 = ",";
+              pos++;
+            } else {
+              result2 = null;
+              if (reportFailures === 0) {
+                matchFailed("\",\"");
+              }
+            }
+            if (result2 !== null) {
+              result3 = parse_local_path();
+              if (result3 !== null) {
+                if (input.charCodeAt(pos) === 44) {
+                  result4 = ",";
+                  pos++;
+                } else {
+                  result4 = null;
+                  if (reportFailures === 0) {
+                    matchFailed("\",\"");
+                  }
+                }
+                if (result4 !== null) {
+                  result5 = parse_local_path();
+                  if (result5 !== null) {
+                    result0 = [result0, result1, result2, result3, result4, result5];
+                  } else {
+                    result0 = null;
+                    pos = pos1;
+                  }
+                } else {
+                  result0 = null;
+                  pos = pos1;
+                }
+              } else {
+                result0 = null;
+                pos = pos1;
+              }
+            } else {
+              result0 = null;
+              pos = pos1;
+            }
+          } else {
+            result0 = null;
+            pos = pos1;
+          }
+        } else {
+          result0 = null;
+          pos = pos1;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, stepVal, localPathVal, rangeLocalPath1Val, rangeLocalPath2Val) {
+        
+                return { type:"range", path:stepVal, localPath:localPathVal, range1:rangeLocalPath1Val, range2:rangeLocalPath2Val };
+          })(pos0, result0[0], result0[1], result0[3], result0[5]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -191,7 +266,7 @@ EPUBcfi.Parser = (function(){
         if (result0 !== null) {
           result0 = (function(offset, stepVal, localPathVal) { 
         
-                return { type:"cfiString", path:stepVal, localPath:localPathVal }; 
+                return { type:"path", path:stepVal, localPath:localPathVal }; 
             })(pos0, result0[0], result0[1]);
         }
         if (result0 === null) {
