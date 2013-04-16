@@ -29,7 +29,7 @@ describe('CFI INTERPRETER OBJECT', function () {
         });
     });
 
-    it('can inject text when supplied with a content document', function () {
+    it('can inject into text when supplied with a content document', function () {
 
         var expectedResult = 'c01p0006';
         var $result = EPUBcfi.Interpreter.injectElement(CFI, contentDocument, "<span></span>");
@@ -77,13 +77,54 @@ describe('CFI INTERPRETER OBJECT', function () {
 
         var cfi = "epubcfi(/2[%20%25%22af]/4/1:4)";
         var decodedCFI = decodeURI(cfi);
-        expect(decodedCFI).toEqual('epubcfi(/2[ %"af]/4/1:4)');
+        expect(decodedCFI).toBe('epubcfi(/2[ %"af]/4/1:4)');
     });
 
     it('returns the href of a content document for the first indirection step of a cfi', function () {
 
         var result = EPUBcfi.Interpreter.getContentDocHref(CFI, $packageDocument);
-        expect(result).toEqual("chapter_001.xhtml");
+        expect(result).toBe("chapter_001.xhtml");
+    });
+
+    describe("range CFI interpretation", function () {
+
+        it("returns the href of a content document in the first local path", function () {
+
+            var CFI = "epubcfi(/6/14!/4,/4/4,/4/6)";
+            var href = EPUBcfi.Interpreter.getContentDocHref(CFI, $packageDocument);
+            expect(href).toBe("chapter_001.xhtml");
+        });
+
+        it('can inject into the same text node', function () {
+
+            var CFI = "epubcfi(/6/14!/4,/2/14/1:4,/2/14/1:18)";
+            var expectedResult = 'c01p0006';
+            var rangeInfo = EPUBcfi.Interpreter.injectRangeElements(
+                CFI, 
+                contentDocument, 
+                "<span id='start' class='injected-element'></span>", 
+                "<span id='end' class='injected-element'></span>",
+                ["injected-element"]
+                );
+            expect(rangeInfo.startElement.id).toEqual(expectedResult);
+            expect(rangeInfo.endElement.id).toEqual(expectedResult);
+        });
+
+        it('can inject into different text nodes', function () {
+
+            var CFI = "epubcfi(/6/14!/4,/2/14/1:4,/2/16/1:7)";
+            var targetElement1 = 'c01p0006';
+            var targetElement2 = 'c01p0007';
+            var rangeInfo = EPUBcfi.Interpreter.injectRangeElements(
+                CFI, 
+                contentDocument, 
+                "<span id='start' class='injected-element'></span>", 
+                "<span id='end' class='injected-element'></span>",
+                ["injected-element"]
+                );
+            expect(rangeInfo.startElement.id).toEqual(targetElement1);
+            expect(rangeInfo.endElement.id).toEqual(targetElement2);
+        });
     });
 
     describe('The hack zone! Interpretation of partial CFIs', function () {
