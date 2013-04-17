@@ -239,7 +239,7 @@ EPUBcfi.Interpreter = {
     },
 
     // REFACTORING CANDIDATE: cfiString node and start step num could be merged into one argument, by simply passing the 
-    //   starting step. 
+    //   starting step... probably a good idea, this would make the meaning of this method clearer.
     interpretLocalPath : function (localPathNode, startStepNum, $currElement, classBlacklist, elementBlacklist, idBlacklist) {
 
         var stepNum = startStepNum;
@@ -311,7 +311,8 @@ EPUBcfi.Interpreter = {
     },
 
     // REFACTORING CANDIDATE: The logic here assumes that a user will always want to use this terminus
-    //   to inject content into the found node. This should be changed to be more flexible.
+    //   to inject content into the found node. This will not always be the case, and different types of interpretation
+    //   are probably desired. 
     interpretTextTerminusNode : function (terminusNode, $currElement, elementToInject) {
 
         if (terminusNode === undefined || terminusNode.type !== "textTerminus") {
