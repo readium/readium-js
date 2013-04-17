@@ -136,7 +136,33 @@ EpubReader.EpubReaderView = Backbone.View.extend({
         var currentView = this.reader.getCurrentPagesView();
         annotationInfo = currentView.insertSelectionMarkers();
         return annotationInfo;
-    }
+    },
+
+    addHighlightMarkersForCFI : function (CFI, id) {
+
+        var annotationInfo;
+        var currentView = this.reader.getCurrentPagesView();
+        try {
+            annotationInfo = currentView.addHighlightMarkersForCFI(CFI, id);
+            return annotationInfo;
+        }
+        catch (error) {
+            throw error;
+        }
+    },
+
+    addBookmarkMarkerForCFI : function (CFI, id) {
+
+        var annotationInfo;
+        var currentView = this.reader.getCurrentPagesView();
+        try {
+            annotationInfo = currentView.addBookmarkMarkerForCFI(CFI, id);
+            return annotationInfo;
+        } 
+        catch (error) {
+            throw error;
+        }
+    } 
 
     // ----------------------- Private Helpers -----------------------------------------------------------
 

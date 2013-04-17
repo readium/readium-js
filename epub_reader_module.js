@@ -392,7 +392,33 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         var currentView = this.reader.getCurrentPagesView();
         annotationInfo = currentView.insertSelectionMarkers();
         return annotationInfo;
-    }
+    },
+
+    addHighlightMarkersForCFI : function (CFI, id) {
+
+        var annotationInfo;
+        var currentView = this.reader.getCurrentPagesView();
+        try {
+            annotationInfo = currentView.addHighlightMarkersForCFI(CFI, id);
+            return annotationInfo;
+        }
+        catch (error) {
+            console.log(error);
+        }
+    },
+
+    addBookmarkMarkerForCFI : function (CFI, id) {
+
+        var annotationInfo;
+        var currentView = this.reader.getCurrentPagesView();
+        try {
+            annotationInfo = currentView.addBookmarkMarkerForCFI(CFI, id);
+            return annotationInfo;
+        } 
+        catch (error) {
+            console.log(error);
+        }
+    } 
 
     // ----------------------- Private Helpers -----------------------------------------------------------
 
@@ -421,6 +447,8 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         getNumberOfPages : function () { return epubReaderView.getNumberOfPages.call(epubReaderView); },
         getCurrentPage : function () { return epubReaderView.getCurrentPage.call(epubReaderView); },
         on : function (eventName, callback, callbackContext) { return epubReaderView.on.call(epubReaderView, eventName, callback, callbackContext); },
-        getCurrentSelectionInfo : function () { return epubReaderView.getCurrentSelectionInfo.call(epubReaderView); }
+        getCurrentSelectionInfo : function () { return epubReaderView.getCurrentSelectionInfo.call(epubReaderView); },
+        addHighlightMarkersForCFI : function (CFI, id) { return epubReaderView.addHighlightMarkersForCFI.call(epubReaderView, CFI, id); },
+        addBookmarkMarkerForCFI : function (CFI, id) { return epubReaderView.addBookmarkMarkerForCFI.call(epubReaderView, CFI, id); } 
     };
 };

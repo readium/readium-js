@@ -32,5 +32,6 @@ desc "render the epub reader module erb template"
 task :gen_epub_reader_module do
     puts "rendering the epub reader module"
     render_epub_reader_module_template("epub_reader_module_template.js.erb", "epub_reader_module.js")
+    render_epub_reader_module_template("epub_reader_module_template.js.erb", "../annotations/epub_reader_module.js")
     render_epub_reader_module_template("epub_reader_module_template.js.erb", "../sample-app/app/assets/javascripts/lib/epub_reader_module.js")
 end
