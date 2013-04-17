@@ -106,8 +106,8 @@ describe('CFI INTERPRETER OBJECT', function () {
                 "<span id='end' class='injected-element'></span>",
                 ["injected-element"]
                 );
-            expect(rangeInfo.startElement.id).toEqual(expectedResult);
-            expect(rangeInfo.endElement.id).toEqual(expectedResult);
+            expect(rangeInfo.startElement.id).toBe(expectedResult);
+            expect(rangeInfo.endElement.id).toBe(expectedResult);
         });
 
         it('can inject into different text nodes', function () {
@@ -122,8 +122,60 @@ describe('CFI INTERPRETER OBJECT', function () {
                 "<span id='end' class='injected-element'></span>",
                 ["injected-element"]
                 );
-            expect(rangeInfo.startElement.id).toEqual(targetElement1);
-            expect(rangeInfo.endElement.id).toEqual(targetElement2);
+            expect(rangeInfo.startElement.id).toBe(targetElement1);
+            expect(rangeInfo.endElement.id).toBe(targetElement2);
+        });
+
+        it('can return target nodes when the target is the same text node', function () {
+
+            var CFI = "epubcfi(/6/14!/4,/2/14/1:4,/2/14/1:7)";
+            var rangeInfo = EPUBcfi.Interpreter.getRangeTargetElements(
+                CFI, 
+                contentDocument
+                );
+            expect(rangeInfo.startElement.nodeType).toBe(Node.TEXT_NODE);
+            expect(rangeInfo.endElement.nodeType).toBe(Node.TEXT_NODE);
+            expect(rangeInfo.startElement).toBe(rangeInfo.endElement);
+        });
+
+        it('can return target elements when the target is the same element', function () {
+
+            var CFI = "epubcfi(/6/14!/4,/2/14,/2/14)";
+            var targetElement1 = 'c01p0006';
+            var targetElement2 = 'c01p0006';
+            var rangeInfo = EPUBcfi.Interpreter.getRangeTargetElements(
+                CFI, 
+                contentDocument
+                );
+            expect(rangeInfo.startElement.id).toBe(targetElement1);
+            expect(rangeInfo.endElement.id).toBe(targetElement2);
+        });
+
+        it('can return target nodes when the targets are different text nodes', function () {
+
+            var CFI = "epubcfi(/6/14!/4,/2/14/1:4,/2/16/1:7)";
+            var targetElement1 = 'c01p0006';
+            var targetElement2 = 'c01p0007';
+            var rangeInfo = EPUBcfi.Interpreter.getRangeTargetElements(
+                CFI, 
+                contentDocument
+                );
+            expect(rangeInfo.startElement.nodeType).toBe(Node.TEXT_NODE);
+            expect(rangeInfo.endElement.nodeType).toBe(Node.TEXT_NODE);
+            expect(rangeInfo.startElement).not.toBe(rangeInfo.endElement);
+        });
+
+        it('can return target elements when the targets are different elements', function () {
+
+            var CFI = "epubcfi(/6/14!/4,/2/14,/2/16)";
+            var targetElement1 = 'c01p0006';
+            var targetElement2 = 'c01p0007';
+            var rangeInfo = EPUBcfi.Interpreter.getRangeTargetElements(
+                CFI, 
+                contentDocument
+                );
+            expect(rangeInfo.startElement.id).toBe(targetElement1);
+            expect(rangeInfo.endElement.id).toBe(targetElement2);
         });
     });
 
