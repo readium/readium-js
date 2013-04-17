@@ -32,8 +32,8 @@ describe('CFI INTERPRETER OBJECT', function () {
     it('can inject into text when supplied with a content document', function () {
 
         var expectedResult = 'c01p0006';
-        var $result = EPUBcfi.Interpreter.injectElement(CFI, contentDocument, "<span></span>");
-        expect($result.attr("id")).toEqual(expectedResult);
+        var $injectedElement = EPUBcfi.Interpreter.injectElement(CFI, contentDocument, "<span></span>");
+        expect($injectedElement.parent().attr("id")).toBe(expectedResult);
     });
 
     it('returns a text node CFI target', function () {
@@ -62,13 +62,12 @@ describe('CFI INTERPRETER OBJECT', function () {
 
     it('injects an element for a text terminus with a text location assertion', function () {
 
-        var $expectedResult = 'Ther<span xmlns="http://www.w3.org/1999/xhtml" class="cfi_marker"></span>e now is your insular city of the Manhattoes, belted round by wharves as Indian isles by coral reefs—commerce surrounds it with her surf. Right and left, the streets take you waterward. Its extreme downtown is the battery, where that noble mole is washed by waves, and cooled by breezes, which a few hours previous were out of sight of land. Look at the crowds of water-gazers there.';
-        var $result = EPUBcfi.Interpreter.interpretTextTerminusNode(
+        var $injectedElement = EPUBcfi.Interpreter.interpretTextTerminusNode(
             CFIAST.cfiString.localPath.termStep,
             $($("#c01p0002", $contentDocument)[0].firstChild),
             '<span class="cfi_marker"></span>');
 
-        expect($result.html()).toEqual($expectedResult);
+        expect($injectedElement.parent().contents().length).toBe(3);
     });
 
     // Rationale: This test is really only testing the decodeURI() method, which does not require testing. This spec exists
@@ -106,8 +105,10 @@ describe('CFI INTERPRETER OBJECT', function () {
                 "<span id='end' class='injected-element'></span>",
                 ["injected-element"]
                 );
-            expect(rangeInfo.startElement.id).toBe(expectedResult);
-            expect(rangeInfo.endElement.id).toBe(expectedResult);
+            expect(rangeInfo.startElement.id).toBe("start");
+            expect(rangeInfo.endElement.id).toBe("end");
+            expect(rangeInfo.startElement.parentElement.id).toBe(expectedResult);
+            expect(rangeInfo.endElement.parentElement.id).toBe(expectedResult);
         });
 
         it('can inject into different text nodes', function () {
@@ -122,8 +123,10 @@ describe('CFI INTERPRETER OBJECT', function () {
                 "<span id='end' class='injected-element'></span>",
                 ["injected-element"]
                 );
-            expect(rangeInfo.startElement.id).toBe(targetElement1);
-            expect(rangeInfo.endElement.id).toBe(targetElement2);
+            expect(rangeInfo.startElement.id).toBe("start");
+            expect(rangeInfo.endElement.id).toBe("end");
+            expect(rangeInfo.startElement.parentElement.id).toBe(targetElement1);
+            expect(rangeInfo.endElement.parentElement.id).toBe(targetElement2);
         });
 
         it('can return target nodes when the target is the same text node', function () {

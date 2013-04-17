@@ -97,10 +97,10 @@ EPUBcfi.Interpreter = {
         // Interpret the first range local_path
         $range1TargetElement = this.interpretLocalPath(CFIAST.cfiString.range1, 0, $currElement, classBlacklist, elementBlacklist, idBlacklist);
         $range1TargetElement = this.interpretTextTerminusNode(CFIAST.cfiString.range1.termStep, $range1TargetElement, startElementToInject);
-        // Inject the start element
 
+        // Inject the start element
         $range2TargetElement = this.interpretLocalPath(CFIAST.cfiString.range2, 0, $currElement, classBlacklist, elementBlacklist, idBlacklist);
-        $range2TargetElement = this.interpretTextTerminusNode(CFIAST.cfiString.range2.termStep, $range2TargetElement, startElementToInject);
+        $range2TargetElement = this.interpretTextTerminusNode(CFIAST.cfiString.range2.termStep, $range2TargetElement, endElementToInject);
 
         // Return the element that was injected into
         return {
@@ -320,12 +320,13 @@ EPUBcfi.Interpreter = {
             throw EPUBcfi.NodeTypeError(terminusNode, "expected text terminus node");
         }
 
-        var $elementInjectedInto = EPUBcfi.CFIInstructions.textTermination(
+        var $injectedElement = EPUBcfi.CFIInstructions.textTermination(
             $currElement, 
             terminusNode.offsetValue, 
-            elementToInject);
+            elementToInject
+            );
 
-        return $elementInjectedInto;
+        return $injectedElement;
     },
 
     searchLocalPathForHref : function ($currElement, $packageDocument, localPathNode, classBlacklist, elementBlacklist, idBlacklist) {

@@ -77,6 +77,7 @@ EPUBcfi.CFIInstructions = {
 	// REFACTORING CANDIDATE: Rename this to indicate that it injects into a text terminus
 	textTermination : function ($currNode, textOffset, elementToInject) {
 
+		var $injectedElement;
 		// Get the first node, this should be a text node
 		if ($currNode === undefined) {
 
@@ -87,8 +88,8 @@ EPUBcfi.CFIInstructions = {
 			throw EPUBcfi.TerminusError("Text", "Text offset:" + textOffset, "no nodes found for termination condition");
 		}
 
-		$currNode = this.injectCFIMarkerIntoText($currNode, textOffset, elementToInject);
-		return $currNode;
+		$injectedElement = this.injectCFIMarkerIntoText($currNode, textOffset, elementToInject);
+		return $injectedElement;
 	},
 
 	// Description: Checks that the id assertion for the node target matches that on 
@@ -174,7 +175,7 @@ EPUBcfi.CFIInstructions = {
 					$newTextNode = $(document.createTextNode(originalText.slice(nodeOffset, originalText.length)));
 					$($newTextNode).insertAfter($injectedNode);
 
-					return $textNodeList.parent();
+					return $injectedNode;
 				}
 				else {
 

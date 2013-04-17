@@ -30,7 +30,7 @@ describe("CFI INSTRUCTION OBJECT", function () {
 
 		var $nextNode = EPUBcfi.CFIInstructions.followIndirectionStep(4, $("iframe", document), [], []);
 
-		expect($nextNode.attr("id")).toEqual("body1");
+		expect($nextNode.attr("id")).toBe("body1");
 
 		// Remove the injected iframe
 		$(iframe).remove();
@@ -42,9 +42,10 @@ describe("CFI INSTRUCTION OBJECT", function () {
 		var domParser = new window.DOMParser();
 		var contentDoc = domParser.parseFromString(contentDocXHTML, "text/xml");
 
-		var $result = EPUBcfi.CFIInstructions.textTermination($($("#c01p0002", $(contentDoc))[0].firstChild), 4, '<span class="epub_cfi"></span>');
+		var $injectedElement = EPUBcfi.CFIInstructions.textTermination($($("#c01p0002", $(contentDoc))[0].firstChild), 4, '<span id="injected" class="epub_cfi"></span>');
 		
-		expect($result.html()).toEqual('Ther<span xmlns="http://www.w3.org/1999/xhtml" class="epub_cfi"></span>e now is your insular city of the Manhattoes, belted round by wharves as Indian isles by coral reefs—commerce surrounds it with her surf. Right and left, the streets take you waterward. Its extreme downtown is the battery, where that noble mole is washed by waves, and cooled by breezes, which a few hours previous were out of sight of land. Look at the crowds of water-gazers there.');
+		expect($injectedElement.attr("id")).toBe("injected");
+		expect($injectedElement.parent().attr("id")).toBe("c01p0002");
 	});
 
 	it("injects text at the specified offset in the FIRST sub-node, when a target text node is specified as a list", function () {
@@ -53,12 +54,12 @@ describe("CFI INSTRUCTION OBJECT", function () {
 		var $currNode = $('<div> asdfasd <div class="cfiMarker"></div> aslasjd <div></div> alsjflkds </div>');
 		var $targetTextNodeList = EPUBcfi.CFIInstructions.getNextNode(1, $currNode, ["cfiMarker"], []);
 
-		var $result = EPUBcfi.CFIInstructions.textTermination($targetTextNodeList, 4, '<span class="epub_cfi"></span>');
-		var $currNodeChildren = $result.contents();
+		var $injectedElement = EPUBcfi.CFIInstructions.textTermination($targetTextNodeList, 4, '<span class="epub_cfi"></span>');
+		var $currNodeChildren = $injectedElement.parent().contents();
 		
-		expect($currNodeChildren[0].nodeValue).toEqual(" asd");
-		expect($($currNodeChildren[1]).hasClass('epub_cfi')).toEqual(true);
-		expect($currNodeChildren[2].nodeValue).toEqual("fasd ");
+		expect($currNodeChildren[0].nodeValue).toBe(" asd");
+		expect($injectedElement.hasClass('epub_cfi')).toBe(true);
+		expect($currNodeChildren[2].nodeValue).toBe("fasd ");
 	});
 
 	it("injects text at the specified offset in the SECOND sub-node, when a target text node is specified as a list", function () {
@@ -67,12 +68,12 @@ describe("CFI INSTRUCTION OBJECT", function () {
 		var $currNode = $('<div> asdfasd <div class="cfiMarker"></div> aslasjd <div></div> alsjflkds </div>');
 		var $targetTextNodeList = EPUBcfi.CFIInstructions.getNextNode(1, $currNode, ["cfiMarker"], []);
 
-		var $result = EPUBcfi.CFIInstructions.textTermination($targetTextNodeList, 12, '<span class="epub_cfi"></span>');
-		var $currNodeChildren = $result.contents();
+		var $injectedElement = EPUBcfi.CFIInstructions.textTermination($targetTextNodeList, 12, '<span class="epub_cfi"></span>');
+		var $currNodeChildren = $injectedElement.parent().contents();
 		
-		expect($currNodeChildren[2].nodeValue).toEqual(" asl");
-		expect($($currNodeChildren[3]).hasClass('epub_cfi')).toEqual(true);
-		expect($currNodeChildren[4].nodeValue).toEqual("asjd ");
+		expect($currNodeChildren[2].nodeValue).toBe(" asl");
+		expect($injectedElement.hasClass('epub_cfi')).toBe(true);
+		expect($currNodeChildren[4].nodeValue).toBe("asjd ");
 	});
 
 	it('excludes elements that have a class that indicates they are "cfi markers" and returns a list of text nodes', function () {
