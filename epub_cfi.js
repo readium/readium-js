@@ -42,6 +42,7 @@ var EpubCFIModule = function () {
     parse: function(input, startRule) {
       var parseFunctions = {
         "fragment": parse_fragment,
+        "range": parse_range,
         "path": parse_path,
         "local_path": parse_local_path,
         "indexStep": parse_indexStep,
@@ -136,7 +137,10 @@ var EpubCFIModule = function () {
           }
         }
         if (result0 !== null) {
-          result1 = parse_path();
+          result1 = parse_range();
+          if (result1 === null) {
+            result1 = parse_path();
+          }
           if (result1 !== null) {
             if (input.charCodeAt(pos) === 41) {
               result2 = ")";
@@ -162,10 +166,81 @@ var EpubCFIModule = function () {
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, pathVal) { 
+          result0 = (function(offset, fragmentVal) { 
                 
-                return { type:"CFIAST", cfiString:pathVal }; 
+                return { type:"CFIAST", cfiString:fragmentVal };
             })(pos0, result0[1]);
+        }
+        if (result0 === null) {
+          pos = pos0;
+        }
+        return result0;
+      }
+      
+      function parse_range() {
+        var result0, result1, result2, result3, result4, result5;
+        var pos0, pos1;
+        
+        pos0 = pos;
+        pos1 = pos;
+        result0 = parse_indexStep();
+        if (result0 !== null) {
+          result1 = parse_local_path();
+          if (result1 !== null) {
+            if (input.charCodeAt(pos) === 44) {
+              result2 = ",";
+              pos++;
+            } else {
+              result2 = null;
+              if (reportFailures === 0) {
+                matchFailed("\",\"");
+              }
+            }
+            if (result2 !== null) {
+              result3 = parse_local_path();
+              if (result3 !== null) {
+                if (input.charCodeAt(pos) === 44) {
+                  result4 = ",";
+                  pos++;
+                } else {
+                  result4 = null;
+                  if (reportFailures === 0) {
+                    matchFailed("\",\"");
+                  }
+                }
+                if (result4 !== null) {
+                  result5 = parse_local_path();
+                  if (result5 !== null) {
+                    result0 = [result0, result1, result2, result3, result4, result5];
+                  } else {
+                    result0 = null;
+                    pos = pos1;
+                  }
+                } else {
+                  result0 = null;
+                  pos = pos1;
+                }
+              } else {
+                result0 = null;
+                pos = pos1;
+              }
+            } else {
+              result0 = null;
+              pos = pos1;
+            }
+          } else {
+            result0 = null;
+            pos = pos1;
+          }
+        } else {
+          result0 = null;
+          pos = pos1;
+        }
+        if (result0 !== null) {
+          result0 = (function(offset, stepVal, localPathVal, rangeLocalPath1Val, rangeLocalPath2Val) {
+        
+                return { type:"range", path:stepVal, localPath:localPathVal, range1:rangeLocalPath1Val, range2:rangeLocalPath2Val };
+          })(pos0, result0[0], result0[1], result0[3], result0[5]);
         }
         if (result0 === null) {
           pos = pos0;
@@ -195,7 +270,7 @@ var EpubCFIModule = function () {
         if (result0 !== null) {
           result0 = (function(offset, stepVal, localPathVal) { 
         
-                return { type:"cfiString", path:stepVal, localPath:localPathVal }; 
+                return { type:"path", path:stepVal, localPath:localPathVal }; 
             })(pos0, result0[0], result0[1]);
         }
         if (result0 === null) {
@@ -1527,6 +1602,7 @@ EPUBcfi.CFIInstructions = {
 	// REFACTORING CANDIDATE: Rename this to indicate that it injects into a text terminus
 	textTermination : function ($currNode, textOffset, elementToInject) {
 
+		var $injectedElement;
 		// Get the first node, this should be a text node
 		if ($currNode === undefined) {
 
@@ -1537,8 +1613,8 @@ EPUBcfi.CFIInstructions = {
 			throw EPUBcfi.TerminusError("Text", "Text offset:" + textOffset, "no nodes found for termination condition");
 		}
 
-		$currNode = this.injectCFIMarkerIntoText($currNode, textOffset, elementToInject);
-		return $currNode;
+		$injectedElement = this.injectCFIMarkerIntoText($currNode, textOffset, elementToInject);
+		return $injectedElement;
 	},
 
 	// Description: Checks that the id assertion for the node target matches that on 
@@ -1624,7 +1700,7 @@ EPUBcfi.CFIInstructions = {
 					$newTextNode = $(document.createTextNode(originalText.slice(nodeOffset, originalText.length)));
 					$($newTextNode).insertAfter($injectedNode);
 
-					return $textNodeList.parent();
+					return $injectedNode;
 				}
 				else {
 
@@ -1792,46 +1868,25 @@ EPUBcfi.Interpreter = {
     //   the reading system, as it stands now. 
     getContentDocHref : function (CFI, packageDocument, classBlacklist, elementBlacklist, idBlacklist) {
 
-        // Decode for URI/IRI escape characters
         var $packageDocument = $(packageDocument);
         var decodedCFI = decodeURI(CFI);
         var CFIAST = EPUBcfi.Parser.parse(decodedCFI);
 
-        // Check node type; throw error if wrong type
-        if (CFIAST === undefined || CFIAST.type !== "CFIAST") { 
-
+        if (!CFIAST || CFIAST.type !== "CFIAST") { 
             throw EPUBcfi.NodeTypeError(CFIAST, "expected CFI AST root node");
         }
 
-        var $packageElement = $($("package", $packageDocument)[0]);
-
         // Interpet the path node (the package document step)
+        var $packageElement = $($("package", $packageDocument)[0]);
         var $currElement = this.interpretIndexStepNode(CFIAST.cfiString.path, $packageElement, classBlacklist, elementBlacklist, idBlacklist);
+        foundHref = this.searchLocalPathForHref($currElement, $packageDocument, CFIAST.cfiString.localPath, classBlacklist, elementBlacklist, idBlacklist);
 
-        // Interpret the local_path node, which is a set of steps and and a terminus condition
-        var stepNum = 0;
-        var nextStepNode;
-        for (stepNum = 0 ; stepNum <= CFIAST.cfiString.localPath.steps.length - 1 ; stepNum++) {
-        
-            nextStepNode = CFIAST.cfiString.localPath.steps[stepNum];
-            if (nextStepNode.type === "indexStep") {
-                
-                $currElement = this.interpretIndexStepNode(nextStepNode, $currElement, classBlacklist, elementBlacklist, idBlacklist);
-            }
-            else if (nextStepNode.type === "indirectionStep") {
-
-                $currElement = this.interpretIndirectionStepNode(nextStepNode, $currElement, classBlacklist, elementBlacklist, idBlacklist);
-            }
-
-            // Found the content document href referenced by the spine item 
-            if ($currElement.is("itemref")) {
-
-                return EPUBcfi.CFIInstructions.retrieveItemRefHref($currElement, $packageDocument);
-            }
+        if (foundHref) {
+            return foundHref;
         }
-
-        // TODO: If you get to here, an itemref element was never found - a runtime error. The cfi is misspecified or 
-        //   the package document is messed up.
+        else {
+            return undefined;
+        }
     },
 
     // Description: Inject an arbitrary html element into a position in a content document referenced by a CFI
@@ -1841,6 +1896,7 @@ EPUBcfi.Interpreter = {
         var CFIAST = EPUBcfi.Parser.parse(decodedCFI);
         var indirectionNode;
         var indirectionStepNum;
+        var $currElement;
 
         // Rationale: Since the correct content document for this CFI is already being passed, we can skip to the beginning 
         //   of the indirection step that referenced the content document.
@@ -1850,13 +1906,49 @@ EPUBcfi.Interpreter = {
         indirectionNode.type = "indexStep";
 
         // Interpret the rest of the steps
-        $currElement = this.interpretLocalPath(CFIAST.cfiString, indirectionStepNum, $("html", contentDocument), classBlacklist, elementBlacklist, idBlacklist);
+        $currElement = this.interpretLocalPath(CFIAST.cfiString.localPath, indirectionStepNum, $("html", contentDocument), classBlacklist, elementBlacklist, idBlacklist);
 
         // TODO: detect what kind of terminus; for now, text node termini are the only kind implemented
         $currElement = this.interpretTextTerminusNode(CFIAST.cfiString.localPath.termStep, $currElement, elementToInject);
 
         // Return the element that was injected into
         return $currElement;
+    },
+
+    // Description: Inject an arbitrary html element into a position in a content document referenced by a CFI
+    injectRangeElements : function (rangeCFI, contentDocument, startElementToInject, endElementToInject, classBlacklist, elementBlacklist, idBlacklist) {
+
+        var decodedCFI = decodeURI(rangeCFI);
+        var CFIAST = EPUBcfi.Parser.parse(decodedCFI);
+        var indirectionNode;
+        var indirectionStepNum;
+        var $currElement;
+        var $range1TargetElement;
+        var $range2TargetElement;
+
+        // Rationale: Since the correct content document for this CFI is already being passed, we can skip to the beginning 
+        //   of the indirection step that referenced the content document.
+        // Note: This assumes that indirection steps and index steps conform to an interface: an object with stepLength, idAssertion
+        indirectionStepNum = this.getFirstIndirectionStepNum(CFIAST);
+        indirectionNode = CFIAST.cfiString.localPath.steps[indirectionStepNum];
+        indirectionNode.type = "indexStep";
+
+        // Interpret the rest of the steps in the first local path
+        $currElement = this.interpretLocalPath(CFIAST.cfiString.localPath, indirectionStepNum, $("html", contentDocument), classBlacklist, elementBlacklist, idBlacklist);
+
+        // Interpret the first range local_path
+        $range1TargetElement = this.interpretLocalPath(CFIAST.cfiString.range1, 0, $currElement, classBlacklist, elementBlacklist, idBlacklist);
+        $range1TargetElement = this.interpretTextTerminusNode(CFIAST.cfiString.range1.termStep, $range1TargetElement, startElementToInject);
+
+        // Interpret the second range local_path
+        $range2TargetElement = this.interpretLocalPath(CFIAST.cfiString.range2, 0, $currElement, classBlacklist, elementBlacklist, idBlacklist);
+        $range2TargetElement = this.interpretTextTerminusNode(CFIAST.cfiString.range2.termStep, $range2TargetElement, endElementToInject);
+
+        // Return the element that was injected into
+        return {
+            startElement : $range1TargetElement[0],
+            endElement : $range2TargetElement[0]
+        };
     },
 
     // Description: This method will return the element or node (say, a text node) that is the final target of the 
@@ -1867,6 +1959,7 @@ EPUBcfi.Interpreter = {
         var CFIAST = EPUBcfi.Parser.parse(decodedCFI);
         var indirectionNode;
         var indirectionStepNum;
+        var $currElement;
         
         // Rationale: Since the correct content document for this CFI is already being passed, we can skip to the beginning 
         //   of the indirection step that referenced the content document.
@@ -1876,10 +1969,43 @@ EPUBcfi.Interpreter = {
         indirectionNode.type = "indexStep";
 
         // Interpret the rest of the steps
-        $currElement = this.interpretLocalPath(CFIAST.cfiString, indirectionStepNum, $("html", contentDocument), classBlacklist, elementBlacklist, idBlacklist);
+        $currElement = this.interpretLocalPath(CFIAST.cfiString.localPath, indirectionStepNum, $("html", contentDocument), classBlacklist, elementBlacklist, idBlacklist);
 
         // Return the element at the end of the CFI
         return $currElement;
+    },
+
+    getRangeTargetElements : function (rangeCFI, contentDocument, classBlacklist, elementBlacklist, idBlacklist) {
+
+        var decodedCFI = decodeURI(rangeCFI);
+        var CFIAST = EPUBcfi.Parser.parse(decodedCFI);
+        var indirectionNode;
+        var indirectionStepNum;
+        var $currElement;
+        var $range1TargetElement;
+        var $range2TargetElement;
+        
+        // Rationale: Since the correct content document for this CFI is already being passed, we can skip to the beginning 
+        //   of the indirection step that referenced the content document.
+        // Note: This assumes that indirection steps and index steps conform to an interface: an object with stepLength, idAssertion
+        indirectionStepNum = this.getFirstIndirectionStepNum(CFIAST);
+        indirectionNode = CFIAST.cfiString.localPath.steps[indirectionStepNum];
+        indirectionNode.type = "indexStep";
+
+        // Interpret the rest of the steps
+        $currElement = this.interpretLocalPath(CFIAST.cfiString.localPath, indirectionStepNum, $("html", contentDocument), classBlacklist, elementBlacklist, idBlacklist);
+
+        // Interpret first range local_path
+        $range1TargetElement = this.interpretLocalPath(CFIAST.cfiString.range1, 0, $currElement, classBlacklist, elementBlacklist, idBlacklist);
+
+        // Interpret second range local_path
+        $range2TargetElement = this.interpretLocalPath(CFIAST.cfiString.range2, 0, $currElement, classBlacklist, elementBlacklist, idBlacklist);
+
+        // Return the element at the end of the CFI
+        return {
+            startElement : $range1TargetElement[0],
+            endElement : $range2TargetElement[0]
+        };
     },
 
     // Description: This method allows a "partial" CFI to be used to reference a target in a content document, without a 
@@ -1901,7 +2027,7 @@ EPUBcfi.Interpreter = {
         var $currElement = this.interpretIndexStepNode(CFIAST.cfiString.path, $("html", contentDocument), classBlacklist, elementBlacklist, idBlacklist);
 
         // Interpret the rest of the steps
-        $currElement = this.interpretLocalPath(CFIAST.cfiString, 0, $currElement, classBlacklist, elementBlacklist, idBlacklist);
+        $currElement = this.interpretLocalPath(CFIAST.cfiString.localPath, 0, $currElement, classBlacklist, elementBlacklist, idBlacklist);
 
         // Return the element at the end of the CFI
         return $currElement;        
@@ -1927,7 +2053,7 @@ EPUBcfi.Interpreter = {
         var $currElement = this.interpretIndexStepNode(CFIAST.cfiString.path, $("html", contentDocument), classBlacklist, elementBlacklist, idBlacklist);
 
         // Interpret the rest of the steps
-        $currElement = this.interpretLocalPath(CFIAST.cfiString, 0, $currElement, classBlacklist, elementBlacklist, idBlacklist);
+        $currElement = this.interpretLocalPath(CFIAST.cfiString.localPath, 0, $currElement, classBlacklist, elementBlacklist, idBlacklist);
 
         // Return the element at the end of the CFI
         textOffset = parseInt(CFIAST.cfiString.localPath.termStep.offsetValue);
@@ -1955,14 +2081,14 @@ EPUBcfi.Interpreter = {
     },
 
     // REFACTORING CANDIDATE: cfiString node and start step num could be merged into one argument, by simply passing the 
-    //   starting step. 
-    interpretLocalPath : function (cfiStringNode, startStepNum, $currElement, classBlacklist, elementBlacklist, idBlacklist) {
+    //   starting step... probably a good idea, this would make the meaning of this method clearer.
+    interpretLocalPath : function (localPathNode, startStepNum, $currElement, classBlacklist, elementBlacklist, idBlacklist) {
 
         var stepNum = startStepNum;
         var nextStepNode;
-        for (stepNum; stepNum <= cfiStringNode.localPath.steps.length - 1 ; stepNum++) {
+        for (stepNum; stepNum <= localPathNode.steps.length - 1 ; stepNum++) {
         
-            nextStepNode = cfiStringNode.localPath.steps[stepNum];
+            nextStepNode = localPathNode.steps[stepNum];
             if (nextStepNode.type === "indexStep") {
 
                 $currElement = this.interpretIndexStepNode(nextStepNode, $currElement, classBlacklist, elementBlacklist, idBlacklist);
@@ -2027,7 +2153,8 @@ EPUBcfi.Interpreter = {
     },
 
     // REFACTORING CANDIDATE: The logic here assumes that a user will always want to use this terminus
-    //   to inject content into the found node. This should be changed to be more flexible.
+    //   to inject content into the found node. This will not always be the case, and different types of interpretation
+    //   are probably desired. 
     interpretTextTerminusNode : function (terminusNode, $currElement, elementToInject) {
 
         if (terminusNode === undefined || terminusNode.type !== "textTerminus") {
@@ -2035,12 +2162,40 @@ EPUBcfi.Interpreter = {
             throw EPUBcfi.NodeTypeError(terminusNode, "expected text terminus node");
         }
 
-        var $elementInjectedInto = EPUBcfi.CFIInstructions.textTermination(
+        var $injectedElement = EPUBcfi.CFIInstructions.textTermination(
             $currElement, 
             terminusNode.offsetValue, 
-            elementToInject);
+            elementToInject
+            );
 
-        return $elementInjectedInto;
+        return $injectedElement;
+    },
+
+    searchLocalPathForHref : function ($currElement, $packageDocument, localPathNode, classBlacklist, elementBlacklist, idBlacklist) {
+
+        // Interpret the first local_path node, which is a set of steps and and a terminus condition
+        var stepNum = 0;
+        var nextStepNode;
+        for (stepNum = 0 ; stepNum <= localPathNode.steps.length - 1 ; stepNum++) {
+        
+            nextStepNode = localPathNode.steps[stepNum];
+            if (nextStepNode.type === "indexStep") {
+                
+                $currElement = this.interpretIndexStepNode(nextStepNode, $currElement, classBlacklist, elementBlacklist, idBlacklist);
+            }
+            else if (nextStepNode.type === "indirectionStep") {
+
+                $currElement = this.interpretIndirectionStepNode(nextStepNode, $currElement, classBlacklist, elementBlacklist, idBlacklist);
+            }
+
+            // Found the content document href referenced by the spine item 
+            if ($currElement.is("itemref")) {
+
+                return EPUBcfi.CFIInstructions.retrieveItemRefHref($currElement, $packageDocument);
+            }
+        }
+
+        return undefined;
     }
 };
     // Description: This is a set of runtime errors that the CFI interpreter can throw. 
@@ -2422,6 +2577,13 @@ EPUBcfi.CFIAssertionError = function (expectedAssertion, targetElementAssertion,
         generateElementCFIComponent : function (startElement) { return generator.generateElementCFIComponent.call(generator, startElement); },
         generatePackageDocumentCFIComponent : function (contentDocumentName, packageDocument) { return generator.generatePackageDocumentCFIComponent.call(generator, contentDocumentName, packageDocument); }, 
         generateCompleteCFI : function (packageDocumentCFIComponent, contentDocumentCFIComponent) { return generator.generateCompleteCFI.call(generator, packageDocumentCFIComponent, contentDocumentCFIComponent); },
-        injectElementAtOffset : function ($textNodeList, textOffset, elementToInject) { return instructions.injectCFIMarkerIntoText.call(instructions, $textNodeList, textOffset, elementToInject); }
+        injectElementAtOffset : function ($textNodeList, textOffset, elementToInject) { return instructions.injectCFIMarkerIntoText.call(instructions, $textNodeList, textOffset, elementToInject); },
+        injectRangeElements : function (rangeCFI, contentDocument, startElementToInject, endElementToInject, classBlacklist, elementBlacklist, idBlacklist) {
+            return interpreter.injectRangeElements.call(interpreter, rangeCFI, contentDocument, startElementToInject, endElementToInject, classBlacklist, elementBlacklist, idBlacklist);
+        },
+        getRangeTargetElements : function (rangeCFI, contentDocument, classBlacklist, elementBlacklist, idBlacklist) {
+            return interpreter.getRangeTargetElements.call(interpreter, rangeCFI, contentDocument, classBlacklist, elementBlacklist, idBlacklist);
+        }, 
+
     };
 };

@@ -40,6 +40,8 @@ var EpubReflowableModule = function(spineObject, viewerSettingsObject, CFIAnnota
         setTheme : function (theme) { return reflowableView.setTheme.call(reflowableView, theme); },
         setSyntheticLayout : function (isSynthetic) { return reflowableView.setSyntheticLayout.call(reflowableView, isSynthetic); },
         on : function (eventName, callback, callbackContext) { return reflowableView.on.call(reflowableView, eventName, callback, callbackContext); },
-        insertSelectionMarkers : function () { return reflowableView.insertSelectionMarkers.call(reflowableView); }
+        insertSelectionMarkers : function () { return reflowableView.insertSelectionMarkers.call(reflowableView); },
+        addHighlightMarkersForCFI : function (CFI, id) { return reflowableView.annotations.injectHighlightMarkersFromCFI.call(reflowableView.annotations, CFI, id); },
+        addBookmarkMarkerForCFI : function (CFI, id) { return reflowableView.annotations.injectBookmarkMarkerFromCFI.call(reflowableView.annotations, CFI, id); } 
     };
 };

@@ -13,32 +13,75 @@ describe("EpubReflowable.ReflowableAnnotations", function () {
 
     describe("public interface", function () {
 
-        beforeEach(function () {
+        describe("injectHighlightMarkersFromCFI()", function () {
 
-            this.reflowingAnnotations = new EpubReflowable.ReflowableAnnotations();
-            var elements = "<div id='ancestor'> \
-                                    <div id='a'> \
-                                        <div id='b'> \
-                                        </div> \
-                                        <div id='c'> \
-                                        </div> \
-                                        <div id='d'> \
-                                        </div> \
-                                    </div> \
-                                    <div id='e'> \
-                                        <div id ='f'> \
-                                            <div id ='g'> \
-                                            </div> \
-                                        </div> \
-                                        <div id='h'> \
-                                        </div> \
-                                    </div> \
-                                </div>";
+            beforeEach(function () {
 
-            this.$elements = $(elements);
+                var contentDoc = jasmine.getFixtures().read("moby_dick_content_doc.xhtml");
+                var contentDocDom = (new window.DOMParser).parseFromString(contentDoc, "text/xml");
+                this.reflowingAnnotations = new EpubReflowable.ReflowableAnnotations({
+                    contentDocumentDOM : contentDocDom
+                });
+            });
+
+            it("returns a list of selectedElements", function () {
+
+                var expectedNumSelectedElementsFromFixture = 3;
+                var annotationInfo = this.reflowingAnnotations.injectHighlightMarkersFromCFI("epubcfi(/6/14!/4/2,/6/1:10,/8/1:10)", "10");
+                expect(annotationInfo.selectedElements.length).toBe(expectedNumSelectedElementsFromFixture);
+            });
+        });
+
+        describe("injectBookmarkMarkerFromCFI()", function () {
+
+            beforeEach(function () {
+
+                var contentDoc = jasmine.getFixtures().read("moby_dick_content_doc.xhtml");
+                var contentDocDom = (new window.DOMParser).parseFromString(contentDoc, "text/xml");
+                this.reflowingAnnotations = new EpubReflowable.ReflowableAnnotations({
+                    contentDocumentDOM : contentDocDom
+                }); 
+            });
+
+            it("returns a list with a single injected bookmark element", function () {
+
+                var annotationInfo = this.reflowingAnnotations.injectBookmarkMarkerFromCFI("epubcfi(/6/14!/4/2/6/1:10)", "10");
+                expect(annotationInfo.selectedElements.length).toBe(1);
+            });
+
+            it("injects a bookmark marker", function () {
+
+                var annotationInfo = this.reflowingAnnotations.injectBookmarkMarkerFromCFI("epubcfi(/6/14!/4/2/6/1:10)", "10");
+                expect($(annotationInfo.selectedElements[0]).hasClass("bookmark-marker")).toBe(true);
+            });
         });
 
         describe("getSelectionInfo()", function () {
+
+            beforeEach(function () {
+                this.reflowingAnnotations = new EpubReflowable.ReflowableAnnotations();
+                var elements = "<div id='ancestor'> \
+                                        <div id='a'> \
+                                            <div id='b'> \
+                                            </div> \
+                                            <div id='c'> \
+                                            </div> \
+                                            <div id='d'> \
+                                            </div> \
+                                        </div> \
+                                        <div id='e'> \
+                                            <div id ='f'> \
+                                                <div id ='g'> \
+                                                </div> \
+                                            </div> \
+                                            <div id='h'> \
+                                            </div> \
+                                        </div> \
+                                    </div>";
+
+                this.$elements = $(elements);
+            });
+
 
             it("returns an annotation info object", function () {
 
@@ -62,6 +105,30 @@ describe("EpubReflowable.ReflowableAnnotations", function () {
         });
 
         describe("findSelectedElements()", function () {
+
+            beforeEach(function () {
+                this.reflowingAnnotations = new EpubReflowable.ReflowableAnnotations();
+                var elements = "<div id='ancestor'> \
+                                        <div id='a'> \
+                                            <div id='b'> \
+                                            </div> \
+                                            <div id='c'> \
+                                            </div> \
+                                            <div id='d'> \
+                                            </div> \
+                                        </div> \
+                                        <div id='e'> \
+                                            <div id ='f'> \
+                                                <div id ='g'> \
+                                                </div> \
+                                            </div> \
+                                            <div id='h'> \
+                                            </div> \
+                                        </div> \
+                                    </div>";
+
+                this.$elements = $(elements);
+            });
 
             it("gets elements in pre-order", function () {
 
@@ -89,7 +156,31 @@ describe("EpubReflowable.ReflowableAnnotations", function () {
             });
         });
 
-        describe("injectHighlightMarkers", function () {
+        describe("injectHighlightMarkers()", function () {
+
+            beforeEach(function () {
+                this.reflowingAnnotations = new EpubReflowable.ReflowableAnnotations();
+                var elements = "<div id='ancestor'> \
+                                        <div id='a'> \
+                                            <div id='b'> \
+                                            </div> \
+                                            <div id='c'> \
+                                            </div> \
+                                            <div id='d'> \
+                                            </div> \
+                                        </div> \
+                                        <div id='e'> \
+                                            <div id ='f'> \
+                                                <div id ='g'> \
+                                                </div> \
+                                            </div> \
+                                            <div id='h'> \
+                                            </div> \
+                                        </div> \
+                                    </div>";
+
+                this.$elements = $(elements);
+            });
 
             it("injects markers when start and end node are the same", function () {
 
@@ -113,6 +204,79 @@ describe("EpubReflowable.ReflowableAnnotations", function () {
 
                 expect($("#b", this.$elements).contents().length).toBe(3);
                 expect($("#c", this.$elements).contents().length).toBe(3);
+            });
+        });
+
+        describe("private helpers", function () {
+
+            beforeEach(function () {
+                this.reflowingAnnotations = new EpubReflowable.ReflowableAnnotations();
+            });
+
+            describe("getBookmarkMarker()", function () {
+
+                it("gets the bookmark span html", function () {
+
+                    var expectedSpanHtml = "<span class='bookmark-marker cfi-marker' id='10' data-cfi='epubcfi(/2/2/2/2)'></span>";
+                    var resultSpanHtml = this.reflowingAnnotations.getBookmarkMarker("epubcfi(/2/2/2/2)", "10");
+
+                    expect(resultSpanHtml).toBe(expectedSpanHtml);
+                });
+
+                it("can convert the html string to a dom element", function () {
+
+                    var resultSpanHtml = this.reflowingAnnotations.getBookmarkMarker("epubcfi(/2/2/2/2)", "10");
+                    var $domSpan = $(resultSpanHtml);
+
+                    expect($domSpan.hasClass("bookmark-marker")).toBe(true);
+                    expect($domSpan.hasClass("cfi-marker")).toBe(true);
+                    expect($domSpan.attr("id")).toBe("10");
+                    expect($domSpan.attr("data-cfi")).toBe("epubcfi(/2/2/2/2)");
+                });
+            });
+
+            describe("getRangeStartMarker()", function () {
+
+                it("gets the range start span html", function () {
+
+                    var expectedSpanHtml = "<span class='range-start-marker cfi-marker' id='start-10' data-cfi='epubcfi(/2/2/2/2)'></span>";
+                    var resultSpanHtml = this.reflowingAnnotations.getRangeStartMarker("epubcfi(/2/2/2/2)", "10");
+
+                    expect(resultSpanHtml).toBe(expectedSpanHtml);
+                });
+
+                it("can convert the html string to a dom element", function () {
+
+                    var resultSpanHtml = this.reflowingAnnotations.getRangeStartMarker("epubcfi(/2/2/2/2)", "10");
+                    var $domSpan = $(resultSpanHtml);
+
+                    expect($domSpan.hasClass("range-start-marker")).toBe(true);
+                    expect($domSpan.hasClass("cfi-marker")).toBe(true);
+                    expect($domSpan.attr("id")).toBe("start-10");
+                    expect($domSpan.attr("data-cfi")).toBe("epubcfi(/2/2/2/2)");
+                });
+            });
+
+            describe("getRangeEndMarker()", function () {
+
+                it("gets the range end span html", function () {
+
+                    var expectedSpanHtml = "<span class='range-end-marker cfi-marker' id='end-10' data-cfi='epubcfi(/2/2/2/2)'></span>";
+                    var resultSpanHtml = this.reflowingAnnotations.getRangeEndMarker("epubcfi(/2/2/2/2)", "10");
+
+                    expect(resultSpanHtml).toBe(expectedSpanHtml);
+                });
+
+                it("can convert the html string to a dom element", function () {
+
+                    var resultSpanHtml = this.reflowingAnnotations.getRangeEndMarker("epubcfi(/2/2/2/2)", "10");
+                    var $domSpan = $(resultSpanHtml);
+
+                    expect($domSpan.hasClass("range-end-marker")).toBe(true);
+                    expect($domSpan.hasClass("cfi-marker")).toBe(true);
+                    expect($domSpan.attr("id")).toBe("end-10");
+                    expect($domSpan.attr("data-cfi")).toBe("epubcfi(/2/2/2/2)");
+                });
             });
         });
     });

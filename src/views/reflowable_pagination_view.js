@@ -38,10 +38,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 		this.pages = new EpubReflowable.ReflowablePagination();
 
         // So this can be any callback, doesn't have to be the epub controller
-		this.annotations = new EpubReflowable.ReflowableAnnotations({
-			saveCallback : undefined,
-			callbackContext : undefined
-		});
+		this.annotations;
 
         this.cfi = new EpubCFIModule();
 
@@ -119,6 +116,12 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
                     that.pages.goToPage(1, that.viewerModel.get("twoUp"), that.spineItemModel.get("firstPageIsOffset"));
                 }
             }
+
+            that.annotations = new EpubReflowable.ReflowableAnnotations({
+                saveCallback : undefined,
+                callbackContext : undefined,
+                contentDocumentDOM : that.getEpubContentDocument().parentNode
+            });
 
             that.trigger("contentDocumentLoaded", that.el);
 		});
