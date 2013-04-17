@@ -308,7 +308,8 @@ EpubReflowable.AlternateStyleTagSelector = Backbone.Model.extend({
 		return styleSet;
 	}
 });
-    EpubReflowable.ReflowableAnnotations = Backbone.Model.extend({
+
+EpubReflowable.ReflowableAnnotations = Backbone.Model.extend({
 
     defaults : {
         "saveCallback" : undefined,
@@ -751,6 +752,7 @@ EpubReflowable.ReflowableLayout = Backbone.Model.extend({
 
     initializeContentDocument : function (epubContentDocument, epubCFIs, currSpinePosition, readiumFlowingContent, linkClickHandler, handlerContext, currentTheme, flowingWrapper, readiumFlowingContent, keydownHandler, bindings) {
 
+        var that = this;
         var triggers;
         var lastPageElementId = this.injectCFIElements(
             epubContentDocument, 
@@ -761,10 +763,14 @@ EpubReflowable.ReflowableLayout = Backbone.Model.extend({
         // this.applyBindings( readiumFlowingContent, epubContentDocument );
         this.applySwitches( epubContentDocument, readiumFlowingContent ); 
         // this.injectMathJax(epubContentDocument);
-        this.injectLinkHandler(epubContentDocument, linkClickHandler, handlerContext);
+        // this.injectLinkHandler(epubContentDocument, linkClickHandler, handlerContext);
         triggers = this.parseTriggers(epubContentDocument);
         this.applyTriggers(epubContentDocument, triggers);
         $(epubContentDocument).attr('title');//, Acc.page + ' - ' + Acc.title);
+
+        $("a", epubContentDocument).click(function (e) {
+          that.trigger("internalLinkClicked");
+        });
 
         this.injectTheme(
             currentTheme, 
@@ -1587,7 +1593,8 @@ EpubReflowable.ReflowablePaginator = Backbone.Model.extend({
         return this.calcNumPages(epubContentDocument, isTwoUp);
     }
 });
-    EpubReflowable.Trigger = function(domNode) {
+
+EpubReflowable.Trigger = function(domNode) {
 	var $el = $(domNode);
 	this.action 	= $el.attr("action");
 	this.ref 		= $el.attr("ref");
@@ -1658,14 +1665,16 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
 	initialize : function (options) {
 
-        var ViewerModel = Backbone.Model.extend({});
-        var SpineItemModel = Backbone.Model.extend({});
+    var that = this;
 
-        this.viewerModel = new ViewerModel(options.viewerSettings);
-        this.viewerModel.set({ twoUp : options.viewerSettings.syntheticLayout });
-        this.spineItemModel = new SpineItemModel(options.spineItem);
-        this.epubCFIs = options.contentDocumentCFIs;
-        this.bindings = options.bindings;
+    var ViewerModel = Backbone.Model.extend({});
+    var SpineItemModel = Backbone.Model.extend({});
+
+    this.viewerModel = new ViewerModel(options.viewerSettings);
+    this.viewerModel.set({ twoUp : options.viewerSettings.syntheticLayout });
+    this.spineItemModel = new SpineItemModel(options.spineItem);
+    this.epubCFIs = options.contentDocumentCFIs;
+    this.bindings = options.bindings;
 
 		// Initalize delegates and other models
 		this.reflowableLayout = new EpubReflowable.ReflowableLayout();
@@ -1679,7 +1688,12 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 			callbackContext : undefined
 		});
 
-        this.cfi = new EpubCFIModule();
+    this.cfi = new EpubCFIModule();
+
+    this.reflowableLayout.on("internalLinkClicked", function(){
+      // alert("internal link clicked from EpubReflowable.ReflowablePaginationView");
+      that.trigger("internalLinkClicked");
+    }, this);
 
         // this.mediaOverlayController = this.model.get("media_overlay_controller");
         // this.mediaOverlayController.setPages(this.pages);

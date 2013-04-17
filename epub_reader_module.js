@@ -187,7 +187,12 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
                     that.trigger("epubLoaded");
                 }
             });
-            
+
+            pagesViewInfo.pagesView.on("internalLinkClicked", function(){
+                // alert("internalLinkClicked from renderAllStrategy");
+                that.trigger("internalLinkClicked");
+            }, this);
+
             $(that.get("parentElement")).append(pagesViewInfo.pagesView.render(false, undefined));
         });
 
@@ -199,6 +204,7 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
 
         }, 1000);
     },
+
 
     // REFACTORING CANDIDATE: The each method is causing numPages and currentPage to be hoisted into the global
     //   namespace, I believe. Bad bad. Check this.
@@ -254,7 +260,8 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         pagesView.setFontSize(preferences.fontSize);
     }
 });
-    EpubReader.EpubReaderView = Backbone.View.extend({
+
+EpubReader.EpubReaderView = Backbone.View.extend({
 
     initialize : function (options) {
 
@@ -270,6 +277,11 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
             that.trigger("epubLoaded");
         }, this);
         
+        this.reader.on("internalLinkClicked", function(){
+            // alert("internal link clicked inside EpubReader.EpubReaderView");
+            that.trigger("internalLinkClicked");
+        }, this);
+
         this.readerBoundElement = options.readerElement;
         this.cfi = new EpubCFIModule();
     },
