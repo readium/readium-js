@@ -1940,7 +1940,7 @@ EPUBcfi.Interpreter = {
         $range1TargetElement = this.interpretLocalPath(CFIAST.cfiString.range1, 0, $currElement, classBlacklist, elementBlacklist, idBlacklist);
         $range1TargetElement = this.interpretTextTerminusNode(CFIAST.cfiString.range1.termStep, $range1TargetElement, startElementToInject);
 
-        // Inject the start element
+        // Interpret the second range local_path
         $range2TargetElement = this.interpretLocalPath(CFIAST.cfiString.range2, 0, $currElement, classBlacklist, elementBlacklist, idBlacklist);
         $range2TargetElement = this.interpretTextTerminusNode(CFIAST.cfiString.range2.termStep, $range2TargetElement, endElementToInject);
 
@@ -2577,6 +2577,13 @@ EPUBcfi.CFIAssertionError = function (expectedAssertion, targetElementAssertion,
         generateElementCFIComponent : function (startElement) { return generator.generateElementCFIComponent.call(generator, startElement); },
         generatePackageDocumentCFIComponent : function (contentDocumentName, packageDocument) { return generator.generatePackageDocumentCFIComponent.call(generator, contentDocumentName, packageDocument); }, 
         generateCompleteCFI : function (packageDocumentCFIComponent, contentDocumentCFIComponent) { return generator.generateCompleteCFI.call(generator, packageDocumentCFIComponent, contentDocumentCFIComponent); },
-        injectElementAtOffset : function ($textNodeList, textOffset, elementToInject) { return instructions.injectCFIMarkerIntoText.call(instructions, $textNodeList, textOffset, elementToInject); }
+        injectElementAtOffset : function ($textNodeList, textOffset, elementToInject) { return instructions.injectCFIMarkerIntoText.call(instructions, $textNodeList, textOffset, elementToInject); },
+        injectRangeElements : function (rangeCFI, contentDocument, startElementToInject, endElementToInject, classBlacklist, elementBlacklist, idBlacklist) {
+            return interpreter.injectRangeElements.call(interpreter, rangeCFI, contentDocument, startElementToInject, endElementToInject, classBlacklist, elementBlacklist, idBlacklist);
+        },
+        getRangeTargetElements : function (rangeCFI, contentDocument, classBlacklist, elementBlacklist, idBlacklist) {
+            return interpreter.getRangeTargetElements.call(interpreter, rangeCFI, contentDocument, classBlacklist, elementBlacklist, idBlacklist);
+        }, 
+
     };
 };

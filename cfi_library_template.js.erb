@@ -24,6 +24,13 @@ var EpubCFIModule = function () {
         generateElementCFIComponent : function (startElement) { return generator.generateElementCFIComponent.call(generator, startElement); },
         generatePackageDocumentCFIComponent : function (contentDocumentName, packageDocument) { return generator.generatePackageDocumentCFIComponent.call(generator, contentDocumentName, packageDocument); }, 
         generateCompleteCFI : function (packageDocumentCFIComponent, contentDocumentCFIComponent) { return generator.generateCompleteCFI.call(generator, packageDocumentCFIComponent, contentDocumentCFIComponent); },
-        injectElementAtOffset : function ($textNodeList, textOffset, elementToInject) { return instructions.injectCFIMarkerIntoText.call(instructions, $textNodeList, textOffset, elementToInject); }
+        injectElementAtOffset : function ($textNodeList, textOffset, elementToInject) { return instructions.injectCFIMarkerIntoText.call(instructions, $textNodeList, textOffset, elementToInject); },
+        injectRangeElements : function (rangeCFI, contentDocument, startElementToInject, endElementToInject, classBlacklist, elementBlacklist, idBlacklist) {
+            return interpreter.injectRangeElements.call(interpreter, rangeCFI, contentDocument, startElementToInject, endElementToInject, classBlacklist, elementBlacklist, idBlacklist);
+        },
+        getRangeTargetElements : function (rangeCFI, contentDocument, classBlacklist, elementBlacklist, idBlacklist) {
+            return interpreter.getRangeTargetElements.call(interpreter, rangeCFI, contentDocument, classBlacklist, elementBlacklist, idBlacklist);
+        }, 
+
     };
 };
