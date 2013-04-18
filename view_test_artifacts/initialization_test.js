@@ -1,47 +1,97 @@
 var initializationTest = function () {
     
-    var spine = [{
+    var spine = [
+        {
+            contentDocumentURI : "epub_content/accessible_epub_3/EPUB/bk01-toc.xhtml",
+            title : "TOC", 
+            firstPageIsOffset : false,
+            pageProgressionDirection : "ltr", 
+            spineIndex : 0 
+        },
+        {
             contentDocumentURI : "epub_content/accessible_epub_3/EPUB/ch01.xhtml",
             title : "Chapter 1", 
             firstPageIsOffset : false,
             pageProgressionDirection : "ltr", 
-            spineIndex : 0
+            spineIndex : 1
         },
         {
             contentDocumentURI : "epub_content/accessible_epub_3/EPUB/ch01s02.xhtml",
-            title : "Chapter 2", 
+            title : "Chapter 1.1", 
             firstPageIsOffset : false,
             pageProgressionDirection : "ltr", 
-            spineIndex : 1 
+            spineIndex : 2
         },
         {
             contentDocumentURI : "epub_content/accessible_epub_3/EPUB/ch02.xhtml",
-            title : "Chapter 3", 
+            title : "Chapter 2", 
             firstPageIsOffset : false,
             pageProgressionDirection : "ltr", 
-            spineIndex : 2 
+            spineIndex : 3
         },
         {
             contentDocumentURI : "epub_content/accessible_epub_3/EPUB/ch02s02.xhtml",
-            title : "Chapter 4", 
+            title : "Chapter 2 s02", 
             firstPageIsOffset : false,
             pageProgressionDirection : "ltr", 
-            spineIndex : 3 
+            spineIndex : 4
         },
         {
             contentDocumentURI : "epub_content/accessible_epub_3/EPUB/ch02s03.xhtml",
-            title : "Chapter 5", 
+            title : "Chapter 2 s03", 
             firstPageIsOffset : false,
             pageProgressionDirection : "ltr", 
-            spineIndex : 4 
+            spineIndex : 5
         },
         {
-            contentDocumentURI : "epub_content/accessible_epub_3/EPUB/bk01-toc.xhtml",
-            title : "Index", 
+            contentDocumentURI : "epub_content/accessible_epub_3/EPUB/ch03.xhtml",
+            title : "Chapter 3", 
             firstPageIsOffset : false,
             pageProgressionDirection : "ltr", 
-            spineIndex : 5 
-        }
+            spineIndex : 6
+        },
+        {
+            contentDocumentURI : "epub_content/accessible_epub_3/EPUB/ch03s02.xhtml",
+            title : "Chapter 3 s02", 
+            firstPageIsOffset : false,
+            pageProgressionDirection : "ltr", 
+            spineIndex : 7
+        },
+        {
+            contentDocumentURI : "epub_content/accessible_epub_3/EPUB/ch03s03.xhtml",
+            title : "Chapter 3 s03", 
+            firstPageIsOffset : false,
+            pageProgressionDirection : "ltr", 
+            spineIndex : 8
+        },
+        {
+            contentDocumentURI : "epub_content/accessible_epub_3/EPUB/ch03s04.xhtml",
+            title : "Chapter 3 s04", 
+            firstPageIsOffset : false,
+            pageProgressionDirection : "ltr", 
+            spineIndex : 9
+        },
+        {
+            contentDocumentURI : "epub_content/accessible_epub_3/EPUB/ch03s05.xhtml",
+            title : "Chapter 3 s05", 
+            firstPageIsOffset : false,
+            pageProgressionDirection : "ltr", 
+            spineIndex : 10
+        },
+        {
+            contentDocumentURI : "epub_content/accessible_epub_3/EPUB/ch03s06.xhtml",
+            title : "Chapter 3 s06", 
+            firstPageIsOffset : false,
+            pageProgressionDirection : "ltr", 
+            spineIndex : 11
+        },
+        {
+            contentDocumentURI : "epub_content/accessible_epub_3/EPUB/ch04.xhtml",
+            title : "Chapter 4", 
+            firstPageIsOffset : false,
+            pageProgressionDirection : "ltr", 
+            spineIndex : 12
+        },
     ];
 
     var viewerSettings = {
