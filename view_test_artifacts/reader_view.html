@@ -22,9 +22,21 @@
                     alert("epub loaded");
                 }, this);
 
-                // TODO: 
-                this.view.on("internalLinkClicked", function(){
-                    alert("internal link clicked");
+                this.view.on("internalLinkClicked", function(e){
+                    var href;
+                    e.preventDefault();
+
+                    // Check for both href and xlink:href attribute and get value
+                    if (e.currentTarget.attributes["xlink:href"]) {
+                        href = e.currentTarget.attributes["xlink:href"].value;
+                    }
+                    else {
+                        href = e.currentTarget.attributes["href"].value;
+                    }
+
+                    var spineIndex = this.view.findSpineIndex(href);
+                    this.view.showSpineItem(spineIndex);
+
                 }, this);
 
                 this.view.render();

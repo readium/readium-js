@@ -769,7 +769,7 @@ EpubReflowable.ReflowableLayout = Backbone.Model.extend({
         $(epubContentDocument).attr('title');//, Acc.page + ' - ' + Acc.title);
 
         $("a", epubContentDocument).click(function (e) {
-          that.trigger("internalLinkClicked");
+          that.trigger("internalLinkClicked", e);
         });
 
         this.injectTheme(
@@ -1690,9 +1690,8 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
     this.cfi = new EpubCFIModule();
 
-    this.reflowableLayout.on("internalLinkClicked", function(){
-      // alert("internal link clicked from EpubReflowable.ReflowablePaginationView");
-      that.trigger("internalLinkClicked");
+    this.reflowableLayout.on("internalLinkClicked", function(e){
+      that.trigger("internalLinkClicked", e);
     }, this);
 
         // this.mediaOverlayController = this.model.get("media_overlay_controller");
@@ -2190,7 +2189,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         spineItem : spineObject, 
         viewerSettings : viewerSettingsObject, 
         contentDocumentCFIs : CFIAnnotations, 
-        bindings : bindings
+        bindings : bindings,
     });
 
     // Description: The public interface

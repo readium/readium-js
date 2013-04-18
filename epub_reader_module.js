@@ -144,7 +144,8 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
             this.get("viewerSettings"), 
             this.get("annotations"), 
             this.get("bindings")
-            );
+        );
+
         var pagesViewInfo = {
             pagesView : view, 
             spineIndexes : [spineItem.spineIndex],
@@ -188,9 +189,8 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
                 }
             });
 
-            pagesViewInfo.pagesView.on("internalLinkClicked", function(){
-                // alert("internalLinkClicked from renderAllStrategy");
-                that.trigger("internalLinkClicked");
+            pagesViewInfo.pagesView.on("internalLinkClicked", function(e){
+                that.trigger("internalLinkClicked", e);
             }, this);
 
             $(that.get("parentElement")).append(pagesViewInfo.pagesView.render(false, undefined));
@@ -270,16 +270,16 @@ EpubReader.EpubReaderView = Backbone.View.extend({
         this.reader = new EpubReader.EpubReader({
             spineInfo : options.spineInfo,
             viewerSettings : options.viewerSettings,
-            parentElement : options.readerElement
-        });
+            parentElement : options.readerElement}
+        );
+        
         // Rationale: Propagate the loaded event after all the content documents are loaded
         this.reader.on("epubLoaded", function () {
             that.trigger("epubLoaded");
         }, this);
         
-        this.reader.on("internalLinkClicked", function(){
-            // alert("internal link clicked inside EpubReader.EpubReaderView");
-            that.trigger("internalLinkClicked");
+        this.reader.on("internalLinkClicked", function(e){
+            that.trigger("internalLinkClicked", e);
         }, this);
 
         this.readerBoundElement = options.readerElement;
@@ -404,8 +404,12 @@ EpubReader.EpubReaderView = Backbone.View.extend({
         var currentView = this.reader.getCurrentPagesView();
         annotationInfo = currentView.insertSelectionMarkers();
         return annotationInfo;
-    }
+    },
 
+    findSpineIndex : function (href) {
+        var spineIndex = this.reader.findSpineIndex(href);
+        return spineIndex;
+    }
     // ----------------------- Private Helpers -----------------------------------------------------------
 
 });
@@ -433,6 +437,7 @@ EpubReader.EpubReaderView = Backbone.View.extend({
         getNumberOfPages : function () { return epubReaderView.getNumberOfPages.call(epubReaderView); },
         getCurrentPage : function () { return epubReaderView.getCurrentPage.call(epubReaderView); },
         on : function (eventName, callback, callbackContext) { return epubReaderView.on.call(epubReaderView, eventName, callback, callbackContext); },
-        getCurrentSelectionInfo : function () { return epubReaderView.getCurrentSelectionInfo.call(epubReaderView); }
+        getCurrentSelectionInfo : function () { return epubReaderView.getCurrentSelectionInfo.call(epubReaderView); },
+        findSpineIndex : function(href) { return epubReaderView.findSpineIndex.call(epubReaderView, href); }
     };
 };
