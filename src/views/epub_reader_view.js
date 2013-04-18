@@ -154,6 +154,15 @@ EpubReader.EpubReaderView = Backbone.View.extend({
     addBookmarkMarkerForCFI : function (CFI, id) {
 
         var annotationInfo;
+
+
+        // Get spine index for CFI
+        var contentDocSpineIndex = this.getSpineIndexFromCFI(CFI);
+
+        // Check if that is rendered; render if not
+
+        // Inject the bookmark/queue em up
+
         var currentView = this.reader.getCurrentPagesView();
         try {
             annotationInfo = currentView.addBookmarkMarkerForCFI(CFI, id);
@@ -162,8 +171,19 @@ EpubReader.EpubReaderView = Backbone.View.extend({
         catch (error) {
             throw error;
         }
-    } 
+    },
 
     // ----------------------- Private Helpers -----------------------------------------------------------
 
+    getSpineIndexFromCFI : function (CFI) {
+
+        try {
+            var contentDocumentHref = this.cfi.getContentDocHref(CFI, this.packageDocumentDOM);
+            var spineIndex = this.reader.findSpineIndex(contentDocumentHref);
+            return spineIndex;
+        }
+        catch (error) {
+            throw error;
+        }
+    }
 });

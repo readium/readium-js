@@ -150,8 +150,8 @@ describe("EpubReader.EpubReader", function () {
         });
     });
 
-    describe("loadReflowableSpineItem()", function () {
-
+    describe("private helpers", function () {
+        
         beforeEach(function () {
 
             var spineInfo = JSON.parse(jasmine.getFixtures().read("spine_info.json"));
@@ -163,12 +163,24 @@ describe("EpubReader.EpubReader", function () {
             });
         });
 
-        it("loads a pages view", function () {
+        describe("loadReflowableSpineItem()", function () {
 
-            var spineInfo = JSON.parse(jasmine.getFixtures().read("spine_info.json"));
-            this.reader.loadReflowableSpineItem(spineInfo.spine[0]);
-            var firstPagesView = this.reader.get("loadedPagesViews")[0];
-            expect(firstPagesView).toBeDefined();
+            it("loads a pages view", function () {
+
+                var spineInfo = JSON.parse(jasmine.getFixtures().read("spine_info.json"));
+                this.reader.loadReflowableSpineItem(spineInfo.spine[0]);
+                var firstPagesView = this.reader.get("loadedPagesViews")[0];
+                expect(firstPagesView).toBeDefined();
+            });
+        });
+
+        describe("getPagesView()", function () {
+
+            it("gets a pages view by spine index", function () {
+
+                this.reader.loadSpineItems();
+                var pagesViewInfo = this.reader.getPagesViewInfo(1);
+            });
         });
     });
 });

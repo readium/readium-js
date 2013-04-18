@@ -13,6 +13,8 @@ EpubReader.EpubReader = Backbone.Model.extend({
         this.set("spine", spineInfo.spine);
         this.set("bindings", spineInfo.bindings);
         this.set("annotations", spineInfo.annotations);
+
+        this.cfi = new EpubCFIModule();
     },
 
     // ------------------------------------------------------------------------------------ //  
@@ -78,6 +80,12 @@ EpubReader.EpubReader = Backbone.Model.extend({
             previousPagesViewIndex = this.get("currentPagesViewIndex") - 1;
             this.renderPagesView(previousPagesViewIndex, true, undefined);
         }
+    },
+
+    getRenderedPagesView : function (spineIndex) {
+
+
+
     },
 
     // ------------------------------------------------------------------------------------ //  
@@ -238,6 +246,25 @@ EpubReader.EpubReader = Backbone.Model.extend({
         });
 
         return foundSpineItem.spineIndex;
+    },
+
+    getPagesViewInfo : function (spineIndex) {
+
+        var foundPagesViewInfo = _.find(this.get("loadedPagesViews"), function (currPagesViewInfo, index) {
+
+            var foundSpineIndex = _.find(currPagesViewInfo.spineIndexes, function (currSpineIndex) {
+                if (currSpineIndex === spineIndex) {
+                    return true;
+                }
+            });
+
+            // Only checking for null and undefined, as "foundSpineIndex" can be 0, which evaluates as falsy
+            if (foundSpineIndex !== undefined && foundSpineIndex !== null) {
+                return true;
+            }
+        });
+
+        return foundPagesViewInfo;
     },
 
     applyPreferences : function (pagesView) {

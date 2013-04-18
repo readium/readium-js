@@ -94,14 +94,28 @@ describe("EpubReader.EpubReaderView", function () {
 
     describe("private helpers", function () {
 
-        describe("renderNextPagesView()", function () {
+        beforeEach(function () {
 
-            // Needs tests
+            var spineInfo = JSON.parse(jasmine.getFixtures().read("spine_info.json"));
+            var viewerSettings = JSON.parse(jasmine.getFixtures().read("viewer_settings.json"));
+            var parser = new window.DOMParser()
+            var packageDocumentDOM = parser.parseFromString(jasmine.getFixtures().read("package_document.xml"), "text/xml");
+
+            this.readerViewer = new EpubReader.EpubReaderView({ 
+                readerElement : $("body"),
+                spineInfo : spineInfo, 
+                viewerSettings : viewerSettings,
+                packageDocumentDOM : packageDocumentDOM
+            });
         });
 
-        describe("renderPreviousPagesView()", function () {
+        describe("getSpineIndexFromCFI()", function () {
 
-            // Needs tests
+            it("gets the expected spine index", function () {
+
+                var spineIndex = this.readerViewer.getSpineIndexFromCFI("epubcfi(/6/20!/4)");
+                expect(spineIndex).toBe(0);
+            });
         });
     });
 });
