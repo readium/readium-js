@@ -21,7 +21,7 @@ describe("CFI INSTRUCTION OBJECT", function () {
 		//   appears to have to be loaded in a window to create an iframe, with content, as an element of that document. The original
 		//   intention was to create a document object and then append an iframe; I was unable to find a way to do this, hence appending
 		//   the iframe to the current document (jasmine).
-		var iframe = $('<iframe src="' + window.location.href +  '"/>')[0];
+		var iframe = $('<iframe src="' + window.location.href + '"/>')[0];
 		document.body.appendChild(iframe);
 
 		iframe.contentDocument.open("text/xml", "replace");
@@ -131,6 +131,25 @@ describe("CFI INSTRUCTION OBJECT", function () {
 			"<div class='blacklistClass1'></div>"
 			+ "<div id='survivor-1' class='some-other'></div>"
 			+ "<div id='survivor-2' class=''></div>"
+			+ "<div id='survivor-3'></div>"
+			+ "<div class='blacklistClass2'></div>"
+			);
+
+		$result = EPUBcfi.CFIInstructions.applyBlacklist($elements, ["blacklistClass1", "blacklistClass2"], []);
+
+		expect($result[0].id).toEqual("survivor-1");
+		expect($result[1].id).toEqual("survivor-2");
+		expect($result[2].id).toEqual("survivor-3");
+	});
+
+	it("filters multiple blacklist classes", function () {
+
+		var $elements = $(
+			"<div class='blacklistClass1'></div>"
+			+ "<div id='survivor-1' class='some-other'></div>"
+			+ "<div id='survivor-2' class=''></div>"
+			+ "<div class='blacklistClass2'></div>"
+			+ "<div class='blacklistClass2'></div>"
 			+ "<div id='survivor-3'></div>"
 			+ "<div class='blacklistClass2'></div>"
 			);
