@@ -406,6 +406,32 @@ EpubReader.EpubReaderView = Backbone.View.extend({
         return annotationInfo;
     },
 
+    addHighlightMarkersForCFI : function (CFI, id) {
+
+        var annotationInfo;
+        var currentView = this.reader.getCurrentPagesView();
+        try {
+            annotationInfo = currentView.addHighlightMarkersForCFI(CFI, id);
+            return annotationInfo;
+        }
+        catch (error) {
+            console.log(error);
+        }
+    },
+
+    addBookmarkMarkerForCFI : function (CFI, id) {
+
+        var annotationInfo;
+        var currentView = this.reader.getCurrentPagesView();
+        try {
+            annotationInfo = currentView.addBookmarkMarkerForCFI(CFI, id);
+            return annotationInfo;
+        } 
+        catch (error) {
+            console.log(error);
+        }
+    },
+
     findSpineIndex : function (href) {
         var spineIndex = this.reader.findSpineIndex(href);
         return spineIndex;
@@ -438,6 +464,8 @@ EpubReader.EpubReaderView = Backbone.View.extend({
         getCurrentPage : function () { return epubReaderView.getCurrentPage.call(epubReaderView); },
         on : function (eventName, callback, callbackContext) { return epubReaderView.on.call(epubReaderView, eventName, callback, callbackContext); },
         getCurrentSelectionInfo : function () { return epubReaderView.getCurrentSelectionInfo.call(epubReaderView); },
-        findSpineIndex : function(href) { return epubReaderView.findSpineIndex.call(epubReaderView, href); }
+        findSpineIndex : function(href) { return epubReaderView.findSpineIndex.call(epubReaderView, href); },
+        addHighlightMarkersForCFI : function (CFI, id) { return epubReaderView.addHighlightMarkersForCFI.call(epubReaderView, CFI, id); },
+        addBookmarkMarkerForCFI : function (CFI, id) { return epubReaderView.addBookmarkMarkerForCFI.call(epubReaderView, CFI, id); } 
     };
 };

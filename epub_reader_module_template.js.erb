@@ -29,6 +29,8 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         getNumberOfPages : function () { return epubReaderView.getNumberOfPages.call(epubReaderView); },
         getCurrentPage : function () { return epubReaderView.getCurrentPage.call(epubReaderView); },
         on : function (eventName, callback, callbackContext) { return epubReaderView.on.call(epubReaderView, eventName, callback, callbackContext); },
-        getCurrentSelectionInfo : function () { return epubReaderView.getCurrentSelectionInfo.call(epubReaderView); }
+        getCurrentSelectionInfo : function () { return epubReaderView.getCurrentSelectionInfo.call(epubReaderView); },
+        addHighlightMarkersForCFI : function (CFI, id) { return epubReaderView.addHighlightMarkersForCFI.call(epubReaderView, CFI, id); },
+        addBookmarkMarkerForCFI : function (CFI, id) { return epubReaderView.addBookmarkMarkerForCFI.call(epubReaderView, CFI, id); } 
     };
 };

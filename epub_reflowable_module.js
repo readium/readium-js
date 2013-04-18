@@ -320,10 +320,77 @@ EpubReflowable.ReflowableAnnotations = Backbone.Model.extend({
         this.epubCFI = new EpubCFIModule();
     },
 
+    // Not sure about this, might remove it. The callbacks are unnecessary
     saveAnnotation : function (CFI, spinePosition) {
 
         var saveAnnotation = this.get("saveCallback");
         saveAnnotation.call(this.get("callbackContext"), CFI, spinePosition);
+    },
+
+    injectHighlightMarkersFromCFI : function (CFI, id) {
+
+        var CFIRangeInfo;
+        var range;
+        var rangeStartNode;
+        var rangeEndNode;
+        var selectedElements;
+        var startMarkerHtml = this.getRangeStartMarker(CFI, id);
+        var endMarkerHtml = this.getRangeEndMarker(CFI, id);
+
+        try {
+            CFIRangeInfo = this.epubCFI.injectRangeElements(
+                CFI,
+                this.get("contentDocumentDOM"),
+                startMarkerHtml,
+                endMarkerHtml,
+                ["cfi-marker"]
+                );
+
+            // Get start and end marker for the id, using injected into elements
+            // REFACTORING CANDIDATE: Abstract range creation to account for no previous/next sibling, for different types of
+            //   sibiling, etc. 
+            rangeStartNode = CFIRangeInfo.startElement.nextSibling ? CFIRangeInfo.startElement.nextSibling : CFIRangeInfo.startElement;
+            rangeEndNode = CFIRangeInfo.endElement.previousSibling ? CFIRangeInfo.endElement.previousSibling : CFIRangeInfo.endElement;
+            range = document.createRange();
+            range.setStart(rangeStartNode, 0);
+            range.setEnd(rangeEndNode, rangeEndNode.length);
+
+            selectionInfo = this.getSelectionInfo(range);
+
+            return {
+
+                CFI : CFI, 
+                selectedElements : selectionInfo.selectedElements
+            };
+
+        } catch (error) {
+            console.log(error);
+        }
+    },
+
+    injectBookmarkMarkerFromCFI : function (CFI, id) {
+
+        var selectedElements;
+        var bookmarkMarkerHtml = this.getBookmarkMarker(CFI, id);
+        var injectedElement;
+
+        try {
+            injectedElement = this.epubCFI.injectElement(
+                CFI,
+                this.get("contentDocumentDOM"),
+                bookmarkMarkerHtml,
+                ["cfi-marker"]
+                );
+
+            return {
+
+                CFI : CFI, 
+                selectedElements : injectedElement
+            };
+
+        } catch (error) {
+            console.log(error);
+        }
     },
 
     getSelectionInfo : function (selectedRange) {
@@ -513,6 +580,21 @@ EpubReflowable.ReflowableAnnotations = Backbone.Model.extend({
         highlightRange.setEnd($endMarker[0].previousSibling, $endMarker[0].previousSibling.length - 1);
 
         return highlightRange;
+    },
+
+    getBookmarkMarker : function (CFI, id) {
+
+        return "<span class='bookmark-marker cfi-marker' id='" + id + "' data-cfi='" + CFI + "'></span>";
+    },
+
+    getRangeStartMarker : function (CFI, id) {
+
+        return "<span class='range-start-marker cfi-marker' id='start-" + id + "' data-cfi='" + CFI + "'></span>";
+    },
+
+    getRangeEndMarker : function (CFI, id) {
+
+        return "<span class='range-end-marker cfi-marker' id='end-" + id + "' data-cfi='" + CFI + "'></span>";
     }
 });
 
@@ -1683,10 +1765,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 		this.pages = new EpubReflowable.ReflowablePagination();
 
         // So this can be any callback, doesn't have to be the epub controller
-		this.annotations = new EpubReflowable.ReflowableAnnotations({
-			saveCallback : undefined,
-			callbackContext : undefined
-		});
+		this.annotations;
 
     this.cfi = new EpubCFIModule();
 
@@ -1768,6 +1847,12 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
                     that.pages.goToPage(1, that.viewerModel.get("twoUp"), that.spineItemModel.get("firstPageIsOffset"));
                 }
             }
+
+            that.annotations = new EpubReflowable.ReflowableAnnotations({
+                saveCallback : undefined,
+                callbackContext : undefined,
+                contentDocumentDOM : that.getEpubContentDocument().parentNode
+            });
 
             that.trigger("contentDocumentLoaded", that.el);
 		});
@@ -2212,6 +2297,8 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         setTheme : function (theme) { return reflowableView.setTheme.call(reflowableView, theme); },
         setSyntheticLayout : function (isSynthetic) { return reflowableView.setSyntheticLayout.call(reflowableView, isSynthetic); },
         on : function (eventName, callback, callbackContext) { return reflowableView.on.call(reflowableView, eventName, callback, callbackContext); },
-        insertSelectionMarkers : function () { return reflowableView.insertSelectionMarkers.call(reflowableView); }
+        insertSelectionMarkers : function () { return reflowableView.insertSelectionMarkers.call(reflowableView); },
+        addHighlightMarkersForCFI : function (CFI, id) { return reflowableView.annotations.injectHighlightMarkersFromCFI.call(reflowableView.annotations, CFI, id); },
+        addBookmarkMarkerForCFI : function (CFI, id) { return reflowableView.annotations.injectBookmarkMarkerFromCFI.call(reflowableView.annotations, CFI, id); } 
     };
 };

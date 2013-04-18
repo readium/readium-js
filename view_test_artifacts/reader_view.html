@@ -18,6 +18,8 @@
                 var that = this;
                 this.view = initializationTest();
                 this.view.on("epubLoaded", function () { 
+                    // this.view.showSpineItem(2);
+                    // alert("epub loaded");
                     this.view.showSpineItem(5);
                     alert("epub loaded");
                 }, this);
