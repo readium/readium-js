@@ -236,14 +236,14 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
     //   instantiated epub module passed to it. 
     findSpineIndex : function (contentDocumentHref) {
 
-        var contentDocHref = contentDocumentHref;
+        var contentDocHref = contentDocumentHref.split("#", 2)[0];
         var foundSpineItem;
 
         foundSpineItem = _.find(this.get("spine"), function (spineItem, index) { 
 
             var uri = new URI(spineItem.contentDocumentURI);
             var filename = uri.filename();
-            if (contentDocumentHref.trim() === filename.trim()) {
+            if (contentDocHref.trim() === filename.trim()) {
                 return true;
             }
         });
