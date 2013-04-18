@@ -308,8 +308,7 @@ EpubReflowable.AlternateStyleTagSelector = Backbone.Model.extend({
 		return styleSet;
 	}
 });
-
-EpubReflowable.ReflowableAnnotations = Backbone.Model.extend({
+    EpubReflowable.ReflowableAnnotations = Backbone.Model.extend({
 
     defaults : {
         "saveCallback" : undefined,
@@ -834,7 +833,6 @@ EpubReflowable.ReflowableLayout = Backbone.Model.extend({
 
     initializeContentDocument : function (epubContentDocument, epubCFIs, currSpinePosition, readiumFlowingContent, linkClickHandler, handlerContext, currentTheme, flowingWrapper, readiumFlowingContent, keydownHandler, bindings) {
 
-        var that = this;
         var triggers;
         var lastPageElementId = this.injectCFIElements(
             epubContentDocument, 
@@ -845,14 +843,10 @@ EpubReflowable.ReflowableLayout = Backbone.Model.extend({
         // this.applyBindings( readiumFlowingContent, epubContentDocument );
         this.applySwitches( epubContentDocument, readiumFlowingContent ); 
         // this.injectMathJax(epubContentDocument);
-        // this.injectLinkHandler(epubContentDocument, linkClickHandler, handlerContext);
+        this.injectLinkHandler(epubContentDocument, linkClickHandler, handlerContext);
         triggers = this.parseTriggers(epubContentDocument);
         this.applyTriggers(epubContentDocument, triggers);
         $(epubContentDocument).attr('title');//, Acc.page + ' - ' + Acc.title);
-
-        $("a", epubContentDocument).click(function (e) {
-          that.trigger("internalLinkClicked", e);
-        });
 
         this.injectTheme(
             currentTheme, 
@@ -1675,8 +1669,7 @@ EpubReflowable.ReflowablePaginator = Backbone.Model.extend({
         return this.calcNumPages(epubContentDocument, isTwoUp);
     }
 });
-
-EpubReflowable.Trigger = function(domNode) {
+    EpubReflowable.Trigger = function(domNode) {
 	var $el = $(domNode);
 	this.action 	= $el.attr("action");
 	this.ref 		= $el.attr("ref");
@@ -1747,16 +1740,14 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
 	initialize : function (options) {
 
-    var that = this;
+        var ViewerModel = Backbone.Model.extend({});
+        var SpineItemModel = Backbone.Model.extend({});
 
-    var ViewerModel = Backbone.Model.extend({});
-    var SpineItemModel = Backbone.Model.extend({});
-
-    this.viewerModel = new ViewerModel(options.viewerSettings);
-    this.viewerModel.set({ twoUp : options.viewerSettings.syntheticLayout });
-    this.spineItemModel = new SpineItemModel(options.spineItem);
-    this.epubCFIs = options.contentDocumentCFIs;
-    this.bindings = options.bindings;
+        this.viewerModel = new ViewerModel(options.viewerSettings);
+        this.viewerModel.set({ twoUp : options.viewerSettings.syntheticLayout });
+        this.spineItemModel = new SpineItemModel(options.spineItem);
+        this.epubCFIs = options.contentDocumentCFIs;
+        this.bindings = options.bindings;
 
 		// Initalize delegates and other models
 		this.reflowableLayout = new EpubReflowable.ReflowableLayout();
@@ -1767,11 +1758,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         // So this can be any callback, doesn't have to be the epub controller
 		this.annotations;
 
-    this.cfi = new EpubCFIModule();
-
-    this.reflowableLayout.on("internalLinkClicked", function(e){
-      that.trigger("internalLinkClicked", e);
-    }, this);
+        this.cfi = new EpubCFIModule();
 
         // this.mediaOverlayController = this.model.get("media_overlay_controller");
         // this.mediaOverlayController.setPages(this.pages);
@@ -1878,20 +1865,19 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 	// 	);
 	// },
 
-    showPageByPartialCFI : function (contentDocumentCFI, callback, callbackContext) {
+    showPageByCFI : function (CFI) {
 
         // Errors have to be handled from the library
         try {
-            var targetElement = this.cfi.getTargetElementWithPartialCFI(contentDocumentCFI, $(this.getEpubContentDocument()).parent()[0]);
+            var $targetElement = this.cfi.getTargetElementWithPartialCFI(CFI, $(this.getEpubContentDocument()).parent()[0]);
         }
         catch (error) {
-            // Maybe check error type
             throw error;
         }
 
         // Find the page number for the first element that the CFI refers to
         var page = this.reflowableElementsInfo.getElemPageNumber(
-            targetElement[0], 
+            $targetElement[0], 
             this.offsetDirection(), 
             this.reflowablePaginator.page_width, 
             this.reflowablePaginator.gap_width,
@@ -1901,11 +1887,8 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
             this.pages.goToPage(page, this.viewerModel.get("twoUp"), this.spineItemModel.get("firstPageIsOffset")); 
         }
         else {
-            // Throw an exception here 
+            throw new Error("Referenced page is not in content document");
         }
-
-        // Show that page and execute the callback
-        callback.call(callbackContext, targetElement[0]);
     },
 
     // The package document needs to get passed into the view, or the API needs to change. This is not critical at the moment.
@@ -2274,7 +2257,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         spineItem : spineObject, 
         viewerSettings : viewerSettingsObject, 
         contentDocumentCFIs : CFIAnnotations, 
-        bindings : bindings,
+        bindings : bindings
     });
 
     // Description: The public interface
@@ -2285,7 +2268,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         previousPage : function () { return reflowableView.pages.goLeft.call(reflowableView.pages); },
         showPageByHashFragment : function (hashFragmentId) { return reflowableView.goToHashFragment.call(reflowableView, hashFragmentId); },
         showPageByNumber : function (pageNumber) { return reflowableView.showPage.call(reflowableView, pageNumber); },
-        showPageByPartialCFI : function (contentDocumentCFI, callback, callbackContext) { reflowableView.showPageByPartialCFI(contentDocumentCFI, callback, callbackContext); }, 
+        showPageByCFI : function (CFI) { reflowableView.showPageByPartialCFI(CFI); }, 
         onFirstPage : function () { return reflowableView.onFirstPage.call(reflowableView); },
         onLastPage : function () { return reflowableView.onLastPage.call(reflowableView); },
         showPagesView : function () { return reflowableView.showView.call(reflowableView); },

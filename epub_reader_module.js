@@ -348,21 +348,21 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         var contentDocHref;
         var spineIndex;
         try {   
+            
             contentDocHref = this.cfi.getContentDocHref(CFI, this.packageDocumentDOM);
+            spineIndex = this.reader.findSpineIndex(contentDocHref);
+            this.addBookmarkMarkerForCFI(CFI, "current-page", function (error, spineIndex, CFI, annotationInfo) {
+
+                var pagesView;
+                this.showSpineItem(spineIndex);
+                pagesView = this.reader.getCurrentPagesView();
+                pagesView.showPageByHashFragment("current-page");
+
+            }, this);
         } 
         catch (error) {
             throw error; 
         }
-
-        // Get the spine index for the content document href
-        spineIndex = this.reader.findSpineIndex(contentDocHref);
-        
-        // render the appropriate pages view
-        // show the page, based on the cfi
-
-        this.showSpineItem(spineIndex);
-
-        // Show the element by passing the CFI fragment to the current view
     },
 
     showPageByElementId : function (spineIndex, elementId) { 
@@ -449,8 +449,8 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         this.reader.getRenderedPagesView(contentDocSpineIndex, function (pagesView) {
 
             try {
-                pagesView.addHighlightMarkersForCFI(CFI, id);
-                callback.call(callbackContext, undefined, contentDocSpineIndex, CFI);
+                annotationInfo = pagesView.addHighlightMarkersForCFI(CFI, id);
+                callback.call(callbackContext, undefined, contentDocSpineIndex, CFI, annotationInfo);
             }
             catch (error) {
                 callback.call(callbackContext, error, undefined, undefined);
@@ -465,9 +465,9 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         this.reader.getRenderedPagesView(contentDocSpineIndex, function (pagesView) {
 
             try {
-                pagesView.addBookmarkMarkerForCFI(CFI, id);
-                callback.call(callbackContext, undefined, contentDocSpineIndex, CFI);
-            } 
+                annotationInfo = pagesView.addBookmarkMarkerForCFI(CFI, id);
+                callback.call(callbackContext, undefined, contentDocSpineIndex, CFI, annotationInfo);
+            }
             catch (error) {
                 callback.call(callbackContext, error, undefined, undefined);
             }
