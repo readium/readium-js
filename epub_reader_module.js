@@ -144,7 +144,8 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
             this.get("viewerSettings"), 
             this.get("annotations"), 
             this.get("bindings")
-            );
+        );
+
         var pagesViewInfo = {
             pagesView : view, 
             spineIndexes : [spineItem.spineIndex],
@@ -187,7 +188,11 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
                     that.trigger("epubLoaded");
                 }
             });
-            
+
+            pagesViewInfo.pagesView.on("internalLinkClicked", function(e){
+                that.trigger("internalLinkClicked", e);
+            }, this);
+
             $(that.get("parentElement")).append(pagesViewInfo.pagesView.render(false, undefined));
         });
 
@@ -199,6 +204,7 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
 
         }, 1000);
     },
+
 
     // REFACTORING CANDIDATE: The each method is causing numPages and currentPage to be hoisted into the global
     //   namespace, I believe. Bad bad. Check this.
@@ -230,14 +236,14 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
     //   instantiated epub module passed to it. 
     findSpineIndex : function (contentDocumentHref) {
 
-        var contentDocHref = contentDocumentHref;
+        var contentDocHref = contentDocumentHref.split("#", 2)[0];
         var foundSpineItem;
 
         foundSpineItem = _.find(this.get("spine"), function (spineItem, index) { 
 
             var uri = new URI(spineItem.contentDocumentURI);
             var filename = uri.filename();
-            if (contentDocumentHref.trim() === filename.trim()) {
+            if (contentDocHref.trim() === filename.trim()) {
                 return true;
             }
         });
@@ -254,7 +260,8 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         pagesView.setFontSize(preferences.fontSize);
     }
 });
-    EpubReader.EpubReaderView = Backbone.View.extend({
+
+EpubReader.EpubReaderView = Backbone.View.extend({
 
     initialize : function (options) {
 
@@ -263,13 +270,18 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         this.reader = new EpubReader.EpubReader({
             spineInfo : options.spineInfo,
             viewerSettings : options.viewerSettings,
-            parentElement : options.readerElement
-        });
+            parentElement : options.readerElement}
+        );
+        
         // Rationale: Propagate the loaded event after all the content documents are loaded
         this.reader.on("epubLoaded", function () {
             that.trigger("epubLoaded");
         }, this);
         
+        this.reader.on("internalLinkClicked", function(e){
+            that.trigger("internalLinkClicked", e);
+        }, this);
+
         this.readerBoundElement = options.readerElement;
         this.cfi = new EpubCFIModule();
     },
@@ -418,8 +430,12 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         catch (error) {
             console.log(error);
         }
-    } 
+    },
 
+    findSpineIndex : function (href) {
+        var spineIndex = this.reader.findSpineIndex(href);
+        return spineIndex;
+    }
     // ----------------------- Private Helpers -----------------------------------------------------------
 
 });
@@ -448,6 +464,7 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         getCurrentPage : function () { return epubReaderView.getCurrentPage.call(epubReaderView); },
         on : function (eventName, callback, callbackContext) { return epubReaderView.on.call(epubReaderView, eventName, callback, callbackContext); },
         getCurrentSelectionInfo : function () { return epubReaderView.getCurrentSelectionInfo.call(epubReaderView); },
+        findSpineIndex : function(href) { return epubReaderView.findSpineIndex.call(epubReaderView, href); },
         addHighlightMarkersForCFI : function (CFI, id) { return epubReaderView.addHighlightMarkersForCFI.call(epubReaderView, CFI, id); },
         addBookmarkMarkerForCFI : function (CFI, id) { return epubReaderView.addBookmarkMarkerForCFI.call(epubReaderView, CFI, id); } 
     };
