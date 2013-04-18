@@ -100,6 +100,9 @@ describe("EpubReader.EpubReader", function () {
             this.reader.loadSpineItems();
         });
 
+        describe("getRenderedPagesView()", function () {
+        });
+
         describe("numberOfLoadedPagesViews()", function () {
 
             it("gets the number of loaded views", function () {

@@ -82,15 +82,36 @@ EpubReader.EpubReader = Backbone.Model.extend({
         }
     },
 
-    getRenderedPagesView : function (spineIndex) {
+    // This is an asychronous method
+    getRenderedPagesView : function (spineIndex, callback, callbackContext) {
 
+        // Get pages view info
+        var that = this;
+        var viewElement;
+        var pagesViewInfo = this.getPagesViewInfo(spineIndex);
 
+        // Check if it is rendered
+        if (!pagesViewInfo.isRendered) {
 
+            // invoke callback when the content document loads
+            pagesViewInfo.pagesView.on("contentDocumentLoaded", function (pagesView) {
+                callback.call(callbackContext, pagesViewInfo.pagesView);
+            });
+
+            // This logic is duplicated and should be abstracted
+            viewElement = pagesViewInfo.pagesView.render(false, undefined);
+            $(this.get("parentElement")).append(viewElement);
+            this.applyPreferences(pagesViewInfo.pagesView);
+            pagesViewInfo.isRendered = true;
+        }
+        else {
+            callback.call(callbackContext, pagesViewInfo.pagesView);
+        }
     },
 
-    // ------------------------------------------------------------------------------------ //  
+    // ------------------------------------------------------------------------------------ //
     //  "PRIVATE" HELPERS                                                                   //
-    // ------------------------------------------------------------------------------------ //  
+    // ------------------------------------------------------------------------------------ //
 
     // spinePositionIsRendered()
     // renderSpinePosition()

@@ -17,9 +17,9 @@
 
                 var that = this;
                 this.view = initializationTest();
+
                 this.view.on("epubLoaded", function () { 
-                    this.view.showSpineItem(0);
-                    // alert("epub loaded");
+                    this.view.showSpineItem(1);
                 }, this);
 
                 this.view.on("internalLinkClicked", function(e){
@@ -39,12 +39,45 @@
 
                 }, this);
 
+                $("#add-bookmark").on("click", function () {
+
+                    that.view.addBookmarkMarkerForCFI("epubcfi(/6/20!/4/2/4/1:10)", "10", function (error, spineIndex, CFI) {
+                        if (!error) {
+                            console.log("First bookmark injected");
+                        }
+                    }, that);
+
+                    that.view.addBookmarkMarkerForCFI("epubcfi(/6/24!/4/2/4/1:10)", "11", function (error, spineIndex, CFI) {
+                        if (!error) {
+                            console.log("Second bookmark injected");
+                        }
+                    }, that);
+                });
+
+
+                $("#add-highlight").on("click", function () {
+
+                    that.view.addHighlightMarkersForCFI("epubcfi(/6/20!/4/2,/4/1:10,/6/1:10)", "12", function (error, spineIndex, CFI) {
+                        if (!error) {
+                            console.log("First highlight injected");
+                        }
+                    }, that);
+
+                    that.view.addHighlightMarkersForCFI("epubcfi(/6/24!/4/2,/4/1:10,/6/1:10)", "13", function (error, spineIndex, CFI) {
+                        if (!error) {
+                            console.log("Second highlight injected");
+                        }
+                    }, that);
+                });
+
                 this.view.render();
             });
 
         </script>
     </head>
     <body>
+        <button id="add-bookmark">Add a bookmark</button>
+        <button id="add-highlight">Add a highlight</button>
         <div id="reader" style="height:100%; width:100%">
         </div>
     </body>

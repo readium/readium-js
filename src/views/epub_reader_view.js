@@ -138,39 +138,36 @@ EpubReader.EpubReaderView = Backbone.View.extend({
         return annotationInfo;
     },
 
-    addHighlightMarkersForCFI : function (CFI, id) {
+    addHighlightMarkersForCFI : function (CFI, id, callback, callbackContext) {
 
         var annotationInfo;
-        var currentView = this.reader.getCurrentPagesView();
-        try {
-            annotationInfo = currentView.addHighlightMarkersForCFI(CFI, id);
-            return annotationInfo;
-        }
-        catch (error) {
-            throw error;
-        }
+        var contentDocSpineIndex = this.getSpineIndexFromCFI(CFI);
+        this.reader.getRenderedPagesView(contentDocSpineIndex, function (pagesView) {
+
+            try {
+                pagesView.addHighlightMarkersForCFI(CFI, id);
+                callback.call(callbackContext, undefined, contentDocSpineIndex, CFI);
+            }
+            catch (error) {
+                callback.call(callbackContext, error, undefined, undefined);
+            }
+        });
     },
 
-    addBookmarkMarkerForCFI : function (CFI, id) {
+    addBookmarkMarkerForCFI : function (CFI, id, callback, callbackContext) {
 
         var annotationInfo;
-
-
-        // Get spine index for CFI
         var contentDocSpineIndex = this.getSpineIndexFromCFI(CFI);
+        this.reader.getRenderedPagesView(contentDocSpineIndex, function (pagesView) {
 
-        // Check if that is rendered; render if not
-
-        // Inject the bookmark/queue em up
-
-        var currentView = this.reader.getCurrentPagesView();
-        try {
-            annotationInfo = currentView.addBookmarkMarkerForCFI(CFI, id);
-            return annotationInfo;
-        } 
-        catch (error) {
-            throw error;
-        }
+            try {
+                pagesView.addBookmarkMarkerForCFI(CFI, id);
+                callback.call(callbackContext, undefined, contentDocSpineIndex, CFI);
+            } 
+            catch (error) {
+                callback.call(callbackContext, error, undefined, undefined);
+            }
+        });
     },
 
     // ----------------------- Private Helpers -----------------------------------------------------------
