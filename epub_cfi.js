@@ -2569,7 +2569,7 @@ EPUBcfi.CFIAssertionError = function (expectedAssertion, targetElementAssertion,
     return {
 
         getContentDocHref : function (CFI, packageDocument) { return interpreter.getContentDocHref.call(interpreter, CFI, packageDocument); },
-        injectElement : function (CFI, contentDocument, elementToInject) { return interpreter.injectElement.call(interpreter, CFI, contentDocument, elementToInject); },
+        injectElement : function (CFI, contentDocument, elementToInject, classBlacklist, elementBlacklist, idBlacklist) { return interpreter.injectElement.call(interpreter, CFI, contentDocument, elementToInject, classBlacklist, elementBlacklist, idBlacklist); },
         getTargetElement : function (CFI, contentDocument) { return interpreter.getTargetElement.call(interpreter, CFI, contentDocument); },
         getTargetElementWithPartialCFI : function (contentDocumentCFI, contentDocument) { return interpreter.getTargetElementWithPartialCFI.call(interpreter, contentDocumentCFI, contentDocument); },
         getTextTerminusInfoWithPartialCFI : function (contentDocumentCFI, contentDocument) { return interpreter.getTextTerminusInfoWithPartialCFI.call(interpreter, contentDocumentCFI, contentDocument); }, 

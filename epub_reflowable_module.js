@@ -1865,11 +1865,11 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 	// 	);
 	// },
 
-    showPageByPartialCFI : function (contentDocumentCFI, callback, callbackContext) {
+    showPageByCFI : function (CFI) {
 
         // Errors have to be handled from the library
         try {
-            var targetElement = this.cfi.getTargetElementWithPartialCFI(contentDocumentCFI, $(this.getEpubContentDocument()).parent()[0]);
+            var $targetElement = this.cfi.injectElement(CFI, $(this.getEpubContentDocument()).parent()[0], "<span class='show-page'></span>");
         }
         catch (error) {
             // Maybe check error type
@@ -1878,7 +1878,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
         // Find the page number for the first element that the CFI refers to
         var page = this.reflowableElementsInfo.getElemPageNumber(
-            targetElement[0], 
+            $targetElement[0], 
             this.offsetDirection(), 
             this.reflowablePaginator.page_width, 
             this.reflowablePaginator.gap_width,
@@ -1888,11 +1888,8 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
             this.pages.goToPage(page, this.viewerModel.get("twoUp"), this.spineItemModel.get("firstPageIsOffset")); 
         }
         else {
-            // Throw an exception here 
+            throw new Error("The page specified by the CFI could not be found");
         }
-
-        // Show that page and execute the callback
-        callback.call(callbackContext, targetElement[0]);
     },
 
     // The package document needs to get passed into the view, or the API needs to change. This is not critical at the moment.
@@ -2272,7 +2269,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         previousPage : function () { return reflowableView.pages.goLeft.call(reflowableView.pages); },
         showPageByHashFragment : function (hashFragmentId) { return reflowableView.goToHashFragment.call(reflowableView, hashFragmentId); },
         showPageByNumber : function (pageNumber) { return reflowableView.showPage.call(reflowableView, pageNumber); },
-        showPageByPartialCFI : function (contentDocumentCFI, callback, callbackContext) { reflowableView.showPageByPartialCFI(contentDocumentCFI, callback, callbackContext); }, 
+        showPageByCFI : function (CFI) { reflowableView.showPageByCFI.call(reflowableView, CFI); }, 
         onFirstPage : function () { return reflowableView.onFirstPage.call(reflowableView); },
         onLastPage : function () { return reflowableView.onLastPage.call(reflowableView); },
         showPagesView : function () { return reflowableView.showView.call(reflowableView); },
