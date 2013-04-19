@@ -1869,9 +1869,10 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
         // Errors have to be handled from the library
         try {
-            var $targetElement = this.cfi.getTargetElementWithPartialCFI(CFI, $(this.getEpubContentDocument()).parent()[0]);
+            var $targetElement = this.cfi.injectElement(CFI, $(this.getEpubContentDocument()).parent()[0], "<span class='show-page'></span>");
         }
         catch (error) {
+            // Maybe check error type
             throw error;
         }
 
@@ -1887,7 +1888,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
             this.pages.goToPage(page, this.viewerModel.get("twoUp"), this.spineItemModel.get("firstPageIsOffset")); 
         }
         else {
-            throw new Error("Referenced page is not in content document");
+            throw new Error("The page specified by the CFI could not be found");
         }
     },
 
@@ -2268,7 +2269,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         previousPage : function () { return reflowableView.pages.goLeft.call(reflowableView.pages); },
         showPageByHashFragment : function (hashFragmentId) { return reflowableView.goToHashFragment.call(reflowableView, hashFragmentId); },
         showPageByNumber : function (pageNumber) { return reflowableView.showPage.call(reflowableView, pageNumber); },
-        showPageByCFI : function (CFI) { reflowableView.showPageByPartialCFI(CFI); }, 
+        showPageByCFI : function (CFI) { reflowableView.showPageByCFI.call(reflowableView, CFI); }, 
         onFirstPage : function () { return reflowableView.onFirstPage.call(reflowableView); },
         onLastPage : function () { return reflowableView.onLastPage.call(reflowableView); },
         showPagesView : function () { return reflowableView.showView.call(reflowableView); },

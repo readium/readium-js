@@ -43,18 +43,14 @@ EpubReader.EpubReaderView = Backbone.View.extend({
         // Dereference CFI, get the content document href
         var contentDocHref;
         var spineIndex;
+        var pagesView;
         try {   
             
             contentDocHref = this.cfi.getContentDocHref(CFI, this.packageDocumentDOM);
             spineIndex = this.reader.findSpineIndex(contentDocHref);
-            this.addBookmarkMarkerForCFI(CFI, "current-page", function (error, spineIndex, CFI, annotationInfo) {
-
-                var pagesView;
-                this.showSpineItem(spineIndex);
-                pagesView = this.reader.getCurrentPagesView();
-                pagesView.showPageByHashFragment("current-page");
-
-            }, this);
+            this.showSpineItem(spineIndex);
+            pagesView = this.reader.getCurrentPagesView();
+            pagesView.showPageByCFI(CFI);
         } 
         catch (error) {
             throw error; 
