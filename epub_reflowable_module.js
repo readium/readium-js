@@ -2082,11 +2082,15 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 	keydownHandler : function (e) {
 
         if (e.which == 39) {
-            this.pages.goRight();
+
+            this.trigger("keydown-right");
+            // this.pages.goRight();
         }
                         
         if (e.which == 37) {
-            this.pages.goRight();
+
+            this.trigger("keydown-left");
+            // this.pages.goRight();
         }
     },
 
@@ -2281,6 +2285,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         setTheme : function (theme) { return reflowableView.setTheme.call(reflowableView, theme); },
         setSyntheticLayout : function (isSynthetic) { return reflowableView.setSyntheticLayout.call(reflowableView, isSynthetic); },
         on : function (eventName, callback, callbackContext) { return reflowableView.on.call(reflowableView, eventName, callback, callbackContext); },
+        off : function (eventName, callback) { return reflowableView.off.call(reflowableView, eventName, callback); },
         insertSelectionMarkers : function () { return reflowableView.insertSelectionMarkers.call(reflowableView); },
         addHighlightMarkersForCFI : function (CFI, id) { return reflowableView.annotations.injectHighlightMarkersFromCFI.call(reflowableView.annotations, CFI, id); },
         addBookmarkMarkerForCFI : function (CFI, id) { return reflowableView.annotations.injectBookmarkMarkerFromCFI.call(reflowableView.annotations, CFI, id); } 
