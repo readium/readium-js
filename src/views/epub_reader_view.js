@@ -62,8 +62,8 @@ EpubReader.EpubReaderView = Backbone.View.extend({
     showPageByElementId : function (spineIndex, elementId) { 
 
         // Rationale: Try to locate the element before switching to a new page view try/catch
-        this.reader.getCurrentPagesView().goToHashFragment(elementId);
         this.showSpineItem(spineIndex);
+        this.reader.getCurrentPagesView().showPageByHashFragment(elementId);
     },
 
     nextPage : function () {
