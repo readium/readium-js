@@ -18,6 +18,12 @@
                 var that = this;
                 this.view = initializationTest();
 
+                var pressLeft = function () { that.view.previousPage(); };
+                var pressRight = function () { that.view.nextPage(); };
+
+                this.view.on("keydown-left", pressLeft, this);
+                this.view.on("keydown-right", pressRight, this);
+
                 this.view.on("epubLoaded", function () { 
                     this.view.showSpineItem(1);
                 }, this);

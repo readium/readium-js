@@ -14,7 +14,7 @@ EpubReader.EpubReaderView = Backbone.View.extend({
             that.trigger("epubLoaded");
             that.$el.css("opacity", "1");
         }, this);
-        
+
         this.readerBoundElement = options.readerElement;
         this.cfi = new EpubCFIModule();
     },
@@ -171,6 +171,32 @@ EpubReader.EpubReaderView = Backbone.View.extend({
     getViewerSettings : function () {
 
         return this.reader.get("viewerSettings");
+    },
+
+    assignEventHandler : function (eventName, callback, callbackContext) {
+
+        if (eventName === "keydown-left") {
+            this.reader.attachEventHandler(eventName, callback, callbackContext);
+        }
+        else if (eventName === "keydown-right") {
+            this.reader.attachEventHandler(eventName, callback, callbackContext);
+        } 
+        else {
+            this.on(eventName, callback, callbackContext);
+        }
+    },
+
+    removeEventHandler : function (eventName) {
+
+        if (eventName === "keydown-left") {
+            this.reader.removeEventHandler(eventName);
+        }
+        else if (eventName === "keydown-right") {
+            this.reader.removeEventHandler(eventName);
+        } 
+        else {
+            this.off(eventName);
+        }
     },
 
     // ----------------------- Private Helpers -----------------------------------------------------------

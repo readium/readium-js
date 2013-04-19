@@ -3,7 +3,8 @@ EpubReader.EpubReader = Backbone.Model.extend({
     defaults : function () { 
         return {
             "loadedPagesViews" : [],
-            "currentPagesViewIndex" : 0
+            "currentPagesViewIndex" : 0,
+            "pagesViewEventList" : []
         };
     },
 
@@ -109,6 +110,45 @@ EpubReader.EpubReader = Backbone.Model.extend({
         }
     },
 
+    attachEventHandler : function (eventName, callback, callbackContext) {
+
+        // Rationale: Maintain a list of the callbacks, which need to be attached when pages views are loaded
+        this.get("pagesViewEventList").push({
+            eventName : eventName,
+            callback : callback,
+            callbackContext : callbackContext
+        });
+
+        // Attach the event handler to each current pages view
+        _.each(this.get("loadedPagesViews"), function (pagesViewInfo) {
+            pagesViewInfo.pagesView.on(eventName, callback, callbackContext);
+        }, this);
+    },
+
+    removeEventHandler : function (eventName) {
+
+        var that = this;
+        // Find index of events
+        var indexOfEventsToRemove = [];
+        _.each(this.get("pagesViewEventList"), function (pagesViewEvent, index) {
+
+            if (pagesViewEvent.eventName === eventName) {
+                indexOfEventsToRemove.push(index);
+            }
+        });
+
+        // Remove them in reverse order, so each index is still valid
+        indexOfEventsToRemove.reverse();
+        _.each(indexOfEventsToRemove, function (indexToRemove) {
+            that.get("pagesViewEventList").splice(indexToRemove, 1);
+        });
+
+        // Remove event handlers on views
+        _.each(this.get("loadedPagesViews"), function (pagesViewInfo) {
+            pagesViewInfo.pagesView.off(eventName);
+        }, this);
+    },
+
     // ------------------------------------------------------------------------------------ //
     //  "PRIVATE" HELPERS                                                                   //
     // ------------------------------------------------------------------------------------ //
@@ -169,6 +209,12 @@ EpubReader.EpubReader = Backbone.Model.extend({
             this.get("annotations"), 
             this.get("bindings")
             );
+
+        // Attach list of event handlers
+        _.each(this.get("pagesViewEventList"), function (eventInfo) {
+            view.on(eventInfo.eventName, eventInfo.callback, eventInfo.callbackContext);
+        });
+
         var pagesViewInfo = {
             pagesView : view, 
             spineIndexes : [spineItem.spineIndex],

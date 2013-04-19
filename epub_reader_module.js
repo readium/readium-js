@@ -8,7 +8,8 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
     defaults : function () { 
         return {
             "loadedPagesViews" : [],
-            "currentPagesViewIndex" : 0
+            "currentPagesViewIndex" : 0,
+            "pagesViewEventList" : []
         };
     },
 
@@ -114,6 +115,45 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         }
     },
 
+    attachEventHandler : function (eventName, callback, callbackContext) {
+
+        // Rationale: Maintain a list of the callbacks, which need to be attached when pages views are loaded
+        this.get("pagesViewEventList").push({
+            eventName : eventName,
+            callback : callback,
+            callbackContext : callbackContext
+        });
+
+        // Attach the event handler to each current pages view
+        _.each(this.get("loadedPagesViews"), function (pagesViewInfo) {
+            pagesViewInfo.pagesView.on(eventName, callback, callbackContext);
+        }, this);
+    },
+
+    removeEventHandler : function (eventName) {
+
+        var that = this;
+        // Find index of events
+        var indexOfEventsToRemove = [];
+        _.each(this.get("pagesViewEventList"), function (pagesViewEvent, index) {
+
+            if (pagesViewEvent.eventName === eventName) {
+                indexOfEventsToRemove.push(index);
+            }
+        });
+
+        // Remove them in reverse order, so each index is still valid
+        indexOfEventsToRemove.reverse();
+        _.each(indexOfEventsToRemove, function (indexToRemove) {
+            that.get("pagesViewEventList").splice(indexToRemove, 1);
+        });
+
+        // Remove event handlers on views
+        _.each(this.get("loadedPagesViews"), function (pagesViewInfo) {
+            pagesViewInfo.pagesView.off(eventName);
+        }, this);
+    },
+
     // ------------------------------------------------------------------------------------ //
     //  "PRIVATE" HELPERS                                                                   //
     // ------------------------------------------------------------------------------------ //
@@ -174,6 +214,12 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
             this.get("annotations"), 
             this.get("bindings")
             );
+
+        // Attach list of event handlers
+        _.each(this.get("pagesViewEventList"), function (eventInfo) {
+            view.on(eventInfo.eventName, eventInfo.callback, eventInfo.callbackContext);
+        });
+
         var pagesViewInfo = {
             pagesView : view, 
             spineIndexes : [spineItem.spineIndex],
@@ -318,7 +364,7 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
             that.trigger("epubLoaded");
             that.$el.css("opacity", "1");
         }, this);
-        
+
         this.readerBoundElement = options.readerElement;
         this.cfi = new EpubCFIModule();
     },
@@ -477,6 +523,32 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         return this.reader.get("viewerSettings");
     },
 
+    assignEventHandler : function (eventName, callback, callbackContext) {
+
+        if (eventName === "keydown-left") {
+            this.reader.attachEventHandler(eventName, callback, callbackContext);
+        }
+        else if (eventName === "keydown-right") {
+            this.reader.attachEventHandler(eventName, callback, callbackContext);
+        } 
+        else {
+            this.on(eventName, callback, callbackContext);
+        }
+    },
+
+    removeEventHandler : function (eventName) {
+
+        if (eventName === "keydown-left") {
+            this.reader.removeEventHandler(eventName);
+        }
+        else if (eventName === "keydown-right") {
+            this.reader.removeEventHandler(eventName);
+        } 
+        else {
+            this.off(eventName);
+        }
+    },
+
     // ----------------------- Private Helpers -----------------------------------------------------------
 
     getSpineIndexFromCFI : function (CFI) {
@@ -514,7 +586,8 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         setSyntheticLayout : function (isSynthetic) { return epubReaderView.setSyntheticLayout.call(epubReaderView, isSynthetic); },
         getNumberOfPages : function () { return epubReaderView.getNumberOfPages.call(epubReaderView); },
         getCurrentPage : function () { return epubReaderView.getCurrentPage.call(epubReaderView); },
-        on : function (eventName, callback, callbackContext) { return epubReaderView.on.call(epubReaderView, eventName, callback, callbackContext); },
+        on : function (eventName, callback, callbackContext) { return epubReaderView.assignEventHandler.call(epubReaderView, eventName, callback, callbackContext); },
+        off : function (eventName) { return epubReaderView.removeEventHandler.call(epubReaderView, eventName); }, 
         getCurrentSelectionInfo : function () { return epubReaderView.getCurrentSelectionInfo.call(epubReaderView); },
         addHighlightMarkersForCFI : function (CFI, id, callback, callbackContext) { return epubReaderView.addHighlightMarkersForCFI.call(epubReaderView, CFI, id, callback, callbackContext); },
         addBookmarkMarkerForCFI : function (CFI, id, callback, callbackContext) { return epubReaderView.addBookmarkMarkerForCFI.call(epubReaderView, CFI, id, callback, callbackContext); },
