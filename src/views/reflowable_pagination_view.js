@@ -364,11 +364,15 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 	keydownHandler : function (e) {
 
         if (e.which == 39) {
-            this.pages.goRight();
+
+            this.trigger("keydown-right");
+            // this.pages.goRight();
         }
                         
         if (e.which == 37) {
-            this.pages.goRight();
+
+            this.trigger("keydown-left");
+            // this.pages.goRight();
         }
     },
 
