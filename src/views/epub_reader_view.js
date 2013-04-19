@@ -166,6 +166,11 @@ EpubReader.EpubReaderView = Backbone.View.extend({
         });
     },
 
+    getViewerSettings : function () {
+
+        return this.reader.get("viewerSettings");
+    },
+
     // ----------------------- Private Helpers -----------------------------------------------------------
 
     getSpineIndexFromCFI : function (CFI) {

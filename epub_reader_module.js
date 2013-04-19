@@ -470,6 +470,11 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         });
     },
 
+    getViewerSettings : function () {
+
+        return this.reader.get("viewerSettings");
+    },
+
     // ----------------------- Private Helpers -----------------------------------------------------------
 
     getSpineIndexFromCFI : function (CFI) {
@@ -510,6 +515,7 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         on : function (eventName, callback, callbackContext) { return epubReaderView.on.call(epubReaderView, eventName, callback, callbackContext); },
         getCurrentSelectionInfo : function () { return epubReaderView.getCurrentSelectionInfo.call(epubReaderView); },
         addHighlightMarkersForCFI : function (CFI, id, callback, callbackContext) { return epubReaderView.addHighlightMarkersForCFI.call(epubReaderView, CFI, id, callback, callbackContext); },
-        addBookmarkMarkerForCFI : function (CFI, id, callback, callbackContext) { return epubReaderView.addBookmarkMarkerForCFI.call(epubReaderView, CFI, id, callback, callbackContext); } 
+        addBookmarkMarkerForCFI : function (CFI, id, callback, callbackContext) { return epubReaderView.addBookmarkMarkerForCFI.call(epubReaderView, CFI, id, callback, callbackContext); },
+        getViewerSettings : function () { return epubReaderView.getViewerSettings.call(epubReaderView); }
     };
 };
