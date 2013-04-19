@@ -19,7 +19,7 @@ describe("Epub.Spine", function () {
 
         it("adds each spine item", function () {
 
-            var spineItemsInFixture = 3;
+            var spineItemsInFixture = 4;
             expect(this.spine.length).toBe(spineItemsInFixture);
         });
     });

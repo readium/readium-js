@@ -28,6 +28,7 @@ var EpubModule = function(packageDocumentObject) {
         hasNextSection : function (currSpineIndex) { return packageDoc.hasNextSection.call(packageDoc, currSpineIndex); }, 
         hasPrevSection : function (currSpineIndex) { return packageDoc.hasPrevSection.call(packageDoc, currSpineIndex); }, 
         pageProgressionDirection : function () { return packageDoc.pageProgressionDirection.call(packageDoc); },
-        getSpineIndexByHref : function (manifestHref) { return packageDoc.getSpineIndexByHref.call(packageDoc, manifestHref); } 
+        getSpineIndexByHref : function (manifestHref) { return packageDoc.getSpineIndexByHref.call(packageDoc, manifestHref); },
+        getToc : function () { return packageDoc.getToc.call(packageDoc); }
     };
 };
