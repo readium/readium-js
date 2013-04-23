@@ -118,6 +118,18 @@ EPUBcfi.Generator = {
         return packageDocCFIComponent + "!";
     },
 
+    generatePackageDocumentCFIComponentWithSpineIndex : function (spineIndex, packageDocument, classBlacklist, elementBlacklist, idBlacklist) {
+
+        // Get the start node (itemref element) that references the content document
+        $itemRefStartNode = $($("spine", packageDocument).children()[spineIndex]);
+
+        // Create the steps up to the top element of the package document (the "package" element)
+        packageDocCFIComponent = this.createCFIElementSteps($itemRefStartNode, "package", classBlacklist, elementBlacklist, idBlacklist);
+
+        // Append an !; this assumes that a CFI content document CFI component will be appended at some point
+        return packageDocCFIComponent + "!";
+    },
+
     generateCompleteCFI : function (packageDocumentCFIComponent, contentDocumentCFIComponent) {
 
         return "epubcfi(" + packageDocumentCFIComponent + contentDocumentCFIComponent + ")";  

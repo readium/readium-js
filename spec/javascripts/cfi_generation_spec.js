@@ -163,6 +163,26 @@ describe("CFI GENERATOR", function () {
             expect(orgIndexFromSingleNode).toEqual(3);
         });
 
+        it("can generate a package document CFI with the spine index", function () {
+
+            var packageDocXhtml = 
+            "<package>" 
+            +   "<div></div>"
+            +   "<div></div>"
+            +   "<div>"
+            +       "<spine>"
+            +           "<itemref></itemref>"
+            +           "<itemref></itemref>"
+            +           "<itemref idref='contentDocId'></itemref>" 
+            +       "</spine>"
+            +   "</div>"
+            + "</package>";
+
+            var packageDoc = (new window.DOMParser).parseFromString(packageDocXhtml, "text/xml");
+            var packageDocCFIComponent = EPUBcfi.Generator.generatePackageDocumentCFIComponentWithSpineIndex(2, packageDoc);
+            expect(packageDocCFIComponent).toEqual("/6/2/6!"); // [ te,xtn]
+        });
+
         it("can generate a complete CFI for both the content document and package document", function () {
 
             var packageDocXhtml = 
