@@ -226,11 +226,12 @@ describe("EpubReflowable.ReflowablePaginationView", function () {
                 this.selection.setEnd($("#g", this.$elements)[0].firstChild);
             });
 
-            it("inserts the start and end marker", function () {
+            // it("inserts the start and end marker", function () {
 
-                spyOn(this.view, "getCurrentSelectionRange").andReturn(this.selection);
-                this.view.insertSelectionMarkers();
-            });
+            //     // spyOn(this.view, "getCurrentSelectionRange").andReturn(this.selection);
+            //     // this.view.insertSelectionMarkers();
+                
+            // });
         });
     });
 });

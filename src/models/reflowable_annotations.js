@@ -85,7 +85,7 @@ EpubReflowable.ReflowableAnnotations = Backbone.Model.extend({
     getSelectionInfo : function (selectedRange) {
 
         // Generate CFI for selected text
-        var CFI = "";
+        var CFI = this.generateRangeCFI(selectedRange);
         var intervalState = {
             startElementFound : false,
             endElementFound : false
@@ -106,6 +106,27 @@ EpubReflowable.ReflowableAnnotations = Backbone.Model.extend({
             CFI : CFI,
             selectedElements : selectedElements
         };
+    },
+
+    generateRangeCFI : function (selectedRange) {
+
+        var startNode = selectedRange.startContainer;
+        var endNode = selectedRange.endContainer;
+        var startOffset;
+        var endOffset;
+        var rangeCFIComponent;
+
+        if (startNode.nodeType === Node.TEXT_NODE && endNode.nodeType === Node.TEXT_NODE) {
+
+            startOffset = selectedRange.startOffset;
+            endOffset = selectedRange.endOffset;
+
+            rangeCFIComponent = this.epubCFI.generateCharOffsetRangeComponent(startNode, startOffset, endNode, endOffset);
+            return rangeCFIComponent;
+        }
+        else {
+            throw new Error("Selection start and end must be text nodes");
+        }
     },
 
     generateCharacterOffsetCFI : function (characterOffset, $startElement, spineItemIdref, packageDocumentDom) {
@@ -189,6 +210,7 @@ EpubReflowable.ReflowableAnnotations = Backbone.Model.extend({
         }
     },
 
+    // 
     injectHighlightMarkers : function (selectionRange) {
 
         var highlightRange;

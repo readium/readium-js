@@ -60,9 +60,11 @@ describe("EpubReflowable.ReflowableAnnotations", function () {
 
             beforeEach(function () {
                 this.reflowingAnnotations = new EpubReflowable.ReflowableAnnotations();
-                var elements = "<div id='ancestor'> \
+                var elements = "<html> \
+                                    <div id='ancestor'> \
                                         <div id='a'> \
                                             <div id='b'> \
+                                                test test test test \
                                             </div> \
                                             <div id='c'> \
                                             </div> \
@@ -75,15 +77,16 @@ describe("EpubReflowable.ReflowableAnnotations", function () {
                                                 </div> \
                                             </div> \
                                             <div id='h'> \
+                                               test test test test \
                                             </div> \
                                         </div> \
-                                    </div>";
+                                    </div> \
+                                </html>";
 
-                this.$elements = $(elements);
+                this.$elements = $((new window.DOMParser()).parseFromString(elements, "text/xml"));
             });
 
-
-            it("returns an annotation info object", function () {
+            it("returns the expected array of selected elements", function () {
 
                 var annotationInfo;
                 var selectedElements = [];
@@ -101,6 +104,53 @@ describe("EpubReflowable.ReflowableAnnotations", function () {
                 expect(selectedElements[4].id).toBe("f");
                 expect(selectedElements[5].id).toBe("g");
                 expect(selectedElements[6].id).toBe("h");
+            });
+
+            it("returns a generated CFI for the range", function () {
+
+            });
+        });
+
+        describe("generateRangeCFI()", function () {
+
+            beforeEach(function () {
+                this.reflowingAnnotations = new EpubReflowable.ReflowableAnnotations();
+                var elements = "<html> \
+                                    <div id='ancestor'> \
+                                        <div id='a'> \
+                                            <div id='b'> \
+                                                test test test test \
+                                            </div> \
+                                            <div id='c'> \
+                                            </div> \
+                                            <div id='d'> \
+                                            </div> \
+                                        </div> \
+                                        <div id='e'> \
+                                            <div id ='f'> \
+                                                <div id ='g'> \
+                                                </div> \
+                                            </div> \
+                                            <div id='h'> \
+                                               test test test test \
+                                            </div> \
+                                        </div> \
+                                    </div> \
+                                </html>";
+
+                this.$elements = $((new window.DOMParser()).parseFromString(elements, "text/xml"));
+            });
+
+            it("can generate a range between a start and end text node", function () {
+
+                var rangeCFIComponent;
+                var selectedElements = [];
+                var selection = document.createRange();
+                selection.setStart($("#b", this.$elements)[0].firstChild, 30);
+                selection.setEnd($("#h", this.$elements)[0].firstChild, 40);
+
+                rangeCFIComponent = this.reflowingAnnotations.generateRangeCFI(selection);
+                expect(rangeCFIComponent).toBe("!/2[ancestor],/2[a]/2[b]/1:30,/4[e]/4[h]/1:40");
             });
         });
 
