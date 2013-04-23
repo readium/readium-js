@@ -2,7 +2,7 @@ describe("CFI GENERATOR", function () {
 
     describe("range generation", function () {
 
-        it("can generate a range component to an arbitrary element", function () {
+        it("can generate a range component that ends at an arbitrary element ancestor", function () {
 
             var dom = 
                 "<html>"
@@ -26,7 +26,7 @@ describe("CFI GENERATOR", function () {
             expect(generatedCFI).toEqual("/2[startParent]/2"); 
         });
 
-        it("can generate an element range CFI", function () {
+        it("can generate an element range CFI for different start nodes", function () {
 
            var dom = 
                 "<html>"
@@ -45,13 +45,42 @@ describe("CFI GENERATOR", function () {
             var $dom = $((new window.DOMParser).parseFromString(dom, "text/xml"));         
 
             var $startElement1 = $($('#startParent', $dom).children()[0]);
-            var $startElement2 = $($('#startParent', $dom).children()[2])
+            var $startElement2 = $($('#startParent', $dom).children()[2]);
             var generatedCFI = EPUBcfi.Generator.generateElementRangeComponent($startElement1[0], $startElement2[0]);
 
             expect(generatedCFI).toEqual("!/4/2[startParent],/2,/6");
         });
 
-        it("can generate a character offset range CFI", function () {
+        it("throws an error if the start and end node is the same", function () {
+
+           var dom = 
+                "<html>"
+                +    "<div></div>"
+                +    "<div>"
+                +         "<div id='startParent'>"
+                +             "<div></div>"
+                +             "textnode1"
+                +             "<div></div>"
+                +             "textNode2"
+                +             "<div></div>"
+                +         "</div>"
+                +     "</div>"
+                +     "<div></div>"
+                + "</html>";
+            var $dom = $((new window.DOMParser).parseFromString(dom, "text/xml"));         
+
+            var $startElement1 = $($('#startParent', $dom).children()[0]);
+            var $startElement2 = $($('#startParent', $dom).children()[0]);
+
+            expect(function () {
+                EPUBcfi.Generator.generateElementRangeComponent($startElement1[0], $startElement2[0])})
+            .toThrow(
+                Error(
+                    "Start and end element cannot be the same for a CFI range")
+            ); 
+        });
+
+        it("can generate a character offset range CFI for different start and end nodes", function () {
 
            var dom = 
                 "<html>"
@@ -79,6 +108,36 @@ describe("CFI GENERATOR", function () {
             );
 
             expect(generatedCFI).toEqual("!/4/2[startParent],/2/1:6,/6/1:2");
+        });
+
+        it("can generate a character offset range CFI for the same start and end node, with differet offsets", function () {
+
+           var dom = 
+                "<html>"
+                +    "<div></div>"
+                +    "<div>"
+                +         "<div id='startParent'>"
+                +             "<div>text target for start</div>"
+                +             "textnode1"
+                +             "<div></div>"
+                +             "textNode2"
+                +             "<div>text target for end</div>"
+                +         "</div>"
+                +     "</div>"
+                +     "<div></div>"
+                + "</html>";
+            var $dom = $((new window.DOMParser).parseFromString(dom, "text/xml"));         
+
+            var $startElement = $($('#startParent', $dom).children()[0].firstChild);
+            var $endElement = $($('#startParent', $dom).children()[0].firstChild)
+            var generatedCFI = EPUBcfi.Generator.generateCharOffsetRangeComponent(
+                $startElement[0], 
+                2,
+                $endElement[0],
+                6
+            );
+
+            expect(generatedCFI).toEqual("!/4/2[startParent]/2,/1:2,/1:6");
         });
     });
 
