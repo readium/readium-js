@@ -60,6 +60,14 @@ describe("EpubReader.EpubReaderView", function () {
             });
         });
 
+        describe("getCurrentSelectionInfo()", function () {
+
+            it("generates a complete range CFI", function () {
+
+                this.readerViewer.getCurrentSelectionInfo();
+            });
+        });
+
         describe("showPageByElementId()", function () {
 
             // This method is currently unspecified

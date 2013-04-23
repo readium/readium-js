@@ -2269,6 +2269,83 @@ EPUBcfi.CFIAssertionError = function (expectedAssertion, targetElementAssertion,
     //  "PUBLIC" METHODS (THE API)                                                          //
     // ------------------------------------------------------------------------------------ //
 
+    generateCharOffsetRangeComponent : function (rangeStartElement, startOffset, rangeEndElement, endOffset, classBlacklist, elementBlacklist, idBlacklist) {
+
+        var docRange;
+        var commonAncestor;
+        var range1OffsetStep;
+        var range1CFI;
+        var range2OffsetStep;
+        var range2CFI;
+        var commonCFIComponent;
+
+        this.validateStartTextNode(rangeStartElement);
+        this.validateStartTextNode(rangeEndElement);
+
+        if (rangeStartElement === rangeEndElement) {
+            range1OffsetStep = this.createCFITextNodeStep($(rangeStartElement), startOffset, classBlacklist, elementBlacklist, idBlacklist);
+            range2OffsetStep = this.createCFITextNodeStep($(rangeEndElement), endOffset, classBlacklist, elementBlacklist, idBlacklist);          
+            commonCFIComponent = this.createCFIElementSteps($(rangeStartElement).parent(), "html", classBlacklist, elementBlacklist, idBlacklist);
+            return commonCFIComponent.substring(1, commonCFIComponent.length) + "," + range1OffsetStep + "," + range2OffsetStep;
+        }
+        else {
+
+            // Create a document range to find the common ancestor
+            docRange = document.createRange();
+            docRange.setStart(rangeStartElement, startOffset);
+            docRange.setEnd(rangeEndElement, endOffset);
+            commonAncestor = docRange.commonAncestorContainer;
+
+            // Generate terminating offset and range 1
+            range1OffsetStep = this.createCFITextNodeStep($(rangeStartElement), startOffset, classBlacklist, elementBlacklist, idBlacklist);
+            range1CFI = this.createCFIElementSteps($(rangeStartElement).parent(), commonAncestor, classBlacklist, elementBlacklist, idBlacklist) + range1OffsetStep;
+
+            // Generate terminating offset and range 2
+            range2OffsetStep = this.createCFITextNodeStep($(rangeEndElement), endOffset, classBlacklist, elementBlacklist, idBlacklist);
+            range2CFI = this.createCFIElementSteps($(rangeEndElement).parent(), commonAncestor, classBlacklist, elementBlacklist, idBlacklist) + range2OffsetStep;
+
+            // Generate shared component
+            commonCFIComponent = this.createCFIElementSteps($(commonAncestor), "html", classBlacklist, elementBlacklist, idBlacklist);
+
+            // Return the result
+            return commonCFIComponent.substring(1, commonCFIComponent.length) + "," + range1CFI + "," + range2CFI;
+        }
+    },
+
+    generateElementRangeComponent : function (rangeStartElement, rangeEndElement, classBlacklist, elementBlacklist, idBlacklist) {
+
+        var docRange;
+        var commonAncestor;
+        var range1CFI;
+        var range2CFI;
+        var commonCFIComponent;
+
+        this.validateStartElement(rangeStartElement);
+        this.validateStartElement(rangeEndElement);
+
+        if (rangeStartElement === rangeEndElement) {
+            throw new Error("Start and end element cannot be the same for a CFI range");
+        }
+
+        // Create a document range to find the common ancestor
+        docRange = document.createRange();
+        docRange.setStart(rangeStartElement);
+        docRange.setEnd(rangeEndElement);
+        commonAncestor = docRange.commonAncestorContainer;
+
+        // Generate range 1
+        range1CFI = this.createCFIElementSteps($(rangeStartElement), commonAncestor, classBlacklist, elementBlacklist, idBlacklist);
+
+        // Generate range 2
+        range2CFI = this.createCFIElementSteps($(rangeEndElement), commonAncestor, classBlacklist, elementBlacklist, idBlacklist);
+
+        // Generate shared component
+        commonCFIComponent = this.createCFIElementSteps($(commonAncestor), "html", classBlacklist, elementBlacklist, idBlacklist);
+
+        // Return the result
+        return commonCFIComponent.substring(1, commonCFIComponent.length) + "," + range1CFI + "," + range2CFI;
+    },
+
     // Description: Generates a character offset CFI 
     // Arguments: The text node that contains the offset referenced by the cfi, the offset value, the name of the 
     //   content document that contains the text node, the package document for this EPUB.
@@ -2311,6 +2388,18 @@ EPUBcfi.CFIAssertionError = function (expectedAssertion, targetElementAssertion,
 
         // Get the start node (itemref element) that references the content document
         $itemRefStartNode = $("itemref[idref='" + contentDocumentName + "']", $(packageDocument));
+
+        // Create the steps up to the top element of the package document (the "package" element)
+        packageDocCFIComponent = this.createCFIElementSteps($itemRefStartNode, "package", classBlacklist, elementBlacklist, idBlacklist);
+
+        // Append an !; this assumes that a CFI content document CFI component will be appended at some point
+        return packageDocCFIComponent + "!";
+    },
+
+    generatePackageDocumentCFIComponentWithSpineIndex : function (spineIndex, packageDocument, classBlacklist, elementBlacklist, idBlacklist) {
+
+        // Get the start node (itemref element) that references the content document
+        $itemRefStartNode = $($("spine", packageDocument).children()[spineIndex]);
 
         // Create the steps up to the top element of the package document (the "package" element)
         packageDocCFIComponent = this.createCFIElementSteps($itemRefStartNode, "package", classBlacklist, elementBlacklist, idBlacklist);
@@ -2575,7 +2664,8 @@ EPUBcfi.CFIAssertionError = function (expectedAssertion, targetElementAssertion,
         getTextTerminusInfoWithPartialCFI : function (contentDocumentCFI, contentDocument) { return interpreter.getTextTerminusInfoWithPartialCFI.call(interpreter, contentDocumentCFI, contentDocument); }, 
         generateCharacterOffsetCFIComponent : function (startTextNode, characterOffset) { return generator.generateCharacterOffsetCFIComponent.call(generator, startTextNode, characterOffset); },
         generateElementCFIComponent : function (startElement) { return generator.generateElementCFIComponent.call(generator, startElement); },
-        generatePackageDocumentCFIComponent : function (contentDocumentName, packageDocument) { return generator.generatePackageDocumentCFIComponent.call(generator, contentDocumentName, packageDocument); }, 
+        generatePackageDocumentCFIComponent : function (contentDocumentName, packageDocument) { return generator.generatePackageDocumentCFIComponent.call(generator, contentDocumentName, packageDocument); },
+        generatePackageDocumentCFIComponentWithSpineIndex : function (spineIndex, packageDocument) { return generator.generatePackageDocumentCFIComponentWithSpineIndex.call(generator, spineIndex, packageDocument); },
         generateCompleteCFI : function (packageDocumentCFIComponent, contentDocumentCFIComponent) { return generator.generateCompleteCFI.call(generator, packageDocumentCFIComponent, contentDocumentCFIComponent); },
         injectElementAtOffset : function ($textNodeList, textOffset, elementToInject) { return instructions.injectCFIMarkerIntoText.call(instructions, $textNodeList, textOffset, elementToInject); },
         injectRangeElements : function (rangeCFI, contentDocument, startElementToInject, endElementToInject, classBlacklist, elementBlacklist, idBlacklist) {
@@ -2583,7 +2673,12 @@ EPUBcfi.CFIAssertionError = function (expectedAssertion, targetElementAssertion,
         },
         getRangeTargetElements : function (rangeCFI, contentDocument, classBlacklist, elementBlacklist, idBlacklist) {
             return interpreter.getRangeTargetElements.call(interpreter, rangeCFI, contentDocument, classBlacklist, elementBlacklist, idBlacklist);
-        }, 
-
+        },
+        generateCharOffsetRangeComponent : function (rangeStartElement, startOffset, rangeEndElement, endOffset, classBlacklist, elementBlacklist, idBlacklist) {
+            return generator.generateCharOffsetRangeComponent.call(generator, rangeStartElement, startOffset, rangeEndElement, endOffset, classBlacklist, elementBlacklist, idBlacklist);
+        },
+        generateElementRangeComponent : function (rangeStartElement, rangeEndElement, classBlacklist, elementBlacklist, idBlacklist) {
+            return generator.generateElementRangeComponent.call(generator, rangeStartElement, rangeEndElement, classBlacklist, elementBlacklist, idBlacklist);
+        }
     };
 };

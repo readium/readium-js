@@ -131,8 +131,20 @@ EpubReader.EpubReaderView = Backbone.View.extend({
 
     getCurrentSelectionInfo : function () {
 
-        var currentView = this.reader.getCurrentPagesView();
-        annotationInfo = currentView.insertSelectionMarkers();
+        var contentDocCFIComponent;
+        var packageDocCFIComponent;
+        var completeCFI;
+        var spineIndex;
+        var currentViewInfo = this.reader.getCurrentPagesViewInfo();
+        spineIndex = currentViewInfo.spineIndexes[0]; // Assumes reflowable
+        annotationInfo = currentViewInfo.pagesView.insertSelectionMarkers();
+
+        // Generate a package document cfi component and construct the whole cfi, append
+        contentDocCFIComponent = annotationInfo.CFI;
+        packageDocCFIComponent = this.cfi.generatePackageDocumentCFIComponentWithSpineIndex(spineIndex, this.packageDocumentDOM);
+        completeCFI = this.cfi.generateCompleteCFI(packageDocCFIComponent, contentDocCFIComponent);
+        annotationInfo.CFI = completeCFI;
+
         return annotationInfo;
     },
 
