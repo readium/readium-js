@@ -357,7 +357,6 @@ EpubReflowable.AlternateStyleTagSelector = Backbone.Model.extend({
             selectionInfo = this.getSelectionInfo(range);
 
             return {
-
                 CFI : CFI, 
                 selectedElements : selectionInfo.selectedElements
             };
@@ -395,7 +394,7 @@ EpubReflowable.AlternateStyleTagSelector = Backbone.Model.extend({
     getSelectionInfo : function (selectedRange) {
 
         // Generate CFI for selected text
-        var CFI = "";
+        var CFI = this.generateRangeCFI(selectedRange);
         var intervalState = {
             startElementFound : false,
             endElementFound : false
@@ -416,6 +415,27 @@ EpubReflowable.AlternateStyleTagSelector = Backbone.Model.extend({
             CFI : CFI,
             selectedElements : selectedElements
         };
+    },
+
+    generateRangeCFI : function (selectedRange) {
+
+        var startNode = selectedRange.startContainer;
+        var endNode = selectedRange.endContainer;
+        var startOffset;
+        var endOffset;
+        var rangeCFIComponent;
+
+        if (startNode.nodeType === Node.TEXT_NODE && endNode.nodeType === Node.TEXT_NODE) {
+
+            startOffset = selectedRange.startOffset;
+            endOffset = selectedRange.endOffset;
+
+            rangeCFIComponent = this.epubCFI.generateCharOffsetRangeComponent(startNode, startOffset, endNode, endOffset);
+            return rangeCFIComponent;
+        }
+        else {
+            throw new Error("Selection start and end must be text nodes");
+        }
     },
 
     generateCharacterOffsetCFI : function (characterOffset, $startElement, spineItemIdref, packageDocumentDom) {
@@ -499,6 +519,7 @@ EpubReflowable.AlternateStyleTagSelector = Backbone.Model.extend({
         }
     },
 
+    // 
     injectHighlightMarkers : function (selectionRange) {
 
         var highlightRange;
@@ -1924,6 +1945,13 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
     //     this.annotations.saveAnnotation(CFI, this.spineItemModel.get("spine_index"));
     // },
 
+
+    // REFACTORING CANDIDATE: The algorithm here is to inject highlight markers for the current selection, after
+    //   which information for the selecte range is generated and return in an annotation "info" object. The 
+    //   injectedHighlightMarkers method leverages parts of the CFI library that should be private to that library; this
+    //   is not ideal, and adds redundant, complex, code to the annotations delegate. A better method here would be to generate
+    //   selection info, get the generated range CFI, and use that to inject markers. The only reason this wasn't done is 
+    //   because the CFI library did not support CFI range generation or injection when selection and highlighting was done.
     insertSelectionMarkers : function () {
 
         // Get currently selected range
@@ -2093,34 +2121,6 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
             // this.pages.goRight();
         }
     },
-
-
-    // This is a handler that needs to be passed in as a callback
-	// // Description: Handles clicks of anchor tags by navigating to
-	// //   the proper location in the epub spine, or opening
-	// //   a new window for external links
-	// linkClickHandler : function (e) {
-
-	// 	var href;
-	// 	e.preventDefault();
-
-	// 	// Check for both href and xlink:href attribute and get value
-	// 	if (e.currentTarget.attributes["xlink:href"]) {
-	// 		href = e.currentTarget.attributes["xlink:href"].value;
-	// 	}
-	// 	else {
-	// 		href = e.currentTarget.attributes["href"].value;
-	// 	}
-
-	// 	// Resolve the relative path for the requested resource.
-	// 	href = this.resolveRelativeURI(href);
-	// 	if (href.match(/^http(s)?:/)) {
-	// 		window.open(href);
-	// 	} 
-	// 	else {
-	// 		this.epubController.goToHref(href);
-	// 	}
-	// },
 
 	pageChangeHandler: function() {
 

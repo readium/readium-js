@@ -47,7 +47,6 @@ EpubReflowable.ReflowableAnnotations = Backbone.Model.extend({
             selectionInfo = this.getSelectionInfo(range);
 
             return {
-
                 CFI : CFI, 
                 selectedElements : selectionInfo.selectedElements
             };
