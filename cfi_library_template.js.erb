@@ -22,7 +22,8 @@ var EpubCFIModule = function () {
         getTextTerminusInfoWithPartialCFI : function (contentDocumentCFI, contentDocument) { return interpreter.getTextTerminusInfoWithPartialCFI.call(interpreter, contentDocumentCFI, contentDocument); }, 
         generateCharacterOffsetCFIComponent : function (startTextNode, characterOffset) { return generator.generateCharacterOffsetCFIComponent.call(generator, startTextNode, characterOffset); },
         generateElementCFIComponent : function (startElement) { return generator.generateElementCFIComponent.call(generator, startElement); },
-        generatePackageDocumentCFIComponent : function (contentDocumentName, packageDocument) { return generator.generatePackageDocumentCFIComponent.call(generator, contentDocumentName, packageDocument); }, 
+        generatePackageDocumentCFIComponent : function (contentDocumentName, packageDocument) { return generator.generatePackageDocumentCFIComponent.call(generator, contentDocumentName, packageDocument); },
+        generatePackageDocumentCFIComponentWithSpineIndex : function (spineIndex, packageDocument) { return generator.generatePackageDocumentCFIComponent.call(generator, spineIndex, packageDocument); },
         generateCompleteCFI : function (packageDocumentCFIComponent, contentDocumentCFIComponent) { return generator.generateCompleteCFI.call(generator, packageDocumentCFIComponent, contentDocumentCFIComponent); },
         injectElementAtOffset : function ($textNodeList, textOffset, elementToInject) { return instructions.injectCFIMarkerIntoText.call(instructions, $textNodeList, textOffset, elementToInject); },
         injectRangeElements : function (rangeCFI, contentDocument, startElementToInject, endElementToInject, classBlacklist, elementBlacklist, idBlacklist) {
