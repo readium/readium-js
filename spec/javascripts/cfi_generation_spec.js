@@ -137,7 +137,7 @@ describe("CFI GENERATOR", function () {
                 6
             );
 
-            expect(generatedCFI).toEqual("!/4/2[startParent]/2,/1:2,/1:6");
+            expect(generatedCFI).toEqual("/4/2[startParent]/2,/1:2,/1:6");
         });
     });
 

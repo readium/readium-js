@@ -2308,7 +2308,7 @@ EPUBcfi.CFIAssertionError = function (expectedAssertion, targetElementAssertion,
             commonCFIComponent = this.createCFIElementSteps($(commonAncestor), "html", classBlacklist, elementBlacklist, idBlacklist);
 
             // Return the result
-            return commonCFIComponent + "," + range1CFI + "," + range2CFI;
+            return commonCFIComponent.substring(1, commonCFIComponent.length) + "," + range1CFI + "," + range2CFI;
         }
     },
 
@@ -2343,7 +2343,7 @@ EPUBcfi.CFIAssertionError = function (expectedAssertion, targetElementAssertion,
         commonCFIComponent = this.createCFIElementSteps($(commonAncestor), "html", classBlacklist, elementBlacklist, idBlacklist);
 
         // Return the result
-        return commonCFIComponent + "," + range1CFI + "," + range2CFI;
+        return commonCFIComponent.substring(1, commonCFIComponent.length) + "," + range1CFI + "," + range2CFI;
     },
 
     // Description: Generates a character offset CFI 
