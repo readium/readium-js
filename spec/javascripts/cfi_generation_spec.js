@@ -48,7 +48,7 @@ describe("CFI GENERATOR", function () {
             var $startElement2 = $($('#startParent', $dom).children()[2]);
             var generatedCFI = EPUBcfi.Generator.generateElementRangeComponent($startElement1[0], $startElement2[0]);
 
-            expect(generatedCFI).toEqual("!/4/2[startParent],/2,/6");
+            expect(generatedCFI).toEqual("/4/2[startParent],/2,/6");
         });
 
         it("throws an error if the start and end node is the same", function () {
@@ -107,7 +107,7 @@ describe("CFI GENERATOR", function () {
                 2
             );
 
-            expect(generatedCFI).toEqual("!/4/2[startParent],/2/1:6,/6/1:2");
+            expect(generatedCFI).toEqual("/4/2[startParent],/2/1:6,/6/1:2");
         });
 
         it("can generate a character offset range CFI for the same start and end node, with differet offsets", function () {
