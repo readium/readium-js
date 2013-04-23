@@ -4,6 +4,70 @@ EPUBcfi.Generator = {
     //  "PUBLIC" METHODS (THE API)                                                          //
     // ------------------------------------------------------------------------------------ //
 
+    generateCharOffsetRangeComponent : function (rangeStartElement, startOffset, rangeEndElement, endOffset, classBlacklist, elementBlacklist, idBlacklist) {
+
+        var docRange;
+        var commonAncestor;
+        var range1OffsetStep;
+        var range1CFI;
+        var range2OffsetStep;
+        var range2CFI;
+        var commonCFIComponent;
+
+        this.validateStartTextNode(rangeStartElement);
+        this.validateStartTextNode(rangeEndElement);
+
+        // Create a document range to find the common ancestor
+        docRange = document.createRange();
+        docRange.setStart(rangeStartElement, endOffset);
+        docRange.setEnd(rangeEndElement, endOffset);
+        commonAncestor = docRange.commonAncestorContainer;
+
+        // Generate terminating offset and range 1
+        range1OffsetStep = this.createCFITextNodeStep($(rangeStartElement), startOffset, classBlacklist, elementBlacklist, idBlacklist);
+        range1CFI = this.createCFIElementSteps($(rangeStartElement).parent(), commonAncestor, classBlacklist, elementBlacklist, idBlacklist) + range1OffsetStep;
+
+        // Generate terminating offset and range 2
+        range2OffsetStep = this.createCFITextNodeStep($(rangeEndElement), endOffset, classBlacklist, elementBlacklist, idBlacklist);
+        range2CFI = this.createCFIElementSteps($(rangeEndElement).parent(), commonAncestor, classBlacklist, elementBlacklist, idBlacklist) + range2OffsetStep;
+
+        // Generate shared component
+        commonCFIComponent = this.createCFIElementSteps($(commonAncestor), "html", classBlacklist, elementBlacklist, idBlacklist);
+
+        // Return the result
+        return commonCFIComponent + "," + range1CFI + "," + range2CFI;
+    },
+
+    generateElementRangeComponent : function (rangeStartElement, rangeEndElement, classBlacklist, elementBlacklist, idBlacklist) {
+
+        var docRange;
+        var commonAncestor;
+        var range1CFI;
+        var range2CFI;
+        var commonCFIComponent;
+
+        this.validateStartElement(rangeStartElement);
+        this.validateStartElement(rangeEndElement);
+
+        // Create a document range to find the common ancestor
+        docRange = document.createRange();
+        docRange.setStart(rangeStartElement);
+        docRange.setEnd(rangeEndElement);
+        commonAncestor = docRange.commonAncestorContainer;
+
+        // Generate range 1
+        range1CFI = this.createCFIElementSteps($(rangeStartElement), commonAncestor, classBlacklist, elementBlacklist, idBlacklist);
+
+        // Generate range 2
+        range2CFI = this.createCFIElementSteps($(rangeEndElement), commonAncestor, classBlacklist, elementBlacklist, idBlacklist);
+
+        // Generate shared component
+        commonCFIComponent = this.createCFIElementSteps($(commonAncestor), "html", classBlacklist, elementBlacklist, idBlacklist);
+
+        // Return the result
+        return commonCFIComponent + "," + range1CFI + "," + range2CFI;
+    },
+
     // Description: Generates a character offset CFI 
     // Arguments: The text node that contains the offset referenced by the cfi, the offset value, the name of the 
     //   content document that contains the text node, the package document for this EPUB.

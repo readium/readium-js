@@ -1,164 +1,249 @@
 describe("CFI GENERATOR", function () {
 
-    it("can generate CFI steps recursively for a single content document", function () {
+    describe("range generation", function () {
 
-        var dom = 
+        it("can generate a range component to an arbitrary element", function () {
+
+            var dom = 
+                "<html>"
+                +    "<div></div>"
+                +    "<div>"
+                +         "<div id='startParent'>"
+                +             "<div></div>"
+                +             "textnode1"
+                +             "<div></div>"
+                +             "textNode2"
+                +             "<div></div>"
+                +         "</div>"
+                +     "</div>"
+                +     "<div></div>"
+                + "</html>";
+            var $dom = $((new window.DOMParser).parseFromString(dom, "text/xml"));         
+
+            var commonAncestor = $($dom.children()[0]).children()[1];
+            var $startElement = $($('#startParent', $dom).contents()[0]);
+            var generatedCFI = EPUBcfi.Generator.createCFIElementSteps($startElement, commonAncestor);
+            expect(generatedCFI).toEqual("/2[startParent]/2"); 
+        });
+
+        it("can generate an element range CFI", function () {
+
+           var dom = 
+                "<html>"
+                +    "<div></div>"
+                +    "<div>"
+                +         "<div id='startParent'>"
+                +             "<div></div>"
+                +             "textnode1"
+                +             "<div></div>"
+                +             "textNode2"
+                +             "<div></div>"
+                +         "</div>"
+                +     "</div>"
+                +     "<div></div>"
+                + "</html>";
+            var $dom = $((new window.DOMParser).parseFromString(dom, "text/xml"));         
+
+            var $startElement1 = $($('#startParent', $dom).children()[0]);
+            var $startElement2 = $($('#startParent', $dom).children()[2])
+            var generatedCFI = EPUBcfi.Generator.generateElementRangeComponent($startElement1[0], $startElement2[0]);
+
+            expect(generatedCFI).toEqual("!/4/2[startParent],/2,/6");
+        });
+
+        it("can generate a character offset range CFI", function () {
+
+           var dom = 
+                "<html>"
+                +    "<div></div>"
+                +    "<div>"
+                +         "<div id='startParent'>"
+                +             "<div>text target for start</div>"
+                +             "textnode1"
+                +             "<div></div>"
+                +             "textNode2"
+                +             "<div>text target for end</div>"
+                +         "</div>"
+                +     "</div>"
+                +     "<div></div>"
+                + "</html>";
+            var $dom = $((new window.DOMParser).parseFromString(dom, "text/xml"));         
+
+            var $startElement = $($('#startParent', $dom).children()[0].firstChild);
+            var $endElement = $($('#startParent', $dom).children()[2].firstChild)
+            var generatedCFI = EPUBcfi.Generator.generateCharOffsetRangeComponent(
+                $startElement[0], 
+                6,
+                $endElement[0],
+                2
+            );
+
+            expect(generatedCFI).toEqual("!/4/2[startParent],/2/1:6,/6/1:2");
+        });
+    });
+
+    describe("path generation", function () {
+
+        it("can generate CFI steps recursively for a single content document", function () {
+
+            var dom = 
+                "<html>"
+                +    "<div></div>"
+                +    "<div>"
+                +         "<div id='startParent'>"
+                +             "<div></div>"
+                +             "textnode1"
+                +             "<div></div>"
+                +             "textNode2"
+                +             "<div></div>"
+                +         "</div>"
+                +     "</div>"
+                +     "<div></div>"
+                + "</html>";
+            var $dom = $((new window.DOMParser).parseFromString(dom, "text/xml"));
+
+            var generatedCFI = EPUBcfi.Generator.createCFIElementSteps($($('#startParent', $dom).contents()[0]), "html");
+            expect(generatedCFI).toEqual("!/4/2[startParent]/2"); 
+        });
+
+        it("can infer the presence of a single node from multiple adjacent nodes", function () {
+
+            var dom = 
+                "<html>"
+                +    "<div></div>"
+                +    "<div>"
+                +         "<div id='startParent'>"
+                +             "<div></div>"
+                +             "textnode1.0"
+                +             "<div class='cfi-marker'></div>"
+                +             "textnode1.1"
+                +             "<div class='cfi-marker'></div>"
+                +             "textnode1.2"            
+                +             "<div></div>"
+                +             "textNode2"
+                +             "<div></div>"
+                +         "</div>"
+                +     "</div>"
+                +     "<div></div>"
+                + "</html>";
+            var $dom = $((new window.DOMParser).parseFromString(dom, "text/xml"));
+
+            var $startNode = $($('#startParent', $dom).contents()[5]);
+            var textTerminus = EPUBcfi.Generator.createCFITextNodeStep($startNode, 3, ["cfi-marker"]);
+            var generatedCFI = EPUBcfi.Generator.createCFIElementSteps($startNode.parent(), "html", ["cfi-marker"]) + textTerminus;
+
+            expect(generatedCFI).toEqual("!/4/2[startParent]/3:3"); // [ te,xtn]
+        });
+
+        it("calculates the original character offset", function () {
+
+            var dom = 
+                "<html>"
+                +    "<div></div>"
+                +    "<div>"
+                +         "<div id='startParent'>"
+                +             "<div></div>"
+                +             "textnode1.0"
+                +             "<div class='cfi-marker'></div>"
+                +             "textnode1.1"
+                +             "<div class='cfi-marker'></div>"
+                +             "textnode1.2"            
+                +             "<div></div>"
+                +             "textNode2"
+                +             "<div></div>"
+                +         "</div>"
+                +     "</div>"
+                +     "<div></div>"
+                + "</html>";
+            var $dom = $((new window.DOMParser).parseFromString(dom, "text/xml"));
+
+            var orgIndexFromSplitNodes = EPUBcfi.Generator.findOriginalTextNodeCharOffset($($('#startParent', $dom).contents()[3]), 3, ["cfi-marker"]);
+            var orgIndexFromSingleNode = EPUBcfi.Generator.findOriginalTextNodeCharOffset($($('#startParent', $dom).contents()[7]), 3, ["cfi-marker"]);
+            expect(orgIndexFromSplitNodes).toEqual(13);
+            expect(orgIndexFromSingleNode).toEqual(3);
+        });
+
+        it("can generate a complete CFI for both the content document and package document", function () {
+
+            var packageDocXhtml = 
+            "<package>" 
+            +   "<div></div>"
+            +   "<div></div>"
+            +   "<div>"
+            +       "<spine>"
+            +           "<itemref></itemref>"
+            +           "<itemref></itemref>"
+            +           "<itemref idref='contentDocId'></itemref>" 
+            +       "</spine>"
+            +   "</div>"
+            + "</package>";
+
+            var contentDocXhtml = 
             "<html>"
-            +    "<div></div>"
-            +    "<div>"
-            +         "<div id='startParent'>"
-            +             "<div></div>"
-            +             "textnode1"
-            +             "<div></div>"
-            +             "textNode2"
-            +             "<div></div>"
-            +         "</div>"
-            +     "</div>"
-            +     "<div></div>"
+            +   "<div></div>"
+            +   "<div>"
+            +       "<div id='startParent'>"
+            +           "<div></div>"
+            +           "textnode1"
+            +           "<div></div>"
+            +           "textNode2"
+            +           "<div></div>"
+            +       "</div>"
+            +   "</div>"
+            +   "<div></div>"
             + "</html>";
-        var $dom = $((new window.DOMParser).parseFromString(dom, "text/xml"));
 
-        var generatedCFI = EPUBcfi.Generator.createCFIElementSteps($($('#startParent', $dom).contents()[0]), "html");
-        expect(generatedCFI).toEqual("!/4/2[startParent]/2"); 
-    });
+            var contentDoc = (new window.DOMParser).parseFromString(contentDocXhtml, "text/xml");
+            var packageDoc = (new window.DOMParser).parseFromString(packageDocXhtml, "text/xml");
 
-    it("can infer the presence of a single node from multiple adjacent nodes", function () {
+            var contentDocCFIComponent = EPUBcfi.Generator.generateCharacterOffsetCFIComponent($('#startParent', contentDoc).contents()[1], 3);
+            var packageDocCFIComponent = EPUBcfi.Generator.generatePackageDocumentCFIComponent("contentDocId", packageDoc);
+            var generatedCFI = EPUBcfi.Generator.generateCompleteCFI(packageDocCFIComponent, contentDocCFIComponent);
 
-        var dom = 
-            "<html>"
-            +    "<div></div>"
-            +    "<div>"
-            +         "<div id='startParent'>"
-            +             "<div></div>"
-            +             "textnode1.0"
-            +             "<div class='cfi-marker'></div>"
-            +             "textnode1.1"
-            +             "<div class='cfi-marker'></div>"
-            +             "textnode1.2"            
-            +             "<div></div>"
-            +             "textNode2"
-            +             "<div></div>"
-            +         "</div>"
-            +     "</div>"
-            +     "<div></div>"
-            + "</html>";
-        var $dom = $((new window.DOMParser).parseFromString(dom, "text/xml"));
+            expect(generatedCFI).toEqual("epubcfi(/6/2/6!/4/2[startParent]/3:3)"); // [ te,xtn]
+        });
 
-        var $startNode = $($('#startParent', $dom).contents()[5]);
-        var textTerminus = EPUBcfi.Generator.createCFITextNodeStep($startNode, 3, ["cfi-marker"]);
-        var generatedCFI = EPUBcfi.Generator.createCFIElementSteps($startNode.parent(), "html", ["cfi-marker"]) + textTerminus;
+        it('can generate a CFI for an actual epub', function () {
 
-        expect(generatedCFI).toEqual("!/4/2[startParent]/3:3"); // [ te,xtn]
-    });
+            var contentDocXhtml = jasmine.getFixtures().read("moby_dick_content_doc.xhtml");
+            var contentDoc = (new window.DOMParser).parseFromString(contentDocXhtml, "text/xml");
+            var packageDocXhtml = jasmine.getFixtures().read("moby_dick_package.opf");
+            var packageDoc = (new window.DOMParser).parseFromString(packageDocXhtml, "text/xml");
 
-    it("calculates the original character offset", function () {
+            var contentDocCFIComponent = EPUBcfi.Generator.generateCharacterOffsetCFIComponent($("#c01p0008", contentDoc)[0].firstChild, 103);
+            var packageDocCFIComponent = EPUBcfi.Generator.generatePackageDocumentCFIComponent("xchapter_001", packageDoc);
+            var generatedCFI = EPUBcfi.Generator.generateCompleteCFI(packageDocCFIComponent, contentDocCFIComponent);
 
-        var dom = 
-            "<html>"
-            +    "<div></div>"
-            +    "<div>"
-            +         "<div id='startParent'>"
-            +             "<div></div>"
-            +             "textnode1.0"
-            +             "<div class='cfi-marker'></div>"
-            +             "textnode1.1"
-            +             "<div class='cfi-marker'></div>"
-            +             "textnode1.2"            
-            +             "<div></div>"
-            +             "textNode2"
-            +             "<div></div>"
-            +         "</div>"
-            +     "</div>"
-            +     "<div></div>"
-            + "</html>";
-        var $dom = $((new window.DOMParser).parseFromString(dom, "text/xml"));
+            expect(generatedCFI).toEqual("epubcfi(/6/14!/4[body1]/2/18[c01p0008]/1:103)"); // [, a,lof]
+        });
 
-        var orgIndexFromSplitNodes = EPUBcfi.Generator.findOriginalTextNodeCharOffset($($('#startParent', $dom).contents()[3]), 3, ["cfi-marker"]);
-        var orgIndexFromSingleNode = EPUBcfi.Generator.findOriginalTextNodeCharOffset($($('#startParent', $dom).contents()[7]), 3, ["cfi-marker"]);
-        expect(orgIndexFromSplitNodes).toEqual(13);
-        expect(orgIndexFromSingleNode).toEqual(3);
-    });
+        it("can generate a CFI without a terminus", function () {
 
-    it("can generate a complete CFI for both the content document and package document", function () {
+            var contentDocXhtml = jasmine.getFixtures().read("moby_dick_content_doc.xhtml");
+            var contentDoc = (new window.DOMParser).parseFromString(contentDocXhtml, "text/xml");
+            var packageDocXhtml = jasmine.getFixtures().read("moby_dick_package.opf");
+            var packageDoc = (new window.DOMParser).parseFromString(packageDocXhtml, "text/xml");
 
-        var packageDocXhtml = 
-        "<package>" 
-        +   "<div></div>"
-        +   "<div></div>"
-        +   "<div>"
-        +       "<spine>"
-        +           "<itemref></itemref>"
-        +           "<itemref></itemref>"
-        +           "<itemref idref='contentDocId'></itemref>" 
-        +       "</spine>"
-        +   "</div>"
-        + "</package>";
+            var contentDocCFIComponent = EPUBcfi.Generator.generateElementCFIComponent($("#c01p0008", contentDoc)[0]);
+            var packageDocCFIComponent = EPUBcfi.Generator.generatePackageDocumentCFIComponent("xchapter_001", packageDoc);
+            var generatedCFI = EPUBcfi.Generator.generateCompleteCFI(packageDocCFIComponent, contentDocCFIComponent);
 
-        var contentDocXhtml = 
-        "<html>"
-        +   "<div></div>"
-        +   "<div>"
-        +       "<div id='startParent'>"
-        +           "<div></div>"
-        +           "textnode1"
-        +           "<div></div>"
-        +           "textNode2"
-        +           "<div></div>"
-        +       "</div>"
-        +   "</div>"
-        +   "<div></div>"
-        + "</html>";
+            expect(generatedCFI).toEqual("epubcfi(/6/14!/4[body1]/2/18[c01p0008])");
+        });
 
-        var contentDoc = (new window.DOMParser).parseFromString(contentDocXhtml, "text/xml");
-        var packageDoc = (new window.DOMParser).parseFromString(packageDocXhtml, "text/xml");
+        it("can generate a CFI without a terminus when the start element is the 'html' element", function () {
 
-        var contentDocCFIComponent = EPUBcfi.Generator.generateCharacterOffsetCFIComponent($('#startParent', contentDoc).contents()[1], 3);
-        var packageDocCFIComponent = EPUBcfi.Generator.generatePackageDocumentCFIComponent("contentDocId", packageDoc);
-        var generatedCFI = EPUBcfi.Generator.generateCompleteCFI(packageDocCFIComponent, contentDocCFIComponent);
+            var contentDocXhtml = jasmine.getFixtures().read("moby_dick_content_doc.xhtml");
+            var contentDoc = (new window.DOMParser).parseFromString(contentDocXhtml, "text/xml");
+            var packageDocXhtml = jasmine.getFixtures().read("moby_dick_package.opf");
+            var packageDoc = (new window.DOMParser).parseFromString(packageDocXhtml, "text/xml");
 
-        expect(generatedCFI).toEqual("epubcfi(/6/2/6!/4/2[startParent]/3:3)"); // [ te,xtn]
-    });
+            var contentDocCFIComponent = EPUBcfi.Generator.generateElementCFIComponent($("html", contentDoc)[0]);
+            var packageDocCFIComponent = EPUBcfi.Generator.generatePackageDocumentCFIComponent("xchapter_001", packageDoc);
+            var generatedCFI = EPUBcfi.Generator.generateCompleteCFI(packageDocCFIComponent, contentDocCFIComponent);        
 
-    it('can generate a CFI for an actual epub', function () {
-
-        var contentDocXhtml = jasmine.getFixtures().read("moby_dick_content_doc.xhtml");
-        var contentDoc = (new window.DOMParser).parseFromString(contentDocXhtml, "text/xml");
-        var packageDocXhtml = jasmine.getFixtures().read("moby_dick_package.opf");
-        var packageDoc = (new window.DOMParser).parseFromString(packageDocXhtml, "text/xml");
-
-        var contentDocCFIComponent = EPUBcfi.Generator.generateCharacterOffsetCFIComponent($("#c01p0008", contentDoc)[0].firstChild, 103);
-        var packageDocCFIComponent = EPUBcfi.Generator.generatePackageDocumentCFIComponent("xchapter_001", packageDoc);
-        var generatedCFI = EPUBcfi.Generator.generateCompleteCFI(packageDocCFIComponent, contentDocCFIComponent);
-
-        expect(generatedCFI).toEqual("epubcfi(/6/14!/4[body1]/2/18[c01p0008]/1:103)"); // [, a,lof]
-    });
-
-    it("can generate a CFI without a terminus", function () {
-
-        var contentDocXhtml = jasmine.getFixtures().read("moby_dick_content_doc.xhtml");
-        var contentDoc = (new window.DOMParser).parseFromString(contentDocXhtml, "text/xml");
-        var packageDocXhtml = jasmine.getFixtures().read("moby_dick_package.opf");
-        var packageDoc = (new window.DOMParser).parseFromString(packageDocXhtml, "text/xml");
-
-        var contentDocCFIComponent = EPUBcfi.Generator.generateElementCFIComponent($("#c01p0008", contentDoc)[0]);
-        var packageDocCFIComponent = EPUBcfi.Generator.generatePackageDocumentCFIComponent("xchapter_001", packageDoc);
-        var generatedCFI = EPUBcfi.Generator.generateCompleteCFI(packageDocCFIComponent, contentDocCFIComponent);
-
-        expect(generatedCFI).toEqual("epubcfi(/6/14!/4[body1]/2/18[c01p0008])");
-    });
-
-    it("can generate a CFI without a terminus when the start element is the 'html' element", function () {
-
-        var contentDocXhtml = jasmine.getFixtures().read("moby_dick_content_doc.xhtml");
-        var contentDoc = (new window.DOMParser).parseFromString(contentDocXhtml, "text/xml");
-        var packageDocXhtml = jasmine.getFixtures().read("moby_dick_package.opf");
-        var packageDoc = (new window.DOMParser).parseFromString(packageDocXhtml, "text/xml");
-
-        var contentDocCFIComponent = EPUBcfi.Generator.generateElementCFIComponent($("html", contentDoc)[0]);
-        var packageDocCFIComponent = EPUBcfi.Generator.generatePackageDocumentCFIComponent("xchapter_001", packageDoc);
-        var generatedCFI = EPUBcfi.Generator.generateCompleteCFI(packageDocCFIComponent, contentDocCFIComponent);        
-
-        expect(generatedCFI).toEqual("epubcfi(/6/14!/2)");
+            expect(generatedCFI).toEqual("epubcfi(/6/14!/2)");
+        });
     });
 
     describe("CFI GENERATOR ERROR HANDLING", function () {
