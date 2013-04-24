@@ -392,7 +392,7 @@ EpubReflowable.AlternateStyleTagSelector = Backbone.Model.extend({
             return {
 
                 CFI : CFI, 
-                selectedElements : injectedElement
+                selectedElements : $injectedElement[0]
             };
 
         } catch (error) {
@@ -422,14 +422,20 @@ EpubReflowable.AlternateStyleTagSelector = Backbone.Model.extend({
     addSelectionBookmark : function (id) {
 
         var marker;
+        var partialCFI;
         var leftAddition;
         var currentSelection = this.getCurrentSelectionRange();
         if (currentSelection) {
 
+            partialCFI = this.generateCharOffsetCFI(currentSelection);
             marker = this.injectBookmarkMarker(currentSelection);
             leftAddition = -this.getPaginationLeftOffset();
             this.annotations.addBookmark("", marker, id, 0, leftAddition);
-            return marker;
+
+            return {
+                CFI : partialCFI,
+                selectedElements : marker
+            };
         }
         else {
             throw new Error("Nothing selected");
@@ -483,18 +489,21 @@ EpubReflowable.AlternateStyleTagSelector = Backbone.Model.extend({
         }
     },
 
-    generateCharacterOffsetCFI : function (characterOffset, $startElement, spineItemIdref, packageDocumentDom) {
+    generateCharOffsetCFI : function (selectedRange) {
 
-        // Save the position marker
-        generatedCFI = EPUBcfi.Generator.generateCharacterOffsetCFI(
-            $startElement,
-            characterOffset, 
-            spineItemIdref, 
-            packageDocumentDom, 
-            ["cfi-marker", "audiError"], 
-            [], 
-            ["MathJax_Message"]);
-        return generatedCFI;
+        // Character offset
+        var startNode = selectedRange.startContainer;
+        var startOffset = selectedRange.startOffset;
+        var charOffsetCFI;
+
+        if (startNode.nodeType === Node.TEXT_NODE) {
+            charOffsetCFI = this.epubCFI.generateCharacterOffsetCFIComponent(
+                startNode,
+                startOffset,
+                ["cfi-marker"]
+                );
+        }
+        return charOffsetCFI;
     },
 
     findExistingLastPageMarker : function ($visibleTextNode) {
