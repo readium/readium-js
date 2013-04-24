@@ -206,37 +206,6 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
     //     this.annotations.saveAnnotation(CFI, this.spineItemModel.get("spine_index"));
     // },
 
-
-    // REFACTORING CANDIDATE: The algorithm here is to inject highlight markers for the current selection, after
-    //   which information for the selecte range is generated and return in an annotation "info" object. The 
-    //   injectedHighlightMarkers method leverages parts of the CFI library that should be private to that library; this
-    //   is not ideal, and adds redundant, complex, code to the annotations delegate. A better method here would be to generate
-    //   selection info, get the generated range CFI, and use that to inject markers. The only reason this wasn't done is 
-    //   because the CFI library did not support CFI range generation or injection when selection and highlighting was done.
-    insertSelectionMarkers : function () {
-
-        // Get currently selected range
-        var epubCFI = new EpubCFIModule();
-        var annotationInfo;
-        var startNode; 
-        var endNode;
-        var highlightSelection;
-
-        var currentSelectionRange = this.getCurrentSelectionRange();
-
-        if (currentSelectionRange) {
-
-            highlightSelection = this.annotations.injectHighlightMarkers(currentSelectionRange)
-
-            // Get info about the selection
-            annotationInfo = this.annotations.getSelectionInfo(highlightSelection);
-            return annotationInfo;
-        }
-        else {
-            throw new Error();
-        }
-    },
-
     showView : function () {
         this.$el.show();
     },
@@ -496,25 +465,5 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 		else {
 			return "left";
 		}
-	},
-
-    // Rationale: This is a cross-browser method to get the currently selected text
-    getCurrentSelectionRange : function () {
-
-        var currentSelection;
-        var iframeDocument = this.getEpubContentDocument().parentNode;
-        if (iframeDocument.getSelection) {
-            currentSelection = iframeDocument.getSelection();
-
-            if (currentSelection.rangeCount) {
-                return currentSelection.getRangeAt(0);
-            }
-        }
-        else if (iframeDocument.selection) {
-            return iframeDocument.selection.createRange();
-        }
-        else {
-            return undefined;
-        }
-    }
+	}
 });

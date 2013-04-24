@@ -315,8 +315,9 @@ EpubReflowable.AlternateStyleTagSelector = Backbone.Model.extend({
         "callbackContext" : undefined
     },
 
-    initialize : function () {
+    initialize : function (attributes, options) {
         this.epubCFI = new EpubCFIModule();
+        this.annotations = new EpubAnnotationsModule(0, 0, $("html", this.get("contentDocumentDOM"))[0]);
     },
 
     // Not sure about this, might remove it. The callbacks are unnecessary
@@ -326,13 +327,14 @@ EpubReflowable.AlternateStyleTagSelector = Backbone.Model.extend({
         saveAnnotation.call(this.get("callbackContext"), CFI, spinePosition);
     },
 
-    injectHighlightMarkersFromCFI : function (CFI, id) {
+    addHighlight : function (CFI, id) {
 
         var CFIRangeInfo;
         var range;
         var rangeStartNode;
         var rangeEndNode;
         var selectedElements;
+        var leftAddition;
         var startMarkerHtml = this.getRangeStartMarker(CFI, id);
         var endMarkerHtml = this.getRangeEndMarker(CFI, id);
 
@@ -355,6 +357,8 @@ EpubReflowable.AlternateStyleTagSelector = Backbone.Model.extend({
             range.setEnd(rangeEndNode, rangeEndNode.length);
 
             selectionInfo = this.getSelectionInfo(range);
+            leftAddition = -this.getPaginationLeftOffset();
+            this.annotations.addHighlight(CFI, selectionInfo.selectedElements, id, 0, leftAddition);
 
             return {
                 CFI : CFI, 
@@ -362,23 +366,28 @@ EpubReflowable.AlternateStyleTagSelector = Backbone.Model.extend({
             };
 
         } catch (error) {
-            console.log(error);
+            console.log(error.message);
         }
     },
 
-    injectBookmarkMarkerFromCFI : function (CFI, id) {
+    addBookmark : function (CFI, id) {
 
         var selectedElements;
         var bookmarkMarkerHtml = this.getBookmarkMarker(CFI, id);
-        var injectedElement;
+        var $injectedElement;
+        var leftAddition;
 
         try {
-            injectedElement = this.epubCFI.injectElement(
+            $injectedElement = this.epubCFI.injectElement(
                 CFI,
                 this.get("contentDocumentDOM"),
                 bookmarkMarkerHtml,
                 ["cfi-marker"]
                 );
+
+            // Add bookmark annotation here
+            leftAddition = -this.getPaginationLeftOffset();
+            this.annotations.addBookmark(CFI, $injectedElement[0], id, 0, leftAddition);
 
             return {
 
@@ -387,7 +396,43 @@ EpubReflowable.AlternateStyleTagSelector = Backbone.Model.extend({
             };
 
         } catch (error) {
-            console.log(error);
+            console.log(error.message);
+        }
+    },
+
+    addSelectionHighlight : function (id) {
+
+        var highlightRange;
+        var selectionInfo;
+        var leftAddition;
+        var currentSelection = this.getCurrentSelectionRange();
+        if (currentSelection) {
+
+            highlightRange = this.injectHighlightMarkers(currentSelection);
+            selectionInfo = this.getSelectionInfo(highlightRange);
+            leftAddition = -this.getPaginationLeftOffset();
+            this.annotations.addHighlight(selectionInfo.CFI, selectionInfo.selectedElements, id, 0, leftAddition);
+            return selectionInfo;
+        }
+        else {
+            throw new Error("Nothing selected");
+        }
+    },
+
+    addSelectionBookmark : function (id) {
+
+        var marker;
+        var leftAddition;
+        var currentSelection = this.getCurrentSelectionRange();
+        if (currentSelection) {
+
+            marker = this.injectBookmarkMarker(currentSelection);
+            leftAddition = -this.getPaginationLeftOffset();
+            this.annotations.addBookmark("", marker, id, 0, leftAddition);
+            return marker;
+        }
+        else {
+            throw new Error("Nothing selected");
         }
     },
 
@@ -519,27 +564,48 @@ EpubReflowable.AlternateStyleTagSelector = Backbone.Model.extend({
         }
     },
 
-    // 
-    injectHighlightMarkers : function (selectionRange) {
+    // REFACTORING CANDIDATE: The methods here inject bookmark/highlight markers for the current selection, after
+    //   which information for the selected range is generated and returned in an annotation "info" object. The 
+    //   injectedHighlightMarkers method leverages parts of the CFI library that should be private to that library; this
+    //   is not ideal, and adds redundant, complex, code to the annotations delegate. A better method here would be to generate
+    //   selection info, get the generated range CFI, and use that to inject markers. The only reason this wasn't done is 
+    //   because the CFI library did not support CFI range generation or injection when selection and highlighting was done.
+    injectBookmarkMarker : function (selectionRange, id) {
+
+        var startNode = selectionRange.startContainer;
+        var startOffset = selectionRange.startOffset;
+        var $bookmarkMarker = $(this.getBookmarkMarker("", id));
+        var highlightRange;
+
+        this.epubCFI.injectElementAtOffset(
+            $(startNode), 
+            startOffset,
+            $bookmarkMarker
+        );
+
+        return $bookmarkMarker[0];        
+    },
+ 
+    injectHighlightMarkers : function (selectionRange, id) {
 
         var highlightRange;
         if (selectionRange.startContainer === selectionRange.endContainer) {
-            highlightRange = this.injectHighlightInSameNode(selectionRange);
+            highlightRange = this.injectHighlightInSameNode(selectionRange, id);
         } else {
-            highlightRange = this.injectHighlightsInDifferentNodes(selectionRange);
+            highlightRange = this.injectHighlightsInDifferentNodes(selectionRange, id);
         }
 
         return highlightRange;
     },
 
-    injectHighlightInSameNode : function (selectionRange) {
+    injectHighlightInSameNode : function (selectionRange, id) {
 
         var startNode;
         var startOffset = selectionRange.startOffset;
         var endNode = selectionRange.endContainer;
         var endOffset = selectionRange.endOffset;
-        var $startMarker = $("<span id='highlight-start-epubcfi(1)'></span>");
-        var $endMarker = $("<span id='highlight-start-epubcfi(2)'></span>");
+        var $startMarker = $(this.getRangeStartMarker("", id));
+        var $endMarker = $(this.getRangeEndMarker("", id));
         var highlightRange;
 
         // Rationale: The end marker is injected before the start marker because when the text node is split by the 
@@ -570,14 +636,14 @@ EpubReflowable.AlternateStyleTagSelector = Backbone.Model.extend({
         return highlightRange;
     },
 
-    injectHighlightsInDifferentNodes : function (selectionRange) {
+    injectHighlightsInDifferentNodes : function (selectionRange, id) {
 
         var startNode = selectionRange.startContainer;
         var startOffset = selectionRange.startOffset;
         var endNode = selectionRange.endContainer;
         var endOffset = selectionRange.endOffset;
-        var $startMarker = $("<span id='highlight-start-epubcfi(1)'></span>");
-        var $endMarker = $("<span id='highlight-start-epubcfi(2)'></span>");
+        var $startMarker = $(this.getRangeStartMarker("", id));
+        var $endMarker = $(this.getRangeEndMarker("", id));
         var highlightRange;
 
         // inject start
@@ -600,6 +666,34 @@ EpubReflowable.AlternateStyleTagSelector = Backbone.Model.extend({
         highlightRange.setEnd($endMarker[0].previousSibling, $endMarker[0].previousSibling.length - 1);
 
         return highlightRange;
+    },
+
+    // Rationale: This is a cross-browser method to get the currently selected text
+    getCurrentSelectionRange : function () {
+
+        var currentSelection;
+        var iframeDocument = this.get("contentDocumentDOM");
+        if (iframeDocument.getSelection) {
+            currentSelection = iframeDocument.getSelection();
+
+            if (currentSelection.rangeCount) {
+                return currentSelection.getRangeAt(0);
+            }
+        }
+        else if (iframeDocument.selection) {
+            return iframeDocument.selection.createRange();
+        }
+        else {
+            return undefined;
+        }
+    },
+
+    getPaginationLeftOffset : function () {
+
+        var $htmlElement = $("html", this.get("contentDocumentDOM"));
+        var offsetLeftPixels = $htmlElement.css("left");
+        var offsetLeft = parseInt(offsetLeftPixels.replace("px", ""));
+        return offsetLeft;
     },
 
     getBookmarkMarker : function (CFI, id) {
@@ -1945,37 +2039,6 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
     //     this.annotations.saveAnnotation(CFI, this.spineItemModel.get("spine_index"));
     // },
 
-
-    // REFACTORING CANDIDATE: The algorithm here is to inject highlight markers for the current selection, after
-    //   which information for the selecte range is generated and return in an annotation "info" object. The 
-    //   injectedHighlightMarkers method leverages parts of the CFI library that should be private to that library; this
-    //   is not ideal, and adds redundant, complex, code to the annotations delegate. A better method here would be to generate
-    //   selection info, get the generated range CFI, and use that to inject markers. The only reason this wasn't done is 
-    //   because the CFI library did not support CFI range generation or injection when selection and highlighting was done.
-    insertSelectionMarkers : function () {
-
-        // Get currently selected range
-        var epubCFI = new EpubCFIModule();
-        var annotationInfo;
-        var startNode; 
-        var endNode;
-        var highlightSelection;
-
-        var currentSelectionRange = this.getCurrentSelectionRange();
-
-        if (currentSelectionRange) {
-
-            highlightSelection = this.annotations.injectHighlightMarkers(currentSelectionRange)
-
-            // Get info about the selection
-            annotationInfo = this.annotations.getSelectionInfo(highlightSelection);
-            return annotationInfo;
-        }
-        else {
-            throw new Error();
-        }
-    },
-
     showView : function () {
         this.$el.show();
     },
@@ -2235,27 +2298,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 		else {
 			return "left";
 		}
-	},
-
-    // Rationale: This is a cross-browser method to get the currently selected text
-    getCurrentSelectionRange : function () {
-
-        var currentSelection;
-        var iframeDocument = this.getEpubContentDocument().parentNode;
-        if (iframeDocument.getSelection) {
-            currentSelection = iframeDocument.getSelection();
-
-            if (currentSelection.rangeCount) {
-                return currentSelection.getRangeAt(0);
-            }
-        }
-        else if (iframeDocument.selection) {
-            return iframeDocument.selection.createRange();
-        }
-        else {
-            return undefined;
-        }
-    }
+	}
 }); 
 
     var reflowableView = new EpubReflowable.ReflowablePaginationView({  
@@ -2286,8 +2329,9 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         setSyntheticLayout : function (isSynthetic) { return reflowableView.setSyntheticLayout.call(reflowableView, isSynthetic); },
         on : function (eventName, callback, callbackContext) { return reflowableView.on.call(reflowableView, eventName, callback, callbackContext); },
         off : function (eventName, callback) { return reflowableView.off.call(reflowableView, eventName, callback); },
-        insertSelectionMarkers : function () { return reflowableView.insertSelectionMarkers.call(reflowableView); },
-        addHighlightMarkersForCFI : function (CFI, id) { return reflowableView.annotations.injectHighlightMarkersFromCFI.call(reflowableView.annotations, CFI, id); },
-        addBookmarkMarkerForCFI : function (CFI, id) { return reflowableView.annotations.injectBookmarkMarkerFromCFI.call(reflowableView.annotations, CFI, id); } 
+        addSelectionHighlight : function (id) { return reflowableView.annotations.addSelectionHighlight.call(reflowableView.annotations, id); },
+        addSelectionBookmark : function (id) { return reflowableView.annotations.addSelectionBookmark.call(reflowableView.annotations, id); },
+        addHighlight : function (CFI, id) { return reflowableView.annotations.addHighlight.call(reflowableView.annotations, CFI, id); },
+        addBookmark : function (CFI, id) { return reflowableView.annotations.addBookmark.call(reflowableView.annotations, CFI, id); } 
     };
 };

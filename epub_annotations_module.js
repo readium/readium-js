@@ -244,7 +244,14 @@ var EpubAnnotationsModule = function(offsetTopAddition, offsetLeftAddition, read
         var absoluteLeft = this.bookmark.getAbsoluteLeft();
         this.$el.css({ 
             "top" : absoluteTop + "px",
-            "left" : absoluteLeft + "px"
+            "left" : absoluteLeft + "px",
+            "width" : "0",
+            "height" : "0",
+            "border-left" : "20px solid transparent",
+            "border-right" : "20px solid transparent",
+            "border-top" : "20px solid #f00",
+            "position" : "absolute",
+            "opacity" : "0.2"
         });
         return this.el;
     }
@@ -274,7 +281,10 @@ var EpubAnnotationsModule = function(offsetTopAddition, offsetLeftAddition, read
             "top" : this.highlight.get("top") + "px",
             "left" : this.highlight.get("left") + "px",
             "height" : this.highlight.get("height") + "px",
-            "width" : this.highlight.get("width") + "px"
+            "width" : this.highlight.get("width") + "px",
+            "position" : "absolute",
+            "background-color" : "red",
+            "opacity" : "0.2"
         });
         return this.el;
     },

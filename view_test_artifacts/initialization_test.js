@@ -9,6 +9,8 @@ var initializationTest = function () {
         isFixedLayout : false
     };
 
+    var packageDoc = "<package></package>";
+
     var viewerSettings = {
         fontSize : 12,
         syntheticLayout : false,
