@@ -11,6 +11,7 @@
         <script src="../epub_reader_module.js" type="text/javascript"></script>
         <script src="initialization_test.js" type="text/javascript"></script>
         <script src="../epub_cfi.js" type="text/javascript"></script>
+        <script src="../epub_annotations_module.js" type="text/javascript"></script>
         <script type="text/javascript">
 
             $(document).ready(function () {
@@ -47,29 +48,28 @@
 
                 $("#add-bookmark").on("click", function () {
 
-                    that.view.addBookmarkMarkerForCFI("epubcfi(/6/20!/4/2/4/1:10)", "10", function (error, spineIndex, CFI) {
+                    that.view.addBookmark("epubcfi(/6/20!/4/2/4/1:10)", "10", function (error, spineIndex, CFI) {
                         if (!error) {
                             console.log("First bookmark injected");
                         }
                     }, that);
 
-                    that.view.addBookmarkMarkerForCFI("epubcfi(/6/24!/4/2/4/1:10)", "11", function (error, spineIndex, CFI) {
+                    that.view.addBookmark("epubcfi(/6/24!/4/2/4/1:10)", "11", function (error, spineIndex, CFI) {
                         if (!error) {
                             console.log("Second bookmark injected");
                         }
                     }, that);
                 });
 
-
                 $("#add-highlight").on("click", function () {
 
-                    that.view.addHighlightMarkersForCFI("epubcfi(/6/20!/4/2,/4/1:10,/6/1:10)", "12", function (error, spineIndex, CFI) {
+                    that.view.addHighlight("epubcfi(/6/20!/4/2,/4/1:10,/6/1:10)", "12", function (error, spineIndex, CFI) {
                         if (!error) {
                             console.log("First highlight injected");
                         }
                     }, that);
 
-                    that.view.addHighlightMarkersForCFI("epubcfi(/6/24!/4/2,/4/1:10,/6/1:10)", "13", function (error, spineIndex, CFI) {
+                    that.view.addHighlight("epubcfi(/6/24!/4/2,/4/1:10,/6/1:10)", "13", function (error, spineIndex, CFI) {
                         if (!error) {
                             console.log("Second highlight injected");
                         }
