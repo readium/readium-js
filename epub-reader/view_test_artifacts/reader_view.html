@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="../lib/jquery-1.9.1.js" type="text/javascript"></script>
+        <script src="../lib/modernizr-2.5.3.min.js" type="text/javascript"></script>
+        <script src="../lib/json2.js" type="text/javascript"></script>
+        <script src="../lib/underscore.js" type="text/javascript"></script>
+        <script src="../lib/backbone.js" type="text/javascript"></script>
+        <script src="../lib/URI.js" type="text/javascript"></script>
+        <script src="../epub_reflowable_module.js" type="text/javascript"></script>
+        <script src="../epub_reader_module.js" type="text/javascript"></script>
+        <script src="initialization_test.js" type="text/javascript"></script>
+        <script src="../epub_cfi.js" type="text/javascript"></script>
+        <script src="../epub_annotations_module.js" type="text/javascript"></script>
+        <script type="text/javascript">
+
+            $(document).ready(function () {
+
+                var that = this;
+                this.view = initializationTest();
+
+                var pressLeft = function () { that.view.previousPage(); };
+                var pressRight = function () { that.view.nextPage(); };
+
+                this.view.on("keydown-left", pressLeft, this);
+                this.view.on("keydown-right", pressRight, this);
+
+                this.view.on("epubLoaded", function () { 
+                    this.view.showSpineItem(1);
+                }, this);
+
+                this.view.on("internalLinkClicked", function(e){
+                    var href;
+                    e.preventDefault();
+
+                    // Check for both href and xlink:href attribute and get value
+                    if (e.currentTarget.attributes["xlink:href"]) {
+                        href = e.currentTarget.attributes["xlink:href"].value;
+                    }
+                    else {
+                        href = e.currentTarget.attributes["href"].value;
+                    }
+
+                    var spineIndex = this.view.findSpineIndex(href);
+                    this.view.showSpineItem(spineIndex);
+
+                }, this);
+
+                $("#add-bookmark").on("click", function () {
+
+                    that.view.addBookmark("epubcfi(/6/20!/4/2/4/1:10)", "10", function (error, spineIndex, CFI) {
+                        if (!error) {
+                            console.log("First bookmark injected");
+                        }
+                    }, that);
+
+                    that.view.addBookmark("epubcfi(/6/24!/4/2/4/1:10)", "11", function (error, spineIndex, CFI) {
+                        if (!error) {
+                            console.log("Second bookmark injected");
+                        }
+                    }, that);
+                });
+
+                $("#add-highlight").on("click", function () {
+
+                    that.view.addHighlight("epubcfi(/6/20!/4/2,/4/1:10,/6/1:10)", "12", function (error, spineIndex, CFI) {
+                        if (!error) {
+                            console.log("First highlight injected");
+                        }
+                    }, that);
+
+                    that.view.addHighlight("epubcfi(/6/24!/4/2,/4/1:10,/6/1:10)", "13", function (error, spineIndex, CFI) {
+                        if (!error) {
+                            console.log("Second highlight injected");
+                        }
+                    }, that);
+                });
+
+                this.view.render();
+            });
+
+        </script>
+    </head>
+    <body>
+        <button id="add-bookmark">Add a bookmark</button>
+        <button id="add-highlight">Add a highlight</button>
+        <div id="reader" style="height:600px; width:100%">
+        </div>
+    </body>
+</html>
