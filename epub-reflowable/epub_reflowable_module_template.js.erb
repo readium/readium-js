@@ -1,0 +1,49 @@
+var EpubReflowableModule = function(spineObject, viewerSettingsObject, CFIAnnotations, bindings) {
+    
+    var EpubReflowable = {};
+
+    // Rationale: The order of these matters
+    <%= alternate_style_tag_selector %>
+    <%= reflowable_annotations %>
+    <%= reflowable_element_info %>
+    <%= reflowable_layout %>
+    <%= reflowable_page_number_logic %>
+    <%= reflowable_pagination %>
+    <%= reflowable_paginator %>
+    <%= trigger %>
+    <%= reflowable_pagination_view %> 
+
+    var reflowableView = new EpubReflowable.ReflowablePaginationView({  
+        spineItem : spineObject, 
+        viewerSettings : viewerSettingsObject, 
+        contentDocumentCFIs : CFIAnnotations, 
+        bindings : bindings
+    });
+
+    // Description: The public interface
+    return {
+
+        render : function (goToLastPage, hashFragmentId) { return reflowableView.render.call(reflowableView, goToLastPage, hashFragmentId); },
+        nextPage : function () { return reflowableView.pages.goRight.call(reflowableView.pages); },
+        previousPage : function () { return reflowableView.pages.goLeft.call(reflowableView.pages); },
+        showPageByHashFragment : function (hashFragmentId) { return reflowableView.goToHashFragment.call(reflowableView, hashFragmentId); },
+        showPageByNumber : function (pageNumber) { return reflowableView.showPage.call(reflowableView, pageNumber); },
+        showPageByCFI : function (CFI) { reflowableView.showPageByCFI.call(reflowableView, CFI); }, 
+        onFirstPage : function () { return reflowableView.onFirstPage.call(reflowableView); },
+        onLastPage : function () { return reflowableView.onLastPage.call(reflowableView); },
+        showPagesView : function () { return reflowableView.showView.call(reflowableView); },
+        hidePagesView : function () { return reflowableView.hideView.call(reflowableView); },
+        numberOfPages : function () { return reflowableView.pages.get("num_pages"); },
+        currentPage : function () { return reflowableView.pages.get("current_page"); },
+        setFontSize : function (fontSize) { return reflowableView.setFontSize.call(reflowableView, fontSize); },
+        setMargin : function (margin) { return reflowableView.setMargin.call(reflowableView, margin); },
+        setTheme : function (theme) { return reflowableView.setTheme.call(reflowableView, theme); },
+        setSyntheticLayout : function (isSynthetic) { return reflowableView.setSyntheticLayout.call(reflowableView, isSynthetic); },
+        on : function (eventName, callback, callbackContext) { return reflowableView.on.call(reflowableView, eventName, callback, callbackContext); },
+        off : function (eventName, callback) { return reflowableView.off.call(reflowableView, eventName, callback); },
+        addSelectionHighlight : function (id) { return reflowableView.annotations.addSelectionHighlight.call(reflowableView.annotations, id); },
+        addSelectionBookmark : function (id) { return reflowableView.annotations.addSelectionBookmark.call(reflowableView.annotations, id); },
+        addHighlight : function (CFI, id) { return reflowableView.annotations.addHighlight.call(reflowableView.annotations, CFI, id); },
+        addBookmark : function (CFI, id) { return reflowableView.annotations.addBookmark.call(reflowableView.annotations, CFI, id); }
+    };
+};
