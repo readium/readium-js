@@ -3,10 +3,11 @@ Epub.PackageDocument = Backbone.Model.extend({
 
     initialize : function (attributes, options) {
 
-        this.manifest = new Epub.Manifest(this.get("packageDocumentObject").manifest);
-        this.spine = new Epub.Spine(this.get("packageDocumentObject").spine);
-        this.metadata = new Epub.Metadata(this.get("packageDocumentObject").metadata);
-        this.bindings = new Epub.Spine(this.get("packageDocumentObject").bindings);
+        var packageDocument = this.get("packageDocumentObject");
+        this.manifest = new Epub.Manifest(packageDocument.manifest);
+        this.spine = new Epub.Spine(packageDocument.spine);
+        this.metadata = new Epub.Metadata(packageDocument.metadata);
+        this.bindings = new Epub.Spine(packageDocument.bindings);
         this.pageSpreadProperty = new Epub.PageSpreadProperty();
 
         // If this book is fixed layout, assign the page spread class
@@ -230,19 +231,14 @@ Epub.PackageDocument = Backbone.Model.extend({
         return packageDocumentDom;
     },
 
-    // getToc: function() {
-    //  var item = this.packageDocument.getTocItem();
-    //  if(!item) {
-    //      return null;
-    //  }
-    //  else {
-    //      var that = this;
-    //      return Epub.Toc.getToc(item, {
-    //          file_path: that.resolvePath(item.get("href")),
-    //          book: that
-    //      });
-    //  }
-    // },
+    getToc: function() {
+        var item = this.getTocItem();
+        if (item){
+            var href = item.get("href");
+            return href;
+        }
+        return null;
+    },
 
 
     // ----------------------- PRIVATE HELPERS -------------------------------- //
@@ -326,36 +322,35 @@ Epub.PackageDocument = Backbone.Model.extend({
                 }
             });
         }
+    },
+
+    getTocItem : function() {
+        var manifest = this.manifest;
+        var metadata = this.metadata;
+        var spine_id = this.metadata.get("ncx");
+
+        var item = manifest.find(function(item){
+
+            if (item.get("properties").indexOf("nav") !== -1) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+
+        if( item ) {
+            return item;
+        }
+
+        if( spine_id && spine_id.length > 0 ) {
+            return manifest.find(function(item) {
+                return item.get("id") === spine_id;
+            });
+        }
+
+        return null;
     }
-
-    // This doesn't work at the moment.
-    // getTocItem : function() {
-    //     var manifest = this.get("manifest");
-    //     var spine_id = this.get("metadata").ncx;
-
-    //     var item = manifest.find(function(item){
-
-    //         if (item.get("properties").indexOf("nav") !== -1) {
-    //             return true;
-    //         }
-    //         else {
-    //             return false;
-    //         }
-    //     });
-
-    //     if( item ) {
-    //         return item;
-    //     }
-
-    //     if( spine_id && spine_id.length > 0 ) {
-    //         return manifest.find(function(item) {
-    //             return item.get("id") === spine_id;
-    //         });
-    //     }
-
-    //     return null;
-    // },
-
 
     // NOTE: Media overlays are temporarily disabled
     // getMediaOverlayItem : function(idref) {

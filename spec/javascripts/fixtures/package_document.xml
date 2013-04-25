@@ -21,11 +21,13 @@
     <item id='cover' href='images/cover.jpg' media-type='image/jpeg'/>
     <item id='font2' href='Fonts/HighlanderStd-Medium.otf' media-type='application/x-font-otf'/>
     <item id='font3' href='Fonts/HighlanderStd-BookItalic.otf' media-type='application/x-font-otf'/>
+    <item id="htmltoc" properties="nav" media-type="application/xhtml+xml" href="bk01-toc.xhtml"/> 
   </manifest>
   <spine toc='ncx'>
     <itemref idref='Page_1' properties='page-spread-right rendition:layout-pre-paginated'/>
     <itemref idref='Page_2'/>
     <itemref idref='Page_3'/>
+    <itemref idref="htmltoc" linear="yes"/>
   </spine>
   <bindings>
     <mediaType handler='figure-gallery-impl' media-type='application/x-epub-figure-gallery'/>

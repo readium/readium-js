@@ -28,7 +28,7 @@ describe('Epub.PackageDocument', function() {
 
         it("adds all the spine items", function () {
 
-            var numSpineItemsInFixture = 3;
+            var numSpineItemsInFixture = 4;
             expect(this.packageDocument.spine.length).toBe(numSpineItemsInFixture);
         });
 
@@ -39,7 +39,7 @@ describe('Epub.PackageDocument', function() {
 
         it("adds all the manifest items", function () {
 
-            var numManifestItemsInFixture = 11;
+            var numManifestItemsInFixture = 12;
             expect(this.packageDocument.manifest.length).toBe(numManifestItemsInFixture);
         });
 
@@ -120,15 +120,15 @@ describe('Epub.PackageDocument', function() {
 
             it("gets the last spine item for: spineIndex = length - 1", function () {
 
-                var spineItem = this.packageDocument.getSpineItem(2);
-                var lastSpineItemIdrefInFixture = "Page_3";
+                var spineItem = this.packageDocument.getSpineItem(3);
+                var lastSpineItemIdrefInFixture = "htmltoc";
 
                 expect(spineItem.idref).toBe(lastSpineItemIdrefInFixture);
             });
 
             it("is undefined for: spineIndex > length - 1", function () {
 
-                var spineItem = this.packageDocument.getSpineItem(3);
+                var spineItem = this.packageDocument.getSpineItem(4);
 
                 expect(spineItem).not.toBeDefined();
             });
@@ -138,7 +138,7 @@ describe('Epub.PackageDocument', function() {
 
             it("gets the spine length", function () {
 
-                var spineLengthInFixture = 3;
+                var spineLengthInFixture = 4;
                 var spineLength = this.packageDocument.spineLength();
 
                 expect(spineLength).toBe(spineLengthInFixture);
@@ -275,7 +275,7 @@ describe('Epub.PackageDocument', function() {
 
             it("does not if at last section", function () {
 
-                var hasNextSection = this.packageDocument.hasNextSection(2);
+                var hasNextSection = this.packageDocument.hasNextSection(3);
                 expect(hasNextSection).toBe(false);
             });
         });
@@ -418,6 +418,21 @@ describe('Epub.PackageDocument', function() {
                 var packageDocumentDOM = this.packageDocument.getPackageDocumentDOM();
                 expect(packageDocumentDOM).toBeDefined();
             });
+        });
+
+        describe("getToc", function () {
+            beforeEach(function() {
+
+                var packageDocumentJson = JSON.parse(jasmine.getFixtures().read("package_document.json"));
+                this.packageDocument = new Epub.PackageDocument({ packageDocumentObject : packageDocumentJson });
+            });
+
+            it("gets the url of toc", function () {
+                var handler = "bk01-toc.xhtml";
+                var tocUrl = this.packageDocument.getToc();
+                expect(tocUrl).toBe(handler);
+            });
+
         });
     });
 
