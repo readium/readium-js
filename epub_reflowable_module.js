@@ -327,6 +327,12 @@ EpubReflowable.AlternateStyleTagSelector = Backbone.Model.extend({
         saveAnnotation.call(this.get("callbackContext"), CFI, spinePosition);
     },
 
+    redraw : function () {
+
+        var leftAddition = -this.getPaginationLeftOffset();
+        this.annotations.redrawAnnotations(0, leftAddition);
+    },
+
     addHighlight : function (CFI, id) {
 
         var CFIRangeInfo;
@@ -2135,14 +2141,17 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
     setFontSize : function (fontSize) {
         this.viewerModel.set({ fontSize : fontSize });
+        this.annotations.redraw();
     },
 
     setMargin : function (margin) {
         this.viewerModel.set({ currentMargin : margin });
+        this.annotations.redraw();
     },
 
     setTheme : function (theme) {
         this.viewerModel.set({ currentTheme : theme });
+        this.annotations.redraw();
     },
 
     setSyntheticLayout : function (isSynthetic) {
@@ -2152,6 +2161,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
             this.viewerModel.set({ twoUp : isSynthetic });
             this.pages.toggleTwoUp(isSynthetic, this.spineItemModel.get("firstPageIsOffset"));
         }
+        this.annotations.redraw();
     },
 
 	// ------------------------------------------------------------------------------------ //
@@ -2341,6 +2351,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         addSelectionHighlight : function (id) { return reflowableView.annotations.addSelectionHighlight.call(reflowableView.annotations, id); },
         addSelectionBookmark : function (id) { return reflowableView.annotations.addSelectionBookmark.call(reflowableView.annotations, id); },
         addHighlight : function (CFI, id) { return reflowableView.annotations.addHighlight.call(reflowableView.annotations, CFI, id); },
-        addBookmark : function (CFI, id) { return reflowableView.annotations.addBookmark.call(reflowableView.annotations, CFI, id); } 
+        addBookmark : function (CFI, id) { return reflowableView.annotations.addBookmark.call(reflowableView.annotations, CFI, id); },
+        redraw : function () { return reflowableView.annotations.redraw.call(reflowableView.annotations); }
     };
 };

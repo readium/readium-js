@@ -20,7 +20,10 @@ var EpubAnnotationsModule = function(offsetTopAddition, offsetLeftAddition, read
         };
     },
 
-    initialize : function (attributes, options) {},
+    initialize : function (attributes, options) {
+
+        this.constructHighlightViews();
+    },
 
     // --------------- PRIVATE HELPERS ---------------------------------------
 
@@ -53,9 +56,33 @@ var EpubAnnotationsModule = function(offsetTopAddition, offsetLeftAddition, read
         });
     },
 
+    resetHighlights : function (viewportElement, offsetTop, offsetLeft) {
+
+        if (offsetTop) {
+            this.set({ offsetTopAddition : offsetTop });
+        }
+        if (offsetLeft) {
+            this.set({ offsetLeftAddition : offsetLeft });
+        }
+
+        this.destroyCurrentHighlights();
+        this.constructHighlightViews();
+        this.renderHighlights(viewportElement);
+    },
+
+    // REFACTORING CANDIDATE: Ensure that event listeners are being properly cleaned up. 
+    destroyCurrentHighlights : function () { 
+
+        _.each(this.get("highlightViews"), function (highlightView) {
+            highlightView.remove();
+            highlightView.off();
+        });
+
+        this.set({ "highlightViews" : [] });
+    },
+
     renderHighlights : function (viewportElement) {
 
-        this.constructHighlightViews();
         _.each(this.get("highlightViews"), function (view, index) {
             $(viewportElement).append(view.render());
         });
@@ -123,6 +150,18 @@ var EpubAnnotationsModule = function(offsetTopAddition, offsetLeftAddition, read
     },
 
     initialize : function (attributes, options) {},
+
+    redrawAnnotations : function (offsetTop, offsetLeft) {
+
+        var that = this;
+        _.each(this.get("highlights"), function (highlighter) {
+            highlighter.resetHighlights(that.get("readerBoundElement"), offsetTop, offsetLeft);
+        });  
+
+        _.each(this.get("bookmarkViews"), function (bookmarkView) {
+            bookmarkView.resetBookmark(offsetTop, offsetLeft);
+        });
+    },
 
     getBookmark : function (id) {
 
@@ -238,8 +277,25 @@ var EpubAnnotationsModule = function(offsetTopAddition, offsetLeftAddition, read
         });
     },
 
+    resetBookmark : function (offsetTop, offsetLeft) {
+
+        if (offsetTop) {
+            this.bookmark.set({ offsetTopAddition : offsetTop });
+        }
+
+        if (offsetLeft) {
+            this.bookmark.set({ offsetLeftAddition : offsetLeft });
+        }
+        this.setCSS();
+    },
+
     render : function () {
 
+        this.setCSS();
+        return this.el;
+    },
+
+    setCSS : function () {
         var absoluteTop = this.bookmark.getAbsoluteTop();
         var absoluteLeft = this.bookmark.getAbsoluteLeft();
         this.$el.css({ 
@@ -253,7 +309,6 @@ var EpubAnnotationsModule = function(offsetTopAddition, offsetLeftAddition, read
             "position" : "absolute",
             "opacity" : "0.2"
         });
-        return this.el;
     }
 });
     EpubAnnotations.HighlightView = Backbone.View.extend({
@@ -277,6 +332,23 @@ var EpubAnnotationsModule = function(offsetTopAddition, offsetLeftAddition, read
 
     render : function () {
 
+        this.setCSS();
+        return this.el;
+    },
+
+    resetPosition : function (top, left, height, width) {
+
+        this.highlight.set({
+            top : top,
+            left : left,
+            height : height,
+            width : width
+        });
+        this.setCSS();
+    },
+
+    setCSS : function () {
+
         this.$el.css({ 
             "top" : this.highlight.get("top") + "px",
             "left" : this.highlight.get("left") + "px",
@@ -286,7 +358,6 @@ var EpubAnnotationsModule = function(offsetTopAddition, offsetLeftAddition, read
             "background-color" : "red",
             "opacity" : "0.2"
         });
-        return this.el;
     },
 
     liftHighlight : function () {
@@ -317,6 +388,7 @@ var EpubAnnotationsModule = function(offsetTopAddition, offsetLeftAddition, read
         getBookmarks : function () { return annotations.getBookmarks.call(annotations); }, 
         addHighlight : function (CFI, highlightedTextNodes, id, offsetTop, offsetLeft) { return annotations.addHighlight.call(annotations, CFI, highlightedTextNodes, id, offsetTop, offsetLeft); },
         getHighlight : function (id) { return annotations.getHighlight.call(annotations, id); },
-        getHighlights : function () { return annotations.getHighlights.call(annotations); }
+        getHighlights : function () { return annotations.getHighlights.call(annotations); },
+        redrawAnnotations : function (offsetTop, offsetLeft) { return annotations.redrawAnnotations.call(annotations, offsetTop, offsetLeft); }
     };
 };

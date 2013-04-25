@@ -17,6 +17,12 @@ EpubReflowable.ReflowableAnnotations = Backbone.Model.extend({
         saveAnnotation.call(this.get("callbackContext"), CFI, spinePosition);
     },
 
+    redraw : function () {
+
+        var leftAddition = -this.getPaginationLeftOffset();
+        this.annotations.redrawAnnotations(0, leftAddition);
+    },
+
     addHighlight : function (CFI, id) {
 
         var CFIRangeInfo;
