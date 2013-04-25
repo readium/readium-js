@@ -1,0 +1,1 @@
+Epub.Binding = Backbone.Model.extend({});
