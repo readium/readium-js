@@ -36,5 +36,6 @@ desc "render the epub module erb template"
 task :gen_epub_module do
     puts "rendering the epub module"
     render_epub_module_template("epub_module_template.js.erb", "epub_module.js")
+    render_epub_module_template("epub_module_template.js.erb", "../consolidated-epub-api/epub_module.js")
     render_epub_module_template("epub_module_template.js.erb", "../sample-app/app/assets/javascripts/lib/epub_module.js")
 end
