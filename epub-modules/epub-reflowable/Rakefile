@@ -9,7 +9,7 @@ rescue LoadError
 end
 
 task :server do
-    `thin -R static.ru start`
+    `thin -R view_testing/static.ru start`
 end
 
 # Generate the epub module 
@@ -36,11 +36,8 @@ def render_epub_reflowable_module_template(templatePath, outputPath)
 end
 
 desc "render the epub module erb template"
-task :gen_epub_reflowable_module do
+task :gen_module do
     puts "rendering the epub reflowable module"
-    render_epub_reflowable_module_template("epub_reflowable_module_template.js.erb", "epub_reflowable_module.js")
-    render_epub_reflowable_module_template("epub_reflowable_module_template.js.erb", "../epub-reader/epub_reflowable_module.js")
-    render_epub_reflowable_module_template("epub_reflowable_module_template.js.erb", "../annotations/epub_reflowable_module.js")
-    render_epub_reflowable_module_template("epub_reflowable_module_template.js.erb", "../consolidated-epub-api/epub_reflowable_module.js")
-    render_epub_reflowable_module_template("epub_reflowable_module_template.js.erb", "../sample-app/app/assets/javascripts/lib/epub_reflowable_module.js")
+    render_epub_reflowable_module_template("src/templates/epub_reflowable_module_template.js.erb", "../development/epub_reflowable_module.js")
+    render_epub_reflowable_module_template("src/templates/epub_reflowable_module_template.js.erb", "lib/epub_reflowable_module.js")
 end

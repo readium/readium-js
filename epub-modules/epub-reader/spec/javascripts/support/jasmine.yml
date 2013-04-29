@@ -12,14 +12,15 @@
 #
 src_files:
     - spec/test_namespace.js
-    - epub_reflowable_module.js
+    - lib/epub_reflowable_module.js
     - lib/jquery-1.9.1.js
     - lib/json2.js
     - lib/underscore.js
     - lib/backbone.js
     - lib/URI.js
     - src/**/*.js
-    - epub_cfi.js
+    - lib/epub_cfi.js
+    - lib/epub_reflowable_module.js
 
 # stylesheets
 #

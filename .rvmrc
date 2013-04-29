@@ -1,1 +1,1 @@
-rvm gemset use epubreaderg --create
+rvm gemset use readiumweb --create

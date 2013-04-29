@@ -156,7 +156,7 @@ describe("EpubParser.PackageDocumentParser", function() {
         });
 
         it("parses the contentDocumentUri property", function () {
-            expect(this.arbitraryManifestItemToTest.contentDocumentUri).toEqual("path/to/Page_4.html");
+            expect(this.arbitraryManifestItemToTest.contentDocumentURI).toEqual("path/to/Page_4.html");
         });
 
         it("parses the id property", function () {

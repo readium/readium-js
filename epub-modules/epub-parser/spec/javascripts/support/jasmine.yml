@@ -18,7 +18,7 @@ src_files:
     - lib/backbone.js
     - lib/URI.js
     - src/**/*.js
-    - epub_parser_module.js
+    - lib/epub_parser_module.js
 
 # stylesheets
 #

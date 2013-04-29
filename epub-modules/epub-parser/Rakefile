@@ -12,7 +12,7 @@ end
 def render_epub_parser_module_template(templatePath, outputPath)
 
     # Read each of the library components
-    package_document_parser = File.read('src/package_document_parser.js')
+    package_document_parser = File.read('src/models/package_document_parser.js')
 
     template = File.read(templatePath)
     erb = ERB.new(template)
@@ -26,9 +26,8 @@ end
 #tasks:
 
 desc "render the epub parser module erb template"
-task :gen_epub_parser_module do
+task :gen_module do
     puts "rendering the epub parser module"
-    render_epub_parser_module_template("epub_parser_module_template.js.erb", "epub_parser_module.js")
-    render_epub_parser_module_template("epub_parser_module_template.js.erb", "../consolidated-epub-api/epub_parser_module.js")
-    render_epub_parser_module_template("epub_parser_module_template.js.erb", "../sample-app/app/assets/javascripts/lib/epub_parser_module.js")
+    render_epub_parser_module_template("src/templates/epub_parser_module_template.js.erb", "../development/epub_parser_module.js")
+    render_epub_parser_module_template("src/templates/epub_parser_module_template.js.erb", "lib/epub_parser_module.js")
 end

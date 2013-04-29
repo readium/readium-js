@@ -12,13 +12,13 @@
 #
 src_files:
     - spec/javascripts/test_namespace.js
-    - lib/jquery-1.7.1.min.js
-    - src/epub_cfi/epubcfi.js
-    - src/epub_cfi/cfi_instructions.js
-    - src/epub_cfi/cfi_interpreter.js
-    - src/epub_cfi/runtime_errors.js
-    - src/epub_cfi/cfi_generator.js
-    - epub_cfi.js
+    - lib/jquery-1.9.1.js
+    - src/models/epubcfi.js
+    - src/models/cfi_instructions.js
+    - src/models/cfi_interpreter.js
+    - src/models/runtime_errors.js
+    - src/models/cfi_generator.js
+    - lib/epub_cfi.js
 
 # stylesheets
 #
@@ -44,7 +44,7 @@ stylesheets:
 #   - helpers/**/*.js
 #
 helpers:
-
+    - 'helpers/**/*.js'
 # spec_files
 #
 #  Return an array of filepaths relative to spec_dir to include.
@@ -56,6 +56,7 @@ helpers:
 #   - **/*[sS]pec.js
 #
 spec_files:
+    - '**/*[sS]pec.js'
 
 # src_dir
 #

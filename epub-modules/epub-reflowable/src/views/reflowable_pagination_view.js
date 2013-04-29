@@ -293,17 +293,23 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
     setFontSize : function (fontSize) {
         this.viewerModel.set({ fontSize : fontSize });
-        this.annotations.redraw();
+        if (this.annotations) {
+            this.annotations.redraw();
+        }
     },
 
     setMargin : function (margin) {
         this.viewerModel.set({ currentMargin : margin });
-        this.annotations.redraw();
+        if (this.annotations) {
+            this.annotations.redraw();
+        }
     },
 
     setTheme : function (theme) {
         this.viewerModel.set({ currentTheme : theme });
-        this.annotations.redraw();
+        if (this.annotations) {
+            this.annotations.redraw();
+        }
     },
 
     setSyntheticLayout : function (isSynthetic) {
@@ -313,7 +319,9 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
             this.viewerModel.set({ twoUp : isSynthetic });
             this.pages.toggleTwoUp(isSynthetic, this.spineItemModel.get("firstPageIsOffset"));
         }
-        this.annotations.redraw();
+        if (this.annotations) {
+            this.annotations.redraw();
+        }
     },
 
 	// ------------------------------------------------------------------------------------ //
@@ -344,15 +352,11 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 	keydownHandler : function (e) {
 
         if (e.which == 39) {
-
             this.trigger("keydown-right");
-            // this.pages.goRight();
         }
                         
         if (e.which == 37) {
-
             this.trigger("keydown-left");
-            // this.pages.goRight();
         }
     },
 

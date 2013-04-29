@@ -13,13 +13,13 @@ end
 def render_epub_module_template(templatePath, outputPath)
 
     # Read each of the library components
-    manifest_item = File.read('src/epub/models/manifest_item.js')
-    manifest = File.read('src/epub/models/manifest.js')
-    metadata = File.read('src/epub/models/metadata.js')
-    page_spread_property = File.read('src/epub/models/page_spread_property.js')
-    spine_item = File.read('src/epub/models/spine_item.js')
-    spine = File.read('src/epub/models/spine.js')
-    package_document = File.read('src/epub/models/package_document.js')
+    manifest_item = File.read('src/models/manifest_item.js')
+    manifest = File.read('src/models/manifest.js')
+    metadata = File.read('src/models/metadata.js')
+    page_spread_property = File.read('src/models/page_spread_property.js')
+    spine_item = File.read('src/models/spine_item.js')
+    spine = File.read('src/models/spine.js')
+    package_document = File.read('src/models/package_document.js')
 
     template = File.read(templatePath)
     erb = ERB.new(template)
@@ -30,12 +30,10 @@ def render_epub_module_template(templatePath, outputPath)
     end
 end
 
-#tasks:
-
+# tasks
 desc "render the epub module erb template"
-task :gen_epub_module do
+task :gen_module do
     puts "rendering the epub module"
-    render_epub_module_template("epub_module_template.js.erb", "epub_module.js")
-    render_epub_module_template("epub_module_template.js.erb", "../consolidated-epub-api/epub_module.js")
-    render_epub_module_template("epub_module_template.js.erb", "../sample-app/app/assets/javascripts/lib/epub_module.js")
+    render_epub_module_template("src/templates/epub_module_template.js.erb", "../development/epub_module.js")
+    render_epub_module_template("src/templates/epub_module_template.js.erb", "lib/epub_module.js")
 end
