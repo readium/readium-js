@@ -317,7 +317,7 @@ EpubReflowable.AlternateStyleTagSelector = Backbone.Model.extend({
 
     initialize : function (attributes, options) {
         this.epubCFI = new EpubCFIModule();
-        this.annotations = new EpubAnnotationsModule(0, 0, $("html", this.get("contentDocumentDOM"))[0]);
+        // this.annotations = new EpubAnnotationsModule(0, 0, $("html", this.get("contentDocumentDOM"))[0]);
     },
 
     // Not sure about this, might remove it. The callbacks are unnecessary
@@ -329,188 +329,188 @@ EpubReflowable.AlternateStyleTagSelector = Backbone.Model.extend({
 
     redraw : function () {
 
-        var leftAddition = -this.getPaginationLeftOffset();
-        this.annotations.redrawAnnotations(0, leftAddition);
+        // var leftAddition = -this.getPaginationLeftOffset();
+        // this.annotations.redrawAnnotations(0, leftAddition);
     },
 
-    addHighlight : function (CFI, id) {
+    // addHighlight : function (CFI, id) {
 
-        var CFIRangeInfo;
-        var range;
-        var rangeStartNode;
-        var rangeEndNode;
-        var selectedElements;
-        var leftAddition;
-        var startMarkerHtml = this.getRangeStartMarker(CFI, id);
-        var endMarkerHtml = this.getRangeEndMarker(CFI, id);
+    //     var CFIRangeInfo;
+    //     var range;
+    //     var rangeStartNode;
+    //     var rangeEndNode;
+    //     var selectedElements;
+    //     var leftAddition;
+    //     var startMarkerHtml = this.getRangeStartMarker(CFI, id);
+    //     var endMarkerHtml = this.getRangeEndMarker(CFI, id);
 
-        try {
-            CFIRangeInfo = this.epubCFI.injectRangeElements(
-                CFI,
-                this.get("contentDocumentDOM"),
-                startMarkerHtml,
-                endMarkerHtml,
-                ["cfi-marker"]
-                );
+    //     try {
+    //         CFIRangeInfo = this.epubCFI.injectRangeElements(
+    //             CFI,
+    //             this.get("contentDocumentDOM"),
+    //             startMarkerHtml,
+    //             endMarkerHtml,
+    //             ["cfi-marker"]
+    //             );
 
-            // Get start and end marker for the id, using injected into elements
-            // REFACTORING CANDIDATE: Abstract range creation to account for no previous/next sibling, for different types of
-            //   sibiling, etc. 
-            rangeStartNode = CFIRangeInfo.startElement.nextSibling ? CFIRangeInfo.startElement.nextSibling : CFIRangeInfo.startElement;
-            rangeEndNode = CFIRangeInfo.endElement.previousSibling ? CFIRangeInfo.endElement.previousSibling : CFIRangeInfo.endElement;
-            range = document.createRange();
-            range.setStart(rangeStartNode, 0);
-            range.setEnd(rangeEndNode, rangeEndNode.length);
+    //         // Get start and end marker for the id, using injected into elements
+    //         // REFACTORING CANDIDATE: Abstract range creation to account for no previous/next sibling, for different types of
+    //         //   sibiling, etc. 
+    //         rangeStartNode = CFIRangeInfo.startElement.nextSibling ? CFIRangeInfo.startElement.nextSibling : CFIRangeInfo.startElement;
+    //         rangeEndNode = CFIRangeInfo.endElement.previousSibling ? CFIRangeInfo.endElement.previousSibling : CFIRangeInfo.endElement;
+    //         range = document.createRange();
+    //         range.setStart(rangeStartNode, 0);
+    //         range.setEnd(rangeEndNode, rangeEndNode.length);
 
-            selectionInfo = this.getSelectionInfo(range);
-            leftAddition = -this.getPaginationLeftOffset();
-            this.annotations.addHighlight(CFI, selectionInfo.selectedElements, id, 0, leftAddition);
+    //         selectionInfo = this.getSelectionInfo(range);
+    //         leftAddition = -this.getPaginationLeftOffset();
+    //         this.annotations.addHighlight(CFI, selectionInfo.selectedElements, id, 0, leftAddition);
 
-            return {
-                CFI : CFI, 
-                selectedElements : selectionInfo.selectedElements
-            };
+    //         return {
+    //             CFI : CFI, 
+    //             selectedElements : selectionInfo.selectedElements
+    //         };
 
-        } catch (error) {
-            console.log(error.message);
-        }
-    },
+    //     } catch (error) {
+    //         console.log(error.message);
+    //     }
+    // },
 
-    addBookmark : function (CFI, id) {
+    // addBookmark : function (CFI, id) {
 
-        var selectedElements;
-        var bookmarkMarkerHtml = this.getBookmarkMarker(CFI, id);
-        var $injectedElement;
-        var leftAddition;
+    //     var selectedElements;
+    //     var bookmarkMarkerHtml = this.getBookmarkMarker(CFI, id);
+    //     var $injectedElement;
+    //     var leftAddition;
 
-        try {
-            $injectedElement = this.epubCFI.injectElement(
-                CFI,
-                this.get("contentDocumentDOM"),
-                bookmarkMarkerHtml,
-                ["cfi-marker"]
-                );
+    //     try {
+    //         $injectedElement = this.epubCFI.injectElement(
+    //             CFI,
+    //             this.get("contentDocumentDOM"),
+    //             bookmarkMarkerHtml,
+    //             ["cfi-marker"]
+    //             );
 
-            // Add bookmark annotation here
-            leftAddition = -this.getPaginationLeftOffset();
-            this.annotations.addBookmark(CFI, $injectedElement[0], id, 0, leftAddition);
+    //         // Add bookmark annotation here
+    //         leftAddition = -this.getPaginationLeftOffset();
+    //         this.annotations.addBookmark(CFI, $injectedElement[0], id, 0, leftAddition);
 
-            return {
+    //         return {
 
-                CFI : CFI, 
-                selectedElements : $injectedElement[0]
-            };
+    //             CFI : CFI, 
+    //             selectedElements : $injectedElement[0]
+    //         };
 
-        } catch (error) {
-            console.log(error.message);
-        }
-    },
+    //     } catch (error) {
+    //         console.log(error.message);
+    //     }
+    // },
 
-    addSelectionHighlight : function (id) {
+    // addSelectionHighlight : function (id) {
 
-        var highlightRange;
-        var selectionInfo;
-        var leftAddition;
-        var currentSelection = this.getCurrentSelectionRange();
-        if (currentSelection) {
+    //     var highlightRange;
+    //     var selectionInfo;
+    //     var leftAddition;
+    //     var currentSelection = this.getCurrentSelectionRange();
+    //     if (currentSelection) {
 
-            highlightRange = this.injectHighlightMarkers(currentSelection);
-            selectionInfo = this.getSelectionInfo(highlightRange);
-            leftAddition = -this.getPaginationLeftOffset();
-            this.annotations.addHighlight(selectionInfo.CFI, selectionInfo.selectedElements, id, 0, leftAddition);
-            return selectionInfo;
-        }
-        else {
-            throw new Error("Nothing selected");
-        }
-    },
+    //         highlightRange = this.injectHighlightMarkers(currentSelection);
+    //         selectionInfo = this.getSelectionInfo(highlightRange);
+    //         leftAddition = -this.getPaginationLeftOffset();
+    //         this.annotations.addHighlight(selectionInfo.CFI, selectionInfo.selectedElements, id, 0, leftAddition);
+    //         return selectionInfo;
+    //     }
+    //     else {
+    //         throw new Error("Nothing selected");
+    //     }
+    // },
 
-    addSelectionBookmark : function (id) {
+    // addSelectionBookmark : function (id) {
 
-        var marker;
-        var partialCFI;
-        var leftAddition;
-        var currentSelection = this.getCurrentSelectionRange();
-        if (currentSelection) {
+    //     var marker;
+    //     var partialCFI;
+    //     var leftAddition;
+    //     var currentSelection = this.getCurrentSelectionRange();
+    //     if (currentSelection) {
 
-            partialCFI = this.generateCharOffsetCFI(currentSelection);
-            marker = this.injectBookmarkMarker(currentSelection);
-            leftAddition = -this.getPaginationLeftOffset();
-            this.annotations.addBookmark("", marker, id, 0, leftAddition);
+    //         partialCFI = this.generateCharOffsetCFI(currentSelection);
+    //         marker = this.injectBookmarkMarker(currentSelection);
+    //         leftAddition = -this.getPaginationLeftOffset();
+    //         this.annotations.addBookmark("", marker, id, 0, leftAddition);
 
-            return {
-                CFI : partialCFI,
-                selectedElements : marker
-            };
-        }
-        else {
-            throw new Error("Nothing selected");
-        }
-    },
+    //         return {
+    //             CFI : partialCFI,
+    //             selectedElements : marker
+    //         };
+    //     }
+    //     else {
+    //         throw new Error("Nothing selected");
+    //     }
+    // },
 
-    getSelectionInfo : function (selectedRange) {
+    // getSelectionInfo : function (selectedRange) {
 
-        // Generate CFI for selected text
-        var CFI = this.generateRangeCFI(selectedRange);
-        var intervalState = {
-            startElementFound : false,
-            endElementFound : false
-        };
-        var selectedElements = [];
+    //     // Generate CFI for selected text
+    //     var CFI = this.generateRangeCFI(selectedRange);
+    //     var intervalState = {
+    //         startElementFound : false,
+    //         endElementFound : false
+    //     };
+    //     var selectedElements = [];
 
-        this.findSelectedElements(
-            selectedRange.commonAncestorContainer, 
-            selectedRange.startContainer, 
-            selectedRange.endContainer,
-            intervalState,
-            selectedElements, 
-            "p"
-            );
+    //     this.findSelectedElements(
+    //         selectedRange.commonAncestorContainer, 
+    //         selectedRange.startContainer, 
+    //         selectedRange.endContainer,
+    //         intervalState,
+    //         selectedElements, 
+    //         "p"
+    //         );
 
-        // Return a list of selected text nodes and the CFI
-        return {
-            CFI : CFI,
-            selectedElements : selectedElements
-        };
-    },
+    //     // Return a list of selected text nodes and the CFI
+    //     return {
+    //         CFI : CFI,
+    //         selectedElements : selectedElements
+    //     };
+    // },
 
-    generateRangeCFI : function (selectedRange) {
+    // generateRangeCFI : function (selectedRange) {
 
-        var startNode = selectedRange.startContainer;
-        var endNode = selectedRange.endContainer;
-        var startOffset;
-        var endOffset;
-        var rangeCFIComponent;
+    //     var startNode = selectedRange.startContainer;
+    //     var endNode = selectedRange.endContainer;
+    //     var startOffset;
+    //     var endOffset;
+    //     var rangeCFIComponent;
 
-        if (startNode.nodeType === Node.TEXT_NODE && endNode.nodeType === Node.TEXT_NODE) {
+    //     if (startNode.nodeType === Node.TEXT_NODE && endNode.nodeType === Node.TEXT_NODE) {
 
-            startOffset = selectedRange.startOffset;
-            endOffset = selectedRange.endOffset;
+    //         startOffset = selectedRange.startOffset;
+    //         endOffset = selectedRange.endOffset;
 
-            rangeCFIComponent = this.epubCFI.generateCharOffsetRangeComponent(startNode, startOffset, endNode, endOffset);
-            return rangeCFIComponent;
-        }
-        else {
-            throw new Error("Selection start and end must be text nodes");
-        }
-    },
+    //         rangeCFIComponent = this.epubCFI.generateCharOffsetRangeComponent(startNode, startOffset, endNode, endOffset);
+    //         return rangeCFIComponent;
+    //     }
+    //     else {
+    //         throw new Error("Selection start and end must be text nodes");
+    //     }
+    // },
 
-    generateCharOffsetCFI : function (selectedRange) {
+    // generateCharOffsetCFI : function (selectedRange) {
 
-        // Character offset
-        var startNode = selectedRange.startContainer;
-        var startOffset = selectedRange.startOffset;
-        var charOffsetCFI;
+    //     // Character offset
+    //     var startNode = selectedRange.startContainer;
+    //     var startOffset = selectedRange.startOffset;
+    //     var charOffsetCFI;
 
-        if (startNode.nodeType === Node.TEXT_NODE) {
-            charOffsetCFI = this.epubCFI.generateCharacterOffsetCFIComponent(
-                startNode,
-                startOffset,
-                ["cfi-marker"]
-                );
-        }
-        return charOffsetCFI;
-    },
+    //     if (startNode.nodeType === Node.TEXT_NODE) {
+    //         charOffsetCFI = this.epubCFI.generateCharacterOffsetCFIComponent(
+    //             startNode,
+    //             startOffset,
+    //             ["cfi-marker"]
+    //             );
+    //     }
+    //     return charOffsetCFI;
+    // },
 
     findExistingLastPageMarker : function ($visibleTextNode) {
 
@@ -585,103 +585,103 @@ EpubReflowable.AlternateStyleTagSelector = Backbone.Model.extend({
     //   is not ideal, and adds redundant, complex, code to the annotations delegate. A better method here would be to generate
     //   selection info, get the generated range CFI, and use that to inject markers. The only reason this wasn't done is 
     //   because the CFI library did not support CFI range generation or injection when selection and highlighting was done.
-    injectBookmarkMarker : function (selectionRange, id) {
+    // injectBookmarkMarker : function (selectionRange, id) {
 
-        var startNode = selectionRange.startContainer;
-        var startOffset = selectionRange.startOffset;
-        var $bookmarkMarker = $(this.getBookmarkMarker("", id));
-        var highlightRange;
+    //     var startNode = selectionRange.startContainer;
+    //     var startOffset = selectionRange.startOffset;
+    //     var $bookmarkMarker = $(this.getBookmarkMarker("", id));
+    //     var highlightRange;
 
-        this.epubCFI.injectElementAtOffset(
-            $(startNode), 
-            startOffset,
-            $bookmarkMarker
-        );
+    //     this.epubCFI.injectElementAtOffset(
+    //         $(startNode), 
+    //         startOffset,
+    //         $bookmarkMarker
+    //     );
 
-        return $bookmarkMarker[0];        
-    },
+    //     return $bookmarkMarker[0];        
+    // },
  
-    injectHighlightMarkers : function (selectionRange, id) {
+    // injectHighlightMarkers : function (selectionRange, id) {
 
-        var highlightRange;
-        if (selectionRange.startContainer === selectionRange.endContainer) {
-            highlightRange = this.injectHighlightInSameNode(selectionRange, id);
-        } else {
-            highlightRange = this.injectHighlightsInDifferentNodes(selectionRange, id);
-        }
+    //     var highlightRange;
+    //     if (selectionRange.startContainer === selectionRange.endContainer) {
+    //         highlightRange = this.injectHighlightInSameNode(selectionRange, id);
+    //     } else {
+    //         highlightRange = this.injectHighlightsInDifferentNodes(selectionRange, id);
+    //     }
 
-        return highlightRange;
-    },
+    //     return highlightRange;
+    // },
 
-    injectHighlightInSameNode : function (selectionRange, id) {
+    // injectHighlightInSameNode : function (selectionRange, id) {
 
-        var startNode;
-        var startOffset = selectionRange.startOffset;
-        var endNode = selectionRange.endContainer;
-        var endOffset = selectionRange.endOffset;
-        var $startMarker = $(this.getRangeStartMarker("", id));
-        var $endMarker = $(this.getRangeEndMarker("", id));
-        var highlightRange;
+    //     var startNode;
+    //     var startOffset = selectionRange.startOffset;
+    //     var endNode = selectionRange.endContainer;
+    //     var endOffset = selectionRange.endOffset;
+    //     var $startMarker = $(this.getRangeStartMarker("", id));
+    //     var $endMarker = $(this.getRangeEndMarker("", id));
+    //     var highlightRange;
 
-        // Rationale: The end marker is injected before the start marker because when the text node is split by the 
-        //   end marker first, the offset for the start marker will still be the same and we do not need to recalculate 
-        //   the offset for the newly created end node.
+    //     // Rationale: The end marker is injected before the start marker because when the text node is split by the 
+    //     //   end marker first, the offset for the start marker will still be the same and we do not need to recalculate 
+    //     //   the offset for the newly created end node.
 
-        // inject end marker
-        this.epubCFI.injectElementAtOffset(
-            $(endNode), 
-            endOffset,
-            $endMarker
-        );
+    //     // inject end marker
+    //     this.epubCFI.injectElementAtOffset(
+    //         $(endNode), 
+    //         endOffset,
+    //         $endMarker
+    //     );
 
-        startNode = $endMarker[0].previousSibling;
+    //     startNode = $endMarker[0].previousSibling;
 
-        // inject start marker
-        this.epubCFI.injectElementAtOffset(
-            $(startNode), 
-            startOffset,
-            $startMarker
-        );
+    //     // inject start marker
+    //     this.epubCFI.injectElementAtOffset(
+    //         $(startNode), 
+    //         startOffset,
+    //         $startMarker
+    //     );
 
-        // reconstruct range
-        highlightRange = document.createRange();
-        highlightRange.setStart($startMarker[0].nextSibling, 0);
-        highlightRange.setEnd($endMarker[0].previousSibling, $endMarker[0].previousSibling.length - 1);
+    //     // reconstruct range
+    //     highlightRange = document.createRange();
+    //     highlightRange.setStart($startMarker[0].nextSibling, 0);
+    //     highlightRange.setEnd($endMarker[0].previousSibling, $endMarker[0].previousSibling.length - 1);
 
-        return highlightRange;
-    },
+    //     return highlightRange;
+    // },
 
-    injectHighlightsInDifferentNodes : function (selectionRange, id) {
+    // injectHighlightsInDifferentNodes : function (selectionRange, id) {
 
-        var startNode = selectionRange.startContainer;
-        var startOffset = selectionRange.startOffset;
-        var endNode = selectionRange.endContainer;
-        var endOffset = selectionRange.endOffset;
-        var $startMarker = $(this.getRangeStartMarker("", id));
-        var $endMarker = $(this.getRangeEndMarker("", id));
-        var highlightRange;
+    //     var startNode = selectionRange.startContainer;
+    //     var startOffset = selectionRange.startOffset;
+    //     var endNode = selectionRange.endContainer;
+    //     var endOffset = selectionRange.endOffset;
+    //     var $startMarker = $(this.getRangeStartMarker("", id));
+    //     var $endMarker = $(this.getRangeEndMarker("", id));
+    //     var highlightRange;
 
-        // inject start
-        this.epubCFI.injectElementAtOffset(
-            $(startNode), 
-            startOffset,
-            $startMarker
-        );
+    //     // inject start
+    //     this.epubCFI.injectElementAtOffset(
+    //         $(startNode), 
+    //         startOffset,
+    //         $startMarker
+    //     );
 
-        // inject end
-        this.epubCFI.injectElementAtOffset(
-            $(endNode), 
-            endOffset,
-            $endMarker
-        );
+    //     // inject end
+    //     this.epubCFI.injectElementAtOffset(
+    //         $(endNode), 
+    //         endOffset,
+    //         $endMarker
+    //     );
 
-        // reconstruct range
-        highlightRange = document.createRange();
-        highlightRange.setStart($startMarker[0].nextSibling, 0);
-        highlightRange.setEnd($endMarker[0].previousSibling, $endMarker[0].previousSibling.length - 1);
+    //     // reconstruct range
+    //     highlightRange = document.createRange();
+    //     highlightRange.setStart($startMarker[0].nextSibling, 0);
+    //     highlightRange.setEnd($endMarker[0].previousSibling, $endMarker[0].previousSibling.length - 1);
 
-        return highlightRange;
-    },
+    //     return highlightRange;
+    // },
 
     // Rationale: This is a cross-browser method to get the currently selected text
     getCurrentSelectionRange : function () {
@@ -2141,17 +2141,23 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
     setFontSize : function (fontSize) {
         this.viewerModel.set({ fontSize : fontSize });
-        this.annotations.redraw();
+        if (this.annotations) {
+            this.annotations.redraw();
+        }
     },
 
     setMargin : function (margin) {
         this.viewerModel.set({ currentMargin : margin });
-        this.annotations.redraw();
+        if (this.annotations) {
+            this.annotations.redraw();
+        }
     },
 
     setTheme : function (theme) {
         this.viewerModel.set({ currentTheme : theme });
-        this.annotations.redraw();
+        if (this.annotations) {
+            this.annotations.redraw();
+        }
     },
 
     setSyntheticLayout : function (isSynthetic) {
@@ -2161,7 +2167,9 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
             this.viewerModel.set({ twoUp : isSynthetic });
             this.pages.toggleTwoUp(isSynthetic, this.spineItemModel.get("firstPageIsOffset"));
         }
-        this.annotations.redraw();
+        if (this.annotations) {
+            this.annotations.redraw();
+        }
     },
 
 	// ------------------------------------------------------------------------------------ //
@@ -2192,15 +2200,11 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 	keydownHandler : function (e) {
 
         if (e.which == 39) {
-
             this.trigger("keydown-right");
-            // this.pages.goRight();
         }
                         
         if (e.which == 37) {
-
             this.trigger("keydown-left");
-            // this.pages.goRight();
         }
     },
 
