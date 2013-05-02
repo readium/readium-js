@@ -11,6 +11,12 @@
 #   - dist/**/*.js
 #
 src_files:
+    - spec/javascripts/test_namespace.js
+    - lib/jquery-1.9.1.js
+    - lib/json2.js
+    - lib/modernizr-2.5.3.min.js
+    - lib/underscore.js
+    - lib/backbone.js
     - src/**/*.js
 
 # stylesheets

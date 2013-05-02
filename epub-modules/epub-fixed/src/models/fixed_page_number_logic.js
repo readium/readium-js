@@ -5,7 +5,7 @@
 //   the reading order of pages, the number of pages displayed on the screen and author preferences 
 //   for the location of pages (left/right/centre). 
 
-Readium.Models.PageNumberDisplayLogic = Backbone.Model.extend({
+EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
 
 	// ------------------------------------------------------------------------------------ //
 	//  "PUBLIC" METHODS (THE API)                                                          //
@@ -17,92 +17,64 @@ Readium.Models.PageNumberDisplayLogic = Backbone.Model.extend({
     // Arguments (
     //   gotoPageNumber (integer): The page number to "go to"
     //   twoUp (boolean): Are two pages currently displayed in the reader?
-    //   isFixedLayout (boolean): Are the current set of pages fixed layout pages? 
     //   pageProgDirection ("rtl" or "ltr): The page progression direction
     //	)
 	// REFACTORING CANDIDATE: This might be better named as getPageNumsToDisplay; the "goto" is confusing; also some
 	//   deep nesting here that could be refactored for clarity.
-	getGotoPageNumsToDisplay: function(gotoPageNumber, twoUp, isFixedLayout, pageProgDirection, firstPageOffset) {
+	getGotoPageNumsToDisplay: function(gotoPageNumber, twoUp, pageProgDirection) {
 
 		if (twoUp) {
 			
-			// Fixed layout page
-			if (isFixedLayout) {
+			if (pageProgDirection === "rtl") {
 
-				if (pageProgDirection === "rtl") {
+				if (this.displayedPageIsLeft(gotoPageNumber)) {
 
-					if (this.displayedPageIsLeft(gotoPageNumber)) {
-
-						if (this.displayedPageIsRight(gotoPageNumber - 1)) {
-							return [gotoPageNumber - 1, gotoPageNumber];
-						}
-						else {
-							return [gotoPageNumber];
-						}
+					if (this.displayedPageIsRight(gotoPageNumber - 1)) {
+						return [gotoPageNumber - 1, gotoPageNumber];
 					}
-					else if (this.displayedPageIsRight(gotoPageNumber)) {
-
-						if (this.displayedPageIsLeft(gotoPageNumber + 1)) {
-							return [gotoPageNumber, gotoPageNumber + 1];	
-						}
-						else {
-							return [gotoPageNumber];
-						}
-					}
-					// A center page
 					else {
 						return [gotoPageNumber];
 					}
 				}
-				// Left-to-right page progression
-				else {
+				else if (this.displayedPageIsRight(gotoPageNumber)) {
 
-					if (this.displayedPageIsLeft(gotoPageNumber)) {
-
-						if (this.displayedPageIsRight(gotoPageNumber + 1)) {
-							return [gotoPageNumber, gotoPageNumber + 1];
-						}
-						else {
-							return [gotoPageNumber];
-						}
+					if (this.displayedPageIsLeft(gotoPageNumber + 1)) {
+						return [gotoPageNumber, gotoPageNumber + 1];	
 					}
-					else if (this.displayedPageIsRight(gotoPageNumber)) {
-
-						if (this.displayedPageIsLeft(gotoPageNumber - 1)) {
-							return [gotoPageNumber - 1, gotoPageNumber];
-						}
-						else {
-							return [gotoPageNumber];
-						}
-					}
-					// A center page
 					else {
 						return [gotoPageNumber];
 					}
+				}
+				// A center page
+				else {
+					return [gotoPageNumber];
 				}
 			}
-			// This is a reflowable page
+			// Left-to-right page progression
 			else {
 
-				if (firstPageOffset) {
+				if (this.displayedPageIsLeft(gotoPageNumber)) {
 
-					if (gotoPageNumber % 2 === 1) {
-						return [gotoPageNumber - 1, gotoPageNumber];
-					}
-					else {
+					if (this.displayedPageIsRight(gotoPageNumber + 1)) {
 						return [gotoPageNumber, gotoPageNumber + 1];
 					}
-				}
-				else {
-					// in reflowable format, we want this config always:
-					// ODD_PAGE |spine| EVEN_PAGE
-					if (gotoPageNumber % 2 === 1) {
-						return [gotoPageNumber, gotoPageNumber + 1];	
-					} 
 					else {
+						return [gotoPageNumber];
+					}
+				}
+				else if (this.displayedPageIsRight(gotoPageNumber)) {
+
+					if (this.displayedPageIsLeft(gotoPageNumber - 1)) {
 						return [gotoPageNumber - 1, gotoPageNumber];
 					}
-				}	
+					else {
+						return [gotoPageNumber];
+					}
+				}
+				// A center page
+				else {
+					return [gotoPageNumber];
+				}
 			}
 		}
 		else {	
@@ -113,91 +85,71 @@ Readium.Models.PageNumberDisplayLogic = Backbone.Model.extend({
     // Description: Get the pages numbers to display when moving in reverse reading order
     // Arguments (
     //   prevPageNumberToDisplay (integer): The page to move to; this page must be one of the displayed pages
-    //   isFixedLayout (boolean): Are the current set of pages fixed layout pages? 
     //   pageProgDirection ("rtl" or "ltr): The page progression direction    	
     //	)
-	getPrevPageNumsToDisplay: function (prevPageNumberToDisplay, isFixedLayout, pageProgDirection) {
+	getPrevPageNumsToDisplay: function (prevPageNumberToDisplay, pageProgDirection) {
 
-		// If fixed layout
-		if (isFixedLayout) {
+		if (pageProgDirection === "rtl") {
 
-			if (pageProgDirection === "rtl") {
+			// If the first page is a left page in rtl progression, only one page 
+			// can be displayed, even in two-up mode
+			if (this.displayedPageIsLeft(prevPageNumberToDisplay) && 
+				this.displayedPageIsRight(prevPageNumberToDisplay - 1)) {
 
-				// If the first page is a left page in rtl progression, only one page 
-				// can be displayed, even in two-up mode
-				if (this.displayedPageIsLeft(prevPageNumberToDisplay) && 
-					this.displayedPageIsRight(prevPageNumberToDisplay - 1)) {
-
-					return [prevPageNumberToDisplay - 1, prevPageNumberToDisplay];
-				}
-				else {
-
-					return [prevPageNumberToDisplay];
-				}
+				return [prevPageNumberToDisplay - 1, prevPageNumberToDisplay];
 			}
-			// Left-to-right progresion
 			else {
 
-				if (this.displayedPageIsRight(prevPageNumberToDisplay) &&
-					this.displayedPageIsLeft(prevPageNumberToDisplay - 1)) {
-
-					return [prevPageNumberToDisplay - 1, prevPageNumberToDisplay];
-				}
-				else {
-
-					return [prevPageNumberToDisplay];
-				}
+				return [prevPageNumberToDisplay];
 			}
 		}
-		// A reflowable text
+		// Left-to-right progresion
 		else {
 
-			return [prevPageNumberToDisplay - 1, prevPageNumberToDisplay];
+			if (this.displayedPageIsRight(prevPageNumberToDisplay) &&
+				this.displayedPageIsLeft(prevPageNumberToDisplay - 1)) {
+
+				return [prevPageNumberToDisplay - 1, prevPageNumberToDisplay];
+			}
+			else {
+
+				return [prevPageNumberToDisplay];
+			}
 		}
 	},
 
 	// Description: Get the pages to display when moving in reading order
     // Arguments (
     //   nextPageNumberToDisplay (integer): The page to move to; this page must be one of the displayed pages
-    //   isFixedLayout (boolean): Are the current set of pages fixed layout pages? 
     //   pageProgDirection ("rtl" or "ltr): The page progression direction    	
     //	)
-	getNextPageNumsToDisplay: function (nextPageNumberToDisplay, isFixedLayout, pageProgDirection) {
+	getNextPageNumsToDisplay: function (nextPageNumberToDisplay, pageProgDirection) {
 
-		// If fixed layout
-		if (isFixedLayout) {
+		if (pageProgDirection === "rtl") {
 
-			if (pageProgDirection === "rtl") {
+			// If the first page is a left page in rtl progression, only one page 
+			// can be displayed, even in two-up mode
+			if (this.displayedPageIsRight(nextPageNumberToDisplay) &&
+				this.displayedPageIsLeft(nextPageNumberToDisplay + 1)) {
 
-				// If the first page is a left page in rtl progression, only one page 
-				// can be displayed, even in two-up mode
-				if (this.displayedPageIsRight(nextPageNumberToDisplay) &&
-					this.displayedPageIsLeft(nextPageNumberToDisplay + 1)) {
-
-					return [nextPageNumberToDisplay, nextPageNumberToDisplay + 1];
-				}
-				else {
-
-					return [nextPageNumberToDisplay];
-				}
+				return [nextPageNumberToDisplay, nextPageNumberToDisplay + 1];
 			}
 			else {
 
-				if (this.displayedPageIsLeft(nextPageNumberToDisplay) && 
-					this.displayedPageIsRight(nextPageNumberToDisplay + 1)) {
-
-					return [nextPageNumberToDisplay, nextPageNumberToDisplay + 1];
-				}
-				else {
-
-					return [nextPageNumberToDisplay];
-				}
+				return [nextPageNumberToDisplay];
 			}
 		}
-		// Reflowable section
 		else {
 
-			return [nextPageNumberToDisplay, nextPageNumberToDisplay + 1];
+			if (this.displayedPageIsLeft(nextPageNumberToDisplay) && 
+				this.displayedPageIsRight(nextPageNumberToDisplay + 1)) {
+
+				return [nextPageNumberToDisplay, nextPageNumberToDisplay + 1];
+			}
+			else {
+
+				return [nextPageNumberToDisplay];
+			}
 		}
 	},
 
@@ -206,12 +158,11 @@ Readium.Models.PageNumberDisplayLogic = Backbone.Model.extend({
 	// Arguments (
 	//   twoUp (boolean): Are two pages currently displayed in the reader?
 	//   displayedPageNumbers (array of integers): An array of page numbers that are currently displayed	
-	//   isFixedLayout (boolean): Are the current set of pages fixed layout pages? 
 	//   pageProgDirection ("rtl" or "ltr): The page progression direction
 	//	)
 	// Notes: Authors can specify a fixed layout page as a "center" page, which prevents more than one page
 	//   being displayed. This case is not handled yet.
-	getPageNumbersForTwoUp: function(twoUp, displayedPageNumbers, pageProgDirection, isFixedLayout, firstPageOffset) {
+	getPageNumbersForTwoUp: function(twoUp, displayedPageNumbers, pageProgDirection) {
 
 		var displayed = displayedPageNumbers;
 		var twoPagesDisplayed = displayed.length === 2 ? true : false;
@@ -229,36 +180,6 @@ Readium.Models.PageNumberDisplayLogic = Backbone.Model.extend({
 			else {
 				
 				newPages[0] = displayed[0];
-			}
-		}
-		// A single reflowable page is currently displayed; find two pages to display
-		else if (!isFixedLayout) {
-
-			if (firstPageOffset) {
-
-				if (displayed[0] % 2 === 1) {
-					
-					newPages[0] = displayed[0] - 1;
-					newPages[1] = displayed[0];
-				}
-				else {
-					
-					newPages[0] = displayed[0];
-					newPages[1] = displayed[0] + 1;
-				}				
-			}
-			else {
-
-				if (displayed[0] % 2 === 1) {
-					
-					newPages[0] = displayed[0];
-					newPages[1] = displayed[0] + 1;
-				}
-				else {
-					
-					newPages[0] = displayed[0] - 1;
-					newPages[1] = displayed[0];
-				}
 			}
 		}
 		// A single fixed layout page is displayed

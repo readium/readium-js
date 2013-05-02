@@ -1,5 +1,3 @@
-
-
 Readium.Views.FixedPaginationView = Readium.Views.PaginationViewBase.extend({
 
 	// ------------------------------------------------------------------------------------ //
@@ -68,32 +66,32 @@ Readium.Views.FixedPaginationView = Readium.Views.PaginationViewBase.extend({
         }
     },
     
-    // override
-	indicateMoIsPlaying: function () {
-		var moHelper = new Readium.Models.MediaOverlayViewHelper({epubController : this.model});
-		moHelper.renderFixedMoPlaying(
-			this.pages.get("current_page"),
-			this.mediaOverlayController.get("active_mo"),
-			this
-        );
-	},
+ //    // override
+	// indicateMoIsPlaying: function () {
+	// 	var moHelper = new Readium.Models.MediaOverlayViewHelper({epubController : this.model});
+	// 	moHelper.renderFixedMoPlaying(
+	// 		this.pages.get("current_page"),
+	// 		this.mediaOverlayController.get("active_mo"),
+	// 		this
+ //        );
+	// },
     
-    // override
-	highlightText: function () {
-		var moHelper = new Readium.Models.MediaOverlayViewHelper({epubController : this.model});
-		moHelper.renderFixedLayoutMoFragHighlight(
-			this.pages.get("current_page"),
-			this.mediaOverlayController.get("mo_text_id"),
-			this
-        );
-	},
+ //    // override
+	// highlightText: function () {
+	// 	var moHelper = new Readium.Models.MediaOverlayViewHelper({epubController : this.model});
+	// 	moHelper.renderFixedLayoutMoFragHighlight(
+	// 		this.pages.get("current_page"),
+	// 		this.mediaOverlayController.get("mo_text_id"),
+	// 		this
+ //        );
+	// },
     
-    // override
-    // Description: return the set of all elements for this spine item that have an @id attribute.
-    // Used by MO.
-    getAllPageElementsWithId: function() {
-        return $('body').find("[id]");
-    },
+ //    // override
+ //    // Description: return the set of all elements for this spine item that have an @id attribute.
+ //    // Used by MO.
+ //    getAllPageElementsWithId: function() {
+ //        return $('body').find("[id]");
+ //    },
     
     
 	// ------------------------------------------------------------------------------------ //
@@ -111,75 +109,6 @@ Readium.Views.FixedPaginationView = Readium.Views.PaginationViewBase.extend({
 		// remove any listeners registered on the model
 		this.model.off("change:two_up", this.setUpMode);
 		this.model.off("change:meta_size", this.setUpMode);		
-	},
-
-	// Description: Handles clicks of anchor tags by navigating to
-	// the proper location in the epub spine, or opening
-	// a new window for external links
-	linkClickHandler: function(e) {
-		e.preventDefault();
-
-		var href;
-
-		// Check for both href and xlink:href attribute and get value
-		if (e.currentTarget.attributes["xlink:href"]) {
-
-			href = e.currentTarget.attributes["xlink:href"].value;
-		}
-		else {
-
-			href = e.currentTarget.attributes["href"].value;
-		}
-
-		// Resolve the relative path for the resource
-		href = this.resolveRelativeURI(href);
-
-		if (href.match(/^http(s)?:/)) {
-			window.open(href);
-		} 
-		else {
-			this.model.goToHref(href);
-		}
-	},
-
-	// Rationale: For the purpose of looking up EPUB resources in the package document manifest, Readium expects that 
-	//   all relative links be specified as relative to the package document URI (or absolute references). However, it is 
-	//   valid XHTML for a link to another resource in the EPUB to be specfied relative to the current document's
-	//   path, rather than to the package document. As such, URIs passed to Readium must be either absolute references or 
-	//   relative to the package document. This method resolves URIs to conform to this condition. 
-	resolveRelativeURI: function (rel_uri) {
-
-		var sourceDocManifestHref;
-		var sourceDocName;
-		var pageSrc;
-
-		// Get the name of the click source document
-		sourceDocManifestHref = this.model.getCurrentSection().get("href");
-		indexOfFilenameStart = sourceDocManifestHref.lastIndexOf('/') + 1;
-		sourceDocName = sourceDocManifestHref.substr(indexOfFilenameStart, rel_uri.length);
-
-		// Iterate through list of FXL pages. Look for the one that is visible and has the name
-		$(".fixed-page-wrap").each(function () {
-
-			var $currPage = $('.content-sandbox', this);
-
-			// Get the name of the content document in the page iframe
-			var currPageSrc = $currPage.attr("src");
-			var pageDocNameStart = currPageSrc.lastIndexOf('/') + 1;
-			var pageDocName = currPageSrc.substr(pageDocNameStart, currPageSrc.length);
-
-			if (pageDocName === sourceDocName) {
-				pageSrc = currPageSrc;
-				return false;
-			}
-		});
-
-		var relativeURI = new URI(rel_uri);
-
-		// Get URI for resource currently loaded in the view's iframe
-		var iframeDocURI = new URI(pageSrc);
-
-		return relativeURI.resolve(iframeDocURI).toString();
 	},
 
 	spinePositionChangeHandler: function () {
@@ -263,11 +192,11 @@ Readium.Views.FixedPaginationView = Readium.Views.PaginationViewBase.extend({
         });
 	},
 
-	setFontSize: function() {
-		var size = this.model.get("font_size") / 10;
-		$('#readium-content-container').css("font-size", size + "em");
-		this.showCurrentPages();
-	},
+	// setFontSize: function() {
+	// 	var size = this.model.get("font_size") / 10;
+	// 	$('#readium-content-container').css("font-size", size + "em");
+	// 	this.showCurrentPages();
+	// },
 
 	applyKeydownHandler : function ($pageViewContainer) {
 
@@ -284,69 +213,4 @@ Readium.Views.FixedPaginationView = Readium.Views.PaginationViewBase.extend({
 			}
 		});
 	}
-});
-
-
-Readium.Views.FixedPageView = Backbone.View.extend({
-
-	className: "fixed-page-wrap",
-
-	initialize: function() {
-		this.template = Handlebars.templates.fixed_page_template;
-		this.model.on("change", this.render, this);
-	},
-
-	destruct: function() {
-		this.model.off("change", this.render);
-	},
-
-	render: function() {
-		var that = this;
-		var json = this.model.toJSON();
-		this.$el.html( this.template( json ) );
-		this.$el.addClass( this.model.getPageSpreadClass() );
-		this.$('.content-sandbox').on("load", function() {
-			that.trigger("iframe_loaded");
-		});
-		return this;
-	},
-
-	iframe: function() {
-		return this.$('.content-sandbox')[0];
-	}
-});
-
-
-Readium.Views.ImagePageView = Backbone.View.extend({
-
-	className: "fixed-page-wrap",
-
-	initialize: function() {
-		this.template = Handlebars.templates.image_page_template;
-		this.model.on("change", this.render, this);
-	},
-
-	render: function() {
-		var that = this;
-		var json = this.model.toJSON();
-		this.$el.html( this.template( json ) );
-		this.$el.addClass( this.model.getPageSpreadClass() );
-
-		this.$('img').on("load", function() { that.setSize(); });
-		
-
-		return this;
-	},
-
-	setSize: function() {
-		var $img = this.$('img');
-		var width = $img.width();
-		var height = $img.height();
-		// temp this is a mess but it will do for now...
-		if( width > 0) {
-			this.model.set({meta_width: width, meta_height: height})
-		}
-		
-	}
-
 });
