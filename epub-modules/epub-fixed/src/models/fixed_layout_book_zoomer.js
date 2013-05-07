@@ -14,9 +14,9 @@ Readium.Views.FixedLayoutBookZoomer = Backbone.View.extend({
 		this.zoomingModel = new Readium.Models.FixedLayoutBookZoomingModel();
 	},
 
-	/* ------------------------------------------------------------------------------------ */
+	// ------------------------------------------------------------------------------------ //
   	//  "PUBLIC" METHODS (THE API)                                                          //
-  	/* ------------------------------------------------------------------------------------ */
+  	// ------------------------------------------------------------------------------------ //
 
 	// apply the current transformations held in this views `BookZoomingModel` to
 	// the `el`
@@ -58,9 +58,9 @@ Readium.Views.FixedLayoutBookZoomer = Backbone.View.extend({
 	},
 
 	
-	/* ------------------------------------------------------------------------------------ */
+	// ------------------------------------------------------------------------------------ //
 	//  "PRIVATE" HELPERS                                                                   //
-	/* ------------------------------------------------------------------------------------ */
+	// ------------------------------------------------------------------------------------ //
 
 	fitToWidthScale: function() {
 		return (this.containerWidth() - this.horizontalPad) / this.bookWidth();
@@ -110,7 +110,6 @@ Readium.Models.FixedLayoutBookZoomingModel = Backbone.Model.extend({
 		// get the browser vendor prefixed attrs one time, rather than
 		// every time we render
 		this.styleAttrs = this.getModernizedAttrs();
-
 	},
 
 	defaults: {
@@ -152,5 +151,4 @@ Readium.Models.FixedLayoutBookZoomingModel = Backbone.Model.extend({
 		str += "scale(" + this.get("scale").toString() + ")";
 		return str;
 	}
-
 });

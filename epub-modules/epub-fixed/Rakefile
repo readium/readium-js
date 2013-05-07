@@ -13,22 +13,20 @@ task :server do
 end
 
 task :get_dependencies do 
-    `mv ../lib/epub_reader_module.js lib/epub_reader_module.js`
+    `cp ../development/epub_reader_module.js lib/epub_reader_module.js`
+    `cp ../development/epub_module.js lib/epub_module.js`
+    `cp ../development/epub_parser_module.js lib/epub_parser_module.js`
 end
 
 # Generate the epub module 
 def render_epub_fixed_module_template(templatePath, outputPath)
 
     # Read each of the library components
-    # alternate_style_tag_selector = File.read('src/models/alternate_style_tag_selector.js')
-    # reflowable_annotations = File.read('src/models/reflowable_annotations.js')
-    # reflowable_element_info = File.read('src/models/reflowable_element_info.js')
-    # reflowable_layout = File.read('src/models/reflowable_layout.js')
-    # reflowable_page_number_logic = File.read('src/models/reflowable_page_number_logic.js')
-    # reflowable_pagination = File.read('src/models/reflowable_pagination.js')
-    # reflowable_paginator = File.read('src/models/reflowable_paginator.js')
-    # trigger = File.read('src/models/trigger.js')
-    # reflowable_pagination_view = File.read('src/views/reflowable_pagination_view.js')
+    fixed_page_number_logic = File.read('src/models/fixed_page_number_logic.js')
+    fixed_page_views = File.read('src/models/fixed_page_views.js')
+    fixed_page_view = File.read('src/views/fixed_page_view.js')
+    image_page_view = File.read('src/views/image_page_view.js')
+    fixed_pagination_view = File.read('src/views/fixed_pagination_view.js')
 
     template = File.read(templatePath)
     erb = ERB.new(template)
@@ -41,6 +39,7 @@ end
 
 desc "render the epub module erb template"
 task :gen_module do
-    puts "rendering the epub reflowable module"
-    render_epub_reflowable_module_template("epub_reflowable_module_template.js.erb", "epub_reflowable_module.js")
+    puts "rendering the epub fixed module"
+    render_epub_fixed_module_template("src/templates/epub_fixed_module_template.js.erb", "lib/epub_fixed_module.js")
+    render_epub_fixed_module_template("src/templates/epub_fixed_module_template.js.erb", "../development/epub_fixed_module.js")
 end

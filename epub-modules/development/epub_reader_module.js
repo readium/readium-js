@@ -263,6 +263,7 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
                 }
             });
             
+            // This will cause the pages view to try to retrieve its resources
             $(that.get("parentElement")).append(pagesViewInfo.pagesView.render(false, undefined));
         });
 

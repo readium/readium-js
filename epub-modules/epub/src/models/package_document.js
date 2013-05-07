@@ -214,13 +214,35 @@ Epub.PackageDocument = Backbone.Model.extend({
 
     generateSpineInfo : function (spineItem) {
 
+        var isFixedLayout = false;
+        var fixedLayoutType = undefined;
+        var manifestItem = this.getManifestModelByIdref(spineItem.get("idref"));
+
+        // Get fixed layout properties
+        if (spineItem.isFixedLayout() || this.isFixedLayout()) {
+            isFixedLayout = true;
+            
+            if (manifestItem.isSvg()) {
+                fixedLayoutType = "svg";
+            }
+            else if (manifestItem.isImage()) {
+                fixedLayoutType = "image";
+            }
+            else {
+                fixedLayoutType = "xhtml";
+            }
+        }
+
         return {
             contentDocumentURI : this.getManifestItemByIdref(spineItem.get("idref")).contentDocumentURI,
             title : this.metadata.get("title"),
             firstPageIsOffset : false, // This needs to be determined
             pageProgressionDirection : this.pageProgressionDirection(),
             spineIndex : this.getSpineIndex(spineItem),
-            pageSpread : spineItem.get("page_spread")
+            pageSpread : spineItem.get("page_spread"),
+            isFixedLayout : isFixedLayout, 
+            fixedLayoutType : fixedLayoutType,
+            mediaType : manifestItem.get("media_type")
         };
     },
 
@@ -232,6 +254,7 @@ Epub.PackageDocument = Backbone.Model.extend({
     },
 
     getToc: function() {
+
         var item = this.getTocItem();
         if (item){
             var href = item.get("href");
@@ -276,6 +299,18 @@ Epub.PackageDocument = Backbone.Model.extend({
             });
 
         return foundSpineItem;
+    },
+
+    getManifestModelByIdref : function (idref) {
+
+        var foundManifestItem = this.manifest.find(
+            function (manifestItem) { 
+                if (manifestItem.get("id") === idref) {
+                    return manifestItem;
+                }
+            });
+
+        return foundManifestItem;
     },
 
     getSpineIndex : function (spineItem) {
@@ -325,6 +360,7 @@ Epub.PackageDocument = Backbone.Model.extend({
     },
 
     getTocItem : function() {
+
         var manifest = this.manifest;
         var metadata = this.metadata;
         var spine_id = this.metadata.get("ncx");
