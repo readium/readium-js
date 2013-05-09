@@ -89,7 +89,7 @@ EpubFixed.FixedPageViews = Backbone.Model.extend({
             pageIndexToShow = pageNumbers[0] - 1;
             fixedPageView = this.get("fixedPages")[pageIndexToShow].fixedPageView;
             this.hidePageViews();
-            this.set("currentPages", pageNumbers);
+            this.set("currentPages", pageNumbers); // At least one of the page numbers is valid
             fixedPageView.showPage();
         }
 
