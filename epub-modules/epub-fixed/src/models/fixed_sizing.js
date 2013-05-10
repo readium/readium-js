@@ -9,6 +9,7 @@ EpubFixed.FixedSizing = Backbone.Model.extend({
 
     updateMetaSize : function () {
 
+        var $img;
         var contentDocument = this.get("contentDocument");
 
         // first try to read viewport size
@@ -28,7 +29,12 @@ EpubFixed.FixedSizing = Backbone.Model.extend({
         }
         else { //try to get direct image size
 
-            var $img = $(contentDocument).find('img');
+            if ($(contentDocument).is("IMG")) {
+                $img = $(contentDocument);
+            }
+            else {
+                $img = $(contentDocument).find('img');
+            }
             var width = $img.width();
             var height = $img.height();
 

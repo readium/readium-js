@@ -286,7 +286,7 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
 
 		var pageIndex = pageNumber - 1;
 		var spineObject = this.get("spineObjects")[pageIndex];
-		if (spineObject.pageSpread === "right") {
+		if (spineObject !== undefined && spineObject.pageSpread === "right") {
 			return true;
 		}
 		else {
@@ -298,7 +298,7 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
 
 		var pageIndex = pageNumber - 1;
 		var spineObject = this.get("spineObjects")[pageIndex];
-		if (spineObject.pageSpread === "left") {
+		if (spineObject !== undefined && spineObject.pageSpread === "left") {
 			return true;
 		}
 		else {
@@ -310,7 +310,7 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
 
 		var pageIndex = pageNumber - 1;
 		var spineObject = this.get("spineObjects")[pageIndex];
-		if (spineObject.pageSpread === "center") {
+		if (spineObject !== undefined && spineObject.pageSpread === "center") {
 			return true;
 		}
 		else {
@@ -544,6 +544,7 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
 
     updateMetaSize : function () {
 
+        var $img;
         var contentDocument = this.get("contentDocument");
 
         // first try to read viewport size
@@ -563,7 +564,12 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
         }
         else { //try to get direct image size
 
-            var $img = $(contentDocument).find('img');
+            if ($(contentDocument).is("IMG")) {
+                $img = $(contentDocument);
+            }
+            else {
+                $img = $(contentDocument).find('img');
+            }
             var width = $img.width();
             var height = $img.height();
 
@@ -792,9 +798,11 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
 
     initialize : function (options) {
 
+        this.sizing;
+        this.styles = new EpubFixed.FixedLayoutStyle();
         this.pageSpread = options.pageSpread;
         this.imageSrc = options.imageSrc;
-        this.setPageSpreadStyle(this.pageSpread);
+        this.setSyntheticPageSpreadStyle();
     },
 
     render : function () {
@@ -803,10 +811,11 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
         $("img", this.$el).attr("src", this.imageSrc);
         this.$("img").on("load", function() { 
 
-            // that.setSize(); 
+            that.sizing = new EpubFixed.FixedSizing({ contentDocument : $("img", this.el)[0] });
             // that.injectLinkHandler();
             // that.applyKeydownHandler($(view.iframe()));
             // that.mediaOverlayController.pagesLoaded();
+            that.setPageSize();
             that.trigger("contentDocumentLoaded");
         });
 
@@ -821,41 +830,38 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
         this.$el.show();
     },
 
-    setPageSpreadStyle : function (pageSpread) {
+    setSinglePageSpreadStyle : function () {
 
+        var transformCss;
+        this.$el.css(this.styles.getSinglePageSpreadCSS());
+        this.setPageSize();
+    },
+
+    setSyntheticPageSpreadStyle : function () {
+
+        var pageSpread = this.pageSpread;
+        var transformCss;
         if (pageSpread === "left") {
-            this.$el.css({ 
-                "position" : "absolute",
-                "overflow" : "hidden",
-                "width" : "50%",
-                "height" : "100%",
-                "left" : "0%",
-                "background-color" : "#FFF" 
-            });
+            this.$el.css(this.styles.getPageSpreadLeftCSS());
         }
         else if (pageSpread === "right") {
-            this.$el.css({ 
-                "position" : "absolute",
-                "overflow" : "hidden",
-                "width" : "50%",
-                "height" : "100%", 
-                "left" : "50%",
-                "background-color" : "#FFF" 
-            });
+            this.$el.css(this.styles.getPageSpreadRightCSS());
         }
         else if (pageSpread === "center") {
-            this.$el.css({
-                "position" : "absolute",
-                "overflow" : "hidden", 
-                "height" : "100%",
-                "left" : "25%",
-                "z-index" : "11",
-                "background-color" : "#FFF" 
-            });
+            this.$el.css(this.styles.getPageSpreadCenterCSS());
         }
+        this.setPageSize();
+    },
 
-    // left: 25%;
-    // @include box-shadow(0 0 5px 5px rgba(80,80,80,0.5));
+    setPageSize : function () {
+
+        if (this.sizing !== undefined) {
+
+            var transformCss;
+            this.sizing.updateMetaSize();
+            transformCss = this.sizing.fitToScreen(this.$el.width(), this.$el.height());
+            this.$el.css(transformCss);
+        }
     }
 });
     EpubFixed.FixedPaginationView = Backbone.View.extend({

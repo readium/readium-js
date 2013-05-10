@@ -281,7 +281,7 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
 
 		var pageIndex = pageNumber - 1;
 		var spineObject = this.get("spineObjects")[pageIndex];
-		if (spineObject.pageSpread === "right") {
+		if (spineObject !== undefined && spineObject.pageSpread === "right") {
 			return true;
 		}
 		else {
@@ -293,7 +293,7 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
 
 		var pageIndex = pageNumber - 1;
 		var spineObject = this.get("spineObjects")[pageIndex];
-		if (spineObject.pageSpread === "left") {
+		if (spineObject !== undefined && spineObject.pageSpread === "left") {
 			return true;
 		}
 		else {
@@ -305,7 +305,7 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
 
 		var pageIndex = pageNumber - 1;
 		var spineObject = this.get("spineObjects")[pageIndex];
-		if (spineObject.pageSpread === "center") {
+		if (spineObject !== undefined && spineObject.pageSpread === "center") {
 			return true;
 		}
 		else {
