@@ -23,6 +23,7 @@
                 };
 
                 window.fixedView.on("epubLoaded", testCallbackForLoad, this);
+                $("#reader").css({ "height" : "800px", "width" : "1000px"});
                 $("#reader").html(window.fixedView.render(false, undefined));
             });
 

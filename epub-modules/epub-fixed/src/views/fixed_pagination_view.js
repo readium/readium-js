@@ -20,34 +20,22 @@ EpubFixed.FixedPaginationView = Backbone.View.extend({
             that.$el.css("opacity", "1");
         }, this);
 
-		// this.zoomer = options.zoomer; // Can probably just instantiate the delegate here
 		// this.mediaOverlayController = this.model.get("media_overlay_controller");
         // this.mediaOverlayController.setPages(this.pages);
         // this.mediaOverlayController.setView(this);
 
         // this.mediaOverlayController.on("change:mo_text_id", this.highlightText, this);
         // this.mediaOverlayController.on("change:active_mo", this.indicateMoIsPlaying, this);
-
-		// this.model.on("change:meta_size", this.setContainerSize, this);
 	},
 
 	render : function (goToLastPage, hashFragmentId) {
 
 		var that = this;
 		this.fixedPageViews.loadFixedPages(this.$el[0]);
-
-		// Not sure if this does anything
-		// $("body").addClass('apple-fixed-layout');
-
-		// Destroy all the current views and their listeners
-		
-		// Set the container size; the meta property has to be set 
-		// this.setContainerSize(); // Hmmmmm...
-
 		return this.el;
 	},
 
-    // REFACTORING CANDIDATE: Might want these methos to be the goLeft and goRight methods
+    // REFACTORING CANDIDATE: Might want these methods to be the goLeft and goRight methods
 	nextPage : function () {
 
 		this.fixedPageViews.nextPage(this.viewerSettings.syntheticLayout);
@@ -77,9 +65,6 @@ EpubFixed.FixedPaginationView = Backbone.View.extend({
 
     showPagesView : function () {
 
-        // Get the current pages, first page, last page 
-
-        // Show them
         this.$el.show();
     },
 
@@ -120,34 +105,11 @@ EpubFixed.FixedPaginationView = Backbone.View.extend({
 	//  "PRIVATE" HELPERS                                                                   //
 	// ------------------------------------------------------------------------------------ //
 
-	// sometimes these views hang around in memory before
-	// the GC's get them. we need to remove all of the handlers
-	// that were registered on the model
 	destruct : function () {
 
-		// this.model.off("change:font_size", this.setFontSize);
         // this.mediaOverlayController.off("change:mo_text_id", this.highlightText);
         // this.mediaOverlayController.off("change:active_mo", this.indicateMoIsPlaying);
 		// this.resetEl();
-	},
-
-	// Description: For each fixed-page-wrap(per), if it is one of the current pages, toggle it as visible. If it is not
-	//   toggle it as invisible.
-	// Note: current_page is an array containing the page numbers (as of 25June2012, a maximum of two pages) of the 
-	//   currently visible pages
-	showCurrentPages : function () {
-
-		var that = this;
-		// var moHelper = new Readium.Models.MediaOverlayViewHelper({epubController : this.model});
-
-		this.$(".fixed-page-wrap").each(function(index) {
-			$(this).toggle(that.pages.isPageVisible(index + 1));
-		});
-
-		// remove any artifact of MO highlighting from the current page(s)
-        // $.each(this.pages.get("current_page"), function(idx) {
-        //     moHelper.removeActiveClass(that.getPageBody(this.toString()));
-        // });
 	},
 
 	// setFontSize: function() {

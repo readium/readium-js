@@ -1,6 +1,6 @@
 EpubFixed.FixedPageView = Backbone.View.extend({
 
-    el : "<div class='fixed-page-wrapper' style='height:100%;'> \
+    el : "<div class='fixed-page-wrapper'> \
             <iframe scrolling='no' \
                     frameborder='0' \
                     marginwidth='0' \
@@ -12,7 +12,8 @@ EpubFixed.FixedPageView = Backbone.View.extend({
 
     initialize : function (options) {
 
-        this.sizing; 
+        this.sizing;
+        this.styles = new EpubFixed.FixedLayoutStyle();
         this.pageSpread = options.pageSpread;
         this.iframeSrc = options.iframeSrc;
         this.setSyntheticPageSpreadStyle();
@@ -24,7 +25,7 @@ EpubFixed.FixedPageView = Backbone.View.extend({
         this.get$iframe().attr("src", this.iframeSrc);
         this.get$iframe().on("load", function () {
 
-            that.sizing = new EpubFixed.FixedSizing({ contentDocument : $("iframe", that.el)[0].contentDocument });
+            that.sizing = new EpubFixed.FixedSizing({ contentDocument : that.get$iframe()[0].contentDocument });
             // this.injectLinkHandler(e.srcElement);
             // that.applyKeydownHandler($(view.iframe()));
             that.setPageSize();
@@ -49,14 +50,7 @@ EpubFixed.FixedPageView = Backbone.View.extend({
     setSinglePageSpreadStyle : function () {
 
         var transformCss;
-        this.$el.css({
-            "position" : "absolute",
-            "overflow" : "hidden",
-            "height" : "100%",
-            "width" : "50%",
-            "left" : "25%"
-        });
-
+        this.$el.css(this.styles.getSinglePageSpreadCSS());
         this.setPageSize();
     },
 
@@ -65,39 +59,15 @@ EpubFixed.FixedPageView = Backbone.View.extend({
         var pageSpread = this.pageSpread;
         var transformCss;
         if (pageSpread === "left") {
-            this.$el.css({ 
-                "position" : "absolute",
-                "overflow" : "hidden",
-                "height" : "100%",
-                "width" : "50%", 
-                "left" : "0%",
-                "background-color" : "#FFF"
-            });
+            this.$el.css(this.styles.getPageSpreadLeftCSS());
         }
         else if (pageSpread === "right") {
-            this.$el.css({ 
-                "position" : "absolute",
-                "overflow" : "hidden",
-                "height" : "100%",
-                "width" : "50%", 
-                "left" : "50%",
-                "background-color" : "#FFF" 
-            });
+            this.$el.css(this.styles.getPageSpreadRightCSS());
         }
         else if (pageSpread === "center") {
-            this.$el.css({
-                "position" : "absolute",
-                "overflow" : "hidden", 
-                "height" : "100%",
-                "width" : "100%",
-                "left" : "50%",
-                "z-index" : "11",
-                "background-color" : "#FFF" 
-            });
+            this.$el.css(this.styles.getPageSpreadCenterCSS());
         }
-        
         this.setPageSize();
-    // @include box-shadow(0 0 5px 5px rgba(80,80,80,0.5));
     },
 
     setPageSize : function () {

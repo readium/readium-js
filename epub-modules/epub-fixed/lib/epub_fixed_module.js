@@ -648,9 +648,62 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
         return css;
     }
 });
+    EpubFixed.FixedLayoutStyle = Backbone.Model.extend({
+
+    initialize : function () {},
+
+    getSinglePageSpreadCSS : function () {
+
+        // @include box-shadow(0 0 5px 5px rgba(80,80,80,0.5));
+        return {
+            "position" : "absolute",
+            "overflow" : "hidden",
+            "height" : "100%",
+            "width" : "50%",
+            "left" : "25%"
+        };
+    },
+
+    getPageSpreadLeftCSS : function () {
+
+        return { 
+                "position" : "absolute",
+                "overflow" : "hidden",
+                "height" : "100%",
+                "width" : "50%", 
+                "left" : "0%",
+                "background-color" : "#FFF"
+            };
+    },
+
+    getPageSpreadRightCSS : function () {
+
+        return { 
+                "position" : "absolute",
+                "overflow" : "hidden",
+                "height" : "100%",
+                "width" : "50%", 
+                "left" : "50%",
+                "background-color" : "#FFF" 
+            };
+    },
+
+    getPageSpreadCenterCSS : function () {
+
+        return {
+                "position" : "absolute",
+                "overflow" : "hidden", 
+                "height" : "100%",
+                "width" : "100%",
+                "left" : "50%",
+                "z-index" : "11",
+                "background-color" : "#FFF" 
+            };
+    }
+});
     EpubFixed.FixedPageView = Backbone.View.extend({
 
-    el : "<div class='fixed-page-wrapper' style='height:100%;'> \
+    el : "<div class='fixed-page-wrapper'> \
             <iframe scrolling='no' \
                     frameborder='0' \
                     marginwidth='0' \
@@ -662,7 +715,8 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
 
     initialize : function (options) {
 
-        this.sizing; 
+        this.sizing;
+        this.styles = new EpubFixed.FixedLayoutStyle();
         this.pageSpread = options.pageSpread;
         this.iframeSrc = options.iframeSrc;
         this.setSyntheticPageSpreadStyle();
@@ -674,7 +728,7 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
         this.get$iframe().attr("src", this.iframeSrc);
         this.get$iframe().on("load", function () {
 
-            that.sizing = new EpubFixed.FixedSizing({ contentDocument : $("iframe", that.el)[0].contentDocument });
+            that.sizing = new EpubFixed.FixedSizing({ contentDocument : that.get$iframe()[0].contentDocument });
             // this.injectLinkHandler(e.srcElement);
             // that.applyKeydownHandler($(view.iframe()));
             that.setPageSize();
@@ -699,14 +753,7 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
     setSinglePageSpreadStyle : function () {
 
         var transformCss;
-        this.$el.css({
-            "position" : "absolute",
-            "overflow" : "hidden",
-            "height" : "100%",
-            "width" : "50%",
-            "left" : "25%"
-        });
-
+        this.$el.css(this.styles.getSinglePageSpreadCSS());
         this.setPageSize();
     },
 
@@ -715,39 +762,15 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
         var pageSpread = this.pageSpread;
         var transformCss;
         if (pageSpread === "left") {
-            this.$el.css({ 
-                "position" : "absolute",
-                "overflow" : "hidden",
-                "height" : "100%",
-                "width" : "50%", 
-                "left" : "0%",
-                "background-color" : "#FFF"
-            });
+            this.$el.css(this.styles.getPageSpreadLeftCSS());
         }
         else if (pageSpread === "right") {
-            this.$el.css({ 
-                "position" : "absolute",
-                "overflow" : "hidden",
-                "height" : "100%",
-                "width" : "50%", 
-                "left" : "50%",
-                "background-color" : "#FFF" 
-            });
+            this.$el.css(this.styles.getPageSpreadRightCSS());
         }
         else if (pageSpread === "center") {
-            this.$el.css({
-                "position" : "absolute",
-                "overflow" : "hidden", 
-                "height" : "100%",
-                "width" : "100%",
-                "left" : "50%",
-                "z-index" : "11",
-                "background-color" : "#FFF" 
-            });
+            this.$el.css(this.styles.getPageSpreadCenterCSS());
         }
-        
         this.setPageSize();
-    // @include box-shadow(0 0 5px 5px rgba(80,80,80,0.5));
     },
 
     setPageSize : function () {
@@ -857,34 +880,22 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
             that.$el.css("opacity", "1");
         }, this);
 
-		// this.zoomer = options.zoomer; // Can probably just instantiate the delegate here
 		// this.mediaOverlayController = this.model.get("media_overlay_controller");
         // this.mediaOverlayController.setPages(this.pages);
         // this.mediaOverlayController.setView(this);
 
         // this.mediaOverlayController.on("change:mo_text_id", this.highlightText, this);
         // this.mediaOverlayController.on("change:active_mo", this.indicateMoIsPlaying, this);
-
-		// this.model.on("change:meta_size", this.setContainerSize, this);
 	},
 
 	render : function (goToLastPage, hashFragmentId) {
 
 		var that = this;
 		this.fixedPageViews.loadFixedPages(this.$el[0]);
-
-		// Not sure if this does anything
-		// $("body").addClass('apple-fixed-layout');
-
-		// Destroy all the current views and their listeners
-		
-		// Set the container size; the meta property has to be set 
-		// this.setContainerSize(); // Hmmmmm...
-
 		return this.el;
 	},
 
-    // REFACTORING CANDIDATE: Might want these methos to be the goLeft and goRight methods
+    // REFACTORING CANDIDATE: Might want these methods to be the goLeft and goRight methods
 	nextPage : function () {
 
 		this.fixedPageViews.nextPage(this.viewerSettings.syntheticLayout);
@@ -914,9 +925,6 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
 
     showPagesView : function () {
 
-        // Get the current pages, first page, last page 
-
-        // Show them
         this.$el.show();
     },
 
@@ -957,34 +965,11 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
 	//  "PRIVATE" HELPERS                                                                   //
 	// ------------------------------------------------------------------------------------ //
 
-	// sometimes these views hang around in memory before
-	// the GC's get them. we need to remove all of the handlers
-	// that were registered on the model
 	destruct : function () {
 
-		// this.model.off("change:font_size", this.setFontSize);
         // this.mediaOverlayController.off("change:mo_text_id", this.highlightText);
         // this.mediaOverlayController.off("change:active_mo", this.indicateMoIsPlaying);
 		// this.resetEl();
-	},
-
-	// Description: For each fixed-page-wrap(per), if it is one of the current pages, toggle it as visible. If it is not
-	//   toggle it as invisible.
-	// Note: current_page is an array containing the page numbers (as of 25June2012, a maximum of two pages) of the 
-	//   currently visible pages
-	showCurrentPages : function () {
-
-		var that = this;
-		// var moHelper = new Readium.Models.MediaOverlayViewHelper({epubController : this.model});
-
-		this.$(".fixed-page-wrap").each(function(index) {
-			$(this).toggle(that.pages.isPageVisible(index + 1));
-		});
-
-		// remove any artifact of MO highlighting from the current page(s)
-        // $.each(this.pages.get("current_page"), function(idx) {
-        //     moHelper.removeActiveClass(that.getPageBody(this.toString()));
-        // });
 	},
 
 	// setFontSize: function() {
