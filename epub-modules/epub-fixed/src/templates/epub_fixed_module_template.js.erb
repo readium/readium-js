@@ -5,6 +5,7 @@ var EpubFixedModule = function (spineObjects, viewerSettingsObject) {
     // Rationale: The order of these matters
     <%= fixed_page_number_logic %>
     <%= fixed_page_views %>
+    <%= fixed_sizing %>
     <%= fixed_page_view %>
     <%= image_page_view %>
     <%= fixed_pagination_view %> 
@@ -25,8 +26,8 @@ var EpubFixedModule = function (spineObjects, viewerSettingsObject) {
         // showPageByCFI : function (CFI) { reflowableView.showPageByCFI.call(reflowableView, CFI); }, 
         onFirstPage : function () { return fixedView.fixedPageViews.onFirstPage.call(fixedView.fixedPageViews); },
         onLastPage : function () { return fixedView.fixedPageViews.onLastPage.call(fixedView.fixedPageViews); },
-        // showPagesView : function () { return reflowableView.showView.call(reflowableView); },
-        // hidePagesView : function () { return reflowableView.hideView.call(reflowableView); },
+        showPagesView : function () { return fixedView.showPagesView.call(fixedView); },
+        hidePagesView : function () { return fixedView.hidePagesView.call(fixedView); },
         numberOfPages : function () { return fixedView.fixedPageViews.get("fixedPages").length; },
         currentPage : function () { return fixedView.fixedPageViews.get("currentPages"); },
         // setFontSize : function (fontSize) { return reflowableView.setFontSize.call(reflowableView, fontSize); },

@@ -75,17 +75,17 @@ EpubFixed.FixedPaginationView = Backbone.View.extend({
         this.fixedPageViews.showPageNumber(pageNumber, this.viewerSettings.syntheticLayout);
     },
 
-	// Hmm, hmm, maybe this method is redundant?? 
     showPagesView : function () {
 
         // Get the current pages, first page, last page 
 
         // Show them
+        this.$el.show();
     },
 
     hidePagesView : function () {
 
-    	// Hide all the pages in this view
+        this.$el.hide();
     },
     
  //    // override
