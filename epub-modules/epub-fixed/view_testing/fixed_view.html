@@ -19,7 +19,7 @@
 
                 var testCallbackForLoad = function () { 
                     console.log("The fixed epub was loaded - the event fired");
-                    window.fixedView.showPageByNumber([3,4]);
+                    window.fixedView.showPageByNumber(3);
                 };
 
                 window.fixedView.on("epubLoaded", testCallbackForLoad, this);

@@ -21,7 +21,7 @@ EpubFixed.FixedPageView = Backbone.View.extend({
         this.zoomer; // Gotta put a zoomer in here to figure some shit out
         this.pageSpread = options.pageSpread;
         this.iframeSrc = options.iframeSrc;
-        this.setSyntheticPageSpreadStyle(this.pageSpread);
+        this.setSyntheticPageSpreadStyle();
     },
 
     render : function () {
@@ -54,23 +54,35 @@ EpubFixed.FixedPageView = Backbone.View.extend({
 
     setSinglePageSpreadStyle : function () {
 
+        this.$el.css({
+            "position" : "absolute",
+            "overflow" : "hidden",
+            "height" : "100%",
+            "width" : "50%",
+            "left" : "25%"
+        });
+        this.updateMetaSize();
+        this.fitToScreen();
     },
 
-    setSyntheticPageSpreadStyle : function (pageSpread) {
+    setSyntheticPageSpreadStyle : function () {
 
+        var pageSpread = this.pageSpread;
         if (pageSpread === "left") {
             this.$el.css({ 
                 "position" : "absolute",
                 "overflow" : "hidden",
+                "height" : "100%",
                 "width" : "50%", 
                 "left" : "0%",
-                "background-color" : "#FFF" 
+                "background-color" : "#FFF"
             });
         }
         else if (pageSpread === "right") {
             this.$el.css({ 
                 "position" : "absolute",
                 "overflow" : "hidden",
+                "height" : "100%",
                 "width" : "50%", 
                 "left" : "50%",
                 "background-color" : "#FFF" 
@@ -80,10 +92,16 @@ EpubFixed.FixedPageView = Backbone.View.extend({
             this.$el.css({
                 "position" : "absolute",
                 "overflow" : "hidden", 
+                "height" : "100%",
+                "width" : "100%",
+                "left" : "50%",
                 "z-index" : "11",
                 "background-color" : "#FFF" 
             });
         }
+
+        this.updateMetaSize();
+        this.fitToScreen();
 
     // left: 25%;
     // @include box-shadow(0 0 5px 5px rgba(80,80,80,0.5));

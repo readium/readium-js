@@ -348,29 +348,23 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
     nextPage : function (twoUp) {
 
         var newPageNums;
-
-        // Validation
         if (this.onLastPage()) {
             return;
         }
 
         newPageNums = this.fixedPagination.getNextPageNumbers(this.get("currentPages"), twoUp, this.get("pageProgressionDirection"));
-        this.set("currentPages", newPageNums);
-        this.showPageNumbers(newPageNums);
+        this.resetCurrentPages(newPageNums);
     },
 
     previousPage : function (twoUp) {
 
         var newPageNums;
-
-        // Validation
         if (this.onFirstPage()) {
             return;
         }
 
         newPageNums = this.fixedPagination.getPreviousPageNumbers(this.get("currentPages"), twoUp, this.get("pageProgressionDirection"));
-        this.set("currentPages", newPageNums);
-        this.showPageNumbers(newPageNums);
+        this.resetCurrentPages(newPageNums);
     },
 
     onFirstPage : function () {
@@ -399,26 +393,32 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
         return false;
     },
 
-    showPageNumbers : function (pageNumbers) {
+    showPageNumber : function (pageNumber, syntheticLayout) {
 
         var pageIndexToShow;
         var fixedPageView;
+        var pageNumsToShow = this.fixedPagination.getPageNumbers(pageNumber, syntheticLayout, this.get("pageProgressionDirection"));
+        this.resetCurrentPages(pageNumsToShow);
+    },
 
-        // Show the first page
-        if (pageNumbers[0]) {
-            pageIndexToShow = pageNumbers[0] - 1;
-            fixedPageView = this.get("fixedPages")[pageIndexToShow].fixedPageView;
-            this.hidePageViews();
-            this.set("currentPages", pageNumbers); // At least one of the page numbers is valid
-            fixedPageView.showPage();
+    setSyntheticLayout : function (isSynthetic) {
+
+        var newPageNumbers;
+        if (isSynthetic) {
+
+            _.each(this.get("fixedPages"), function (fixedPageInfo) {
+                fixedPageInfo.fixedPageView.setSyntheticPageSpreadStyle();
+            });
+        }
+        else {
+
+            _.each(this.get("fixedPages"), function (fixedPageInfo) {
+                fixedPageInfo.fixedPageView.setSinglePageSpreadStyle();
+            });
         }
 
-        // Show the second page, if it is set 
-        if (pageNumbers[1]) {
-            pageIndexToShow = pageNumbers[1] - 1;
-            fixedPageView = this.get("fixedPages")[pageIndexToShow].fixedPageView; 
-            fixedPageView.showPage();
-        }
+        newPageNumbers = this.fixedPagination.getPageNumbersForTwoUp(this.get("currentPages"), undefined, this.get("pageProgressionDirection"));
+        this.resetCurrentPages(newPageNumbers);
     },
 
     // -------------------------------------------- PRIVATE HELPERS ---------------------------------
@@ -497,6 +497,26 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
         $(bindingElement).append(pageViewElement);
     },
 
+    resetCurrentPages : function (currentPages) {
+
+        this.set("currentPages", currentPages);
+        this.hidePageViews();
+
+        if (currentPages[0] !== undefined && currentPages[0] !== null) {
+            this.getPageViewInfo(currentPages[0]).fixedPageView.showPage();
+        }
+
+        if (currentPages[1] !== undefined && currentPages[1] !== null) {
+            this.getPageViewInfo(currentPages[1]).fixedPageView.showPage();
+        }
+    },
+
+    getPageViewInfo : function (pageNumber) {
+
+        var pageIndex = pageNumber - 1;
+        return this.get("fixedPages")[pageIndex];
+    },
+
     initializeImagePage : function (pageSpread, imageSrc) {
 
         return new EpubFixed.ImagePageView({
@@ -536,7 +556,7 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
         this.zoomer; // Gotta put a zoomer in here to figure some shit out
         this.pageSpread = options.pageSpread;
         this.iframeSrc = options.iframeSrc;
-        this.setSyntheticPageSpreadStyle(this.pageSpread);
+        this.setSyntheticPageSpreadStyle();
     },
 
     render : function () {
@@ -569,23 +589,35 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
 
     setSinglePageSpreadStyle : function () {
 
+        this.$el.css({
+            "position" : "absolute",
+            "overflow" : "hidden",
+            "height" : "100%",
+            "width" : "50%",
+            "left" : "25%"
+        });
+        this.updateMetaSize();
+        this.fitToScreen();
     },
 
-    setSyntheticPageSpreadStyle : function (pageSpread) {
+    setSyntheticPageSpreadStyle : function () {
 
+        var pageSpread = this.pageSpread;
         if (pageSpread === "left") {
             this.$el.css({ 
                 "position" : "absolute",
                 "overflow" : "hidden",
+                "height" : "100%",
                 "width" : "50%", 
                 "left" : "0%",
-                "background-color" : "#FFF" 
+                "background-color" : "#FFF"
             });
         }
         else if (pageSpread === "right") {
             this.$el.css({ 
                 "position" : "absolute",
                 "overflow" : "hidden",
+                "height" : "100%",
                 "width" : "50%", 
                 "left" : "50%",
                 "background-color" : "#FFF" 
@@ -595,10 +627,16 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
             this.$el.css({
                 "position" : "absolute",
                 "overflow" : "hidden", 
+                "height" : "100%",
+                "width" : "100%",
+                "left" : "50%",
                 "z-index" : "11",
                 "background-color" : "#FFF" 
             });
         }
+
+        this.updateMetaSize();
+        this.fitToScreen();
 
     // left: 25%;
     // @include box-shadow(0 0 5px 5px rgba(80,80,80,0.5));
@@ -762,20 +800,6 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
         return this.el;
     },
 
-    // setSize: function() {
-        
-    //     var $img = this.$("img");
-        
-    //     var width = $img.width();
-    //     var height = $img.height();
-
-    //     // NOTE: Not entirely sure what to do with this meta width thing
-    //     // temp this is a mess but it will do for now...
-    //     // if (width > 0) {
-    //     //     this.model.set({meta_width: width, meta_height: height})
-    //     // }
-    // },
-
     hidePage : function () {
         this.$el.hide();
     },
@@ -873,13 +897,30 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
     // REFACTORING CANDIDATE: Might want these methos to be the goLeft and goRight methods
 	nextPage : function () {
 
-		this.fixedPageViews.nextPage(this.viewerSettings.twoUp);
+		this.fixedPageViews.nextPage(this.viewerSettings.syntheticLayout);
 	},
 
 	previousPage : function () {
 
-		this.fixedPageViews.previousPage(this.viewerSettings.twoUp);
+		this.fixedPageViews.previousPage(this.viewerSettings.syntheticLayout);
 	},
+
+    setSyntheticLayout : function (isSynthetic) {
+
+        if (isSynthetic && this.viewerSettings.syntheticLayout === false) {
+            this.viewerSettings.syntheticLayout = true;
+            this.fixedPageViews.setSyntheticLayout(true);
+        }
+        else if (!isSynthetic && this.viewerSettings.syntheticLayout === true) {
+            this.viewerSettings.syntheticLayout = false;
+            this.fixedPageViews.setSyntheticLayout(false);
+        }
+    },
+
+    showPageNumber : function (pageNumber) {
+
+        this.fixedPageViews.showPageNumber(pageNumber, this.viewerSettings.syntheticLayout);
+    },
 
 	// Hmm, hmm, maybe this method is redundant?? 
     showPagesView : function () {
@@ -998,7 +1039,7 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
         nextPage : function () { return fixedView.nextPage.call(fixedView); },
         previousPage : function () { return fixedView.previousPage.call(fixedView); },
         // showPageByHashFragment : function (hashFragmentId) { return reflowableView.goToHashFragment.call(reflowableView, hashFragmentId); },
-        showPageByNumber : function (pageNumbers) { return fixedView.fixedPageViews.showPageNumbers.call(fixedView.fixedPageViews, pageNumbers); },
+        showPageByNumber : function (pageNumber) { return fixedView.showPageNumber.call(fixedView, pageNumber); },
         // showPageByCFI : function (CFI) { reflowableView.showPageByCFI.call(reflowableView, CFI); }, 
         onFirstPage : function () { return fixedView.fixedPageViews.onFirstPage.call(fixedView.fixedPageViews); },
         onLastPage : function () { return fixedView.fixedPageViews.onLastPage.call(fixedView.fixedPageViews); },
@@ -1009,7 +1050,7 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
         // setFontSize : function (fontSize) { return reflowableView.setFontSize.call(reflowableView, fontSize); },
         // setMargin : function (margin) { return reflowableView.setMargin.call(reflowableView, margin); },
         // setTheme : function (theme) { return reflowableView.setTheme.call(reflowableView, theme); },
-        // setSyntheticLayout : function (isSynthetic) { return reflowableView.setSyntheticLayout.call(reflowableView, isSynthetic); },
+        setSyntheticLayout : function (isSynthetic) { return fixedView.setSyntheticLayout.call(fixedView, isSynthetic); },
         on : function (eventName, callback, callbackContext) { return fixedView.on.call(fixedView, eventName, callback, callbackContext); },
         off : function (eventName, callback) { return fixedView.off.call(fixedView, eventName, callback); }//,
         // addSelectionHighlight : function (id) { return reflowableView.annotations.addSelectionHighlight.call(reflowableView.annotations, id); },

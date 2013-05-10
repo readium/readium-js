@@ -50,13 +50,30 @@ EpubFixed.FixedPaginationView = Backbone.View.extend({
     // REFACTORING CANDIDATE: Might want these methos to be the goLeft and goRight methods
 	nextPage : function () {
 
-		this.fixedPageViews.nextPage(this.viewerSettings.twoUp);
+		this.fixedPageViews.nextPage(this.viewerSettings.syntheticLayout);
 	},
 
 	previousPage : function () {
 
-		this.fixedPageViews.previousPage(this.viewerSettings.twoUp);
+		this.fixedPageViews.previousPage(this.viewerSettings.syntheticLayout);
 	},
+
+    setSyntheticLayout : function (isSynthetic) {
+
+        if (isSynthetic && this.viewerSettings.syntheticLayout === false) {
+            this.viewerSettings.syntheticLayout = true;
+            this.fixedPageViews.setSyntheticLayout(true);
+        }
+        else if (!isSynthetic && this.viewerSettings.syntheticLayout === true) {
+            this.viewerSettings.syntheticLayout = false;
+            this.fixedPageViews.setSyntheticLayout(false);
+        }
+    },
+
+    showPageNumber : function (pageNumber) {
+
+        this.fixedPageViews.showPageNumber(pageNumber, this.viewerSettings.syntheticLayout);
+    },
 
 	// Hmm, hmm, maybe this method is redundant?? 
     showPagesView : function () {

@@ -27,20 +27,6 @@ EpubFixed.ImagePageView = Backbone.View.extend({
         return this.el;
     },
 
-    // setSize: function() {
-        
-    //     var $img = this.$("img");
-        
-    //     var width = $img.width();
-    //     var height = $img.height();
-
-    //     // NOTE: Not entirely sure what to do with this meta width thing
-    //     // temp this is a mess but it will do for now...
-    //     // if (width > 0) {
-    //     //     this.model.set({meta_width: width, meta_height: height})
-    //     // }
-    // },
-
     hidePage : function () {
         this.$el.hide();
     },
