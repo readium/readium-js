@@ -157,7 +157,7 @@ var initializationTest = function (bookType) {
 
     var viewerSettings = {
         fontSize : 12,
-        syntheticLayout : true,
+        syntheticLayout : false,
         currentMargin : 3,
         tocVisible : false,
         currentTheme : "default"

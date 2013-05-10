@@ -31,7 +31,7 @@ EpubFixed.FixedPaginationView = Backbone.View.extend({
 	render : function (goToLastPage, hashFragmentId) {
 
 		var that = this;
-		this.fixedPageViews.loadFixedPages(this.$el[0]);
+		this.fixedPageViews.loadFixedPages(this.$el[0], this.viewerSettings);
 		return this.el;
 	},
 

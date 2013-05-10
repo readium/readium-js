@@ -19,9 +19,9 @@ EpubFixed.FixedPageViews = Backbone.Model.extend({
         this.set("pageProgressionDirection", this.get("spineObjects")[0].pageProgressionDirection);
     },
 
-    loadFixedPages : function (bindingElement) {
+    loadFixedPages : function (bindingElement, viewerSettings) {
 
-        this.loadPageViews();
+        this.loadPageViews(viewerSettings);
         this.renderAll(bindingElement);
     },
 
@@ -115,7 +115,7 @@ EpubFixed.FixedPageViews = Backbone.Model.extend({
         return this.get("fixedPages").length;
     },
 
-    loadPageViews : function (spineObjects) {
+    loadPageViews : function (viewerSettings) {
 
         var that = this;
         _.each(this.get("spineObjects"), function (spineObject) {
@@ -123,11 +123,11 @@ EpubFixed.FixedPageViews = Backbone.Model.extend({
             var fixedPageView;
             var fixedPageViewInfo;
             if (spineObject.fixedLayoutType === "image") {
-                fixedPageView = that.initializeImagePage(spineObject.pageSpread, spineObject.contentDocumentURI);
+                fixedPageView = that.initializeImagePage(spineObject.pageSpread, spineObject.contentDocumentURI, viewerSettings);
             }
             // SVG and all others
             else {
-                fixedPageView = that.initializeFixedPage(spineObject.pageSpread, spineObject.contentDocumentURI);
+                fixedPageView = that.initializeFixedPage(spineObject.pageSpread, spineObject.contentDocumentURI, viewerSettings);
             }
 
             // Create info object
@@ -197,19 +197,21 @@ EpubFixed.FixedPageViews = Backbone.Model.extend({
         return this.get("fixedPages")[pageIndex];
     },
 
-    initializeImagePage : function (pageSpread, imageSrc) {
+    initializeImagePage : function (pageSpread, imageSrc, viewerSettings) {
 
         return new EpubFixed.ImagePageView({
                         pageSpread : pageSpread,
-                        imageSrc : imageSrc
+                        imageSrc : imageSrc,
+                        viewerSettings : viewerSettings
                     });
     },
 
-    initializeFixedPage : function (pageSpread, iframeSrc) {
+    initializeFixedPage : function (pageSpread, iframeSrc, viewerSettings) {
 
         return new EpubFixed.FixedPageView({
                         pageSpread : pageSpread,
-                        iframeSrc : iframeSrc
+                        iframeSrc : iframeSrc,
+                        viewerSettings : viewerSettings
                     });
     }
 });

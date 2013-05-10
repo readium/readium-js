@@ -7,6 +7,8 @@ EpubFixed.FixedSizing = Backbone.Model.extend({
 
     initialize : function (attributes) {},
 
+    // ------------------ PUBLIC INTERFACE ---------------------------------
+
     updateMetaSize : function () {
 
         var $img;
@@ -45,6 +47,33 @@ EpubFixed.FixedSizing = Backbone.Model.extend({
         }
     },
 
+    fitToScreen : function (containerWidth, containerHeight) {
+
+        var bookSize = this.metaSize;
+        if (bookSize.width == 0) {
+            return;
+        }
+
+        var horScale = containerWidth / bookSize.width;
+        var verScale = containerHeight / bookSize.height;
+
+        var scale = Math.min(horScale, verScale);
+
+        var newWidth = bookSize.width * scale;
+        var newHeight = bookSize.height * scale;
+
+        var left = Math.floor((containerWidth - newWidth) / 2);
+        var top = Math.floor((containerHeight - newHeight) / 2);
+
+        var css = this.generateTransformCSS(left, top, scale);
+        css["width"] = bookSize.width;
+        css["height"] = bookSize.height;
+
+        return css;
+    },
+
+    // --------------------------- PRIVATE HELPERS -------------------------------------
+
     parseSize : function (content) {
 
         var pairs = content.replace(/\s/g, '').split(",");
@@ -79,31 +108,6 @@ EpubFixed.FixedSizing = Backbone.Model.extend({
         }
 
         return undefined;
-    },
-
-    fitToScreen : function (containerWidth, containerHeight) {
-
-        var bookSize = this.metaSize;
-        if (bookSize.width == 0) {
-            return;
-        }
-
-        var horScale = containerWidth / bookSize.width;
-        var verScale = containerHeight / bookSize.height;
-
-        var scale = Math.min(horScale, verScale);
-
-        var newWidth = bookSize.width * scale;
-        var newHeight = bookSize.height * scale;
-
-        var left = Math.floor((containerWidth - newWidth) / 2);
-        var top = Math.floor((containerHeight - newHeight) / 2);
-
-        var css = this.generateTransformCSS(left, top, scale);
-        css["width"] = bookSize.width;
-        css["height"] = bookSize.height;
-
-        return css;
     },
 
     // Have to modernizer this

@@ -339,9 +339,9 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
         this.set("pageProgressionDirection", this.get("spineObjects")[0].pageProgressionDirection);
     },
 
-    loadFixedPages : function (bindingElement) {
+    loadFixedPages : function (bindingElement, viewerSettings) {
 
-        this.loadPageViews();
+        this.loadPageViews(viewerSettings);
         this.renderAll(bindingElement);
     },
 
@@ -435,7 +435,7 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
         return this.get("fixedPages").length;
     },
 
-    loadPageViews : function (spineObjects) {
+    loadPageViews : function (viewerSettings) {
 
         var that = this;
         _.each(this.get("spineObjects"), function (spineObject) {
@@ -443,11 +443,11 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
             var fixedPageView;
             var fixedPageViewInfo;
             if (spineObject.fixedLayoutType === "image") {
-                fixedPageView = that.initializeImagePage(spineObject.pageSpread, spineObject.contentDocumentURI);
+                fixedPageView = that.initializeImagePage(spineObject.pageSpread, spineObject.contentDocumentURI, viewerSettings);
             }
             // SVG and all others
             else {
-                fixedPageView = that.initializeFixedPage(spineObject.pageSpread, spineObject.contentDocumentURI);
+                fixedPageView = that.initializeFixedPage(spineObject.pageSpread, spineObject.contentDocumentURI, viewerSettings);
             }
 
             // Create info object
@@ -517,19 +517,21 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
         return this.get("fixedPages")[pageIndex];
     },
 
-    initializeImagePage : function (pageSpread, imageSrc) {
+    initializeImagePage : function (pageSpread, imageSrc, viewerSettings) {
 
         return new EpubFixed.ImagePageView({
                         pageSpread : pageSpread,
-                        imageSrc : imageSrc
+                        imageSrc : imageSrc,
+                        viewerSettings : viewerSettings
                     });
     },
 
-    initializeFixedPage : function (pageSpread, iframeSrc) {
+    initializeFixedPage : function (pageSpread, iframeSrc, viewerSettings) {
 
         return new EpubFixed.FixedPageView({
                         pageSpread : pageSpread,
-                        iframeSrc : iframeSrc
+                        iframeSrc : iframeSrc,
+                        viewerSettings : viewerSettings
                     });
     }
 });
@@ -541,6 +543,8 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
     },
 
     initialize : function (attributes) {},
+
+    // ------------------ PUBLIC INTERFACE ---------------------------------
 
     updateMetaSize : function () {
 
@@ -580,6 +584,33 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
         }
     },
 
+    fitToScreen : function (containerWidth, containerHeight) {
+
+        var bookSize = this.metaSize;
+        if (bookSize.width == 0) {
+            return;
+        }
+
+        var horScale = containerWidth / bookSize.width;
+        var verScale = containerHeight / bookSize.height;
+
+        var scale = Math.min(horScale, verScale);
+
+        var newWidth = bookSize.width * scale;
+        var newHeight = bookSize.height * scale;
+
+        var left = Math.floor((containerWidth - newWidth) / 2);
+        var top = Math.floor((containerHeight - newHeight) / 2);
+
+        var css = this.generateTransformCSS(left, top, scale);
+        css["width"] = bookSize.width;
+        css["height"] = bookSize.height;
+
+        return css;
+    },
+
+    // --------------------------- PRIVATE HELPERS -------------------------------------
+
     parseSize : function (content) {
 
         var pairs = content.replace(/\s/g, '').split(",");
@@ -614,31 +645,6 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
         }
 
         return undefined;
-    },
-
-    fitToScreen : function (containerWidth, containerHeight) {
-
-        var bookSize = this.metaSize;
-        if (bookSize.width == 0) {
-            return;
-        }
-
-        var horScale = containerWidth / bookSize.width;
-        var verScale = containerHeight / bookSize.height;
-
-        var scale = Math.min(horScale, verScale);
-
-        var newWidth = bookSize.width * scale;
-        var newHeight = bookSize.height * scale;
-
-        var left = Math.floor((containerWidth - newWidth) / 2);
-        var top = Math.floor((containerHeight - newHeight) / 2);
-
-        var css = this.generateTransformCSS(left, top, scale);
-        css["width"] = bookSize.width;
-        css["height"] = bookSize.height;
-
-        return css;
     },
 
     // Have to modernizer this
@@ -725,7 +731,12 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
         this.styles = new EpubFixed.FixedLayoutStyle();
         this.pageSpread = options.pageSpread;
         this.iframeSrc = options.iframeSrc;
-        this.setSyntheticPageSpreadStyle();
+        if (options.viewerSettings.syntheticLayout) {
+            this.setSyntheticPageSpreadStyle();       
+        }
+        else {
+            this.setSinglePageSpreadStyle();
+        }
     },
 
     render : function () {
@@ -802,7 +813,12 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
         this.styles = new EpubFixed.FixedLayoutStyle();
         this.pageSpread = options.pageSpread;
         this.imageSrc = options.imageSrc;
-        this.setSyntheticPageSpreadStyle();
+        if (options.viewerSettings.syntheticLayout) {
+            this.setSyntheticPageSpreadStyle();       
+        }
+        else {
+            this.setSinglePageSpreadStyle();
+        }
     },
 
     render : function () {
@@ -897,7 +913,7 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
 	render : function (goToLastPage, hashFragmentId) {
 
 		var that = this;
-		this.fixedPageViews.loadFixedPages(this.$el[0]);
+		this.fixedPageViews.loadFixedPages(this.$el[0], this.viewerSettings);
 		return this.el;
 	},
 

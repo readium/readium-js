@@ -16,7 +16,12 @@ EpubFixed.FixedPageView = Backbone.View.extend({
         this.styles = new EpubFixed.FixedLayoutStyle();
         this.pageSpread = options.pageSpread;
         this.iframeSrc = options.iframeSrc;
-        this.setSyntheticPageSpreadStyle();
+        if (options.viewerSettings.syntheticLayout) {
+            this.setSyntheticPageSpreadStyle();       
+        }
+        else {
+            this.setSinglePageSpreadStyle();
+        }
     },
 
     render : function () {
