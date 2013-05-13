@@ -32,7 +32,7 @@ describe("EpubFixed.FixedPageViews", function () {
             var spineInfo = epub.getSpineInfo();
             var spineObjects = spineInfo.spine;
             pageViews = new EpubFixed.FixedPageViews({ spineObjects : spineObjects });
-            pageViews.loadPageViews();
+            pageViews.loadPageViews($("body"), { syntheticLayout : true });
         });
 
         describe("loadFixedPages()", function () {
@@ -139,7 +139,7 @@ describe("EpubFixed.FixedPageViews", function () {
                 spineObjects = getSpineObjects("FXL_package_document.xml");
                 pageViews = new EpubFixed.FixedPageViews({ spineObjects : spineObjects });
                 var numSpineObjects = spineObjects.length;
-                pageViews.loadPageViews();
+                pageViews.loadPageViews($("body"), { syntheticLayout : true });
 
                 expect(pageViews.get("fixedPages").length).toBe(numSpineObjects);
             });
@@ -151,7 +151,7 @@ describe("EpubFixed.FixedPageViews", function () {
                 spyOn(pageViews, "initializeImagePage");
                 spyOn(pageViews, "initializeFixedPage");
 
-                pageViews.loadPageViews();
+                pageViews.loadPageViews($("body"), { syntheticLayout : true });
 
                 expect(pageViews.initializeImagePage).toHaveBeenCalled();
                 expect(pageViews.initializeFixedPage).not.toHaveBeenCalled();
@@ -164,7 +164,7 @@ describe("EpubFixed.FixedPageViews", function () {
                 spyOn(pageViews, "initializeImagePage");
                 spyOn(pageViews, "initializeFixedPage");
 
-                pageViews.loadPageViews();
+                pageViews.loadPageViews($("body"), { syntheticLayout : true });
 
                 expect(pageViews.initializeImagePage).not.toHaveBeenCalled();
                 expect(pageViews.initializeFixedPage).toHaveBeenCalled();
@@ -180,7 +180,7 @@ describe("EpubFixed.FixedPageViews", function () {
                 pageViews = new EpubFixed.FixedPageViews({ spineObjects : spineObjects });
                 spyOn(pageViews, "addPageViewToDom");
 
-                pageViews.loadPageViews();
+                pageViews.loadPageViews($("body"), { syntheticLayout : true });
                 pageViews.renderAll(bindingElement);
 
                 expect(pageViews.addPageViewToDom).toHaveBeenCalled();

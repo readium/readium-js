@@ -24,20 +24,11 @@ describe("EpubFixed.FixedPageView", function () {
 
             fixedPage = new EpubFixed.FixedPageView({
                 pageSpreadClass : "left",
-                iframeSrc : "path/to/iframe"
+                iframeSrc : "path/to/iframe",
+                viewerSettings : { syntheticLayout : false }
             });
 
             expect(fixedPage).toBeDefined();
-        });
-
-        it("sets the page spread class", function () {
-
-            fixedPage = new EpubFixed.FixedPageView({
-                pageSpreadClass : "left",
-                iframeSrc : "path/to/iframe"
-            });
-
-            expect(fixedPage.$el.hasClass("left")).toBe(true);
         });
     });
 
@@ -62,7 +53,8 @@ describe("EpubFixed.FixedPageView", function () {
 
                 fixedPage = new EpubFixed.FixedPageView({
                     pageSpreadClass : "left",
-                    iframeSrc : "path/to/iframe"
+                    iframeSrc : "path/to/iframe",
+                    viewerSettings : { syntheticLayout : false }
                 });
                 fixedPage.render();
 
@@ -73,7 +65,8 @@ describe("EpubFixed.FixedPageView", function () {
 
                 fixedPage = new EpubFixed.FixedPageView({
                     pageSpreadClass : "left",
-                    iframeSrc : "spec/javascripts/fixtures/PageBlanche_Page_005.xhtml"
+                    iframeSrc : "spec/javascripts/fixtures/PageBlanche_Page_005.xhtml",
+                    viewerSettings : { syntheticLayout : false }
                 });
                 spyOn(fixedPage, "trigger");
 
