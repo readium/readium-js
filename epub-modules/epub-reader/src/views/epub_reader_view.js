@@ -109,7 +109,7 @@ EpubReader.EpubReaderView = Backbone.View.extend({
 
         var currentView = this.reader.getCurrentPagesView();
         currentView.setTheme(theme);
-        this.reader.get("viewerSettings").currentTheme = theme
+        this.reader.get("viewerSettings").currentTheme = theme;
     },
 
     setSyntheticLayout : function (isSynthetic) {
