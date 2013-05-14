@@ -391,6 +391,27 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         return foundPagesViewInfo;
     },
 
+    getPagesViewIndex : function (spineIndex) {
+
+        var foundPagesViewIndex;
+        _.find(this.get("loadedPagesViews"), function (currPagesViewInfo, index) {
+
+            var foundSpineIndex = _.find(currPagesViewInfo.spineIndexes, function (currSpineIndex) {
+                if (currSpineIndex === spineIndex) {
+                    return true;
+                }
+            });
+
+            // Only checking for null and undefined, as "foundSpineIndex" can be 0, which evaluates as falsy
+            if (foundSpineIndex !== undefined && foundSpineIndex !== null) {
+                foundPagesViewIndex = index;
+                return true;
+            }
+        });
+
+        return foundPagesViewIndex;
+    },
+
     applyPreferences : function (pagesView) {
 
         var preferences = this.get("viewerSettings");
@@ -437,8 +458,9 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
     //   abstraction will include more.
     showSpineItem : function (spineIndex) {
 
-        this.reader.renderPagesView(spineIndex, false, undefined);
-        this.reader.getCurrentPagesView().showPageByNumber(spineIndex + 1);
+        var pagesViewIndex = this.reader.getPagesViewIndex(spineIndex);
+        this.reader.renderPagesView(pagesViewIndex, false, undefined);
+        this.reader.getCurrentPagesView().showPageByNumber(1);
     },
 
     // Rationale: As with the CFI library API, it is up to calling code to ensure that the content document CFI component is
@@ -672,10 +694,10 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         getCurrentPage : function () { return epubReaderView.getCurrentPage.call(epubReaderView); },
         on : function (eventName, callback, callbackContext) { return epubReaderView.assignEventHandler.call(epubReaderView, eventName, callback, callbackContext); },
         off : function (eventName) { return epubReaderView.removeEventHandler.call(epubReaderView, eventName); }, 
-        addSelectionHighlight : function (id) { return epubReaderView.addSelectionHighlight.call(epubReaderView, id); },
-        addSelectionBookmark : function (id) { return epubReaderView.addSelectionBookmark.call(epubReaderView, id); },
-        addHighlight : function (CFI, id, callback, callbackContext) { return epubReaderView.addHighlight.call(epubReaderView, CFI, id, callback, callbackContext); },
-        addBookmark : function (CFI, id, callback, callbackContext) { return epubReaderView.addBookmark.call(epubReaderView, CFI, id, callback, callbackContext); },
+        // addSelectionHighlight : function (id) { return epubReaderView.addSelectionHighlight.call(epubReaderView, id); },
+        // addSelectionBookmark : function (id) { return epubReaderView.addSelectionBookmark.call(epubReaderView, id); },
+        // addHighlight : function (CFI, id, callback, callbackContext) { return epubReaderView.addHighlight.call(epubReaderView, CFI, id, callback, callbackContext); },
+        // addBookmark : function (CFI, id, callback, callbackContext) { return epubReaderView.addBookmark.call(epubReaderView, CFI, id, callback, callbackContext); },
         getViewerSettings : function () { return epubReaderView.getViewerSettings.call(epubReaderView); }
     };
 };
