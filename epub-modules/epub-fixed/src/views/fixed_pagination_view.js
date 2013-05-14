@@ -16,7 +16,7 @@ EpubFixed.FixedPaginationView = Backbone.View.extend({
 
 		// Rationale: Propagate the loaded event after all the content documents are loaded
         this.fixedPageViews.on("epubLoaded", function () {
-            that.trigger("epubLoaded");
+            that.trigger("contentDocumentLoaded");
             that.$el.css("opacity", "1");
         }, this);
 
@@ -65,12 +65,15 @@ EpubFixed.FixedPaginationView = Backbone.View.extend({
 
     showPagesView : function () {
 
+        var currentPageNumber = this.fixedPageViews.get("currentPages")[0];
         this.$el.show();
+        this.fixedPageViews.showPageNumber(currentPageNumber, this.viewerSettings.syntheticLayout);
     },
 
     hidePagesView : function () {
 
         this.$el.hide();
+        this.fixedPageViews.hidePageViews();
     },
     
  //    // override

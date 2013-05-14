@@ -324,7 +324,7 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
 
         return {
             "fixedPages" : [],
-            "currentPages" : [],
+            "currentPages" : [1],
         }
     },
 
@@ -340,6 +340,11 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
     },
 
     loadFixedPages : function (bindingElement, viewerSettings) {
+
+        // Reset the default for a synthetic layout
+        if (viewerSettings.syntheticLayout) {
+            this.set("currentPages", [1, 2]);
+        }
 
         this.loadPageViews(viewerSettings);
         this.renderAll(bindingElement);
@@ -417,6 +422,7 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
             });
         }
 
+        // Rationale: This method toggles the page numbers
         newPageNumbers = this.fixedPagination.getPageNumbersForTwoUp(this.get("currentPages"), undefined, this.get("pageProgressionDirection"));
         this.resetCurrentPages(newPageNumbers);
     },
@@ -898,7 +904,7 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
 
 		// Rationale: Propagate the loaded event after all the content documents are loaded
         this.fixedPageViews.on("epubLoaded", function () {
-            that.trigger("epubLoaded");
+            that.trigger("contentDocumentLoaded");
             that.$el.css("opacity", "1");
         }, this);
 
@@ -947,12 +953,15 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
 
     showPagesView : function () {
 
+        var currentPageNumber = this.fixedPageViews.get("currentPages")[0];
         this.$el.show();
+        this.fixedPageViews.showPageNumber(currentPageNumber, this.viewerSettings.syntheticLayout);
     },
 
     hidePagesView : function () {
 
         this.$el.hide();
+        this.fixedPageViews.hidePageViews();
     },
     
  //    // override
@@ -1035,18 +1044,18 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
         render : function (goToLastPage, hashFragmentId) { return fixedView.render.call(fixedView, goToLastPage, hashFragmentId); },
         nextPage : function () { return fixedView.nextPage.call(fixedView); },
         previousPage : function () { return fixedView.previousPage.call(fixedView); },
-        // showPageByHashFragment : function (hashFragmentId) { return reflowableView.goToHashFragment.call(reflowableView, hashFragmentId); },
+        showPageByHashFragment : function (hashFragmentId) { return; },
         showPageByNumber : function (pageNumber) { return fixedView.showPageNumber.call(fixedView, pageNumber); },
-        // showPageByCFI : function (CFI) { reflowableView.showPageByCFI.call(reflowableView, CFI); }, 
+        showPageByCFI : function (CFI) { return; }, 
         onFirstPage : function () { return fixedView.fixedPageViews.onFirstPage.call(fixedView.fixedPageViews); },
         onLastPage : function () { return fixedView.fixedPageViews.onLastPage.call(fixedView.fixedPageViews); },
         showPagesView : function () { return fixedView.showPagesView.call(fixedView); },
         hidePagesView : function () { return fixedView.hidePagesView.call(fixedView); },
         numberOfPages : function () { return fixedView.fixedPageViews.get("fixedPages").length; },
         currentPage : function () { return fixedView.fixedPageViews.get("currentPages"); },
-        // setFontSize : function (fontSize) { return reflowableView.setFontSize.call(reflowableView, fontSize); },
-        // setMargin : function (margin) { return reflowableView.setMargin.call(reflowableView, margin); },
-        // setTheme : function (theme) { return reflowableView.setTheme.call(reflowableView, theme); },
+        setFontSize : function (fontSize) { return; },
+        setMargin : function (margin) { return; },
+        setTheme : function (theme) { return; },
         setSyntheticLayout : function (isSynthetic) { return fixedView.setSyntheticLayout.call(fixedView, isSynthetic); },
         on : function (eventName, callback, callbackContext) { return fixedView.on.call(fixedView, eventName, callback, callbackContext); },
         off : function (eventName, callback) { return fixedView.off.call(fixedView, eventName, callback); }//,
