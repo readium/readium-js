@@ -35,8 +35,9 @@ EpubReader.EpubReaderView = Backbone.View.extend({
     //   abstraction will include more.
     showSpineItem : function (spineIndex) {
 
-        this.reader.renderPagesView(spineIndex, false, undefined);
-        this.reader.getCurrentPagesView().showPageByNumber(spineIndex + 1);
+        var pagesViewIndex = this.reader.getPagesViewIndex(spineIndex);
+        this.reader.renderPagesView(pagesViewIndex, false, undefined);
+        this.reader.getCurrentPagesView().showPageByNumber(1);
     },
 
     // Rationale: As with the CFI library API, it is up to calling code to ensure that the content document CFI component is

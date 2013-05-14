@@ -44,10 +44,7 @@ describe("EpubReader.EpubReaderView", function () {
 
         describe("showSpineItem()", function () {
 
-            it("shows the spine item", function () {
-
-                this.readerViewer.showSpineItem(1);
-            });
+            it("shows the spine item", function () {});
         });
 
         describe("showPageByCFI()", function () {

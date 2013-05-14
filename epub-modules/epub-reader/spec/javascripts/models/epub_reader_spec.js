@@ -123,24 +123,43 @@ describe("EpubReader.EpubReader", function () {
     });
 
     describe("private helpers", function () {
-        
-        beforeEach(function () {
 
-            var spineInfo = JSON.parse(jasmine.getFixtures().read("spine_info.json"));
-            var viewerSettings = JSON.parse(jasmine.getFixtures().read("viewer_settings.json"));
+        var getSpineInfo = function (fixtureFilename) {
+            var packageDocumentXML = jasmine.getFixtures().read(fixtureFilename);
+            var epubParser = new EpubParserModule("readium-test/epub-content", packageDocumentXML);
+            var packageDocumentObject = epubParser.parse();
+            var epub = new EpubModule(packageDocumentObject, packageDocumentXML);
+            var spineInfo = epub.getSpineInfo();
+            return spineInfo;
+        };
 
-            this.reader = new EpubReader.EpubReader({ 
-                spineInfo : spineInfo, 
-                viewerSettings : viewerSettings 
+        var reader;
+        describe("getPagesViewIndex()", function () {
+
+            beforeEach(function () {
+                var viewerSettingsMock = { syntheticLayout : false };
+                var spineInfo = getSpineInfo("mixed_pack_doc_2.xml");
+
+                reader = new EpubReader.EpubReader({ 
+                    spineInfo : spineInfo, 
+                    viewerSettings : viewerSettingsMock 
+                });
             });
-        });
 
-        describe("getPagesView()", function () {
+            it("finds the pages view index for a reflowable spine content document", function () {
 
-            it("gets a pages view by spine index", function () {
+                reader.loadSpineItems();
+                var pagesViewIndex = reader.getPagesViewIndex(1);
 
-                this.reader.loadSpineItems();
-                var pagesViewInfo = this.reader.getPagesViewInfo(1);
+                expect(pagesViewIndex).toBe(1);
+            });
+
+            it("finds the pages view index for a set of fixed spine content documents", function () {
+
+                reader.loadSpineItems();
+                var pagesViewIndex = reader.getPagesViewIndex(4);
+
+                expect(pagesViewIndex).toBe(2);
             });
         });
     });

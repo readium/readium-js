@@ -277,6 +277,27 @@ EpubReader.EpubReader = Backbone.Model.extend({
         return foundPagesViewInfo;
     },
 
+    getPagesViewIndex : function (spineIndex) {
+
+        var foundPagesViewIndex;
+        _.find(this.get("loadedPagesViews"), function (currPagesViewInfo, index) {
+
+            var foundSpineIndex = _.find(currPagesViewInfo.spineIndexes, function (currSpineIndex) {
+                if (currSpineIndex === spineIndex) {
+                    return true;
+                }
+            });
+
+            // Only checking for null and undefined, as "foundSpineIndex" can be 0, which evaluates as falsy
+            if (foundSpineIndex !== undefined && foundSpineIndex !== null) {
+                foundPagesViewIndex = index;
+                return true;
+            }
+        });
+
+        return foundPagesViewIndex;
+    },
+
     applyPreferences : function (pagesView) {
 
         var preferences = this.get("viewerSettings");
