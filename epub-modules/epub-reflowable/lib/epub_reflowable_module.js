@@ -1443,56 +1443,6 @@ EpubReflowable.ReflowablePagination = Backbone.Model.extend({
         // }   
     },
 
-    // REFACTORING CANDIDATE: This needs to be investigated, but I bet if the prevPage and nextPage methods were 
-    //   called directly (goRight and goLeft were removed), the new page number display logic would account for the 
-    //   page progression direction and that all this logic could be simplified in both this model and the 
-    //   PageNumberDisplayLogic model
-    // 
-    // Description: turn pages in the rightward direction
-    //   ie progression direction is dependent on 
-    //   page progression dir
-    goRight: function (twoUp, pageProgressionDirection) {
-        if (pageProgressionDirection === "rtl") {
-            this.prevPage(twoUp);
-        }
-        else {
-            this.nextPage(twoUp);
-        }
-    },
-
-    // Description: Turn pages in the leftward direction
-    //   ie progression direction is dependent on 
-    //   page progression dir
-    goLeft: function (twoUp, pageProgressionDirection) {
-        if (pageProgressionDirection === "rtl") {
-            this.nextPage(twoUp);
-        }
-        else {
-            this.prevPage(twoUp);
-        }
-    },
-
-    goToPage: function(gotoPageNumber, twoUp, firstPageIsOffset) {
-
-        var pagesToGoto = this.pageNumberDisplayLogic.getGotoPageNumsToDisplay(
-                            gotoPageNumber,
-                            twoUp,
-                            firstPageIsOffset
-                            );
-        this.set("current_page", pagesToGoto);
-    },
-
-    // Description: Return true if the pageNum argument is a currently visible 
-    //   page. Return false if it is not; which will occur if it cannot be found in 
-    //   the array.
-    isPageVisible: function(pageNum) {
-        return this.get("current_page").indexOf(pageNum) !== -1;
-    },
-
-    // ------------------------------------------------------------------------------------ //  
-    //  "PRIVATE" HELPERS                                                                   //
-    // ------------------------------------------------------------------------------------ //
-
     // REFACTORING CANDIDATE: prevPage and nextPage are public but not sure it should be; it's called from the navwidget and viewer.js.
     //   Additionally the logic in this method, as well as that in nextPage(), could be refactored to more clearly represent that 
     //   multiple different cases involved in switching pages.
@@ -1534,6 +1484,27 @@ EpubReflowable.ReflowablePagination = Backbone.Model.extend({
             this.set("current_page", pagesToDisplay);
         }
     },
+
+    goToPage: function(gotoPageNumber, twoUp, firstPageIsOffset) {
+
+        var pagesToGoto = this.pageNumberDisplayLogic.getGotoPageNumsToDisplay(
+                            gotoPageNumber,
+                            twoUp,
+                            firstPageIsOffset
+                            );
+        this.set("current_page", pagesToGoto);
+    },
+
+    // Description: Return true if the pageNum argument is a currently visible 
+    //   page. Return false if it is not; which will occur if it cannot be found in 
+    //   the array.
+    isPageVisible: function(pageNum) {
+        return this.get("current_page").indexOf(pageNum) !== -1;
+    },
+
+    // ------------------------------------------------------------------------------------ //  
+    //  "PRIVATE" HELPERS                                                                   //
+    // ------------------------------------------------------------------------------------ //
 
     // REFACTORING CANDIDATE: This method seems to correct the page position if the current page number 
     //   exceeds the number of pages, which should not happen. 
@@ -2172,18 +2143,16 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         }
     },
 
-    goLeft : function () {
+    nextPage : function () {
 
         var isSynthetic = this.viewerModel.get("syntheticLayout");
-        var pageProgDir = this.spineItemModel.get("pageProgressionDirection");
-        this.pages.goLeft(isSynthetic, pageProgDir);
+        this.pages.nextPage(isSynthetic);
     },
 
-    goRight : function () {
+    previousPage : function () {
 
         var isSynthetic = this.viewerModel.get("syntheticLayout");
-        var pageProgDir = this.spineItemModel.get("pageProgressionDirection");
-        this.pages.goRight(isSynthetic, pageProgDir);
+        this.pages.prevPage(isSynthetic);
     },
 
 	// ------------------------------------------------------------------------------------ //
@@ -2349,8 +2318,8 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
     return {
 
         render : function (goToLastPage, hashFragmentId) { return reflowableView.render.call(reflowableView, goToLastPage, hashFragmentId); },
-        nextPage : function () { return reflowableView.goRight.call(reflowableView); },
-        previousPage : function () { return reflowableView.goLeft.call(reflowableView); },
+        nextPage : function () { return reflowableView.nextPage.call(reflowableView); },
+        previousPage : function () { return reflowableView.previousPage.call(reflowableView); },
         showPageByHashFragment : function (hashFragmentId) { return reflowableView.goToHashFragment.call(reflowableView, hashFragmentId); },
         showPageByNumber : function (pageNumber) { return reflowableView.showPage.call(reflowableView, pageNumber); },
         showPageByCFI : function (CFI) { reflowableView.showPageByCFI.call(reflowableView, CFI); }, 
