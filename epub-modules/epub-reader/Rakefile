@@ -23,6 +23,7 @@ end
 def render_epub_reader_module_template(templatePath, outputPath)
 
     # Read each of the library components
+    load_strategy = File.read('src/models/load_strategy.js')
     epub_reader = File.read('src/models/epub_reader.js')
     epub_reader_view = File.read('src/views/epub_reader_view.js')
 

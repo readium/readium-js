@@ -135,17 +135,6 @@ describe("EpubReader.EpubReader", function () {
             });
         });
 
-        describe("loadReflowableSpineItem()", function () {
-
-            it("loads a pages view", function () {
-
-                var spineInfo = JSON.parse(jasmine.getFixtures().read("spine_info.json"));
-                this.reader.loadReflowableSpineItem(spineInfo.spine[0]);
-                var firstPagesView = this.reader.get("loadedPagesViews")[0];
-                expect(firstPagesView).toBeDefined();
-            });
-        });
-
         describe("getPagesView()", function () {
 
             it("gets a pages view by spine index", function () {

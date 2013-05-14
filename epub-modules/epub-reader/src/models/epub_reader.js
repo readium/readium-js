@@ -15,6 +15,7 @@ EpubReader.EpubReader = Backbone.Model.extend({
         this.set("bindings", spineInfo.bindings);
         this.set("annotations", spineInfo.annotations);
 
+        this.loadStrategy = new EpubReader.LoadStrategy({ spineInfo : this.get("spine")});
         this.cfi = new EpubCFIModule();
     },
 
@@ -188,7 +189,8 @@ EpubReader.EpubReader = Backbone.Model.extend({
     //   spine items, and sections of the spine. 
     loadSpineItems : function () {
 
-        this.loadStrategy.loadSpineItems();
+        var pagesViews = this.loadStrategy.loadSpineItems(this.get("viewerSettings"), this.get("annotations"), this.get("bindings"));
+        this.set("loadedPagesViews", pagesViews);
         // Attach list of event handlers
         // _.each(this.get("pagesViewEventList"), function (eventInfo) {
         //     view.on(eventInfo.eventName, eventInfo.callback, eventInfo.callbackContext);

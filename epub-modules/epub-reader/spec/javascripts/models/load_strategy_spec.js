@@ -153,5 +153,20 @@ describe("EpubReader.LoadStrategy", function () {
 
     describe("private helpers", function () {
 
+        describe("loadReflowableSpineItem()", function () {
+
+            it("loads a pages view", function () {
+
+                var viewerSettingsMock = { syntheticLayout : false };
+                var spineObjects = getSpineObjects("mixed_pack_doc_2.xml");
+
+                var loader = new EpubReader.LoadStrategy({ 
+                    spineInfo : spineObjects
+                });
+
+                var pagesViewInfo = loader.loadReflowablePagesView(spineObjects[0], viewerSettingsMock);
+                expect(pagesViewInfo).toBeDefined();
+            });
+        });
     });
 });

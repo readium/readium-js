@@ -3,6 +3,115 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
     var EpubReader = {};
 
     // Rationale: The order of these matters
+    EpubReader.LoadStrategy = Backbone.Model.extend({
+
+    defaults : {
+        "numFixedPagesPerView" : 100
+    },
+
+    initialize : function (attributes, options) {},
+
+    // Description: This method chooses the appropriate page view to load for individual 
+    //   spine items, and sections of the spine. 
+    loadSpineItems : function (viewerSettings, annotations, bindings) {
+
+        var spineIndex;
+        var currSpineItem;
+        var currFixedSpineItems = [];
+        var nextSpineItem;
+        var pagesViews = [];
+        var currPageView;
+        var nextSpineItem;
+        for (spineIndex = 0; spineIndex <= this.get("spineInfo").length - 1; spineIndex++) {
+
+            currSpineItem = this.get("spineInfo")[spineIndex];
+
+            // A fixed layout spine item
+            if (currSpineItem.isFixedLayout) {
+
+                currFixedSpineItems.push(currSpineItem);
+
+                // Check how many fixed pages have been added for the next view
+                if (currFixedSpineItems.length === this.get("numFixedPagesPerView")) {
+
+                    currPageView = this.loadFixedPagesView(currFixedSpineItems, viewerSettings);
+                    pagesViews.push(currPageView);
+                    currFixedSpineItems = [];
+                    continue;
+                }
+
+                nextSpineItem = this.get("spineInfo")[spineIndex + 1];
+                if (nextSpineItem) {
+
+                    if (!nextSpineItem.isFixedLayout) {
+
+                        currPageView = this.loadFixedPagesView(currFixedSpineItems, viewerSettings);
+                        pagesViews.push(currPageView);
+                        currFixedSpineItems = [];
+                    }
+                }
+                else {
+                    currPageView = this.loadFixedPagesView(currFixedSpineItems, viewerSettings);
+                    pagesViews.push(currPageView);
+                    currFixedSpineItems = [];
+                }
+            }
+            // A scrolling spine item 
+            else if (currSpineItem.shouldScroll) {
+
+                // Load the scrolling pages view
+            }
+            // A reflowable spine item
+            else {
+                currPageView = this.loadReflowablePagesView(currSpineItem, viewerSettings, annotations, bindings);
+                pagesViews.push(currPageView);
+            }
+        }
+
+        return pagesViews;
+    },
+
+    loadReflowablePagesView : function (spineItem, viewerSettings, annotations, bindings) {
+
+        var view = new EpubReflowableModule(
+            spineItem,
+            viewerSettings, 
+            annotations, 
+            bindings
+            );
+
+        var pagesViewInfo = {
+            pagesView : view, 
+            spineIndexes : [spineItem.spineIndex],
+            isRendered : false,
+            type : "reflowable"
+        };
+
+        return pagesViewInfo;
+    },
+
+    loadFixedPagesView : function (spineItemList, viewerSettings) {
+
+        var view = new EpubFixedModule(
+            spineItemList,
+            viewerSettings
+        );
+
+        var spineIndexes = [];
+        _.each(spineItemList, function (spineItem) {
+            spineIndexes.push(spineItem.spineIndex)
+        });
+
+        var pagesViewInfo = {
+            pagesView : view, 
+            spineIndexes : spineIndexes,
+            isRendered : false,
+            type : "fixed"
+        };
+
+        return pagesViewInfo;
+    }
+});
     EpubReader.EpubReader = Backbone.Model.extend({
 
     defaults : function () { 
@@ -20,6 +129,7 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         this.set("bindings", spineInfo.bindings);
         this.set("annotations", spineInfo.annotations);
 
+        this.loadStrategy = new EpubReader.LoadStrategy({ spineInfo : this.get("spine")});
         this.cfi = new EpubCFIModule();
     },
 
@@ -158,94 +268,7 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
     //  "PRIVATE" HELPERS                                                                   //
     // ------------------------------------------------------------------------------------ //
 
-    // spinePositionIsRendered()
-    // renderSpinePosition()
-
-    // Description: This method chooses the appropriate page view to load for individual 
-    //   spine items, and sections of the spine. 
-    loadSpineItems : function () {
-
-        var spineIndex;
-        var currSpineItem; 
-        var FXLStartIndex;
-        var FXLEndIndex;
-        for (spineIndex = 0; spineIndex <= this.get("spine").length - 1; spineIndex++) {
-
-            currSpineItem = this.get("spine")[spineIndex];
-
-            // A fixed layout epub
-            if (currSpineItem.isFixedLayout) {
-
-                FXLStartIndex = spineIndex;
-
-                // Another loop to find the start and end index of the current FXL part of the spine
-                spineIndex++;
-                for (spineIndex; spineIndex <= this.get("spine").length - 1; spineIndex++) {
-
-                    currSpineItem = this.get("spine")[spineIndex];
-                    if (currSpineItem.isFixedLayout) {
-                        FXLEndIndex = spineIndex;
-                    }
-                    else {
-                        break;
-                    }
-                }
-            }
-            // A scrolling epub
-            else if (currSpineItem.shouldScroll) {
-
-                // Load the scrolling pages view
-            }
-            // A reflowable epub
-            else {
-                this.loadReflowableSpineItem(currSpineItem, this.get("viewerSettings"), undefined, this.get("bindings"));
-            }
-        }
-
-        // Rendering strategy options could be implemented here
-        this.renderAllStrategy();
-    },
-
-    loadReflowableSpineItem : function (spineItem) {
-
-        var view = new EpubReflowableModule(
-            spineItem, 
-            this.get("viewerSettings"), 
-            this.get("annotations"), 
-            this.get("bindings")
-            );
-
-        // Attach list of event handlers
-        _.each(this.get("pagesViewEventList"), function (eventInfo) {
-            view.on(eventInfo.eventName, eventInfo.callback, eventInfo.callbackContext);
-        });
-
-        var pagesViewInfo = {
-            pagesView : view, 
-            spineIndexes : [spineItem.spineIndex],
-            isRendered : false
-        };
-
-        // Add the pages view to the end of the array
-        this.get("loadedPagesViews").push(pagesViewInfo);
-    },
-
-    getCurrentPagesViewInfo : function () {
-
-        return this.get("loadedPagesViews")[this.get("currentPagesViewIndex")];
-    },
-
-    hideRenderedViews : function () {
-
-        _.each(this.get("loadedPagesViews"), function (pagesViewInfo) {
-
-            if (pagesViewInfo.isRendered) {
-                pagesViewInfo.pagesView.hidePagesView();
-            }
-        });
-    },
-
-    renderAllStrategy : function () {
+    eagerRenderStrategy : function () {
 
         var that = this;
         var numPagesViewsToLoad = this.get("loadedPagesViews").length;
@@ -274,6 +297,34 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
             }
 
         }, 1000);
+    },
+
+    // Description: This method chooses the appropriate page view to load for individual 
+    //   spine items, and sections of the spine. 
+    loadSpineItems : function () {
+
+        var pagesViews = this.loadStrategy.loadSpineItems(this.get("viewerSettings"), this.get("annotations"), this.get("bindings"));
+        this.set("loadedPagesViews", pagesViews);
+        // Attach list of event handlers
+        // _.each(this.get("pagesViewEventList"), function (eventInfo) {
+        //     view.on(eventInfo.eventName, eventInfo.callback, eventInfo.callbackContext);
+        // });
+        this.eagerRenderStrategy();
+    },
+
+    getCurrentPagesViewInfo : function () {
+
+        return this.get("loadedPagesViews")[this.get("currentPagesViewIndex")];
+    },
+
+    hideRenderedViews : function () {
+
+        _.each(this.get("loadedPagesViews"), function (pagesViewInfo) {
+
+            if (pagesViewInfo.isRendered) {
+                pagesViewInfo.pagesView.hidePagesView();
+            }
+        });
     },
 
     // REFACTORING CANDIDATE: The each method is causing numPages and currentPage to be hoisted into the global
@@ -379,7 +430,7 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         return this.el;
     },
 
-    // ---- Public interface ------------------------------------------------------------------------
+    // ------------------------ Public interface ------------------------------------------------------------------------
 
     // REFACTORING CANDIDATE: This will only work for reflowable page views; there is currently not a mapping between
     //   spine items and the page views in which they are rendered, for FXL epubs. When support for FXL is included, this 
@@ -387,6 +438,7 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
     showSpineItem : function (spineIndex) {
 
         this.reader.renderPagesView(spineIndex, false, undefined);
+        this.reader.getCurrentPagesView().showPageByNumber(spineIndex + 1);
     },
 
     // Rationale: As with the CFI library API, it is up to calling code to ensure that the content document CFI component is
@@ -397,14 +449,14 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         var contentDocHref;
         var spineIndex;
         var pagesView;
-        try {   
+        try {
             
             contentDocHref = this.cfi.getContentDocHref(CFI, this.packageDocumentDOM);
             spineIndex = this.reader.findSpineIndex(contentDocHref);
             this.showSpineItem(spineIndex);
             pagesView = this.reader.getCurrentPagesView();
             pagesView.showPageByCFI(CFI);
-        } 
+        }
         catch (error) {
             throw error; 
         }
@@ -460,7 +512,7 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
 
         var currentView = this.reader.getCurrentPagesView();
         currentView.setTheme(theme);
-        this.reader.get("viewerSettings").currentTheme = theme
+        this.reader.get("viewerSettings").currentTheme = theme;
     },
 
     setSyntheticLayout : function (isSynthetic) {
