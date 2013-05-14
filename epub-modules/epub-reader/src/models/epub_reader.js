@@ -153,94 +153,7 @@ EpubReader.EpubReader = Backbone.Model.extend({
     //  "PRIVATE" HELPERS                                                                   //
     // ------------------------------------------------------------------------------------ //
 
-    // spinePositionIsRendered()
-    // renderSpinePosition()
-
-    // Description: This method chooses the appropriate page view to load for individual 
-    //   spine items, and sections of the spine. 
-    loadSpineItems : function () {
-
-        var spineIndex;
-        var currSpineItem; 
-        var FXLStartIndex;
-        var FXLEndIndex;
-        for (spineIndex = 0; spineIndex <= this.get("spine").length - 1; spineIndex++) {
-
-            currSpineItem = this.get("spine")[spineIndex];
-
-            // A fixed layout epub
-            if (currSpineItem.isFixedLayout) {
-
-                FXLStartIndex = spineIndex;
-
-                // Another loop to find the start and end index of the current FXL part of the spine
-                spineIndex++;
-                for (spineIndex; spineIndex <= this.get("spine").length - 1; spineIndex++) {
-
-                    currSpineItem = this.get("spine")[spineIndex];
-                    if (currSpineItem.isFixedLayout) {
-                        FXLEndIndex = spineIndex;
-                    }
-                    else {
-                        break;
-                    }
-                }
-            }
-            // A scrolling epub
-            else if (currSpineItem.shouldScroll) {
-
-                // Load the scrolling pages view
-            }
-            // A reflowable epub
-            else {
-                this.loadReflowableSpineItem(currSpineItem, this.get("viewerSettings"), undefined, this.get("bindings"));
-            }
-        }
-
-        // Rendering strategy options could be implemented here
-        this.renderAllStrategy();
-    },
-
-    loadReflowableSpineItem : function (spineItem) {
-
-        var view = new EpubReflowableModule(
-            spineItem, 
-            this.get("viewerSettings"), 
-            this.get("annotations"), 
-            this.get("bindings")
-            );
-
-        // Attach list of event handlers
-        _.each(this.get("pagesViewEventList"), function (eventInfo) {
-            view.on(eventInfo.eventName, eventInfo.callback, eventInfo.callbackContext);
-        });
-
-        var pagesViewInfo = {
-            pagesView : view, 
-            spineIndexes : [spineItem.spineIndex],
-            isRendered : false
-        };
-
-        // Add the pages view to the end of the array
-        this.get("loadedPagesViews").push(pagesViewInfo);
-    },
-
-    getCurrentPagesViewInfo : function () {
-
-        return this.get("loadedPagesViews")[this.get("currentPagesViewIndex")];
-    },
-
-    hideRenderedViews : function () {
-
-        _.each(this.get("loadedPagesViews"), function (pagesViewInfo) {
-
-            if (pagesViewInfo.isRendered) {
-                pagesViewInfo.pagesView.hidePagesView();
-            }
-        });
-    },
-
-    renderAllStrategy : function () {
+    eagerRenderStrategy : function () {
 
         var that = this;
         var numPagesViewsToLoad = this.get("loadedPagesViews").length;
@@ -269,6 +182,33 @@ EpubReader.EpubReader = Backbone.Model.extend({
             }
 
         }, 1000);
+    },
+
+    // Description: This method chooses the appropriate page view to load for individual 
+    //   spine items, and sections of the spine. 
+    loadSpineItems : function () {
+
+        this.loadStrategy.loadSpineItems();
+        // Attach list of event handlers
+        // _.each(this.get("pagesViewEventList"), function (eventInfo) {
+        //     view.on(eventInfo.eventName, eventInfo.callback, eventInfo.callbackContext);
+        // });
+        this.eagerRenderStrategy();
+    },
+
+    getCurrentPagesViewInfo : function () {
+
+        return this.get("loadedPagesViews")[this.get("currentPagesViewIndex")];
+    },
+
+    hideRenderedViews : function () {
+
+        _.each(this.get("loadedPagesViews"), function (pagesViewInfo) {
+
+            if (pagesViewInfo.isRendered) {
+                pagesViewInfo.pagesView.hidePagesView();
+            }
+        });
     },
 
     // REFACTORING CANDIDATE: The each method is causing numPages and currentPage to be hoisted into the global

@@ -8,6 +8,13 @@ rescue LoadError
   end
 end
 
+task :get_dependencies do
+    `cp ../development/epub_fixed_module.js lib/epub_fixed_module.js`
+    `cp ../development/epub_reflowable_module.js lib/epub_reflowable_module.js`
+    `cp ../development/epub_module.js lib/epub_module.js`
+    `cp ../development/epub_parser_module.js lib/epub_parser_module.js`
+end
+
 task :server do
     `thin -R view_testing/static.ru start`
 end

@@ -53,37 +53,6 @@ describe("EpubReader.EpubReader", function () {
                 expect(this.reader.get("annotations")).toBeDefined();
             });
         });
-
-        describe("loadSpineItems()", function () {
-
-            beforeEach(function () {
-
-                var spineInfo = JSON.parse(jasmine.getFixtures().read("spine_info.json"));
-                var viewerSettings = JSON.parse(jasmine.getFixtures().read("viewer_settings.json"));
-
-                this.reader = new EpubReader.EpubReader({ 
-                    spineInfo : spineInfo, 
-                    viewerSettings : viewerSettings 
-                });
-                this.reader.loadSpineItems();
-            });
-
-            it("loads the correct number of spine items", function () {
-
-                var numPagesViews = this.reader.get("loadedPagesViews").length;
-                expect(numPagesViews).toBe(5);
-            });
-
-            it("actually initializes each pages view", function () {
-
-                var loadedPagesViews = this.reader.get("loadedPagesViews");
-                expect(loadedPagesViews[0].spineIndexes[0]).toBe(0);
-                expect(loadedPagesViews[1].spineIndexes[0]).toBe(1);
-                expect(loadedPagesViews[2].spineIndexes[0]).toBe(2);
-                expect(loadedPagesViews[3].spineIndexes[0]).toBe(3);
-                expect(loadedPagesViews[4].spineIndexes[0]).toBe(4);
-            });
-        });
     });
 
     describe("public interface", function () {

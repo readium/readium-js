@@ -12,7 +12,6 @@
 #
 src_files:
     - spec/test_namespace.js
-    - lib/epub_reflowable_module.js
     - lib/jquery-1.9.1.js
     - lib/json2.js
     - lib/underscore.js
@@ -21,6 +20,9 @@ src_files:
     - src/**/*.js
     - lib/epub_cfi.js
     - lib/epub_reflowable_module.js
+    - lib/epub_fixed_module.js
+    - lib/epub_module.js
+    - lib/epub_parser_module.js
 
 # stylesheets
 #
