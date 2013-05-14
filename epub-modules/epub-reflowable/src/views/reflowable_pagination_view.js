@@ -324,18 +324,16 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         }
     },
 
-    goLeft : function () {
+    nextPage : function () {
 
         var isSynthetic = this.viewerModel.get("syntheticLayout");
-        var pageProgDir = this.spineItemModel.get("pageProgressionDirection");
-        this.pages.goLeft(isSynthetic, pageProgDir);
+        this.pages.nextPage(isSynthetic);
     },
 
-    goRight : function () {
+    previousPage : function () {
 
         var isSynthetic = this.viewerModel.get("syntheticLayout");
-        var pageProgDir = this.spineItemModel.get("pageProgressionDirection");
-        this.pages.goRight(isSynthetic, pageProgDir);
+        this.pages.prevPage(isSynthetic);
     },
 
 	// ------------------------------------------------------------------------------------ //

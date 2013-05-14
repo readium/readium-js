@@ -81,42 +81,18 @@ describe("EpubReflowable.ReflowablePagination", function () {
                 });
             });
 
-            describe("left-to-right page progression", function () {
+            it('increments the page number if there are more pages', function () {
 
-                it('increments the page number if there are more pages', function () {
-
-                    var twoUp = false;
-                    var pageProgressionDirection = "ltr";
-                    this.pages.goRight(twoUp, pageProgressionDirection);
-                    expect(this.pages.get("current_page")).toEqual([3]);
-                });
-
-                it('decrements the page number if there are more pages', function () {
-
-                    var twoUp = false;
-                    var pageProgressionDirection = "ltr";
-                    this.pages.goLeft(twoUp, pageProgressionDirection);
-                    expect(this.pages.get("current_page")).toEqual([1]);
-                });
+                var twoUp = false;
+                this.pages.nextPage(twoUp);
+                expect(this.pages.get("current_page")).toEqual([3]);
             });
 
-            describe("right-to-left page progression", function () {
+            it('decrements the page number if there are more pages', function () {
 
-                it('decrements the page number if there are more pages', function () {
-
-                    var twoUp = false;
-                    var pageProgressionDirection = "rtl";
-                    this.pages.goRight(twoUp, pageProgressionDirection);
-                    expect(this.pages.get("current_page")).toEqual([1]);
-                });
-
-                it('increments the page number if there are more pages', function () {
-
-                    var twoUp = false;
-                    var pageProgressionDirection = "rtl";
-                    this.pages.goLeft(twoUp, pageProgressionDirection);
-                    expect(this.pages.get("current_page")).toEqual([3]);
-                });
+                var twoUp = false;
+                this.pages.prevPage(twoUp);
+                expect(this.pages.get("current_page")).toEqual([1]);
             });
         });
 
@@ -130,42 +106,20 @@ describe("EpubReflowable.ReflowablePagination", function () {
                 });
             });
 
-            describe("left-to-right page progression", function () {
+            it('increments the page number if there are more pages', function () {
 
-                it('increments the page number if there are more pages', function () {
-
-                    var twoUp = true;
-                    var pageProgressionDirection = "ltr";
-                    this.pages.goRight(twoUp, pageProgressionDirection);
-                    expect(this.pages.get("current_page")).toEqual([5, 6]);
-                });
-
-                it('decrements the page number if there are more pages', function () {
-
-                    var twoUp = true;
-                    var pageProgressionDirection = "ltr";
-                    this.pages.goLeft(twoUp, pageProgressionDirection);
-                    expect(this.pages.get("current_page")).toEqual([1, 2]);
-                });
+                var twoUp = true;
+                var pageProgressionDirection = "ltr";
+                this.pages.nextPage(twoUp);
+                expect(this.pages.get("current_page")).toEqual([5, 6]);
             });
 
-            describe("right-to-left page progression", function () {
+            it('decrements the page number if there are more pages', function () {
 
-                it('decrements the page number if there are more pages', function () {
-
-                    var twoUp = true;
-                    var pageProgressionDirection = "rtl";
-                    this.pages.goRight(twoUp, pageProgressionDirection);
-                    expect(this.pages.get("current_page")).toEqual([1, 2]);
-                });
-
-                it('increments the page number if there are more pages', function () {
-
-                    var twoUp = true;
-                    var pageProgressionDirection = "rtl";
-                    this.pages.goLeft(twoUp, pageProgressionDirection);
-                    expect(this.pages.get("current_page")).toEqual([5, 6]);
-                });
+                var twoUp = true;
+                var pageProgressionDirection = "ltr";
+                this.pages.prevPage(twoUp);
+                expect(this.pages.get("current_page")).toEqual([1, 2]);
             });
         });
     });

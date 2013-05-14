@@ -175,7 +175,7 @@ describe("EpubReflowable.ReflowablePaginationView", function () {
             it("sets the synthetic layout to true", function () {
 
                 this.view.setSyntheticLayout(true);
-                expect(this.view.viewerModel.get("twoUp")).toBe(true);
+                expect(this.view.viewerModel.get("syntheticLayout")).toBe(true);
             }); 
 
             it("calls the synthetic layout toggle method", function () {
