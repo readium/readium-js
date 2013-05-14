@@ -13,7 +13,7 @@ var initializationTest = function () {
 
     var viewerSettings = {
         fontSize : 12,
-        syntheticLayout : false,
+        syntheticLayout : true,
         currentMargin : 3,
         tocVisible : false,
         currentTheme : "default",

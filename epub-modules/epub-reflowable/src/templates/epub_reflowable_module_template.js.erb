@@ -24,8 +24,8 @@ var EpubReflowableModule = function(spineObject, viewerSettingsObject, CFIAnnota
     return {
 
         render : function (goToLastPage, hashFragmentId) { return reflowableView.render.call(reflowableView, goToLastPage, hashFragmentId); },
-        nextPage : function () { return reflowableView.pages.goRight.call(reflowableView.pages); },
-        previousPage : function () { return reflowableView.pages.goLeft.call(reflowableView.pages); },
+        nextPage : function () { return reflowableView.goRight.call(reflowableView); },
+        previousPage : function () { return reflowableView.goLeft.call(reflowableView); },
         showPageByHashFragment : function (hashFragmentId) { return reflowableView.goToHashFragment.call(reflowableView, hashFragmentId); },
         showPageByNumber : function (pageNumber) { return reflowableView.showPage.call(reflowableView, pageNumber); },
         showPageByCFI : function (CFI) { reflowableView.showPageByCFI.call(reflowableView, CFI); }, 
@@ -41,9 +41,9 @@ var EpubReflowableModule = function(spineObject, viewerSettingsObject, CFIAnnota
         setSyntheticLayout : function (isSynthetic) { return reflowableView.setSyntheticLayout.call(reflowableView, isSynthetic); },
         on : function (eventName, callback, callbackContext) { return reflowableView.on.call(reflowableView, eventName, callback, callbackContext); },
         off : function (eventName, callback) { return reflowableView.off.call(reflowableView, eventName, callback); },
-        addSelectionHighlight : function (id) { return reflowableView.annotations.addSelectionHighlight.call(reflowableView.annotations, id); },
-        addSelectionBookmark : function (id) { return reflowableView.annotations.addSelectionBookmark.call(reflowableView.annotations, id); },
-        addHighlight : function (CFI, id) { return reflowableView.annotations.addHighlight.call(reflowableView.annotations, CFI, id); },
-        addBookmark : function (CFI, id) { return reflowableView.annotations.addBookmark.call(reflowableView.annotations, CFI, id); }
+        // addSelectionHighlight : function (id) { return reflowableView.annotations.addSelectionHighlight.call(reflowableView.annotations, id); },
+        // addSelectionBookmark : function (id) { return reflowableView.annotations.addSelectionBookmark.call(reflowableView.annotations, id); },
+        // addHighlight : function (CFI, id) { return reflowableView.annotations.addHighlight.call(reflowableView.annotations, CFI, id); },
+        // addBookmark : function (CFI, id) { return reflowableView.annotations.addBookmark.call(reflowableView.annotations, CFI, id); }
     };
 };
