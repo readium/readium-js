@@ -192,9 +192,6 @@ describe("EpubReflowable.ReflowablePaginationView", function () {
         });
 
         describe("showPageForCFI()", function () {
-
-            it("shows the page", function () {
-            });
         });
 
         describe("insertSelectionMarkers", function () {
