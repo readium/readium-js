@@ -324,7 +324,7 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
 
         return {
             "fixedPages" : [],
-            "currentPages" : [],
+            "currentPages" : [1],
         }
     },
 
@@ -340,6 +340,11 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
     },
 
     loadFixedPages : function (bindingElement, viewerSettings) {
+
+        // Reset the default for a synthetic layout
+        if (viewerSettings.syntheticLayout) {
+            this.set("currentPages", [1, 2]);
+        }
 
         this.loadPageViews(viewerSettings);
         this.renderAll(bindingElement);
@@ -417,6 +422,7 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
             });
         }
 
+        // Rationale: This method toggles the page numbers
         newPageNumbers = this.fixedPagination.getPageNumbersForTwoUp(this.get("currentPages"), undefined, this.get("pageProgressionDirection"));
         this.resetCurrentPages(newPageNumbers);
     },
@@ -947,12 +953,15 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
 
     showPagesView : function () {
 
+        var currentPageNumber = this.fixedPageViews.get("currentPages")[0];
         this.$el.show();
+        this.fixedPageViews.showPageNumber(currentPageNumber, this.viewerSettings.syntheticLayout);
     },
 
     hidePagesView : function () {
 
         this.$el.hide();
+        this.fixedPageViews.hidePageViews();
     },
     
  //    // override
