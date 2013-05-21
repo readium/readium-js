@@ -93,6 +93,7 @@ EpubReflowable.ReflowablePaginator = Backbone.Model.extend({
 
         // grab the scrollwidth => total content width
         width = epubContentDocument.scrollWidth;
+        this.set("lastScrollWidth", width);
 
         // reset the offset to its original value
         body.style[offsetDir] = offset;
@@ -148,6 +149,7 @@ EpubReflowable.ReflowablePaginator = Backbone.Model.extend({
     },
 
     getBodyColumnCss : function () {
+
         var css = {};
         css[this.getColumnAxisCssName()] = "horizontal";
         css[this.getColumnGapCssName()] = this.gap_width.toString() + "px";

@@ -1617,6 +1617,7 @@ EpubReflowable.ReflowablePaginator = Backbone.Model.extend({
 
         // grab the scrollwidth => total content width
         width = epubContentDocument.scrollWidth;
+        this.set("lastScrollWidth", width);
 
         // reset the offset to its original value
         body.style[offsetDir] = offset;
@@ -1672,6 +1673,7 @@ EpubReflowable.ReflowablePaginator = Backbone.Model.extend({
     },
 
     getBodyColumnCss : function () {
+
         var css = {};
         css[this.getColumnAxisCssName()] = "horizontal";
         css[this.getColumnGapCssName()] = this.gap_width.toString() + "px";
@@ -1969,8 +1971,20 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
     showPageByCFI : function (CFI) {
 
         // Errors have to be handled from the library
+        var $rangeTargetElements;
+        var $standardTargetElement;
+        var targetElement;
         try {
-            var $targetElement = this.cfi.injectElement(CFI, $(this.getEpubContentDocument()).parent()[0], "<span class='show-page'></span>");
+
+            // Check if it's a CFI range type
+            if (new RegExp(/.+,.+,.+/).test(CFI)) {
+                $rangeTargetElements = this.cfi.getRangeTargetElements(CFI, $(this.getEpubContentDocument()).parent()[0]);
+                targetElement = $rangeTargetElements[0];
+            }
+            else {
+                $standardTargetElement = this.cfi.getTargetElement(CFI, $(this.getEpubContentDocument()).parent()[0]);
+                targetElement = $standardTargetElement[0];
+            }
         }
         catch (error) {
             // Maybe check error type
@@ -1979,7 +1993,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
         // Find the page number for the first element that the CFI refers to
         var page = this.reflowableElementsInfo.getElemPageNumber(
-            $targetElement[0], 
+            targetElement, 
             this.offsetDirection(), 
             this.reflowablePaginator.page_width, 
             this.reflowablePaginator.gap_width,
@@ -2026,10 +2040,13 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
     // },
 
     showView : function () {
+        
         this.$el.show();
+        this.updatePageNumber();
     },
 
     hideView : function () {
+        
         this.$el.hide();
     },
 
@@ -2228,6 +2245,22 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 	// ------------------------------------------------------------------------------------ //
 	//  "PRIVATE" HELPERS AND UTILITY METHODS                                               //
 	// ------------------------------------------------------------------------------------ //
+
+    // Rationale: 
+    updatePageNumber : function () {
+        
+        var recalculatedNumberOfPages;
+        var epubContentDocument = this.getEpubContentDocument();
+        var isSyntheticLayout = this.viewerModel.get("syntheticLayout");
+        var currScrollWidth = epubContentDocument.scrollWidth;
+        var lastScrollWidth = this.reflowablePaginator.get("lastScrollWidth");
+
+        if (lastScrollWidth !== currScrollWidth) {
+            recalculatedNumberOfPages = this.reflowablePaginator.calcNumPages(epubContentDocument, isSyntheticLayout);
+            this.pages.set("num_pages", recalculatedNumberOfPages);
+            this.reflowablePaginator.set("lastScrollWidth", currScrollWidth);
+        }
+    },
 
 	// Rationale: This method delegates the pagination of a content document to the reflowable layout model
 	paginateContentDocument : function () {
