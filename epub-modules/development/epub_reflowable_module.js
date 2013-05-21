@@ -1443,56 +1443,6 @@ EpubReflowable.ReflowablePagination = Backbone.Model.extend({
         // }   
     },
 
-    // REFACTORING CANDIDATE: This needs to be investigated, but I bet if the prevPage and nextPage methods were 
-    //   called directly (goRight and goLeft were removed), the new page number display logic would account for the 
-    //   page progression direction and that all this logic could be simplified in both this model and the 
-    //   PageNumberDisplayLogic model
-    // 
-    // Description: turn pages in the rightward direction
-    //   ie progression direction is dependent on 
-    //   page progression dir
-    goRight: function (twoUp, pageProgressionDirection) {
-        if (pageProgressionDirection === "rtl") {
-            this.prevPage(twoUp);
-        }
-        else {
-            this.nextPage(twoUp);
-        }
-    },
-
-    // Description: Turn pages in the leftward direction
-    //   ie progression direction is dependent on 
-    //   page progression dir
-    goLeft: function (twoUp, pageProgressionDirection) {
-        if (pageProgressionDirection === "rtl") {
-            this.nextPage(twoUp);
-        }
-        else {
-            this.prevPage(twoUp);
-        }
-    },
-
-    goToPage: function(gotoPageNumber, twoUp, firstPageIsOffset) {
-
-        var pagesToGoto = this.pageNumberDisplayLogic.getGotoPageNumsToDisplay(
-                            gotoPageNumber,
-                            twoUp,
-                            firstPageIsOffset
-                            );
-        this.set("current_page", pagesToGoto);
-    },
-
-    // Description: Return true if the pageNum argument is a currently visible 
-    //   page. Return false if it is not; which will occur if it cannot be found in 
-    //   the array.
-    isPageVisible: function(pageNum) {
-        return this.get("current_page").indexOf(pageNum) !== -1;
-    },
-
-    // ------------------------------------------------------------------------------------ //  
-    //  "PRIVATE" HELPERS                                                                   //
-    // ------------------------------------------------------------------------------------ //
-
     // REFACTORING CANDIDATE: prevPage and nextPage are public but not sure it should be; it's called from the navwidget and viewer.js.
     //   Additionally the logic in this method, as well as that in nextPage(), could be refactored to more clearly represent that 
     //   multiple different cases involved in switching pages.
@@ -1534,6 +1484,27 @@ EpubReflowable.ReflowablePagination = Backbone.Model.extend({
             this.set("current_page", pagesToDisplay);
         }
     },
+
+    goToPage: function(gotoPageNumber, twoUp, firstPageIsOffset) {
+
+        var pagesToGoto = this.pageNumberDisplayLogic.getGotoPageNumsToDisplay(
+                            gotoPageNumber,
+                            twoUp,
+                            firstPageIsOffset
+                            );
+        this.set("current_page", pagesToGoto);
+    },
+
+    // Description: Return true if the pageNum argument is a currently visible 
+    //   page. Return false if it is not; which will occur if it cannot be found in 
+    //   the array.
+    isPageVisible: function(pageNum) {
+        return this.get("current_page").indexOf(pageNum) !== -1;
+    },
+
+    // ------------------------------------------------------------------------------------ //  
+    //  "PRIVATE" HELPERS                                                                   //
+    // ------------------------------------------------------------------------------------ //
 
     // REFACTORING CANDIDATE: This method seems to correct the page position if the current page number 
     //   exceeds the number of pages, which should not happen. 
@@ -1646,6 +1617,7 @@ EpubReflowable.ReflowablePaginator = Backbone.Model.extend({
 
         // grab the scrollwidth => total content width
         width = epubContentDocument.scrollWidth;
+        this.set("lastScrollWidth", width);
 
         // reset the offset to its original value
         body.style[offsetDir] = offset;
@@ -1701,6 +1673,7 @@ EpubReflowable.ReflowablePaginator = Backbone.Model.extend({
     },
 
     getBodyColumnCss : function () {
+
         var css = {};
         css[this.getColumnAxisCssName()] = "horizontal";
         css[this.getColumnGapCssName()] = this.gap_width.toString() + "px";
@@ -1995,11 +1968,30 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 	// 	);
 	// },
 
+    showPageByNumber : function (pageNumber) {
+
+        // Set the current page
+        this.pages.goToPage(pageNumber, this.viewerModel.get("syntheticLayout"), this.spineItemModel.get("firstPageIsOffset"));
+        this.showPage(pageNumber);
+    },
+
     showPageByCFI : function (CFI) {
 
         // Errors have to be handled from the library
+        var $rangeTargetElements;
+        var $standardTargetElement;
+        var targetElement;
         try {
-            var $targetElement = this.cfi.injectElement(CFI, $(this.getEpubContentDocument()).parent()[0], "<span class='show-page'></span>");
+
+            // Check if it's a CFI range type
+            if (new RegExp(/.+,.+,.+/).test(CFI)) {
+                $rangeTargetElements = this.cfi.getRangeTargetElements(CFI, $(this.getEpubContentDocument()).parent()[0]);
+                targetElement = $rangeTargetElements[0];
+            }
+            else {
+                $standardTargetElement = this.cfi.getTargetElement(CFI, $(this.getEpubContentDocument()).parent()[0]);
+                targetElement = $standardTargetElement[0];
+            }
         }
         catch (error) {
             // Maybe check error type
@@ -2008,7 +2000,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
         // Find the page number for the first element that the CFI refers to
         var page = this.reflowableElementsInfo.getElemPageNumber(
-            $targetElement[0], 
+            targetElement, 
             this.offsetDirection(), 
             this.reflowablePaginator.page_width, 
             this.reflowablePaginator.gap_width,
@@ -2055,10 +2047,13 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
     // },
 
     showView : function () {
+        
         this.$el.show();
+        this.updatePageNumber();
     },
 
     hideView : function () {
+        
         this.$el.hide();
     },
 
@@ -2172,18 +2167,16 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         }
     },
 
-    goLeft : function () {
+    nextPage : function () {
 
         var isSynthetic = this.viewerModel.get("syntheticLayout");
-        var pageProgDir = this.spineItemModel.get("pageProgressionDirection");
-        this.pages.goLeft(isSynthetic, pageProgDir);
+        this.pages.nextPage(isSynthetic);
     },
 
-    goRight : function () {
+    previousPage : function () {
 
         var isSynthetic = this.viewerModel.get("syntheticLayout");
-        var pageProgDir = this.spineItemModel.get("pageProgressionDirection");
-        this.pages.goRight(isSynthetic, pageProgDir);
+        this.pages.prevPage(isSynthetic);
     },
 
 	// ------------------------------------------------------------------------------------ //
@@ -2259,6 +2252,28 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 	// ------------------------------------------------------------------------------------ //
 	//  "PRIVATE" HELPERS AND UTILITY METHODS                                               //
 	// ------------------------------------------------------------------------------------ //
+
+    // Rationale: The "paginator" model uses the scrollWidth of the paginated xhtml content document in order
+    //   to calculate it's number of pages (given the current screen size etc.). It appears that 
+    //   the scroll width property is either buggy, unreliable, or changes by small amounts between the time the content
+    //   document is paginated and when it is used. Regardless of the cause, the scroll width is understated, which causes
+    //   the number of pages to be understated. As a result, the last page of a content document is often not shown when 
+    //   a user moves to the last page of the content document. This method recalculates the number of pages for the current
+    //   scroll width of the content document. 
+    updatePageNumber : function () {
+        
+        var recalculatedNumberOfPages;
+        var epubContentDocument = this.getEpubContentDocument();
+        var isSyntheticLayout = this.viewerModel.get("syntheticLayout");
+        var currScrollWidth = epubContentDocument.scrollWidth;
+        var lastScrollWidth = this.reflowablePaginator.get("lastScrollWidth");
+
+        if (lastScrollWidth !== currScrollWidth) {
+            recalculatedNumberOfPages = this.reflowablePaginator.calcNumPages(epubContentDocument, isSyntheticLayout);
+            this.pages.set("num_pages", recalculatedNumberOfPages);
+            this.reflowablePaginator.set("lastScrollWidth", currScrollWidth);
+        }
+    },
 
 	// Rationale: This method delegates the pagination of a content document to the reflowable layout model
 	paginateContentDocument : function () {
@@ -2349,10 +2364,10 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
     return {
 
         render : function (goToLastPage, hashFragmentId) { return reflowableView.render.call(reflowableView, goToLastPage, hashFragmentId); },
-        nextPage : function () { return reflowableView.goRight.call(reflowableView); },
-        previousPage : function () { return reflowableView.goLeft.call(reflowableView); },
+        nextPage : function () { return reflowableView.nextPage.call(reflowableView); },
+        previousPage : function () { return reflowableView.previousPage.call(reflowableView); },
         showPageByHashFragment : function (hashFragmentId) { return reflowableView.goToHashFragment.call(reflowableView, hashFragmentId); },
-        showPageByNumber : function (pageNumber) { return reflowableView.showPage.call(reflowableView, pageNumber); },
+        showPageByNumber : function (pageNumber) { return reflowableView.showPageByNumber.call(reflowableView, pageNumber); },
         showPageByCFI : function (CFI) { reflowableView.showPageByCFI.call(reflowableView, CFI); }, 
         onFirstPage : function () { return reflowableView.onFirstPage.call(reflowableView); },
         onLastPage : function () { return reflowableView.onLastPage.call(reflowableView); },
