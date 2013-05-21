@@ -1968,6 +1968,13 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 	// 	);
 	// },
 
+    showPageByNumber : function (pageNumber) {
+
+        // Set the current page
+        this.pages.goToPage(pageNumber, this.viewerModel.get("syntheticLayout"), this.spineItemModel.get("firstPageIsOffset"));
+        this.showPage(pageNumber);
+    },
+
     showPageByCFI : function (CFI) {
 
         // Errors have to be handled from the library
@@ -2246,7 +2253,13 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 	//  "PRIVATE" HELPERS AND UTILITY METHODS                                               //
 	// ------------------------------------------------------------------------------------ //
 
-    // Rationale: 
+    // Rationale: The "paginator" model uses the scrollWidth of the paginated xhtml content document in order
+    //   to calculate it's number of pages (given the current screen size etc.). It appears that 
+    //   the scroll width property is either buggy, unreliable, or changes by small amounts between the time the content
+    //   document is paginated and when it is used. Regardless of the cause, the scroll width is understated, which causes
+    //   the number of pages to be understated. As a result, the last page of a content document is often not shown when 
+    //   a user moves to the last page of the content document. This method recalculates the number of pages for the current
+    //   scroll width of the content document. 
     updatePageNumber : function () {
         
         var recalculatedNumberOfPages;
@@ -2354,7 +2367,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         nextPage : function () { return reflowableView.nextPage.call(reflowableView); },
         previousPage : function () { return reflowableView.previousPage.call(reflowableView); },
         showPageByHashFragment : function (hashFragmentId) { return reflowableView.goToHashFragment.call(reflowableView, hashFragmentId); },
-        showPageByNumber : function (pageNumber) { return reflowableView.showPage.call(reflowableView, pageNumber); },
+        showPageByNumber : function (pageNumber) { return reflowableView.showPageByNumber.call(reflowableView, pageNumber); },
         showPageByCFI : function (CFI) { reflowableView.showPageByCFI.call(reflowableView, CFI); }, 
         onFirstPage : function () { return reflowableView.onFirstPage.call(reflowableView); },
         onLastPage : function () { return reflowableView.onLastPage.call(reflowableView); },

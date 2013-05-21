@@ -147,6 +147,13 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 	// 	);
 	// },
 
+    showPageByNumber : function (pageNumber) {
+
+        // Set the current page
+        this.pages.goToPage(pageNumber, this.viewerModel.get("syntheticLayout"), this.spineItemModel.get("firstPageIsOffset"));
+        this.showPage(pageNumber);
+    },
+
     showPageByCFI : function (CFI) {
 
         // Errors have to be handled from the library

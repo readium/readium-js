@@ -27,7 +27,7 @@ var EpubReflowableModule = function(spineObject, viewerSettingsObject, CFIAnnota
         nextPage : function () { return reflowableView.nextPage.call(reflowableView); },
         previousPage : function () { return reflowableView.previousPage.call(reflowableView); },
         showPageByHashFragment : function (hashFragmentId) { return reflowableView.goToHashFragment.call(reflowableView, hashFragmentId); },
-        showPageByNumber : function (pageNumber) { return reflowableView.showPage.call(reflowableView, pageNumber); },
+        showPageByNumber : function (pageNumber) { return reflowableView.showPageByNumber.call(reflowableView, pageNumber); },
         showPageByCFI : function (CFI) { reflowableView.showPageByCFI.call(reflowableView, CFI); }, 
         onFirstPage : function () { return reflowableView.onFirstPage.call(reflowableView); },
         onLastPage : function () { return reflowableView.onLastPage.call(reflowableView); },
