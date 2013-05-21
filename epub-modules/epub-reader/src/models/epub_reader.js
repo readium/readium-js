@@ -51,10 +51,14 @@ EpubReader.EpubReader = Backbone.Model.extend({
             this.hideRenderedViews();
             this.set({"currentPagesViewIndex" : pagesViewIndex});
             pagesViewInfo = this.getCurrentPagesViewInfo();
+            pagesView = pagesViewInfo.pagesView;
 
             if (pagesViewInfo.isRendered) {
-                pagesViewInfo.pagesView.showPagesView();
-                this.applyPreferences(pagesViewInfo.pagesView);
+                pagesView.showPagesView();
+                this.applyPreferences(pagesView);
+                if (renderLast) {
+                    pagesView.showPageByNumber(pagesView.numberOfPages());
+                }
             }
             else {
                 
