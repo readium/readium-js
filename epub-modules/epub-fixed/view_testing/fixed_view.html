@@ -15,22 +15,22 @@
 
             $(document).ready(function () {
 
-                window.fixedView = initializationTest("image");
+                window.fixedView = initializationTest("fixed");
 
                 var testCallbackForLoad = function () { 
                     console.log("The fixed epub was loaded - the event fired");
                     window.fixedView.showPageByNumber(3);
                 };
 
-                window.fixedView.on("epubLoaded", testCallbackForLoad, this);
-                $("#reader").css({ "height" : "800px", "width" : "1000px"});
+                window.fixedView.on("contentDocumentLoaded", testCallbackForLoad, this);
+                // $("#reader").css({ "height" : "800px", "width" : "1000px"});
                 $("#reader").html(window.fixedView.render(false, undefined));
             });
 
         </script>
     </head>
     <body>
-        <div id="reader" style="height:100%; width:100%">
+        <div id="reader" style="height:500px; width:1000px;">
         </div>
     </body>
 </html>

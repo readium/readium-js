@@ -97,7 +97,7 @@ describe("EpubFixed.FixedPaginationView", function () {
                 waits(500);
 
                 runs(function () {
-                    expect(fixedPaginationView.trigger).toHaveBeenCalledWith("epubLoaded");
+                    expect(fixedPaginationView.trigger).toHaveBeenCalledWith("contentDocumentLoaded");
                 });
             });
         });

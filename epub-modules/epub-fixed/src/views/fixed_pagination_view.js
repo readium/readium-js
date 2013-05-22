@@ -1,6 +1,6 @@
 EpubFixed.FixedPaginationView = Backbone.View.extend({
 
-	el : "<div class='fixed-pages-view' style='width:100%; height:100%;'> \
+	el : "<div class='fixed-pages-view' style='position:relative;'> \
             <div class='fixed-spine-divider'></div> \
           </div>",
 

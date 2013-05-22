@@ -68,11 +68,12 @@ EpubFixed.ImagePageView = Backbone.View.extend({
 
     setPageSize : function () {
 
+        var $readerElement = this.$el.parent().parent();
         if (this.sizing !== undefined) {
 
             var transformCss;
             this.sizing.updateMetaSize();
-            transformCss = this.sizing.fitToScreen(this.$el.width(), this.$el.height());
+            transformCss = this.sizing.fitToScreen($readerElement.width(), $readerElement.height());
             this.$el.css(transformCss);
         }
     }
