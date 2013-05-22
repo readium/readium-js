@@ -602,13 +602,7 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
 
         var scale = Math.min(horScale, verScale);
 
-        var newWidth = bookSize.width * scale;
-        var newHeight = bookSize.height * scale;
-
-        var left = Math.floor((containerWidth - newWidth) / 2);
-        var top = Math.floor((containerHeight - newHeight) / 2);
-
-        var css = this.generateTransformCSS(left, top, scale);
+        var css = this.generateTransformCSS(scale);
         css["width"] = bookSize.width;
         css["height"] = bookSize.height;
 
@@ -654,15 +648,13 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
     },
 
     // Have to modernizer this
-    generateTransformCSS : function (left, top, scale) {
+    generateTransformCSS : function (scale) {
 
-        var transformString = "translate(" + left + "px, " + top + "px) scale(" + scale + ")";
+        var transformString = "scale(" + scale + ")";
 
         //modernizer library can be used to get browser independent transform attributes names (implemented in readium-web fixed_layout_book_zoomer.js)
         var css = {};
         css["-webkit-transform"] = transformString;
-        css["-webkit-transform-origin"] = "0 0";
-
         return css;
     }
 });
@@ -678,6 +670,7 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
             "overflow" : "hidden",
             "height" : "100%",
             "width" : "50%",
+            "-webkit-transform-origin" : "top left",
             "left" : "25%"
         };
     },
@@ -685,38 +678,41 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
     getPageSpreadLeftCSS : function () {
 
         return { 
-                "position" : "absolute",
-                "overflow" : "hidden",
-                "height" : "100%",
-                "width" : "50%", 
-                "left" : "0%",
-                "background-color" : "#FFF"
-            };
+            "position" : "absolute",
+            "overflow" : "hidden",
+            "height" : "100%",
+            "width" : "50%", 
+            "right" : "50%",
+            "left" : "", // Have to clear the left if it was set for this page on a single page spread
+            "-webkit-transform-origin" : "top right",
+            "background-color" : "#FFF"
+        };
     },
 
     getPageSpreadRightCSS : function () {
 
         return { 
-                "position" : "absolute",
-                "overflow" : "hidden",
-                "height" : "100%",
-                "width" : "50%", 
-                "left" : "50%",
-                "background-color" : "#FFF" 
-            };
+            "position" : "absolute",
+            "overflow" : "hidden",
+            "height" : "100%",
+            "width" : "50%", 
+            "left" : "50%",
+            "-webkit-transform-origin" : "top left",
+            "background-color" : "#FFF" 
+        };
     },
 
     getPageSpreadCenterCSS : function () {
 
         return {
-                "position" : "absolute",
-                "overflow" : "hidden", 
-                "height" : "100%",
-                "width" : "100%",
-                "left" : "50%",
-                "z-index" : "11",
-                "background-color" : "#FFF" 
-            };
+            "position" : "absolute",
+            "overflow" : "hidden", 
+            "height" : "100%",
+            "width" : "100%",
+            "left" : "50%",
+            "z-index" : "11",
+            "background-color" : "#FFF" 
+        };
     }
 });
     EpubFixed.FixedPageView = Backbone.View.extend({
@@ -798,11 +794,12 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
 
     setPageSize : function () {
 
+        var $readerElement = this.$el.parent().parent();
         if (this.sizing !== undefined) {
 
             var transformCss;
             this.sizing.updateMetaSize();
-            transformCss = this.sizing.fitToScreen(this.$el.width(), this.$el.height());
+            transformCss = this.sizing.fitToScreen($readerElement.width(), $readerElement.height());
             this.$el.css(transformCss);
         }
     }
@@ -877,18 +874,19 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
 
     setPageSize : function () {
 
+        var $readerElement = this.$el.parent().parent();
         if (this.sizing !== undefined) {
 
             var transformCss;
             this.sizing.updateMetaSize();
-            transformCss = this.sizing.fitToScreen(this.$el.width(), this.$el.height());
+            transformCss = this.sizing.fitToScreen($readerElement.width(), $readerElement.height());
             this.$el.css(transformCss);
         }
     }
 });
     EpubFixed.FixedPaginationView = Backbone.View.extend({
 
-	el : "<div class='fixed-pages-view' style='width:100%; height:100%;'> \
+	el : "<div class='fixed-pages-view' style='position:relative;'> \
             <div class='fixed-spine-divider'></div> \
           </div>",
 
