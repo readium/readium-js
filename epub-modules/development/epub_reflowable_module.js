@@ -1439,6 +1439,10 @@ EpubReflowable.ReflowablePagination = Backbone.Model.extend({
                 firstPageIsOffset
                 );
 
+            if (!twoUp) {
+                newPages = this.adjustForMaxPageNumber(newPages);
+            }
+
             this.set({current_page: newPages});
         // }   
     },
@@ -1506,20 +1510,17 @@ EpubReflowable.ReflowablePagination = Backbone.Model.extend({
     //  "PRIVATE" HELPERS                                                                   //
     // ------------------------------------------------------------------------------------ //
 
-    // REFACTORING CANDIDATE: This method seems to correct the page position if the current page number 
-    //   exceeds the number of pages, which should not happen. 
-    adjustCurrentPage: function() {
-        var cp = this.get("current_page");
-        // Removing this appears to cause a problem with backbone, somehow. This method should eventually be removed. 
-        // Acc.page = '#' + cp;
+    adjustForMaxPageNumber : function (newPageNumbers) {
 
-    },  
+        var currentPages = this.get("current_page");
+        var numberOfPages = this.get("num_pages");
 
-    // REFACTORING CANDIDATE: this is strange in that it does not seem to account for 
-    //   possibly crossing over a section boundary
-    goToLastPage: function(twoUp, firstPageIsOffset) {
-        var page = this.get("num_pages");
-        this.goToPage(page, twoUp, firstPageIsOffset);
+        if (newPageNumbers[0] > numberOfPages) {
+            return [numberOfPages];
+        }
+        else {
+            return newPageNumbers;
+        }
     }
 });
     
@@ -2380,10 +2381,6 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         setTheme : function (theme) { return reflowableView.setTheme.call(reflowableView, theme); },
         setSyntheticLayout : function (isSynthetic) { return reflowableView.setSyntheticLayout.call(reflowableView, isSynthetic); },
         on : function (eventName, callback, callbackContext) { return reflowableView.on.call(reflowableView, eventName, callback, callbackContext); },
-        off : function (eventName, callback) { return reflowableView.off.call(reflowableView, eventName, callback); },
-        // addSelectionHighlight : function (id) { return reflowableView.annotations.addSelectionHighlight.call(reflowableView.annotations, id); },
-        // addSelectionBookmark : function (id) { return reflowableView.annotations.addSelectionBookmark.call(reflowableView.annotations, id); },
-        // addHighlight : function (CFI, id) { return reflowableView.annotations.addHighlight.call(reflowableView.annotations, CFI, id); },
-        // addBookmark : function (CFI, id) { return reflowableView.annotations.addBookmark.call(reflowableView.annotations, CFI, id); }
+        off : function (eventName, callback) { return reflowableView.off.call(reflowableView, eventName, callback); }
     };
 };
