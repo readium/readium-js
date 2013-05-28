@@ -123,7 +123,7 @@ var initializationTest = function (bookType) {
               spineInfo,
               viewerSettings,
               packDocDOM,
-              "eager"
+              "lazy"
           );
         }
       });

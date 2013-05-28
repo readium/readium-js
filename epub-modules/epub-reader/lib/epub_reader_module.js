@@ -144,11 +144,6 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         var pagesViews = this.loadStrategy.loadSpineItems(this.get("viewerSettings"), this.get("annotations"), this.get("bindings"));
         this.set("loadedPagesViews", pagesViews);
 
-        // Attach list of event handlers
-        // _.each(this.get("pagesViewEventList"), function (eventInfo) {
-        //     view.on(eventInfo.eventName, eventInfo.callback, eventInfo.callbackContext);
-        // });
-
         if (this.get("renderStrategy") === "eager") {
             this.eagerRenderStrategy();    
         }
@@ -208,6 +203,10 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
                         pagesView.showPageByNumber(pagesView.numberOfPages());
                     }
 
+                    _.each(that.get("pagesViewEventList"), function (eventInfo) {
+                        pagesView.on(eventInfo.eventName, eventInfo.callback, eventInfo.callbackContext);
+                    });
+
                     callback.call(callbackContext, pagesView);
                 }, this);
 
@@ -234,33 +233,6 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
             this.renderPagesView(previousPagesViewIndex, true, undefined, callback, callbackContext);
         }
     },
-
-    // // This is an asychronous method
-    // getRenderedPagesView : function (spineIndex, callback, callbackContext) {
-
-    //     // Get pages view info
-    //     var that = this;
-    //     var viewElement;
-    //     var pagesViewInfo = this.getPagesViewInfo(spineIndex);
-
-    //     // Check if it is rendered
-    //     if (!pagesViewInfo.isRendered) {
-
-    //         // invoke callback when the content document loads
-    //         pagesViewInfo.pagesView.on("contentDocumentLoaded", function (pagesView) {
-    //             callback.call(callbackContext, pagesViewInfo.pagesView);
-    //         });
-
-    //         // This logic is duplicated and should be abstracted
-    //         viewElement = pagesViewInfo.pagesView.render(false, undefined);
-    //         $(this.get("parentElement")).append(viewElement);
-    //         this.applyPreferences(pagesViewInfo.pagesView);
-    //         pagesViewInfo.isRendered = true;
-    //     }
-    //     else {
-    //         callback.call(callbackContext, pagesViewInfo.pagesView);
-    //     }
-    // },
 
     attachEventHandler : function (eventName, callback, callbackContext) {
 
@@ -321,6 +293,11 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
                 if (numPagesViewsToLoad === 0) {
                     that.trigger("epubLoaded");
                 }
+
+                // Attach list of event handlers
+                _.each(that.get("pagesViewEventList"), function (eventInfo) {
+                    pagesViewInfo.pagesView.on(eventInfo.eventName, eventInfo.callback, eventInfo.callbackContext);
+                });
             });
             
             // This will cause the pages view to try to retrieve its resources
