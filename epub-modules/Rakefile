@@ -1,0 +1,27 @@
+require "erb"
+
+# Generate the epub module 
+def render_consolidated_module_template(templatePath, outputPath)
+
+    # Read each of the library components
+    epubcfi = File.read('development/epub_cfi.js')
+    epub_reflowable = File.read('development/epub_reflowable_module.js')
+    epub_fixed = File.read('development/epub_fixed_module.js')
+    epub_parser = File.read('development/epub_parser_module.js')
+    epub = File.read('development/epub_module.js')
+    epub_reader = File.read('development/epub_reader_module.js')
+
+    template = File.read(templatePath)
+    erb = ERB.new(template)
+    
+    # Generate library
+    File.open(outputPath, "w") do |f|
+        f.puts erb.result(binding)
+    end
+end
+
+desc "render the consolidated epub module erb template"
+task :gen_simple_rwc do
+    puts "rendering simple RWC"
+    render_consolidated_module_template("simple_rwc_template.js.erb", "release/SimpleRWC.js")
+end

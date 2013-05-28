@@ -1,0 +1,8 @@
+task :get_dependencies do
+    `cp -a ../epub-modules/development/. lib`
+    `cp -a ../epub-modules/lib/. lib`
+end
+
+task :server do
+    `thin -R static.ru start`
+end
