@@ -421,6 +421,7 @@ describe('Epub.PackageDocument', function() {
         });
 
         describe("getToc", function () {
+
             beforeEach(function() {
 
                 var packageDocumentJson = JSON.parse(jasmine.getFixtures().read("package_document.json"));
@@ -428,7 +429,8 @@ describe('Epub.PackageDocument', function() {
             });
 
             it("gets the url of toc", function () {
-                var handler = "bk01-toc.xhtml";
+                
+                var handler = "path/to/bk01-toc.xhtml";
                 var tocUrl = this.packageDocument.getToc();
                 expect(tocUrl).toBe(handler);
             });

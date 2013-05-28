@@ -127,6 +127,7 @@
             "properties":""
         },
         {
+            "contentDocumentURI":"path/to/bk01-toc.xhtml",
             "href":"bk01-toc.xhtml",
             "id":"htmltoc",
             "media_overlay":"",
