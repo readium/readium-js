@@ -1,4 +1,4 @@
-var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSettings, packageDocumentDOM) {
+var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSettings, packageDocumentDOM, renderStrategy) {
     
     var EpubReader = {};
 
@@ -11,18 +11,19 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         readerElement : readerBoundElement,
         spineInfo : epubSpineInfo,
         viewerSettings : viewerSettings,
-        packageDocumentDOM : packageDocumentDOM
+        packageDocumentDOM : packageDocumentDOM,
+        renderStrategy : renderStrategy
     });
 
     // Description: The public interface
     return {
 
         render : function () { return epubReaderView.render.call(epubReaderView); },
-        showSpineItem : function (spineIndex) { return epubReaderView.showSpineItem.call(epubReaderView, spineIndex); },
-        showPageByCFI : function (CFI) { return epubReaderView.showPageByCFI.call(epubReaderView, CFI); },
-        showPageByElementId : function (spineIndex, hashFragmentId) { return epubReaderView.showPageByElementId.call(epubReaderView, spineIndex, hashFragmentId); },
-        nextPage : function () { return epubReaderView.nextPage.call(epubReaderView); },
-        previousPage : function () { return epubReaderView.previousPage.call(epubReaderView); },
+        showSpineItem : function (spineIndex, callback, callbackContext) { return epubReaderView.showSpineItem.call(epubReaderView, spineIndex, callback, callbackContext); },
+        showPageByCFI : function (CFI, callback, callbackContext) { return epubReaderView.showPageByCFI.call(epubReaderView, CFI, callback, callbackContext); },
+        showPageByElementId : function (spineIndex, hashFragmentId, callback, callbackContext) { return epubReaderView.showPageByElementId.call(epubReaderView, spineIndex, hashFragmentId, callback, callbackContext); },
+        nextPage : function (callback, callbackContext) { return epubReaderView.nextPage.call(epubReaderView, callback, callbackContext); },
+        previousPage : function (callback, callbackContext) { return epubReaderView.previousPage.call(epubReaderView, callback, callbackContext); },
         setFontSize : function (fontSize) { return epubReaderView.setFontSize.call(epubReaderView, fontSize); },
         setMargin : function (margin) { return epubReaderView.setMargin.call(epubReaderView, margin); },
         setTheme : function (theme) { return epubReaderView.setTheme.call(epubReaderView, theme); },

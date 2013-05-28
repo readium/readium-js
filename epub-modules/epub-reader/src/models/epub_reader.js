@@ -29,11 +29,18 @@ EpubReader.EpubReader = Backbone.Model.extend({
 
         var pagesViews = this.loadStrategy.loadSpineItems(this.get("viewerSettings"), this.get("annotations"), this.get("bindings"));
         this.set("loadedPagesViews", pagesViews);
+
         // Attach list of event handlers
         // _.each(this.get("pagesViewEventList"), function (eventInfo) {
         //     view.on(eventInfo.eventName, eventInfo.callback, eventInfo.callbackContext);
         // });
-        this.eagerRenderStrategy();
+
+        if (this.get("renderStrategy") === "eager") {
+            this.eagerRenderStrategy();    
+        }
+        else if (this.get("renderStrategy") === "lazy") {
+            this.trigger("epubLoaded");
+        }
     },
 
     numberOfLoadedPagesViews : function () {
@@ -56,9 +63,10 @@ EpubReader.EpubReader = Backbone.Model.extend({
         return this.get("loadedPagesViews")[this.get("currentPagesViewIndex")].pagesView;
     },
 
-    renderPagesView : function (pagesViewIndex, renderLast, hashFragmentId) {
+    renderPagesView : function (pagesViewIndex, renderLast, hashFragmentId, callback, callbackContext) {
 
         var pagesView;
+        var that = this;
         if (pagesViewIndex >= 0 && pagesViewIndex < this.numberOfLoadedPagesViews()) {
 
             this.hideRenderedViews();
@@ -67,66 +75,78 @@ EpubReader.EpubReader = Backbone.Model.extend({
             pagesView = pagesViewInfo.pagesView;
 
             if (pagesViewInfo.isRendered) {
+
                 pagesView.showPagesView();
                 this.applyPreferences(pagesView);
                 if (renderLast) {
                     pagesView.showPageByNumber(pagesView.numberOfPages());
                 }
+                callback.call(callbackContext, pagesView);
             }
             else {
                 
-                viewElement = pagesViewInfo.pagesView.render(renderLast, hashFragmentId);
-                $(this.get("parentElement")).append(viewElement);
-                this.applyPreferences(pagesViewInfo.pagesView);
+                // Invoke callback when the content document loads
+                pagesView.on("contentDocumentLoaded", function (result) {
+
+                    pagesView.showPagesView();
+                    that.applyPreferences(pagesView);
+                    if (renderLast) {
+                        pagesView.showPageByNumber(pagesView.numberOfPages());
+                    }
+
+                    callback.call(callbackContext, pagesView);
+                }, this);
+
+                $(this.get("parentElement")).append(pagesView.render(false, undefined));
                 pagesViewInfo.isRendered = true;
             }
         }
     },
 
-    renderNextPagesView : function () {
+    renderNextPagesView : function (callback, callbackContext) {
 
         var nextPagesViewIndex;
         if (this.hasNextPagesView()) {
             nextPagesViewIndex = this.get("currentPagesViewIndex") + 1;
-            this.renderPagesView(nextPagesViewIndex, false, undefined);
+            this.renderPagesView(nextPagesViewIndex, false, undefined, callback, callbackContext);
         }
     },
 
-    renderPreviousPagesView : function () {
+    renderPreviousPagesView : function (callback, callbackContext) {
 
         var previousPagesViewIndex;
         if (this.hasPreviousPagesView()) {
             previousPagesViewIndex = this.get("currentPagesViewIndex") - 1;
-            this.renderPagesView(previousPagesViewIndex, true, undefined);
+            this.renderPagesView(previousPagesViewIndex, true, undefined, callback, callbackContext);
         }
     },
 
-    // This is an asychronous method
-    getRenderedPagesView : function (spineIndex, callback, callbackContext) {
+    // // This is an asychronous method
+    // getRenderedPagesView : function (spineIndex, callback, callbackContext) {
 
-        // Get pages view info
-        var that = this;
-        var viewElement;
-        var pagesViewInfo = this.getPagesViewInfo(spineIndex);
+    //     // Get pages view info
+    //     var that = this;
+    //     var viewElement;
+    //     var pagesViewInfo = this.getPagesViewInfo(spineIndex);
 
-        // Check if it is rendered
-        if (!pagesViewInfo.isRendered) {
+    //     // Check if it is rendered
+    //     if (!pagesViewInfo.isRendered) {
 
-            // invoke callback when the content document loads
-            pagesViewInfo.pagesView.on("contentDocumentLoaded", function (pagesView) {
-                callback.call(callbackContext, pagesViewInfo.pagesView);
-            });
+    //         // invoke callback when the content document loads
+    //         pagesViewInfo.pagesView.on("contentDocumentLoaded", function (pagesView) {
+    //             callback.call(callbackContext, pagesViewInfo.pagesView);
+    //         });
 
-            // This logic is duplicated and should be abstracted
-            viewElement = pagesViewInfo.pagesView.render(false, undefined);
-            $(this.get("parentElement")).append(viewElement);
-            this.applyPreferences(pagesViewInfo.pagesView);
-            pagesViewInfo.isRendered = true;
-        }
-        else {
-            callback.call(callbackContext, pagesViewInfo.pagesView);
-        }
-    },
+    //         // This logic is duplicated and should be abstracted
+    //         viewElement = pagesViewInfo.pagesView.render(false, undefined);
+    //         $(this.get("parentElement")).append(viewElement);
+    //         this.applyPreferences(pagesViewInfo.pagesView);
+    //         pagesViewInfo.isRendered = true;
+    //     }
+    //     else {
+    //         callback.call(callbackContext, pagesViewInfo.pagesView);
+    //     }
+    // },
 
     attachEventHandler : function (eventName, callback, callbackContext) {
 

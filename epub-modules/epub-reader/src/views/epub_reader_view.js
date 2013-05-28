@@ -7,7 +7,8 @@ EpubReader.EpubReaderView = Backbone.View.extend({
         this.reader = new EpubReader.EpubReader({
             spineInfo : options.spineInfo,
             viewerSettings : options.viewerSettings,
-            parentElement : options.readerElement
+            parentElement : options.readerElement,
+            renderStrategy : options.renderStrategy
         });
         // Rationale: Propagate the loaded event after all the content documents are loaded
         this.reader.on("epubLoaded", function () {
@@ -23,8 +24,8 @@ EpubReader.EpubReaderView = Backbone.View.extend({
 
         // Set the element that this view will be bound to
         $(this.readerBoundElement).css("opacity", "0");
-        this.reader.loadSpineItems();
         this.setElement(this.readerBoundElement);
+        this.reader.loadSpineItems();
         return this.el;
     },
 
@@ -33,16 +34,16 @@ EpubReader.EpubReaderView = Backbone.View.extend({
     // REFACTORING CANDIDATE: This will only work for reflowable page views; there is currently not a mapping between
     //   spine items and the page views in which they are rendered, for FXL epubs. When support for FXL is included, this 
     //   abstraction will include more.
-    showSpineItem : function (spineIndex) {
+    showSpineItem : function (spineIndex, callback, callbackContext) {
 
         var pagesViewIndex = this.reader.getPagesViewIndex(spineIndex);
-        this.reader.renderPagesView(pagesViewIndex, false, undefined);
+        this.reader.renderPagesView(pagesViewIndex, false, undefined, callback, callbackContext);
         this.reader.getCurrentPagesView().showPageByNumber(1);
     },
 
     // Rationale: As with the CFI library API, it is up to calling code to ensure that the content document CFI component is
     //   is a reference into the content document pointed to by the supplied spine index. 
-    showPageByCFI : function (CFI) {
+    showPageByCFI : function (CFI, callback, callbackContext) {
 
         // Dereference CFI, get the content document href
         var contentDocHref;
@@ -52,7 +53,7 @@ EpubReader.EpubReaderView = Backbone.View.extend({
             
             contentDocHref = this.cfi.getContentDocHref(CFI, this.packageDocumentDOM);
             spineIndex = this.reader.findSpineIndex(contentDocHref);
-            this.showSpineItem(spineIndex);
+            this.showSpineItem(spineIndex, callback, callbackContext);
             pagesView = this.reader.getCurrentPagesView();
             pagesView.showPageByCFI(CFI);
         }
@@ -61,37 +62,34 @@ EpubReader.EpubReaderView = Backbone.View.extend({
         }
     },
 
-    showPageByElementId : function (spineIndex, elementId) { 
+    showPageByElementId : function (spineIndex, elementId, callback, callbackContext) { 
 
         // Rationale: Try to locate the element before switching to a new page view try/catch
-        this.showSpineItem(spineIndex);
+        this.showSpineItem(spineIndex, callback, callbackContext);
         this.reader.getCurrentPagesView().showPageByHashFragment(elementId);
     },
 
-    nextPage : function () {
+    nextPage : function (callback, callbackContext) {
 
         var currentPagesView = this.reader.getCurrentPagesView();
         if (currentPagesView.onLastPage()) {
-            this.reader.renderNextPagesView();
+            this.reader.renderNextPagesView(callback, callbackContext);
         }
         else {
             currentPagesView.nextPage();
         }
     },
 
-    previousPage : function () {
+    previousPage : function (callback, callbackContext) {
 
         var currentPagesView = this.reader.getCurrentPagesView();
         if (currentPagesView.onFirstPage()) {
-            this.reader.renderPreviousPagesView();
+            this.reader.renderPreviousPagesView(callback, callbackContext);
         }
         else {
             currentPagesView.previousPage();
         }
     },
-
-    // REFACTORING CANDIDATE: I don't like that we're maintaining viewer state in the epub object; better that
-    //   each time a view was shown, the settings are applied if required
 
     setFontSize : function (fontSize) {
 

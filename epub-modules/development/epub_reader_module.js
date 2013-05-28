@@ -1,4 +1,4 @@
-var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSettings, packageDocumentDOM) {
+var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSettings, packageDocumentDOM, renderStrategy) {
     
     var EpubReader = {};
 
@@ -137,6 +137,26 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
     //  "PUBLIC" INTERFACE                                                                  //
     // ------------------------------------------------------------------------------------ //  
 
+    // Description: This method chooses the appropriate page view to load for individual 
+    //   spine items, and sections of the spine. 
+    loadSpineItems : function () {
+
+        var pagesViews = this.loadStrategy.loadSpineItems(this.get("viewerSettings"), this.get("annotations"), this.get("bindings"));
+        this.set("loadedPagesViews", pagesViews);
+
+        // Attach list of event handlers
+        // _.each(this.get("pagesViewEventList"), function (eventInfo) {
+        //     view.on(eventInfo.eventName, eventInfo.callback, eventInfo.callbackContext);
+        // });
+
+        if (this.get("renderStrategy") === "eager") {
+            this.eagerRenderStrategy();    
+        }
+        else if (this.get("renderStrategy") === "lazy") {
+            this.trigger("epubLoaded");
+        }
+    },
+
     numberOfLoadedPagesViews : function () {
 
         return this.get("loadedPagesViews").length;
@@ -157,9 +177,10 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         return this.get("loadedPagesViews")[this.get("currentPagesViewIndex")].pagesView;
     },
 
-    renderPagesView : function (pagesViewIndex, renderLast, hashFragmentId) {
+    renderPagesView : function (pagesViewIndex, renderLast, hashFragmentId, callback, callbackContext) {
 
         var pagesView;
+        var that = this;
         if (pagesViewIndex >= 0 && pagesViewIndex < this.numberOfLoadedPagesViews()) {
 
             this.hideRenderedViews();
@@ -168,66 +189,78 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
             pagesView = pagesViewInfo.pagesView;
 
             if (pagesViewInfo.isRendered) {
+
                 pagesView.showPagesView();
                 this.applyPreferences(pagesView);
                 if (renderLast) {
                     pagesView.showPageByNumber(pagesView.numberOfPages());
                 }
+                callback.call(callbackContext, pagesView);
             }
             else {
                 
-                viewElement = pagesViewInfo.pagesView.render(renderLast, hashFragmentId);
-                $(this.get("parentElement")).append(viewElement);
-                this.applyPreferences(pagesViewInfo.pagesView);
+                // Invoke callback when the content document loads
+                pagesView.on("contentDocumentLoaded", function (result) {
+
+                    pagesView.showPagesView();
+                    that.applyPreferences(pagesView);
+                    if (renderLast) {
+                        pagesView.showPageByNumber(pagesView.numberOfPages());
+                    }
+
+                    callback.call(callbackContext, pagesView);
+                }, this);
+
+                $(this.get("parentElement")).append(pagesView.render(false, undefined));
                 pagesViewInfo.isRendered = true;
             }
         }
     },
 
-    renderNextPagesView : function () {
+    renderNextPagesView : function (callback, callbackContext) {
 
         var nextPagesViewIndex;
         if (this.hasNextPagesView()) {
             nextPagesViewIndex = this.get("currentPagesViewIndex") + 1;
-            this.renderPagesView(nextPagesViewIndex, false, undefined);
+            this.renderPagesView(nextPagesViewIndex, false, undefined, callback, callbackContext);
         }
     },
 
-    renderPreviousPagesView : function () {
+    renderPreviousPagesView : function (callback, callbackContext) {
 
         var previousPagesViewIndex;
         if (this.hasPreviousPagesView()) {
             previousPagesViewIndex = this.get("currentPagesViewIndex") - 1;
-            this.renderPagesView(previousPagesViewIndex, true, undefined);
+            this.renderPagesView(previousPagesViewIndex, true, undefined, callback, callbackContext);
         }
     },
 
-    // This is an asychronous method
-    getRenderedPagesView : function (spineIndex, callback, callbackContext) {
+    // // This is an asychronous method
+    // getRenderedPagesView : function (spineIndex, callback, callbackContext) {
 
-        // Get pages view info
-        var that = this;
-        var viewElement;
-        var pagesViewInfo = this.getPagesViewInfo(spineIndex);
+    //     // Get pages view info
+    //     var that = this;
+    //     var viewElement;
+    //     var pagesViewInfo = this.getPagesViewInfo(spineIndex);
 
-        // Check if it is rendered
-        if (!pagesViewInfo.isRendered) {
+    //     // Check if it is rendered
+    //     if (!pagesViewInfo.isRendered) {
 
-            // invoke callback when the content document loads
-            pagesViewInfo.pagesView.on("contentDocumentLoaded", function (pagesView) {
-                callback.call(callbackContext, pagesViewInfo.pagesView);
-            });
+    //         // invoke callback when the content document loads
+    //         pagesViewInfo.pagesView.on("contentDocumentLoaded", function (pagesView) {
+    //             callback.call(callbackContext, pagesViewInfo.pagesView);
+    //         });
 
-            // This logic is duplicated and should be abstracted
-            viewElement = pagesViewInfo.pagesView.render(false, undefined);
-            $(this.get("parentElement")).append(viewElement);
-            this.applyPreferences(pagesViewInfo.pagesView);
-            pagesViewInfo.isRendered = true;
-        }
-        else {
-            callback.call(callbackContext, pagesViewInfo.pagesView);
-        }
-    },
+    //         // This logic is duplicated and should be abstracted
+    //         viewElement = pagesViewInfo.pagesView.render(false, undefined);
+    //         $(this.get("parentElement")).append(viewElement);
+    //         this.applyPreferences(pagesViewInfo.pagesView);
+    //         pagesViewInfo.isRendered = true;
+    //     }
+    //     else {
+    //         callback.call(callbackContext, pagesViewInfo.pagesView);
+    //     }
+    // },
 
     attachEventHandler : function (eventName, callback, callbackContext) {
 
@@ -301,19 +334,6 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
             }
 
         }, 1000);
-    },
-
-    // Description: This method chooses the appropriate page view to load for individual 
-    //   spine items, and sections of the spine. 
-    loadSpineItems : function () {
-
-        var pagesViews = this.loadStrategy.loadSpineItems(this.get("viewerSettings"), this.get("annotations"), this.get("bindings"));
-        this.set("loadedPagesViews", pagesViews);
-        // Attach list of event handlers
-        // _.each(this.get("pagesViewEventList"), function (eventInfo) {
-        //     view.on(eventInfo.eventName, eventInfo.callback, eventInfo.callbackContext);
-        // });
-        this.eagerRenderStrategy();
     },
 
     getCurrentPagesViewInfo : function () {
@@ -434,7 +454,8 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         this.reader = new EpubReader.EpubReader({
             spineInfo : options.spineInfo,
             viewerSettings : options.viewerSettings,
-            parentElement : options.readerElement
+            parentElement : options.readerElement,
+            renderStrategy : options.renderStrategy
         });
         // Rationale: Propagate the loaded event after all the content documents are loaded
         this.reader.on("epubLoaded", function () {
@@ -450,8 +471,8 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
 
         // Set the element that this view will be bound to
         $(this.readerBoundElement).css("opacity", "0");
-        this.reader.loadSpineItems();
         this.setElement(this.readerBoundElement);
+        this.reader.loadSpineItems();
         return this.el;
     },
 
@@ -460,16 +481,16 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
     // REFACTORING CANDIDATE: This will only work for reflowable page views; there is currently not a mapping between
     //   spine items and the page views in which they are rendered, for FXL epubs. When support for FXL is included, this 
     //   abstraction will include more.
-    showSpineItem : function (spineIndex) {
+    showSpineItem : function (spineIndex, callback, callbackContext) {
 
         var pagesViewIndex = this.reader.getPagesViewIndex(spineIndex);
-        this.reader.renderPagesView(pagesViewIndex, false, undefined);
+        this.reader.renderPagesView(pagesViewIndex, false, undefined, callback, callbackContext);
         this.reader.getCurrentPagesView().showPageByNumber(1);
     },
 
     // Rationale: As with the CFI library API, it is up to calling code to ensure that the content document CFI component is
     //   is a reference into the content document pointed to by the supplied spine index. 
-    showPageByCFI : function (CFI) {
+    showPageByCFI : function (CFI, callback, callbackContext) {
 
         // Dereference CFI, get the content document href
         var contentDocHref;
@@ -479,7 +500,7 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
             
             contentDocHref = this.cfi.getContentDocHref(CFI, this.packageDocumentDOM);
             spineIndex = this.reader.findSpineIndex(contentDocHref);
-            this.showSpineItem(spineIndex);
+            this.showSpineItem(spineIndex, callback, callbackContext);
             pagesView = this.reader.getCurrentPagesView();
             pagesView.showPageByCFI(CFI);
         }
@@ -488,37 +509,34 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         }
     },
 
-    showPageByElementId : function (spineIndex, elementId) { 
+    showPageByElementId : function (spineIndex, elementId, callback, callbackContext) { 
 
         // Rationale: Try to locate the element before switching to a new page view try/catch
-        this.showSpineItem(spineIndex);
+        this.showSpineItem(spineIndex, callback, callbackContext);
         this.reader.getCurrentPagesView().showPageByHashFragment(elementId);
     },
 
-    nextPage : function () {
+    nextPage : function (callback, callbackContext) {
 
         var currentPagesView = this.reader.getCurrentPagesView();
         if (currentPagesView.onLastPage()) {
-            this.reader.renderNextPagesView();
+            this.reader.renderNextPagesView(callback, callbackContext);
         }
         else {
             currentPagesView.nextPage();
         }
     },
 
-    previousPage : function () {
+    previousPage : function (callback, callbackContext) {
 
         var currentPagesView = this.reader.getCurrentPagesView();
         if (currentPagesView.onFirstPage()) {
-            this.reader.renderPreviousPagesView();
+            this.reader.renderPreviousPagesView(callback, callbackContext);
         }
         else {
             currentPagesView.previousPage();
         }
     },
-
-    // REFACTORING CANDIDATE: I don't like that we're maintaining viewer state in the epub object; better that
-    //   each time a view was shown, the settings are applied if required
 
     setFontSize : function (fontSize) {
 
@@ -678,18 +696,19 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         readerElement : readerBoundElement,
         spineInfo : epubSpineInfo,
         viewerSettings : viewerSettings,
-        packageDocumentDOM : packageDocumentDOM
+        packageDocumentDOM : packageDocumentDOM,
+        renderStrategy : renderStrategy
     });
 
     // Description: The public interface
     return {
 
         render : function () { return epubReaderView.render.call(epubReaderView); },
-        showSpineItem : function (spineIndex) { return epubReaderView.showSpineItem.call(epubReaderView, spineIndex); },
-        showPageByCFI : function (CFI) { return epubReaderView.showPageByCFI.call(epubReaderView, CFI); },
-        showPageByElementId : function (spineIndex, hashFragmentId) { return epubReaderView.showPageByElementId.call(epubReaderView, spineIndex, hashFragmentId); },
-        nextPage : function () { return epubReaderView.nextPage.call(epubReaderView); },
-        previousPage : function () { return epubReaderView.previousPage.call(epubReaderView); },
+        showSpineItem : function (spineIndex, callback, callbackContext) { return epubReaderView.showSpineItem.call(epubReaderView, spineIndex, callback, callbackContext); },
+        showPageByCFI : function (CFI, callback, callbackContext) { return epubReaderView.showPageByCFI.call(epubReaderView, CFI, callback, callbackContext); },
+        showPageByElementId : function (spineIndex, hashFragmentId, callback, callbackContext) { return epubReaderView.showPageByElementId.call(epubReaderView, spineIndex, hashFragmentId, callback, callbackContext); },
+        nextPage : function (callback, callbackContext) { return epubReaderView.nextPage.call(epubReaderView, callback, callbackContext); },
+        previousPage : function (callback, callbackContext) { return epubReaderView.previousPage.call(epubReaderView, callback, callbackContext); },
         setFontSize : function (fontSize) { return epubReaderView.setFontSize.call(epubReaderView, fontSize); },
         setMargin : function (margin) { return epubReaderView.setMargin.call(epubReaderView, margin); },
         setTheme : function (theme) { return epubReaderView.setTheme.call(epubReaderView, theme); },

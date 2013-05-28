@@ -89,7 +89,8 @@ var initializationTest = function (bookType) {
         $("#reader"),
         spineInfo,
         viewerSettings,
-        packDocDOM
+        packDocDOM,
+        "eager"
     );
   }
   else if (bookType === "reflowable") {
@@ -121,7 +122,8 @@ var initializationTest = function (bookType) {
               $("#reader"),
               spineInfo,
               viewerSettings,
-              packDocDOM
+              packDocDOM,
+              "eager"
           );
         }
       });
@@ -199,7 +201,8 @@ var initializationTest = function (bookType) {
             $("#reader"),
             spineInfo,
             viewerSettings,
-            packDocDOM
+            packDocDOM,
+            "lazy"
         );
     }
 };
