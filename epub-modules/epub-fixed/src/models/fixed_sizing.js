@@ -111,7 +111,14 @@ EpubFixed.FixedSizing = Backbone.Model.extend({
 
         //modernizer library can be used to get browser independent transform attributes names (implemented in readium-web fixed_layout_book_zoomer.js)
         var css = {};
-        css["-webkit-transform"] = transformString;
+        css[this.modernizrCssPrefix("transform")] = transformString;
         return css;
-    }
+    },
+
+    modernizrCssPrefix : function (attr) {
+        var str = Modernizr.prefixed(attr);
+        return str.replace(/([A-Z])/g, function(str, m1){ 
+            return '-' + m1.toLowerCase(); 
+        }).replace(/^ms-/,'-ms-');
+    },
 });
