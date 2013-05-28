@@ -2381,10 +2381,6 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         setTheme : function (theme) { return reflowableView.setTheme.call(reflowableView, theme); },
         setSyntheticLayout : function (isSynthetic) { return reflowableView.setSyntheticLayout.call(reflowableView, isSynthetic); },
         on : function (eventName, callback, callbackContext) { return reflowableView.on.call(reflowableView, eventName, callback, callbackContext); },
-        off : function (eventName, callback) { return reflowableView.off.call(reflowableView, eventName, callback); },
-        // addSelectionHighlight : function (id) { return reflowableView.annotations.addSelectionHighlight.call(reflowableView.annotations, id); },
-        // addSelectionBookmark : function (id) { return reflowableView.annotations.addSelectionBookmark.call(reflowableView.annotations, id); },
-        // addHighlight : function (CFI, id) { return reflowableView.annotations.addHighlight.call(reflowableView.annotations, CFI, id); },
-        // addBookmark : function (CFI, id) { return reflowableView.annotations.addBookmark.call(reflowableView.annotations, CFI, id); }
+        off : function (eventName, callback) { return reflowableView.off.call(reflowableView, eventName, callback); }
     };
 };

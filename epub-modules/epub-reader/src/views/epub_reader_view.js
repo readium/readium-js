@@ -36,9 +36,12 @@ EpubReader.EpubReaderView = Backbone.View.extend({
     //   abstraction will include more.
     showSpineItem : function (spineIndex, callback, callbackContext) {
 
+        var that = this;
         var pagesViewIndex = this.reader.getPagesViewIndex(spineIndex);
-        this.reader.renderPagesView(pagesViewIndex, false, undefined, callback, callbackContext);
-        this.reader.getCurrentPagesView().showPageByNumber(1);
+        this.reader.renderPagesView(pagesViewIndex, false, undefined, function () {
+            this.reader.getCurrentPagesView().showPageByNumber(1);
+            callback.call(callbackContext);
+        }, this);
     },
 
     // Rationale: As with the CFI library API, it is up to calling code to ensure that the content document CFI component is
@@ -53,9 +56,11 @@ EpubReader.EpubReaderView = Backbone.View.extend({
             
             contentDocHref = this.cfi.getContentDocHref(CFI, this.packageDocumentDOM);
             spineIndex = this.reader.findSpineIndex(contentDocHref);
-            this.showSpineItem(spineIndex, callback, callbackContext);
-            pagesView = this.reader.getCurrentPagesView();
-            pagesView.showPageByCFI(CFI);
+            this.showSpineItem(spineIndex, function () {
+                pagesView = this.reader.getCurrentPagesView();
+                pagesView.showPageByCFI(CFI);
+                callback.call(callbackContext);
+            }, this);
         }
         catch (error) {
             throw error; 
@@ -65,8 +70,10 @@ EpubReader.EpubReaderView = Backbone.View.extend({
     showPageByElementId : function (spineIndex, elementId, callback, callbackContext) { 
 
         // Rationale: Try to locate the element before switching to a new page view try/catch
-        this.showSpineItem(spineIndex, callback, callbackContext);
-        this.reader.getCurrentPagesView().showPageByHashFragment(elementId);
+        this.showSpineItem(spineIndex, function () {
+            this.reader.getCurrentPagesView().showPageByHashFragment(elementId);
+            callback.call(callbackContext);
+        }, this);
     },
 
     nextPage : function (callback, callbackContext) {

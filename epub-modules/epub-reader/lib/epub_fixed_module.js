@@ -654,9 +654,16 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
 
         //modernizer library can be used to get browser independent transform attributes names (implemented in readium-web fixed_layout_book_zoomer.js)
         var css = {};
-        css["-webkit-transform"] = transformString;
+        css[this.modernizrCssPrefix("transform")] = transformString;
         return css;
-    }
+    },
+
+    modernizrCssPrefix : function (attr) {
+        var str = Modernizr.prefixed(attr);
+        return str.replace(/([A-Z])/g, function(str, m1){ 
+            return '-' + m1.toLowerCase(); 
+        }).replace(/^ms-/,'-ms-');
+    },
 });
     EpubFixed.FixedLayoutStyle = Backbone.Model.extend({
 
@@ -671,6 +678,9 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
             "height" : "100%",
             "width" : "50%",
             "-webkit-transform-origin" : "top left",
+            "-moz-transform-origin" : "top left",
+            "-o-transform-origin" : "top left",
+            "-ms-transform-origin" : "top left",
             "left" : "25%"
         };
     },
@@ -685,6 +695,9 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
             "right" : "50%",
             "left" : "", // Have to clear the left if it was set for this page on a single page spread
             "-webkit-transform-origin" : "top right",
+            "-moz-transform-origin" : "top right",
+            "-o-transform-origin" : "top right",
+            "-ms-transform-origin" : "top right",
             "background-color" : "#FFF"
         };
     },
@@ -698,6 +711,9 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
             "width" : "50%", 
             "left" : "50%",
             "-webkit-transform-origin" : "top left",
+            "-moz-transform-origin" : "top left",
+            "-o-transform-origin" : "top left",
+            "-ms-transform-origin" : "top left",
             "background-color" : "#FFF" 
         };
     },
@@ -1056,10 +1072,6 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
         setTheme : function (theme) { return; },
         setSyntheticLayout : function (isSynthetic) { return fixedView.setSyntheticLayout.call(fixedView, isSynthetic); },
         on : function (eventName, callback, callbackContext) { return fixedView.on.call(fixedView, eventName, callback, callbackContext); },
-        off : function (eventName, callback) { return fixedView.off.call(fixedView, eventName, callback); }//,
-        // addSelectionHighlight : function (id) { return reflowableView.annotations.addSelectionHighlight.call(reflowableView.annotations, id); },
-        // addSelectionBookmark : function (id) { return reflowableView.annotations.addSelectionBookmark.call(reflowableView.annotations, id); },
-        // addHighlight : function (CFI, id) { return reflowableView.annotations.addHighlight.call(reflowableView.annotations, CFI, id); },
-        // addBookmark : function (CFI, id) { return reflowableView.annotations.addBookmark.call(reflowableView.annotations, CFI, id); }
+        off : function (eventName, callback) { return fixedView.off.call(fixedView, eventName, callback); }
     };
 };
