@@ -23,6 +23,19 @@ EpubReader.EpubReader = Backbone.Model.extend({
     //  "PUBLIC" INTERFACE                                                                  //
     // ------------------------------------------------------------------------------------ //  
 
+    // Description: This method chooses the appropriate page view to load for individual 
+    //   spine items, and sections of the spine. 
+    loadSpineItems : function () {
+
+        var pagesViews = this.loadStrategy.loadSpineItems(this.get("viewerSettings"), this.get("annotations"), this.get("bindings"));
+        this.set("loadedPagesViews", pagesViews);
+        // Attach list of event handlers
+        // _.each(this.get("pagesViewEventList"), function (eventInfo) {
+        //     view.on(eventInfo.eventName, eventInfo.callback, eventInfo.callbackContext);
+        // });
+        this.eagerRenderStrategy();
+    },
+
     numberOfLoadedPagesViews : function () {
 
         return this.get("loadedPagesViews").length;
@@ -187,19 +200,6 @@ EpubReader.EpubReader = Backbone.Model.extend({
             }
 
         }, 1000);
-    },
-
-    // Description: This method chooses the appropriate page view to load for individual 
-    //   spine items, and sections of the spine. 
-    loadSpineItems : function () {
-
-        var pagesViews = this.loadStrategy.loadSpineItems(this.get("viewerSettings"), this.get("annotations"), this.get("bindings"));
-        this.set("loadedPagesViews", pagesViews);
-        // Attach list of event handlers
-        // _.each(this.get("pagesViewEventList"), function (eventInfo) {
-        //     view.on(eventInfo.eventName, eventInfo.callback, eventInfo.callbackContext);
-        // });
-        this.eagerRenderStrategy();
     },
 
     getCurrentPagesViewInfo : function () {
