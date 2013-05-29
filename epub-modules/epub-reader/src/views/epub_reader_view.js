@@ -39,7 +39,18 @@ EpubReader.EpubReaderView = Backbone.View.extend({
         var that = this;
         var pagesViewIndex = this.reader.getPagesViewIndex(spineIndex);
         this.reader.renderPagesView(pagesViewIndex, false, undefined, function () {
-            this.reader.getCurrentPagesView().showPageByNumber(1);
+
+            var pagesViewInfo = this.reader.getCurrentPagesViewInfo();
+
+            // If the pages view is fixed
+            if (pagesViewInfo.type === "fixed") {
+                pageNumber = that.getPageNumber(pagesViewInfo, spineIndex);
+                pagesViewInfo.pagesView.showPageByNumber(pageNumber);
+            }
+            else {
+                pagesViewInfo.pagesView.showPageByNumber(1);    
+            }
+            
             callback.call(callbackContext);
         }, this);
     },
@@ -179,5 +190,21 @@ EpubReader.EpubReaderView = Backbone.View.extend({
         catch (error) {
             throw error;
         }
+    },
+
+    getPageNumber : function (fixedPagesViewInfo, spineIndex) {
+
+        var spineIndexes = fixedPagesViewInfo.spineIndexes;
+        var pageNumber = undefined;
+
+        _.each(spineIndexes, function (currSpineIndex, index) {
+
+            if (currSpineIndex === spineIndex) {
+                pageNumber = index + 1;
+                return true;
+            }
+        });
+
+        return pageNumber;
     }
 });

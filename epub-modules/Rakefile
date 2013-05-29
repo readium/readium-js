@@ -21,7 +21,7 @@ def render_consolidated_module_template(templatePath, outputPath)
 end
 
 desc "render the consolidated epub module erb template"
-task :gen_simple_rwc do
+task :gen_simple_readiumjs do
     puts "rendering simple RWC"
-    render_consolidated_module_template("simple_rwc_template.js.erb", "release/SimpleRWC.js")
+    render_consolidated_module_template("simple_rwc_template.js.erb", "release/SimpleReadium.js")
 end
