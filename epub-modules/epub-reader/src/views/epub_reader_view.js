@@ -38,6 +38,7 @@ EpubReader.EpubReaderView = Backbone.View.extend({
 
         var that = this;
         var pagesViewIndex = this.reader.getPagesViewIndex(spineIndex);
+        this.$el.css("opacity", "0");
         this.reader.renderPagesView(pagesViewIndex, false, undefined, function () {
 
             var pagesViewInfo = this.reader.getCurrentPagesViewInfo();
@@ -51,6 +52,7 @@ EpubReader.EpubReaderView = Backbone.View.extend({
                 pagesViewInfo.pagesView.showPageByNumber(1);    
             }
             
+            that.$el.css("opacity", "1");
             callback.call(callbackContext);
         }, this);
     },
