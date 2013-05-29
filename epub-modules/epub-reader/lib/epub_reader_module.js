@@ -437,7 +437,7 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         // Rationale: Propagate the loaded event after all the content documents are loaded
         this.reader.on("epubLoaded", function () {
             that.trigger("epubLoaded");
-            that.$el.css("opacity", "1");
+            // that.$el.css("opacity", "1");
         }, this);
 
         this.readerBoundElement = options.readerElement;
