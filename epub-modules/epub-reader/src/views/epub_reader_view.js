@@ -89,9 +89,16 @@ EpubReader.EpubReaderView = Backbone.View.extend({
 
     nextPage : function (callback, callbackContext) {
 
+        var that = this;
         var currentPagesView = this.reader.getCurrentPagesView();
+
         if (currentPagesView.onLastPage()) {
-            this.reader.renderNextPagesView(callback, callbackContext);
+
+            this.$el.css("opacity", "0");
+            this.reader.renderNextPagesView(function () {
+                that.$el.css("opacity", "1");
+                callback.call(callbackContext);
+            }, this);
         }
         else {
             currentPagesView.nextPage();
@@ -100,9 +107,16 @@ EpubReader.EpubReaderView = Backbone.View.extend({
 
     previousPage : function (callback, callbackContext) {
 
+        var that = this;
         var currentPagesView = this.reader.getCurrentPagesView();
+
         if (currentPagesView.onFirstPage()) {
-            this.reader.renderPreviousPagesView(callback, callbackContext);
+
+            this.$el.css("opacity", "0");
+            this.reader.renderPreviousPagesView(function () {
+                that.$el.css("opacity", "1");
+                callback.call(callbackContext);
+            }, this);
         }
         else {
             currentPagesView.previousPage();

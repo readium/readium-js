@@ -19,7 +19,7 @@
             $(document).ready(function () {
 
                 var that = this;
-                this.view = initializationTest("fixed");
+                this.view = initializationTest("reflowable");
 
                 var pressLeft = function () { that.view.previousPage(function () { console.log("page left"); }); };
                 var pressRight = function () { that.view.nextPage(function () { console.log("page left"); }); };
