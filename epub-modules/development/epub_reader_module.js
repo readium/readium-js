@@ -223,6 +223,9 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
             nextPagesViewIndex = this.get("currentPagesViewIndex") + 1;
             this.renderPagesView(nextPagesViewIndex, false, undefined, callback, callbackContext);
         }
+        else {
+            callback.call(callbackContext);
+        }
     },
 
     renderPreviousPagesView : function (callback, callbackContext) {
@@ -231,6 +234,9 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         if (this.hasPreviousPagesView()) {
             previousPagesViewIndex = this.get("currentPagesViewIndex") - 1;
             this.renderPagesView(previousPagesViewIndex, true, undefined, callback, callbackContext);
+        }
+        else {
+            callback.call(callbackContext);
         }
     },
 
