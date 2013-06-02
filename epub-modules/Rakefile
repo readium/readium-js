@@ -24,6 +24,8 @@ end
 desc "render the consolidated epub module erb template"
 task :gen_simple_readiumjs do
     puts "rendering simple RWC"
+    
     `cp epub_reading_system.js development/epub_reading_system.js`
+    
     render_consolidated_module_template("simple_rwc_template.js.erb", "release/SimpleReadium.js")
 end
