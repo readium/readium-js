@@ -30,6 +30,30 @@ EpubFixed.FixedPageView = Backbone.View.extend({
         this.get$iframe().attr("src", this.iframeSrc);
         this.get$iframe().on("load", function () {
 
+            // "Forward" the epubReadingSystem object to the iframe's own window context.
+            // Note: the epubReadingSystem object may not be ready when directly using the
+            // window.onload callback function (from within an (X)HTML5 EPUB3 content document's Javascript code)
+            // To address this issue, the recommended code is:
+            // -----
+            // function doSomething() { console.log(navigator.epubReadingSystem); };
+            // 
+            // // With jQuery:
+            // $(document).ready(function () { setTimeout(doSomething, 200); });
+            // 
+            // // With the window "load" event:
+            // window.addEventListener("load", function () { setTimeout(doSomething, 200); }, false);
+            // 
+            // // With the modern document "DOMContentLoaded" event:
+            // document.addEventListener("DOMContentLoaded", function(e) { setTimeout(doSomething, 200); }, false);
+            // -----
+            if (typeof navigator.epubReadingSystem != 'undefined')
+            {
+               var iFrame = that.get$iframe()[0];
+               var iFrameWindow = iFrame.contentWindow || iFrame.contentDocument.parentWindow;
+               var ers = navigator.epubReadingSystem; //iFrameWindow.parent.navigator.epubReadingSystem
+               iFrameWindow.navigator.epubReadingSystem = ers;
+            }
+
             that.sizing = new EpubFixed.FixedSizing({ contentDocument : that.get$iframe()[0].contentDocument });
             // this.injectLinkHandler(e.srcElement);
             // that.applyKeydownHandler($(view.iframe()));

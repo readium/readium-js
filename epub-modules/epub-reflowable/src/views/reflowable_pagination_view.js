@@ -90,6 +90,30 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 		// Wait for iframe to load EPUB content document
 		$(this.getReadiumFlowingContent()).on("load", function (e) {
 
+            // "Forward" the epubReadingSystem object to the iframe's own window context.
+            // Note: the epubReadingSystem object may not be ready when directly using the
+            // window.onload callback function (from within an (X)HTML5 EPUB3 content document's Javascript code)
+            // To address this issue, the recommended code is:
+            // -----
+            // function doSomething() { console.log(navigator.epubReadingSystem); };
+            // 
+            // // With jQuery:
+            // $(document).ready(function () { setTimeout(doSomething, 200); });
+            // 
+            // // With the window "load" event:
+            // window.addEventListener("load", function () { setTimeout(doSomething, 200); }, false);
+            // 
+            // // With the modern document "DOMContentLoaded" event:
+            // document.addEventListener("DOMContentLoaded", function(e) { setTimeout(doSomething, 200); }, false);
+            // -----
+            if (typeof navigator.epubReadingSystem != 'undefined')
+            {
+               var iFrame = that.getReadiumFlowingContent();
+               var iFrameWindow = iFrame.contentWindow || iFrame.contentDocument.parentWindow;
+               var ers = navigator.epubReadingSystem; //iFrameWindow.parent.navigator.epubReadingSystem
+               iFrameWindow.navigator.epubReadingSystem = ers;
+            }
+
 			var lastPageElementId = that.initializeContentDocument();
 
 			// Rationale: The content document must be paginated in order for the subsequent "go to page" methods
