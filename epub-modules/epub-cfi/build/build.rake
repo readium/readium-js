@@ -33,7 +33,7 @@ end
 desc "render the erb template to concatenate scripts"
 task :gen_module do
   render_cfi_library_template("src/templates/cfi_library_template.js.erb", "../development/epub_cfi.js")
-  render_cfi_library_template("src/templates/cfi_library_template.js.erb", "lib/epub_cfi.js")
+  `cp ../development/epub_cfi.js lib/epub_cfi.js`
 end
 
 desc "Concatenate all source files"

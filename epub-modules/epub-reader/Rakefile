@@ -1,3 +1,4 @@
+require "erb"
 
 begin
   require 'jasmine'
@@ -13,6 +14,9 @@ task :get_dependencies do
     `cp ../development/epub_reflowable_module.js lib/epub_reflowable_module.js`
     `cp ../development/epub_module.js lib/epub_module.js`
     `cp ../development/epub_parser_module.js lib/epub_parser_module.js`
+    `cp ../development/epub_cfi.js lib/epub_cfi.js`
+    
+    `cp ../development/epub_reading_system.js lib/epub_reading_system.js`
 end
 
 task :server do
@@ -40,5 +44,5 @@ desc "render the epub reader module erb template"
 task :gen_module do
     puts "rendering the epub reader module"
     render_epub_reader_module_template("src/templates/epub_reader_module_template.js.erb", "../development/epub_reader_module.js")
-    render_epub_reader_module_template("src/templates/epub_reader_module_template.js.erb", "lib/epub_reader_module.js")
+    `cp ../development/epub_reader_module.js lib/epub_reader_module.js`
 end
