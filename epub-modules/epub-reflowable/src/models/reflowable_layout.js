@@ -3,6 +3,7 @@ EpubReflowable.ReflowableLayout = Backbone.Model.extend({
 
     initialize: function (options) {
         // make sure we have proper vendor prefixed props for when we need them
+		this.epubCFI = new EpubCFIModule();
     },
 
     // ------------------------------------------------------------------------------------ //
@@ -125,8 +126,7 @@ EpubReflowable.ReflowableLayout = Backbone.Model.extend({
             if (cfi.contentDocSpinePos === currSpinePosition) {
 
                 try {
-                    
-                    EPUBcfi.Interpreter.injectElement(
+					that.epubCFI.injectElement(
                         key,
                         contentDocument.parentNode,
                         cfi.payload,
@@ -141,6 +141,7 @@ EpubReflowable.ReflowableLayout = Backbone.Model.extend({
                 catch (e) {
 
                     console.log("Could not inject CFI");
+                    console.log(e);
                 }
             }
         });

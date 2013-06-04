@@ -46,7 +46,7 @@ var initializationTest = function () {
             media_type : "application/xhtml+xml"
         }
     ];
-
+	
     this.view = new EpubReflowableModule(
         spineItem,
         viewerSettings,

@@ -1,3 +1,4 @@
+require "erb"
 
 begin
   require 'jasmine'
@@ -9,10 +10,9 @@ rescue LoadError
 end
 
 task :get_dependencies do
-    `cp ../development/epub_fixed_module.js lib/epub_fixed_module.js`
-    `cp ../development/epub_reflowable_module.js lib/epub_reflowable_module.js`
-    `cp ../development/epub_module.js lib/epub_module.js`
-    `cp ../development/epub_parser_module.js lib/epub_parser_module.js`
+    `cp -a ../development/. lib`
+    `cp -a ../lib/. lib`
+    `cp -a ../release/. lib`
 end
 
 task :server do
@@ -40,5 +40,5 @@ desc "render the epub reader module erb template"
 task :gen_module do
     puts "rendering the epub reader module"
     render_epub_reader_module_template("src/templates/epub_reader_module_template.js.erb", "../development/epub_reader_module.js")
-    render_epub_reader_module_template("src/templates/epub_reader_module_template.js.erb", "lib/epub_reader_module.js")
+    `cp ../development/epub_reader_module.js lib/epub_reader_module.js`
 end

@@ -602,13 +602,7 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
 
         var scale = Math.min(horScale, verScale);
 
-        var newWidth = bookSize.width * scale;
-        var newHeight = bookSize.height * scale;
-
-        var left = Math.floor((containerWidth - newWidth) / 2);
-        var top = Math.floor((containerHeight - newHeight) / 2);
-
-        var css = this.generateTransformCSS(left, top, scale);
+        var css = this.generateTransformCSS(scale);
         css["width"] = bookSize.width;
         css["height"] = bookSize.height;
 
@@ -654,17 +648,22 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
     },
 
     // Have to modernizer this
-    generateTransformCSS : function (left, top, scale) {
+    generateTransformCSS : function (scale) {
 
-        var transformString = "translate(" + left + "px, " + top + "px) scale(" + scale + ")";
+        var transformString = "scale(" + scale + ")";
 
         //modernizer library can be used to get browser independent transform attributes names (implemented in readium-web fixed_layout_book_zoomer.js)
         var css = {};
-        css["-webkit-transform"] = transformString;
-        css["-webkit-transform-origin"] = "0 0";
-
+        css[this.modernizrCssPrefix("transform")] = transformString;
         return css;
-    }
+    },
+
+    modernizrCssPrefix : function (attr) {
+        var str = Modernizr.prefixed(attr);
+        return str.replace(/([A-Z])/g, function(str, m1){ 
+            return '-' + m1.toLowerCase(); 
+        }).replace(/^ms-/,'-ms-');
+    },
 });
     EpubFixed.FixedLayoutStyle = Backbone.Model.extend({
 
@@ -678,6 +677,10 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
             "overflow" : "hidden",
             "height" : "100%",
             "width" : "50%",
+            "-webkit-transform-origin" : "top left",
+            "-moz-transform-origin" : "top left",
+            "-o-transform-origin" : "top left",
+            "-ms-transform-origin" : "top left",
             "left" : "25%"
         };
     },
@@ -685,38 +688,47 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
     getPageSpreadLeftCSS : function () {
 
         return { 
-                "position" : "absolute",
-                "overflow" : "hidden",
-                "height" : "100%",
-                "width" : "50%", 
-                "left" : "0%",
-                "background-color" : "#FFF"
-            };
+            "position" : "absolute",
+            "overflow" : "hidden",
+            "height" : "100%",
+            "width" : "50%", 
+            "right" : "50%",
+            "left" : "", // Have to clear the left if it was set for this page on a single page spread
+            "-webkit-transform-origin" : "top right",
+            "-moz-transform-origin" : "top right",
+            "-o-transform-origin" : "top right",
+            "-ms-transform-origin" : "top right",
+            "background-color" : "#FFF"
+        };
     },
 
     getPageSpreadRightCSS : function () {
 
         return { 
-                "position" : "absolute",
-                "overflow" : "hidden",
-                "height" : "100%",
-                "width" : "50%", 
-                "left" : "50%",
-                "background-color" : "#FFF" 
-            };
+            "position" : "absolute",
+            "overflow" : "hidden",
+            "height" : "100%",
+            "width" : "50%", 
+            "left" : "50%",
+            "-webkit-transform-origin" : "top left",
+            "-moz-transform-origin" : "top left",
+            "-o-transform-origin" : "top left",
+            "-ms-transform-origin" : "top left",
+            "background-color" : "#FFF" 
+        };
     },
 
     getPageSpreadCenterCSS : function () {
 
         return {
-                "position" : "absolute",
-                "overflow" : "hidden", 
-                "height" : "100%",
-                "width" : "100%",
-                "left" : "50%",
-                "z-index" : "11",
-                "background-color" : "#FFF" 
-            };
+            "position" : "absolute",
+            "overflow" : "hidden", 
+            "height" : "100%",
+            "width" : "100%",
+            "left" : "50%",
+            "z-index" : "11",
+            "background-color" : "#FFF" 
+        };
     }
 });
     EpubFixed.FixedPageView = Backbone.View.extend({
@@ -750,6 +762,30 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
         var that = this;
         this.get$iframe().attr("src", this.iframeSrc);
         this.get$iframe().on("load", function () {
+
+            // "Forward" the epubReadingSystem object to the iframe's own window context.
+            // Note: the epubReadingSystem object may not be ready when directly using the
+            // window.onload callback function (from within an (X)HTML5 EPUB3 content document's Javascript code)
+            // To address this issue, the recommended code is:
+            // -----
+            // function doSomething() { console.log(navigator.epubReadingSystem); };
+            // 
+            // // With jQuery:
+            // $(document).ready(function () { setTimeout(doSomething, 200); });
+            // 
+            // // With the window "load" event:
+            // window.addEventListener("load", function () { setTimeout(doSomething, 200); }, false);
+            // 
+            // // With the modern document "DOMContentLoaded" event:
+            // document.addEventListener("DOMContentLoaded", function(e) { setTimeout(doSomething, 200); }, false);
+            // -----
+            if (typeof navigator.epubReadingSystem != 'undefined')
+            {
+               var iFrame = that.get$iframe()[0];
+               var iFrameWindow = iFrame.contentWindow || iFrame.contentDocument.parentWindow;
+               var ers = navigator.epubReadingSystem; //iFrameWindow.parent.navigator.epubReadingSystem
+               iFrameWindow.navigator.epubReadingSystem = ers;
+            }
 
             that.sizing = new EpubFixed.FixedSizing({ contentDocument : that.get$iframe()[0].contentDocument });
             // this.injectLinkHandler(e.srcElement);
@@ -798,11 +834,12 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
 
     setPageSize : function () {
 
+        var $readerElement = this.$el.parent().parent();
         if (this.sizing !== undefined) {
 
             var transformCss;
             this.sizing.updateMetaSize();
-            transformCss = this.sizing.fitToScreen(this.$el.width(), this.$el.height());
+            transformCss = this.sizing.fitToScreen($readerElement.width(), $readerElement.height());
             this.$el.css(transformCss);
         }
     }
@@ -877,18 +914,19 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
 
     setPageSize : function () {
 
+        var $readerElement = this.$el.parent().parent();
         if (this.sizing !== undefined) {
 
             var transformCss;
             this.sizing.updateMetaSize();
-            transformCss = this.sizing.fitToScreen(this.$el.width(), this.$el.height());
+            transformCss = this.sizing.fitToScreen($readerElement.width(), $readerElement.height());
             this.$el.css(transformCss);
         }
     }
 });
     EpubFixed.FixedPaginationView = Backbone.View.extend({
 
-	el : "<div class='fixed-pages-view' style='width:100%; height:100%;'> \
+	el : "<div class='fixed-pages-view' style='position:relative;'> \
             <div class='fixed-spine-divider'></div> \
           </div>",
 
@@ -1058,10 +1096,6 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
         setTheme : function (theme) { return; },
         setSyntheticLayout : function (isSynthetic) { return fixedView.setSyntheticLayout.call(fixedView, isSynthetic); },
         on : function (eventName, callback, callbackContext) { return fixedView.on.call(fixedView, eventName, callback, callbackContext); },
-        off : function (eventName, callback) { return fixedView.off.call(fixedView, eventName, callback); }//,
-        // addSelectionHighlight : function (id) { return reflowableView.annotations.addSelectionHighlight.call(reflowableView.annotations, id); },
-        // addSelectionBookmark : function (id) { return reflowableView.annotations.addSelectionBookmark.call(reflowableView.annotations, id); },
-        // addHighlight : function (CFI, id) { return reflowableView.annotations.addHighlight.call(reflowableView.annotations, CFI, id); },
-        // addBookmark : function (CFI, id) { return reflowableView.annotations.addBookmark.call(reflowableView.annotations, CFI, id); }
+        off : function (eventName, callback) { return fixedView.off.call(fixedView, eventName, callback); }
     };
 };

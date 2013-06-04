@@ -1,3 +1,4 @@
+require "erb"
 
 begin
   require 'jasmine'
@@ -10,6 +11,12 @@ end
 
 task :server do
     `thin -R view_testing/static.ru start`
+end
+
+task :get_dependencies do 
+    `cp -a ../development/. lib`
+    `cp -a ../lib/. lib`
+    `cp -a ../release/. lib`
 end
 
 # Generate the epub module 
@@ -39,7 +46,5 @@ desc "render the epub module erb template"
 task :gen_module do
     puts "rendering the epub reflowable module"
     render_epub_reflowable_module_template("src/templates/epub_reflowable_module_template.js.erb", "../development/epub_reflowable_module.js")
-    render_epub_reflowable_module_template("src/templates/epub_reflowable_module_template.js.erb", "lib/epub_reflowable_module.js")
-
-    `cp ../epub_reading_system.js lib/epub_reading_system.js`
+    `cp ../development/epub_reflowable_module.js lib/epub_reflowable_module.js`
 end

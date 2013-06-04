@@ -1,3 +1,4 @@
+require "erb"
 
 begin
   require 'jasmine'
@@ -29,5 +30,5 @@ desc "render the epub parser module erb template"
 task :gen_module do
     puts "rendering the epub parser module"
     render_epub_parser_module_template("src/templates/epub_parser_module_template.js.erb", "../development/epub_parser_module.js")
-    render_epub_parser_module_template("src/templates/epub_parser_module_template.js.erb", "lib/epub_parser_module.js")
+    `cp ../development/epub_parser_module.js lib/epub_parser_module.js`
 end
