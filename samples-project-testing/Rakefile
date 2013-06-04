@@ -1,6 +1,7 @@
 task :get_dependencies do
     `cp -a ../epub-modules/development/. lib`
     `cp -a ../epub-modules/lib/. lib`
+    `cp -a ../epub-modules/release/. lib`
 end
 
 task :server do

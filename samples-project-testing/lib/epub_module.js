@@ -503,11 +503,11 @@ Epub.PackageDocument = Backbone.Model.extend({
         return packageDocumentDom;
     },
 
-    getToc: function() {
+    getToc : function () {
 
         var item = this.getTocItem();
-        if (item){
-            var href = item.get("href");
+        if (item) {
+            var href = item.get("contentDocumentURI");
             return href;
         }
         return null;

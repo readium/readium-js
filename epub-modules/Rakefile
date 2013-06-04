@@ -21,6 +21,26 @@ def render_consolidated_module_template(templatePath, outputPath)
     end
 end
 
+def render_non_consolidated_module_template(templatePath, outputPath)
+
+    # Read each of the library components
+    epub_reading_system = ""
+    epubcfi = ""
+    epub_reflowable = ""
+    epub_fixed = ""
+    epub_parser = ""
+    epub = ""
+    epub_reader = ""
+
+    template = File.read(templatePath)
+    erb = ERB.new(template)
+    
+    # Generate library
+    File.open(outputPath, "w") do |f|
+        f.puts erb.result(binding)
+    end
+end
+
 desc "render the consolidated epub module erb template"
 task :gen_simple_readiumjs do
     puts "rendering simple RWC"
@@ -28,4 +48,5 @@ task :gen_simple_readiumjs do
     `cp epub_reading_system.js development/epub_reading_system.js`
     
     render_consolidated_module_template("simple_rwc_template.js.erb", "release/SimpleReadium.js")
+    render_non_consolidated_module_template("simple_rwc_template.js.erb", "release/SimpleReadium_Dev.js")
 end
