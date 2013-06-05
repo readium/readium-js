@@ -1,1 +1,9 @@
 .DS_Store
+epub-modules/development
+epub-modules/epub/lib
+epub-modules/epub-cfi/lib
+epub-modules/epub-fixed/lib
+epub-modules/epub-parser/lib
+epub-modules/epub-reader/lib
+epub-modules/epub-reflowable/lib
+samples-project-testing/lib

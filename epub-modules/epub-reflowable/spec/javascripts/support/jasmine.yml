@@ -14,8 +14,8 @@ src_files:
     - spec/test_namespace.js
     - lib/jquery-1.9.1.js
     - lib/json2.js
-    - lib/underscore.js
-    - lib/backbone.js
+    - lib/underscore-1.4.4.js
+    - lib/backbone-0.9.10.js
     - lib/epub_cfi.js
     - src/**/*.js
 
