@@ -77,16 +77,11 @@ task :copy_all_dependencies do
     puts `rake -f samples-project-testing/Rakefile copy_dependencies`
 end
 
-#task :refresh_library => ["gen_all_modules", "copy_all_dependencies"]
-
-
 desc "top-level task (runs all module subtasks)"
 task :build do
     
     puts ":build"
     
-#    Rake::Task[:refresh_library].invoke()
-
     Rake::Task[:gen_all_modules].invoke()
     
     gen_simple_api_consolidated("epub-modules/simple-readium-js/simple_rwc_template.js.erb", "epub-modules/release/SimpleReadium.js")
