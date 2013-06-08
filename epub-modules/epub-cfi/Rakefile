@@ -58,7 +58,7 @@ end
 
 # Generate the epub cfi parser
 task :gen_parser do
-    `pegjs -e EPUBcfi.Parser cfi_grammar/epubcfi.pegjs`
+    puts `pegjs -e EPUBcfi.Parser cfi_grammar/epubcfi.pegjs`
     mv 'cfi_grammar/epubcfi.js', 'src/models/epubcfi.js'
 end 
 
@@ -68,12 +68,15 @@ task :test_parser => [:gen_parser, :jasmine]
 #   rake -f path/to/this/Rakefile gen_module. If this task is executed in this manner, the current working directory
 #   is not relative to this Rakefile and thus the paths must be correctly resolved with the passed parameters.
 desc "get the dependencies for the epub cfi module"
-task :get_dependencies do
-
+task :copy_dependencies do
+  
+  module_name = get_module_name()
+  puts ":copy_dependencies => #{module_name}"
+  
     path_to_this_dir = get_this_directory()
     parent_dir = get_parent_directory()
 
-    Rake::Task[:gen_module].invoke()
+    #Rake::Task[:gen_module].invoke()
     
     # Import dependencies
     lib_dependency_filenames = [
@@ -84,23 +87,28 @@ task :get_dependencies do
 
     # Get all the lib dependencies
     lib_dependency_filenames.each do |filename|
-        `cp -a #{parent_dir}/lib/#{filename} #{path_to_this_dir}/lib/#{filename}`
+      puts "---> #{filename}"
+        `cp -a "#{parent_dir}/lib/#{filename}" "#{path_to_this_dir}/lib/#{filename}"`
     end
 
     # Get all the epub module dependencies
     module_dependency_filenames.each do |filename|
-        `cp -a #{parent_dir}/development/#{filename} #{path_to_this_dir}/lib/#{filename}`
+      puts "---> #{filename}"
+        `cp -a "#{parent_dir}/development/#{filename}" "#{path_to_this_dir}/lib/#{filename}"`
     end
 end
 
 desc "render the epub cfi module erb template"
 task :gen_module do
-
+  
+  module_name = get_module_name()
+  puts ":gen_module => #{module_name}"
+  
     path_to_this_dir = get_this_directory()
     parent_dir = get_parent_directory()
     template_file_path = path_to_this_dir + "/src/templates/" + get_template_name()
-    output_module_file_path = parent_dir + "/development/" + get_module_name()
+    output_module_file_path = parent_dir + "/development/#{module_name}"
 
     render_cfi_library_template(template_file_path, output_module_file_path, path_to_this_dir)
-    `cp -a #{parent_dir}/development/#{get_module_name()} #{path_to_this_dir}/lib`
+    `cp -a "#{parent_dir}/development/#{module_name}" "#{path_to_this_dir}/lib"`
 end

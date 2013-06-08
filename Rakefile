@@ -1,13 +1,16 @@
+#Dir.glob('here/tasks/Rakefile*').each { |r| import r }
+#import 'here/Rakefile'
+
 require "erb"
 
 # ------------------------------------------------------------------------------------------------------------------------
 #  Helper methods
 # ------------------------------------------------------------------------------------------------------------------------
 
-# Generate the epub module 
-def render_consolidated_module_template(template_file_path, output_file_path)
+def gen_simple_api_consolidated(template_file_path, output_file_path)
 
-    # Read each of the library components
+  puts "gen_simple_api_consolidated"
+    
     epub_reading_system = File.read('epub-modules/development/epub_reading_system.js')
     epubcfi = File.read('epub-modules/development/epub_cfi.js')
     epub_reflowable = File.read('epub-modules/development/epub_reflowable_module.js')
@@ -19,15 +22,15 @@ def render_consolidated_module_template(template_file_path, output_file_path)
     template = File.read(template_file_path)
     erb = ERB.new(template)
     
-    # Generate library
     File.open(output_file_path, "w") do |f|
         f.puts erb.result(binding)
     end
 end
 
-def render_non_consolidated_module_template(template_file_path, output_file_path)
-
-    # Read each of the library components
+def gen_simple_api_non_consolidated(template_file_path, output_file_path)
+  
+  puts "gen_simple_api_non_consolidated"
+  
     epub_reading_system = ""
     epubcfi = ""
     epub_reflowable = ""
@@ -39,7 +42,6 @@ def render_non_consolidated_module_template(template_file_path, output_file_path
     template = File.read(template_file_path)
     erb = ERB.new(template)
     
-    # Generate library
     File.open(output_file_path, "w") do |f|
         f.puts erb.result(binding)
     end
@@ -49,35 +51,51 @@ end
 #  Tasks
 # ------------------------------------------------------------------------------------------------------------------------
 
-desc "render the consolidated epub module erb template"
-task :gen_simple_readiumjs do
+task :gen_all_modules do 
+    puts ":gen_all_modules"
+
+    puts "epub_reading_system.js"
+    `cp "epub-modules/epub_reading_system.js" "epub-modules/development/epub_reading_system.js"`
     
-    puts "rendering simple RWC"
-    Rake::Task[:refresh_library].invoke()
-    
-    render_consolidated_module_template("epub-modules/simple-readium-js/simple_rwc_template.js.erb", "epub-modules/release/SimpleReadium.js")
-    render_non_consolidated_module_template("epub-modules/simple-readium-js/simple_rwc_template.js.erb", "epub-modules/release/SimpleReadium_Dev.js")
+    puts `rake -f epub-modules/epub/Rakefile gen_module`
+    puts `rake -f epub-modules/epub-cfi/Rakefile gen_module`
+    puts `rake -f epub-modules/epub-fixed/Rakefile gen_module`
+    puts `rake -f epub-modules/epub-parser/Rakefile gen_module`
+    puts `rake -f epub-modules/epub-reader/Rakefile gen_module`
+    puts `rake -f epub-modules/epub-reflowable/Rakefile gen_module`
 end
 
-task :refresh_library => ["generate_all_modules", "update_all_module_dependencies"]
+task :copy_all_dependencies do 
+    puts ":copy_all_dependencies"
 
-task :generate_all_modules do 
-    
-    `rake -f epub-modules/epub/Rakefile gen_module`
-    `rake -f epub-modules/epub-cfi/Rakefile gen_module`
-    `rake -f epub-modules/epub-fixed/Rakefile gen_module`
-    `rake -f epub-modules/epub-parser/Rakefile gen_module`
-    `rake -f epub-modules/epub-reader/Rakefile gen_module`
-    `rake -f epub-modules/epub-reflowable/Rakefile gen_module`
+    puts `rake -f epub-modules/epub/Rakefile copy_dependencies`
+    puts `rake -f epub-modules/epub-cfi/Rakefile copy_dependencies`
+    puts `rake -f epub-modules/epub-fixed/Rakefile copy_dependencies`
+    puts `rake -f epub-modules/epub-parser/Rakefile copy_dependencies`
+    puts `rake -f epub-modules/epub-reader/Rakefile copy_dependencies`
+    puts `rake -f epub-modules/epub-reflowable/Rakefile copy_dependencies`
+    puts `rake -f samples-project-testing/Rakefile copy_dependencies`
 end
 
-task :update_all_module_dependencies do 
+#task :refresh_library => ["gen_all_modules", "copy_all_dependencies"]
 
-    `cp epub-modules/epub_reading_system.js epub-modules/development/epub_reading_system.js`
-    `rake -f epub-modules/epub/Rakefile get_dependencies`
-    `rake -f epub-modules/epub-cfi/Rakefile get_dependencies`
-    `rake -f epub-modules/epub-fixed/Rakefile get_dependencies`
-    `rake -f epub-modules/epub-parser/Rakefile get_dependencies`
-    `rake -f epub-modules/epub-reader/Rakefile get_dependencies`
-    `rake -f epub-modules/epub-reflowable/Rakefile get_dependencies`
+
+desc "top-level task (runs all module subtasks)"
+task :build do
+    
+    puts ":build"
+    
+#    Rake::Task[:refresh_library].invoke()
+
+    Rake::Task[:gen_all_modules].invoke()
+    
+    gen_simple_api_consolidated("epub-modules/simple-readium-js/simple_rwc_template.js.erb", "epub-modules/release/SimpleReadium.js")
+    puts "=> SimpleReadium.js"
+    `cp "epub-modules/release/SimpleReadium.js" "epub-modules/development/SimpleReadium.js"`
+        
+    gen_simple_api_non_consolidated("epub-modules/simple-readium-js/simple_rwc_template.js.erb", "epub-modules/release/SimpleReadium_Dev.js")
+    puts "=> SimpleReadium_Dev.js"
+    `cp "epub-modules/release/SimpleReadium_Dev.js" "epub-modules/development/SimpleReadium_Dev.js"`
+  
+    Rake::Task[:copy_all_dependencies].invoke()
 end
