@@ -60,7 +60,7 @@ var SimpleRWC = function (elementToBindReaderTo, viewerPreferences, packageDocum
 
     // Rationale: The order of these matters
     var EpubCFIModule = function () {
-    
+
     var EPUBcfi = {};
 
     EPUBcfi.Parser = (function(){
@@ -1583,7 +1583,7 @@ var SimpleRWC = function (elementToBindReaderTo, viewerPreferences, packageDocum
   
   return result;
 })();
- 
+
     // Description: This model contains the implementation for "instructions" included in the EPUB CFI domain specific language (DSL). 
 //   Lexing and parsing a CFI produces a set of executable instructions for processing a CFI (represented in the AST). 
 //   This object contains a set of functions that implement each of the executable instructions in the AST. 
@@ -2718,34 +2718,57 @@ EPUBcfi.CFIAssertionError = function (expectedAssertion, targetElementAssertion,
     // The public interface
     return {
 
-        getContentDocHref : function (CFI, packageDocument) { return interpreter.getContentDocHref.call(interpreter, CFI, packageDocument); },
-        injectElement : function (CFI, contentDocument, elementToInject, classBlacklist, elementBlacklist, idBlacklist) { return interpreter.injectElement.call(interpreter, CFI, contentDocument, elementToInject, classBlacklist, elementBlacklist, idBlacklist); },
-        getTargetElement : function (CFI, contentDocument) { return interpreter.getTargetElement.call(interpreter, CFI, contentDocument); },
-        getTargetElementWithPartialCFI : function (contentDocumentCFI, contentDocument) { return interpreter.getTargetElementWithPartialCFI.call(interpreter, contentDocumentCFI, contentDocument); },
-        getTextTerminusInfoWithPartialCFI : function (contentDocumentCFI, contentDocument) { return interpreter.getTextTerminusInfoWithPartialCFI.call(interpreter, contentDocumentCFI, contentDocument); }, 
-        generateCharacterOffsetCFIComponent : function (startTextNode, characterOffset) { return generator.generateCharacterOffsetCFIComponent.call(generator, startTextNode, characterOffset); },
-        generateElementCFIComponent : function (startElement) { return generator.generateElementCFIComponent.call(generator, startElement); },
-        generatePackageDocumentCFIComponent : function (contentDocumentName, packageDocument) { return generator.generatePackageDocumentCFIComponent.call(generator, contentDocumentName, packageDocument); },
-        generatePackageDocumentCFIComponentWithSpineIndex : function (spineIndex, packageDocument) { return generator.generatePackageDocumentCFIComponentWithSpineIndex.call(generator, spineIndex, packageDocument); },
-        generateCompleteCFI : function (packageDocumentCFIComponent, contentDocumentCFIComponent) { return generator.generateCompleteCFI.call(generator, packageDocumentCFIComponent, contentDocumentCFIComponent); },
-        injectElementAtOffset : function ($textNodeList, textOffset, elementToInject) { return instructions.injectCFIMarkerIntoText.call(instructions, $textNodeList, textOffset, elementToInject); },
+        getContentDocHref : function (CFI, packageDocument) {
+            return interpreter.getContentDocHref(CFI, packageDocument);
+        },
+        injectElement : function (CFI, contentDocument, elementToInject, classBlacklist, elementBlacklist, idBlacklist) {
+            return interpreter.injectElement(CFI, contentDocument, elementToInject, classBlacklist, elementBlacklist, idBlacklist);
+        },
+        getTargetElement : function (CFI, contentDocument) {
+            return interpreter.getTargetElement(CFI, contentDocument);
+        },
+        getTargetElementWithPartialCFI : function (contentDocumentCFI, contentDocument) {
+            return interpreter.getTargetElementWithPartialCFI(contentDocumentCFI, contentDocument);
+        },
+        getTextTerminusInfoWithPartialCFI : function (contentDocumentCFI, contentDocument) {
+            return interpreter.getTextTerminusInfoWithPartialCFI(contentDocumentCFI, contentDocument);
+        },
+
+        generateCharacterOffsetCFIComponent : function (startTextNode, characterOffset) {
+            return generator.generateCharacterOffsetCFIComponent(startTextNode, characterOffset);
+        },
+        generateElementCFIComponent : function (startElement) {
+            return generator.generateElementCFIComponent(startElement);
+        },
+        generatePackageDocumentCFIComponent : function (contentDocumentName, packageDocument) {
+            return generator.generatePackageDocumentCFIComponent(contentDocumentName, packageDocument);
+        },
+        generatePackageDocumentCFIComponentWithSpineIndex : function (spineIndex, packageDocument) {
+            return generator.generatePackageDocumentCFIComponentWithSpineIndex(spineIndex, packageDocument);
+        },
+        generateCompleteCFI : function (packageDocumentCFIComponent, contentDocumentCFIComponent) {
+            return generator.generateCompleteCFI(packageDocumentCFIComponent, contentDocumentCFIComponent);
+        },
+        injectElementAtOffset : function ($textNodeList, textOffset, elementToInject) {
+            return instructions.injectCFIMarkerIntoText($textNodeList, textOffset, elementToInject);
+        },
         injectRangeElements : function (rangeCFI, contentDocument, startElementToInject, endElementToInject, classBlacklist, elementBlacklist, idBlacklist) {
-            return interpreter.injectRangeElements.call(interpreter, rangeCFI, contentDocument, startElementToInject, endElementToInject, classBlacklist, elementBlacklist, idBlacklist);
+            return interpreter.injectRangeElements(rangeCFI, contentDocument, startElementToInject, endElementToInject, classBlacklist, elementBlacklist, idBlacklist);
         },
         getRangeTargetElements : function (rangeCFI, contentDocument, classBlacklist, elementBlacklist, idBlacklist) {
-            return interpreter.getRangeTargetElements.call(interpreter, rangeCFI, contentDocument, classBlacklist, elementBlacklist, idBlacklist);
+            return interpreter.getRangeTargetElements(rangeCFI, contentDocument, classBlacklist, elementBlacklist, idBlacklist);
         },
         generateCharOffsetRangeComponent : function (rangeStartElement, startOffset, rangeEndElement, endOffset, classBlacklist, elementBlacklist, idBlacklist) {
-            return generator.generateCharOffsetRangeComponent.call(generator, rangeStartElement, startOffset, rangeEndElement, endOffset, classBlacklist, elementBlacklist, idBlacklist);
+            return generator.generateCharOffsetRangeComponent(rangeStartElement, startOffset, rangeEndElement, endOffset, classBlacklist, elementBlacklist, idBlacklist);
         },
         generateElementRangeComponent : function (rangeStartElement, rangeEndElement, classBlacklist, elementBlacklist, idBlacklist) {
-            return generator.generateElementRangeComponent.call(generator, rangeStartElement, rangeEndElement, classBlacklist, elementBlacklist, idBlacklist);
+            return generator.generateElementRangeComponent(rangeStartElement, rangeEndElement, classBlacklist, elementBlacklist, idBlacklist);
         }
     };
 };
 
     var EpubReflowableModule = function(spineObject, viewerSettingsObject, CFIAnnotations, bindings) {
-    
+
     var EpubReflowable = {};
 
     // Rationale: The order of these matters
@@ -5123,41 +5146,78 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 			return "left";
 		}
 	}
-}); 
+});
 
-    var reflowableView = new EpubReflowable.ReflowablePaginationView({  
-        spineItem : spineObject, 
-        viewerSettings : viewerSettingsObject, 
-        contentDocumentCFIs : CFIAnnotations, 
+    var reflowableView = new EpubReflowable.ReflowablePaginationView({
+        spineItem : spineObject,
+        viewerSettings : viewerSettingsObject,
+        contentDocumentCFIs : CFIAnnotations,
         bindings : bindings
     });
 
     // Description: The public interface
     return {
 
-        render : function (goToLastPage, hashFragmentId) { return reflowableView.render.call(reflowableView, goToLastPage, hashFragmentId); },
-        nextPage : function () { return reflowableView.nextPage.call(reflowableView); },
-        previousPage : function () { return reflowableView.previousPage.call(reflowableView); },
-        showPageByHashFragment : function (hashFragmentId) { return reflowableView.goToHashFragment.call(reflowableView, hashFragmentId); },
-        showPageByNumber : function (pageNumber) { return reflowableView.showPageByNumber.call(reflowableView, pageNumber); },
-        showPageByCFI : function (CFI) { reflowableView.showPageByCFI.call(reflowableView, CFI); }, 
-        onFirstPage : function () { return reflowableView.onFirstPage.call(reflowableView); },
-        onLastPage : function () { return reflowableView.onLastPage.call(reflowableView); },
-        showPagesView : function () { return reflowableView.showView.call(reflowableView); },
-        hidePagesView : function () { return reflowableView.hideView.call(reflowableView); },
-        numberOfPages : function () { return reflowableView.pages.get("num_pages"); },
-        currentPage : function () { return reflowableView.pages.get("current_page"); },
-        setFontSize : function (fontSize) { return reflowableView.setFontSize.call(reflowableView, fontSize); },
-        setMargin : function (margin) { return reflowableView.setMargin.call(reflowableView, margin); },
-        setTheme : function (theme) { return reflowableView.setTheme.call(reflowableView, theme); },
-        setSyntheticLayout : function (isSynthetic) { return reflowableView.setSyntheticLayout.call(reflowableView, isSynthetic); },
-        on : function (eventName, callback, callbackContext) { return reflowableView.on.call(reflowableView, eventName, callback, callbackContext); },
-        off : function (eventName, callback) { return reflowableView.off.call(reflowableView, eventName, callback); }
+        render : function (goToLastPage, hashFragmentId) {
+            return reflowableView.render(goToLastPage, hashFragmentId);
+        },
+        nextPage : function () {
+            return reflowableView.nextPage();
+        },
+        previousPage : function () {
+            return reflowableView.previousPage();
+        },
+        showPageByHashFragment : function (hashFragmentId) {
+            return reflowableView.goToHashFragment(hashFragmentId);
+        },
+        showPageByNumber : function (pageNumber) {
+            return reflowableView.showPageByNumber(pageNumber);
+        },
+        showPageByCFI : function (CFI) {
+            // Is the lack of return intentional?
+            reflowableView.showPageByCFI(CFI);
+        },
+        onFirstPage : function () {
+            return reflowableView.onFirstPage();
+        },
+        onLastPage : function () {
+            return reflowableView.onLastPage();
+        },
+        showPagesView : function () {
+            return reflowableView.showView();
+        },
+        hidePagesView : function () {
+            return reflowableView.hideView();
+        },
+        numberOfPages : function () {
+            return reflowableView.pages.get("num_pages");
+        },
+        currentPage : function () {
+            return reflowableView.pages.get("current_page");
+        },
+        setFontSize : function (fontSize) {
+            return reflowableView.setFontSize(fontSize);
+        },
+        setMargin : function (margin) {
+            return reflowableView.setMargin(margin);
+        },
+        setTheme : function (theme) {
+            return reflowableView.setTheme(theme);
+        },
+        setSyntheticLayout : function (isSynthetic) {
+            return reflowableView.setSyntheticLayout(isSynthetic);
+        },
+        on : function (eventName, callback, callbackContext) {
+            return reflowableView.on(eventName, callback, callbackContext);
+        },
+        off : function (eventName, callback) {
+            return reflowableView.off(eventName, callback);
+        }
     };
 };
 
     var EpubFixedModule = function (spineObjects, viewerSettingsObject) {
-    
+
     var EpubFixed = {};
 
     // Rationale: The order of these matters
@@ -6227,39 +6287,75 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
     		that.linkClickHandler(e)
     	});
     }
-}); 
+});
 
-    var fixedView = new EpubFixed.FixedPaginationView({  
-        spineObjects : spineObjects, 
+    var fixedView = new EpubFixed.FixedPaginationView({
+        spineObjects : spineObjects,
         viewerSettings : viewerSettingsObject
     });
 
     // Description: The public interface
     return {
 
-        render : function (goToLastPage, hashFragmentId) { return fixedView.render.call(fixedView, goToLastPage, hashFragmentId); },
-        nextPage : function () { return fixedView.nextPage.call(fixedView); },
-        previousPage : function () { return fixedView.previousPage.call(fixedView); },
-        showPageByHashFragment : function (hashFragmentId) { return; },
-        showPageByNumber : function (pageNumber) { return fixedView.showPageNumber.call(fixedView, pageNumber); },
-        showPageByCFI : function (CFI) { return; }, 
-        onFirstPage : function () { return fixedView.fixedPageViews.onFirstPage.call(fixedView.fixedPageViews); },
-        onLastPage : function () { return fixedView.fixedPageViews.onLastPage.call(fixedView.fixedPageViews); },
-        showPagesView : function () { return fixedView.showPagesView.call(fixedView); },
-        hidePagesView : function () { return fixedView.hidePagesView.call(fixedView); },
-        numberOfPages : function () { return fixedView.fixedPageViews.get("fixedPages").length; },
-        currentPage : function () { return fixedView.fixedPageViews.get("currentPages"); },
-        setFontSize : function (fontSize) { return; },
-        setMargin : function (margin) { return; },
-        setTheme : function (theme) { return; },
-        setSyntheticLayout : function (isSynthetic) { return fixedView.setSyntheticLayout.call(fixedView, isSynthetic); },
-        on : function (eventName, callback, callbackContext) { return fixedView.on.call(fixedView, eventName, callback, callbackContext); },
-        off : function (eventName, callback) { return fixedView.off.call(fixedView, eventName, callback); }
+        render : function (goToLastPage, hashFragmentId) {
+            return fixedView.render(goToLastPage, hashFragmentId);
+        },
+        nextPage : function () {
+            return fixedView.nextPage();
+        },
+        previousPage : function () {
+            return fixedView.previousPage();
+        },
+        showPageByHashFragment : function (hashFragmentId) {
+            return;
+        },
+        showPageByNumber : function (pageNumber) {
+            return fixedView.showPageNumber(fixedView, pageNumber);
+        },
+        showPageByCFI : function (CFI) {
+            return;
+        },
+        onFirstPage : function () {
+            return fixedView.fixedPageViews.onFirstPage();
+        },
+        onLastPage : function () {
+            return fixedView.fixedPageViews.onLastPage();
+        },
+        showPagesView : function () {
+            return fixedView.showPagesView();
+        },
+        hidePagesView : function () {
+            return fixedView.hidePagesView();
+        },
+        numberOfPages : function () {
+            return fixedView.fixedPageViews.get("fixedPages").length;
+        },
+        currentPage : function () {
+            return fixedView.fixedPageViews.get("currentPages");
+        },
+        setFontSize : function (fontSize) {
+            return;
+        },
+        setMargin : function (margin) {
+            return;
+        },
+        setTheme : function (theme) {
+            return;
+        },
+        setSyntheticLayout : function (isSynthetic) {
+            return fixedView.setSyntheticLayout(isSynthetic);
+        },
+        on : function (eventName, callback, callbackContext) {
+            return fixedView.on(eventName, callback, callbackContext);
+        },
+        off : function (eventName, callback) {
+            return fixedView.off(eventName, callback);
+        }
     };
 };
 
     var EpubParserModule = function(packageDocumentURI, packageDocumentXML) {
-    
+
     var EpubParser = {};
     // `PackageDocumentParser` is used to parse the xml of an epub package
 // document and build a javascript object. The constructor accepts an
@@ -6516,20 +6612,22 @@ EpubParser.PackageDocumentParser = Backbone.Model.extend({
     }
 });
 
-    var packageDocParser = new EpubParser.PackageDocumentParser({ 
+    var packageDocParser = new EpubParser.PackageDocumentParser({
         packageDocumentURI : packageDocumentURI,
-        packageDocumentXML : packageDocumentXML 
+        packageDocumentXML : packageDocumentXML
     });
 
     // Description: The public interface
     return {
 
-        parse : function () { return packageDocParser.parse.call(packageDocParser); }
+        parse : function () {
+            return packageDocParser.parse();
+        }
     };
 };
 
     var EpubModule = function(packageDocumentObject, packageDocumentXML) {
-    
+
     var Epub = {};
 
     // Rationale: The order of these matters
@@ -7177,7 +7275,7 @@ Epub.PackageDocument = Backbone.Model.extend({
 });
 
 
-    var packageDoc = new Epub.PackageDocument({ 
+    var packageDoc = new Epub.PackageDocument({
         packageDocumentObject : packageDocumentObject,
         packageDocument : packageDocumentXML
     });
@@ -7185,26 +7283,56 @@ Epub.PackageDocument = Backbone.Model.extend({
     // Description: The public interface
     return {
 
-        getSpineInfo : function () { return packageDoc.getSpineInfo.call(packageDoc); },
-        isFixedLayout : function () { return packageDoc.isFixedLayout.call(packageDoc); },
-        getManifestItemById : function (id) { return packageDoc.getManifestItemById.call(packageDoc, id); },
-        getManifestItemByIdref : function (idref) { return packageDoc.getManifestItemByIdref.call(packageDoc, idref); }, 
-        getSpineItemByIdref : function (idref) { return packageDoc.getSpineItemByIdref.call(packageDoc, idref); },
-        getSpineItemByIndex : function (spineIndex) { return packageDoc.getSpineItem.call(packageDoc, spineIndex); }, 
-        spineLength : function () { return packageDoc.spineLength.call(packageDoc); }, 
-        getNextLinearSpinePosition : function (currSpineIndex) { return packageDoc.getNextLinearSpinePosition.call(packageDoc, currSpineIndex); },
-        getPrevLinearSpinePosition : function (currSpineIndex) { return packageDoc.getPrevLinearSpinePosition.call(packageDoc, currSpineIndex); }, 
-        hasNextSection : function (currSpineIndex) { return packageDoc.hasNextSection.call(packageDoc, currSpineIndex); }, 
-        hasPrevSection : function (currSpineIndex) { return packageDoc.hasPrevSection.call(packageDoc, currSpineIndex); }, 
-        pageProgressionDirection : function () { return packageDoc.pageProgressionDirection.call(packageDoc); },
-        getSpineIndexByHref : function (manifestHref) { return packageDoc.getSpineIndexByHref.call(packageDoc, manifestHref); },
-        getPackageDocumentDOM : function () { return packageDoc.getPackageDocumentDOM.call(packageDoc); },
-        getToc : function () { return packageDoc.getToc.call(packageDoc); }
+        getSpineInfo : function () {
+            return packageDoc.getSpineInfo();
+        },
+        isFixedLayout : function () {
+            return packageDoc.isFixedLayout();
+        },
+        getManifestItemById : function (id) {
+            return packageDoc.getManifestItemById(id);
+        },
+        getManifestItemByIdref : function (idref) {
+            return packageDoc.getManifestItemByIdref(idref);
+        },
+        getSpineItemByIdref : function (idref) {
+            return packageDoc.getSpineItemByIdref(idref);
+        },
+        getSpineItemByIndex : function (spineIndex) {
+            return packageDoc.getSpineItem(spineIndex);
+        },
+        spineLength : function () {
+            return packageDoc.spineLength();
+        },
+        getNextLinearSpinePosition : function (currSpineIndex) {
+            return packageDoc.getNextLinearSpinePosition(currSpineIndex);
+        },
+        getPrevLinearSpinePosition : function (currSpineIndex) {
+            return packageDoc.getPrevLinearSpinePosition(currSpineIndex);
+        },
+        hasNextSection : function (currSpineIndex) {
+            return packageDoc.hasNextSection(currSpineIndex);
+        },
+        hasPrevSection : function (currSpineIndex) {
+            return packageDoc.hasPrevSection(currSpineIndex);
+        },
+        pageProgressionDirection : function () {
+            return packageDoc.pageProgressionDirection();
+        },
+        getSpineIndexByHref : function (manifestHref) {
+            return packageDoc.getSpineIndexByHref(manifestHref);
+        },
+        getPackageDocumentDOM : function () {
+            return packageDoc.getPackageDocumentDOM();
+        },
+        getToc : function () {
+            return packageDoc.getToc();
+        }
     };
 };
 
     var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSettings, packageDocumentDOM, renderStrategy) {
-    
+
     var EpubReader = {};
 
     // Rationale: The order of these matters
@@ -7871,21 +7999,51 @@ Epub.PackageDocument = Backbone.Model.extend({
     // Description: The public interface
     return {
 
-        render : function () { return epubReaderView.render.call(epubReaderView); },
-        showSpineItem : function (spineIndex, callback, callbackContext) { return epubReaderView.showSpineItem.call(epubReaderView, spineIndex, callback, callbackContext); },
-        showPageByCFI : function (CFI, callback, callbackContext) { return epubReaderView.showPageByCFI.call(epubReaderView, CFI, callback, callbackContext); },
-        showPageByElementId : function (spineIndex, hashFragmentId, callback, callbackContext) { return epubReaderView.showPageByElementId.call(epubReaderView, spineIndex, hashFragmentId, callback, callbackContext); },
-        nextPage : function (callback, callbackContext) { return epubReaderView.nextPage.call(epubReaderView, callback, callbackContext); },
-        previousPage : function (callback, callbackContext) { return epubReaderView.previousPage.call(epubReaderView, callback, callbackContext); },
-        setFontSize : function (fontSize) { return epubReaderView.setFontSize.call(epubReaderView, fontSize); },
-        setMargin : function (margin) { return epubReaderView.setMargin.call(epubReaderView, margin); },
-        setTheme : function (theme) { return epubReaderView.setTheme.call(epubReaderView, theme); },
-        setSyntheticLayout : function (isSynthetic) { return epubReaderView.setSyntheticLayout.call(epubReaderView, isSynthetic); },
-        getNumberOfPages : function () { return epubReaderView.getNumberOfPages.call(epubReaderView); },
-        getCurrentPage : function () { return epubReaderView.getCurrentPage.call(epubReaderView); },
-        on : function (eventName, callback, callbackContext) { return epubReaderView.assignEventHandler.call(epubReaderView, eventName, callback, callbackContext); },
-        off : function (eventName) { return epubReaderView.removeEventHandler.call(epubReaderView, eventName); }, 
-        getViewerSettings : function () { return epubReaderView.getViewerSettings.call(epubReaderView); }
+        render : function () {
+            return epubReaderView.render();
+        },
+        showSpineItem : function (spineIndex, callback, callbackContext) {
+            return epubReaderView.showSpineItem(spineIndex, callback, callbackContext);
+        },
+        showPageByCFI : function (CFI, callback, callbackContext) {
+            return epubReaderView.showPageByCFI(CFI, callback, callbackContext);
+        },
+        showPageByElementId : function (spineIndex, hashFragmentId, callback, callbackContext) {
+            return epubReaderView.showPageByElementId(spineIndex, hashFragmentId, callback, callbackContext);
+        },
+        nextPage : function (callback, callbackContext) {
+            return epubReaderView.nextPage(callback, callbackContext);
+        },
+        previousPage : function (callback, callbackContext) {
+            return epubReaderView.previousPage(callback, callbackContext);
+        },
+        setFontSize : function (fontSize) {
+            return epubReaderView.setFontSize(fontSize);
+        },
+        setMargin : function (margin) {
+            return epubReaderView.setMargin(margin);
+        },
+        setTheme : function (theme) {
+            return epubReaderView.setTheme(theme);
+        },
+        setSyntheticLayout : function (isSynthetic) {
+            return epubReaderView.setSyntheticLayout(isSynthetic);
+        },
+        getNumberOfPages : function () {
+            return epubReaderView.getNumberOfPages();
+        },
+        getCurrentPage : function () {
+            return epubReaderView.getCurrentPage();
+        },
+        on : function (eventName, callback, callbackContext) {
+            return epubReaderView.assignEventHandler(eventName, callback, callbackContext);
+        },
+        off : function (eventName) {
+            return epubReaderView.removeEventHandler(eventName);
+        },
+        getViewerSettings : function () {
+            return epubReaderView.getViewerSettings();
+        }
     };
 };
 
