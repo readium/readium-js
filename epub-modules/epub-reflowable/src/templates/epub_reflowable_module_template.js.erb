@@ -39,8 +39,7 @@ var EpubReflowableModule = function(spineObject, viewerSettingsObject, CFIAnnota
             return reflowableView.showPageByNumber(pageNumber);
         },
         showPageByCFI : function (CFI) {
-            // Is the lack of return intentional?
-            reflowableView.showPageByCFI(CFI);
+            return reflowableView.showPageByCFI(CFI);
         },
         onFirstPage : function () {
             return reflowableView.onFirstPage();
