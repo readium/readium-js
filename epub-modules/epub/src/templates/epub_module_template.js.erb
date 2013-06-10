@@ -1,5 +1,5 @@
 var EpubModule = function(packageDocumentObject, packageDocumentXML) {
-    
+
     var Epub = {};
 
     // Rationale: The order of these matters
@@ -11,7 +11,7 @@ var EpubModule = function(packageDocumentObject, packageDocumentXML) {
     <%= spine %>
     <%= package_document %>
 
-    var packageDoc = new Epub.PackageDocument({ 
+    var packageDoc = new Epub.PackageDocument({
         packageDocumentObject : packageDocumentObject,
         packageDocument : packageDocumentXML
     });
@@ -19,20 +19,50 @@ var EpubModule = function(packageDocumentObject, packageDocumentXML) {
     // Description: The public interface
     return {
 
-        getSpineInfo : function () { return packageDoc.getSpineInfo.call(packageDoc); },
-        isFixedLayout : function () { return packageDoc.isFixedLayout.call(packageDoc); },
-        getManifestItemById : function (id) { return packageDoc.getManifestItemById.call(packageDoc, id); },
-        getManifestItemByIdref : function (idref) { return packageDoc.getManifestItemByIdref.call(packageDoc, idref); }, 
-        getSpineItemByIdref : function (idref) { return packageDoc.getSpineItemByIdref.call(packageDoc, idref); },
-        getSpineItemByIndex : function (spineIndex) { return packageDoc.getSpineItem.call(packageDoc, spineIndex); }, 
-        spineLength : function () { return packageDoc.spineLength.call(packageDoc); }, 
-        getNextLinearSpinePosition : function (currSpineIndex) { return packageDoc.getNextLinearSpinePosition.call(packageDoc, currSpineIndex); },
-        getPrevLinearSpinePosition : function (currSpineIndex) { return packageDoc.getPrevLinearSpinePosition.call(packageDoc, currSpineIndex); }, 
-        hasNextSection : function (currSpineIndex) { return packageDoc.hasNextSection.call(packageDoc, currSpineIndex); }, 
-        hasPrevSection : function (currSpineIndex) { return packageDoc.hasPrevSection.call(packageDoc, currSpineIndex); }, 
-        pageProgressionDirection : function () { return packageDoc.pageProgressionDirection.call(packageDoc); },
-        getSpineIndexByHref : function (manifestHref) { return packageDoc.getSpineIndexByHref.call(packageDoc, manifestHref); },
-        getPackageDocumentDOM : function () { return packageDoc.getPackageDocumentDOM.call(packageDoc); },
-        getToc : function () { return packageDoc.getToc.call(packageDoc); }
+        getSpineInfo : function () {
+            return packageDoc.getSpineInfo();
+        },
+        isFixedLayout : function () {
+            return packageDoc.isFixedLayout();
+        },
+        getManifestItemById : function (id) {
+            return packageDoc.getManifestItemById(id);
+        },
+        getManifestItemByIdref : function (idref) {
+            return packageDoc.getManifestItemByIdref(idref);
+        },
+        getSpineItemByIdref : function (idref) {
+            return packageDoc.getSpineItemByIdref(idref);
+        },
+        getSpineItemByIndex : function (spineIndex) {
+            return packageDoc.getSpineItem(spineIndex);
+        },
+        spineLength : function () {
+            return packageDoc.spineLength();
+        },
+        getNextLinearSpinePosition : function (currSpineIndex) {
+            return packageDoc.getNextLinearSpinePosition(currSpineIndex);
+        },
+        getPrevLinearSpinePosition : function (currSpineIndex) {
+            return packageDoc.getPrevLinearSpinePosition(currSpineIndex);
+        },
+        hasNextSection : function (currSpineIndex) {
+            return packageDoc.hasNextSection(currSpineIndex);
+        },
+        hasPrevSection : function (currSpineIndex) {
+            return packageDoc.hasPrevSection(currSpineIndex);
+        },
+        pageProgressionDirection : function () {
+            return packageDoc.pageProgressionDirection();
+        },
+        getSpineIndexByHref : function (manifestHref) {
+            return packageDoc.getSpineIndexByHref(manifestHref);
+        },
+        getPackageDocumentDOM : function () {
+            return packageDoc.getPackageDocumentDOM();
+        },
+        getToc : function () {
+            return packageDoc.getToc();
+        }
     };
 };
