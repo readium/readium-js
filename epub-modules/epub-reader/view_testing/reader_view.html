@@ -22,9 +22,14 @@
 		
         <script type="text/javascript">
 
+            setModuleContainerHeight = function () {
+                $("#reader").css({ "height" : $(window).height() * 0.85 + "px" });
+            };
+
             $(document).ready(function () {
 
                 var that = this;
+                setModuleContainerHeight();
                 this.view = initializationTest("reflowable");
 
                 var pressLeft = function () { that.view.previousPage(function () { console.log("page left"); }); };
@@ -55,6 +60,12 @@
                 }, this);
 
                 this.view.render();
+            });
+
+            $(window).on("resize", function () {
+
+                setModuleContainerHeight();
+                document.view.resizeContent();
             });
 			
             // Note: the epubReadingSystem object may not be ready when directly using the

@@ -219,5 +219,12 @@ EpubFixed.FixedPageViews = Backbone.Model.extend({
                         iframeSrc : iframeSrc,
                         viewerSettings : viewerSettings
                     });
+    },
+
+    resizePageViews : function () {
+
+        _.each(this.get("fixedPages"), function (fixedPageViewInfo) {
+            fixedPageViewInfo.fixedPageView.setPageSize();
+        });
     }
 });

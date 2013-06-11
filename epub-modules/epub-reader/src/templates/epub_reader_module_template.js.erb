@@ -62,6 +62,9 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         },
         getViewerSettings : function () {
             return epubReaderView.getViewerSettings();
+        },
+        resizeContent : function () {
+            return epubReaderView.reader.fitCurrentPagesView();
         }
     };
 };

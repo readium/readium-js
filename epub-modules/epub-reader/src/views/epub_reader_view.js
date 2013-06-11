@@ -31,9 +31,6 @@ EpubReader.EpubReaderView = Backbone.View.extend({
 
     // ------------------------ Public interface ------------------------------------------------------------------------
 
-    // REFACTORING CANDIDATE: This will only work for reflowable page views; there is currently not a mapping between
-    //   spine items and the page views in which they are rendered, for FXL epubs. When support for FXL is included, this 
-    //   abstraction will include more.
     showSpineItem : function (spineIndex, callback, callbackContext) {
 
         var that = this;

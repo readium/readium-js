@@ -60,8 +60,10 @@ EpubReader.EpubReader = Backbone.Model.extend({
 
     renderPagesView : function (pagesViewIndex, renderLast, hashFragmentId, callback, callbackContext) {
 
+        var pagesViewInfo;
         var pagesView;
         var that = this;
+
         if (pagesViewIndex >= 0 && pagesViewIndex < this.numberOfLoadedPagesViews()) {
 
             this.hideRenderedViews();
@@ -73,6 +75,7 @@ EpubReader.EpubReader = Backbone.Model.extend({
 
                 pagesView.showPagesView();
                 this.applyPreferences(pagesView);
+                this.fitCurrentPagesView();
                 if (renderLast) {
                     pagesView.showPageByNumber(pagesView.numberOfPages());
                 }
@@ -97,6 +100,7 @@ EpubReader.EpubReader = Backbone.Model.extend({
                 }, this);
 
                 $(this.get("parentElement")).append(pagesView.render(false, undefined));
+                that.setLastRenderSize(pagesViewInfo, $(that.get("parentElement")).height(), $(that.get("parentElement")).width());
                 pagesViewInfo.isRendered = true;
             }
         }
@@ -165,6 +169,21 @@ EpubReader.EpubReader = Backbone.Model.extend({
         }, this);
     },
 
+    fitCurrentPagesView : function () {
+
+        var readerElementHeight = this.get("parentElement").height();
+        var readerElementWidth = this.get("parentElement").width();
+
+        var currPagesViewInfo = this.getCurrentPagesViewInfo();
+        var heightIsDifferent = currPagesViewInfo.lastRenderHeight !== readerElementHeight ? true : false;
+        var widthIsDifferent = currPagesViewInfo.lastRenderWidth !== readerElementWidth ? true : false;
+
+        if (heightIsDifferent || widthIsDifferent) {
+            this.setLastRenderSize(currPagesViewInfo, readerElementHeight, readerElementWidth);
+            currPagesViewInfo.pagesView.resizeContent();
+        }
+    },
+
     // ------------------------------------------------------------------------------------ //
     //  "PRIVATE" HELPERS                                                                   //
     // ------------------------------------------------------------------------------------ //
@@ -194,6 +213,7 @@ EpubReader.EpubReader = Backbone.Model.extend({
             
             // This will cause the pages view to try to retrieve its resources
             $(that.get("parentElement")).append(pagesViewInfo.pagesView.render(false, undefined));
+            that.setLastRenderSize(pagesViewInfo, $(that.get("parentElement")).height(), $(that.get("parentElement")).width());
         });
 
         setTimeout(function () { 
@@ -312,5 +332,11 @@ EpubReader.EpubReader = Backbone.Model.extend({
         pagesView.setMargin(preferences.currentMargin);
         pagesView.setTheme(preferences.currentTheme);
         pagesView.setFontSize(preferences.fontSize);
+    },
+
+    setLastRenderSize : function (pagesViewInfo, height, width) {
+
+        pagesViewInfo.lastRenderHeight = height;
+        pagesViewInfo.lastRenderWidth = width;
     }
 });

@@ -76,6 +76,9 @@ var EpubReflowableModule = function(spineObject, viewerSettingsObject, CFIAnnota
         },
         off : function (eventName, callback) {
             return reflowableView.off(eventName, callback);
+        },
+        resizeContent : function () {
+            return reflowableView.paginateContentDocument();
         }
     };
 };

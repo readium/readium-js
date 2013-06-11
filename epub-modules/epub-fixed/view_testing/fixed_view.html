@@ -19,8 +19,13 @@
 		
         <script type="text/javascript">
 
+            setModuleContainerHeight = function () {
+                $("#reader").css({ "height" : $(window).height() * 0.85 + "px" });
+            };
+
             $(document).ready(function () {
 
+                setModuleContainerHeight();
                 window.fixedView = initializationTest("fixed");
 
                 var testCallbackForLoad = function () { 
@@ -29,8 +34,13 @@
                 };
 
                 window.fixedView.on("contentDocumentLoaded", testCallbackForLoad, this);
-                // $("#reader").css({ "height" : "800px", "width" : "1000px"});
+
                 $("#reader").html(window.fixedView.render(false, undefined));
+            });
+
+            $(window).on("resize", function () {
+                setModuleContainerHeight();
+                fixedView.resizeContent();
             });
 			
             // Note: the epubReadingSystem object may not be ready when directly using the
@@ -51,7 +61,7 @@
         </script>
     </head>
     <body>
-        <div id="reader" style="height:500px; width:1000px;">
+        <div id="reader" style="height:600px;">
         </div>
     </body>
 </html>

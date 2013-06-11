@@ -32,7 +32,7 @@ var EpubFixedModule = function (spineObjects, viewerSettingsObject) {
             return;
         },
         showPageByNumber : function (pageNumber) {
-            return fixedView.showPageNumber(fixedView, pageNumber);
+            return fixedView.showPageNumber(pageNumber);
         },
         showPageByCFI : function (CFI) {
             return;
@@ -72,6 +72,9 @@ var EpubFixedModule = function (spineObjects, viewerSettingsObject) {
         },
         off : function (eventName, callback) {
             return fixedView.off(eventName, callback);
+        },
+        resizeContent : function () {
+            return fixedView.fixedPageViews.resizePageViews();
         }
     };
 };

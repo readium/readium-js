@@ -5174,8 +5174,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
             return reflowableView.showPageByNumber(pageNumber);
         },
         showPageByCFI : function (CFI) {
-            // Is the lack of return intentional?
-            reflowableView.showPageByCFI(CFI);
+            return reflowableView.showPageByCFI(CFI);
         },
         onFirstPage : function () {
             return reflowableView.onFirstPage();
@@ -5212,6 +5211,9 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         },
         off : function (eventName, callback) {
             return reflowableView.off(eventName, callback);
+        },
+        resizeContent : function () {
+            return reflowableView.paginateContentDocument();
         }
     };
 };
@@ -5757,6 +5759,13 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
                         iframeSrc : iframeSrc,
                         viewerSettings : viewerSettings
                     });
+    },
+
+    resizePageViews : function () {
+
+        _.each(this.get("fixedPages"), function (fixedPageViewInfo) {
+            fixedPageViewInfo.fixedPageView.setPageSize();
+        });
     }
 });
     EpubFixed.FixedSizing = Backbone.Model.extend({
@@ -6310,7 +6319,7 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
             return;
         },
         showPageByNumber : function (pageNumber) {
-            return fixedView.showPageNumber(fixedView, pageNumber);
+            return fixedView.showPageNumber(pageNumber);
         },
         showPageByCFI : function (CFI) {
             return;
@@ -6350,6 +6359,9 @@ EpubFixed.PageNumberDisplayLogic = Backbone.Model.extend({
         },
         off : function (eventName, callback) {
             return fixedView.off(eventName, callback);
+        },
+        resizeContent : function () {
+            return fixedView.fixedPageViews.resizePageViews();
         }
     };
 };
@@ -7507,8 +7519,10 @@ Epub.PackageDocument = Backbone.Model.extend({
 
     renderPagesView : function (pagesViewIndex, renderLast, hashFragmentId, callback, callbackContext) {
 
+        var pagesViewInfo;
         var pagesView;
         var that = this;
+
         if (pagesViewIndex >= 0 && pagesViewIndex < this.numberOfLoadedPagesViews()) {
 
             this.hideRenderedViews();
@@ -7520,6 +7534,7 @@ Epub.PackageDocument = Backbone.Model.extend({
 
                 pagesView.showPagesView();
                 this.applyPreferences(pagesView);
+                this.fitCurrentPagesView();
                 if (renderLast) {
                     pagesView.showPageByNumber(pagesView.numberOfPages());
                 }
@@ -7544,6 +7559,7 @@ Epub.PackageDocument = Backbone.Model.extend({
                 }, this);
 
                 $(this.get("parentElement")).append(pagesView.render(false, undefined));
+                that.setLastRenderSize(pagesViewInfo, $(that.get("parentElement")).height(), $(that.get("parentElement")).width());
                 pagesViewInfo.isRendered = true;
             }
         }
@@ -7612,6 +7628,21 @@ Epub.PackageDocument = Backbone.Model.extend({
         }, this);
     },
 
+    fitCurrentPagesView : function () {
+
+        var readerElementHeight = this.get("parentElement").height();
+        var readerElementWidth = this.get("parentElement").width();
+
+        var currPagesViewInfo = this.getCurrentPagesViewInfo();
+        var heightIsDifferent = currPagesViewInfo.lastRenderHeight !== readerElementHeight ? true : false;
+        var widthIsDifferent = currPagesViewInfo.lastRenderWidth !== readerElementWidth ? true : false;
+
+        if (heightIsDifferent || widthIsDifferent) {
+            this.setLastRenderSize(currPagesViewInfo, readerElementHeight, readerElementWidth);
+            currPagesViewInfo.pagesView.resizeContent();
+        }
+    },
+
     // ------------------------------------------------------------------------------------ //
     //  "PRIVATE" HELPERS                                                                   //
     // ------------------------------------------------------------------------------------ //
@@ -7641,6 +7672,7 @@ Epub.PackageDocument = Backbone.Model.extend({
             
             // This will cause the pages view to try to retrieve its resources
             $(that.get("parentElement")).append(pagesViewInfo.pagesView.render(false, undefined));
+            that.setLastRenderSize(pagesViewInfo, $(that.get("parentElement")).height(), $(that.get("parentElement")).width());
         });
 
         setTimeout(function () { 
@@ -7759,6 +7791,12 @@ Epub.PackageDocument = Backbone.Model.extend({
         pagesView.setMargin(preferences.currentMargin);
         pagesView.setTheme(preferences.currentTheme);
         pagesView.setFontSize(preferences.fontSize);
+    },
+
+    setLastRenderSize : function (pagesViewInfo, height, width) {
+
+        pagesViewInfo.lastRenderHeight = height;
+        pagesViewInfo.lastRenderWidth = width;
     }
 });
     EpubReader.EpubReaderView = Backbone.View.extend({
@@ -7794,9 +7832,6 @@ Epub.PackageDocument = Backbone.Model.extend({
 
     // ------------------------ Public interface ------------------------------------------------------------------------
 
-    // REFACTORING CANDIDATE: This will only work for reflowable page views; there is currently not a mapping between
-    //   spine items and the page views in which they are rendered, for FXL epubs. When support for FXL is included, this 
-    //   abstraction will include more.
     showSpineItem : function (spineIndex, callback, callbackContext) {
 
         var that = this;
@@ -8043,6 +8078,9 @@ Epub.PackageDocument = Backbone.Model.extend({
         },
         getViewerSettings : function () {
             return epubReaderView.getViewerSettings();
+        },
+        resizeContent : function () {
+            return epubReaderView.reader.fitCurrentPagesView();
         }
     };
 };
