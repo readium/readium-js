@@ -194,41 +194,132 @@ describe("EpubReflowable.ReflowablePaginationView", function () {
         describe("showPageForCFI()", function () {
         });
 
-        describe("insertSelectionMarkers", function () {
+        describe("events", function () {
 
             beforeEach(function () {
 
-                var elements = "<div id='ancestor'> \
-                                    <div id='a'> \
-                                        <div id='b'> start start start \
-                                        </div> \
-                                        <div id='c'> \
-                                        </div> \
-                                        <div id='d'> \
-                                        </div> \
-                                    </div> \
-                                    <div id='e'> \
-                                        <div id ='f'> \
-                                            <div id ='g'> end end end \
-                                            </div> \
-                                        </div> \
-                                        <div id='h'> \
-                                        </div> \
-                                    </div> \
-                                </div>";
+                var spineItem = {
+                    contentDocumentURI : "epub_content/moby_dick/OPS/chapter_002.xhtml",
+                    title : "Test from Accessible Epub 3.0", 
+                    firstPageIsOffset : false,
+                    pageProgressionDirection : "ltr", 
+                    spineIndex : 1,
+                    isFixedLayout : false
+                };
 
-                this.$elements = $(elements);
-                this.selection = document.createRange();
-                this.selection.setStart($("#b", this.$elements)[0].firstChild);
-                this.selection.setEnd($("#g", this.$elements)[0].firstChild);
+                var viewerSettings = {
+                    fontSize : 3,
+                    syntheticLayout : false,
+                    currentMargin : 3,
+                    tocVisible : false,
+                    currentTheme : "default"
+                };
+
+                var contentDocumentCFIs = [];
+
+                var bindings = [{
+                        handler : "figure-gallery-impl",
+                        media_type : "application/xhtml+xml"
+                    }
+                ];
+
+                this.view = new EpubReflowable.ReflowablePaginationView({
+                    spineItem : spineItem,
+                    viewerSettings : viewerSettings,
+                    contentDocumentCFIs : contentDocumentCFIs,
+                    bindings : bindings
+                });
+                spyOn(this.view, "trigger");
             });
 
-            // it("inserts the start and end marker", function () {
-
-            //     // spyOn(this.view, "getCurrentSelectionRange").andReturn(this.selection);
-            //     // this.view.insertSelectionMarkers();
-                
+            // it("triggers contentDocumentLoaded once rendered", function () {
             // });
+
+            // Rationale: This only tests whether the event is trigger on the view if the handler is executed; it is not
+            //   testing whether the handler actually gets bound to anything. 
+            it("triggers linkClicked on click", function () {
+
+                var eventObject = $.Event("click");
+                this.view.linkClickHandler(eventObject);
+                expect(this.view.trigger).toHaveBeenCalledWith("internalLinkClicked", eventObject);
+            });
+
+            it("triggers the nextPage event", function () {
+
+                this.view.nextPage();
+                expect(this.view.trigger).toHaveBeenCalledWith("atNextPage");
+            });
+
+            it("triggers the previousPage event", function () {
+
+                this.view.pages.set("current_page", [2]);
+                this.view.previousPage();
+                expect(this.view.trigger).toHaveBeenCalledWith("atPreviousPage");
+            });
+
+            describe("contentChanged event", function () {
+
+                it("triggers the displayedContentChanged event: next page", function () {
+
+                    this.view.nextPage()
+                    expect(this.view.trigger).toHaveBeenCalledWith("displayedContentChanged");
+                });
+
+                it("triggers the displayedContentChanged event: previous page", function () {
+
+                    this.view.pages.set("current_page", [2]);
+                    this.view.previousPage();
+                    expect(this.view.trigger).toHaveBeenCalledWith("displayedContentChanged");
+                });
+
+                // Need to refactor to test the "show" page methods
+                // it("triggers the displayedContentChanged event: show by page number", function () {
+
+                //     this.view.pages.set("num_pages", 3);
+                //     this.view.showPageByNumber(3);
+                //     expect(this.view.trigger).toHaveBeenCalledWith("displayedContentChanged");
+                // });
+                
+                // it("triggers the displayedContentChanged event: show by CFI", function () {
+                //     expect(this.view.trigger).toHaveBeenCalledWith("displayedContentChanged");
+                // });
+
+                // it("triggers the displayedContentChanged event: show by id", function () {
+                //     expect(this.view.trigger).toHaveBeenCalledWith("displayedContentChanged");
+                // });
+
+                it("triggers the displayedContentChanged event: re-pagination", function () {
+
+                    this.spyOn(this.view, "paginateContentDocument").andCallFake(function () {});
+                    this.view.rePaginationHandler();
+                    expect(this.view.trigger).toHaveBeenCalledWith("displayedContentChanged");
+                });
+            });
+
+            it("triggers styleChanged: when margin changed", function () {
+
+                expect(this.view.trigger).toHaveBeenCalledWith("styleChanged");
+            });
+
+            it("triggers layoutChanged: when layout changes to synthetic", function () {
+
+                expect(this.view.trigger).toHaveBeenCalledWith("layoutChanged", true);
+            });
+
+            it("triggers layoutChanged: when layout changes to single", function () {
+
+                expect(this.view.trigger).toHaveBeenCalledWith("layoutChanged", false);
+            });
+
+            it("triggers onFirstPage on first page of content document", function () {
+
+                expect(this.view.trigger).toHaveBeenCalledWith("onFirstPage");
+            });
+
+            it("triggesr onLastPage on last page of content document", function () {
+
+                expect(this.view.trigger).toHaveBeenCalledWith("onLastPage");
+            });
         });
     });
 });

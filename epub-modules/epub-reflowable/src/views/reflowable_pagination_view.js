@@ -176,6 +176,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         // Set the current page
         this.pages.goToPage(pageNumber, this.viewerModel.get("syntheticLayout"), this.spineItemModel.get("firstPageIsOffset"));
         this.showPage(pageNumber);
+        this.trigger("displayedContentChanged");
     },
 
     showPageByCFI : function (CFI) {
@@ -211,6 +212,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
         if (page > 0) {
             this.pages.goToPage(page, this.viewerModel.get("syntheticLayout"), this.spineItemModel.get("firstPageIsOffset")); 
+            this.trigger("displayedContentChanged");
         }
         else {
             throw new Error("The page specified by the CFI could not be found");
@@ -288,6 +290,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
             if (page > 0) {
                 //console.log(fragment + " is on page " + page);
                 this.pages.goToPage(page, this.viewerModel.get("syntheticLayout"), this.spineItemModel.get("firstPageIsOffset"));	
+                this.trigger("displayedContentChanged");
 			}
             else {
                 // Throw an exception here 
@@ -339,6 +342,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
     setFontSize : function (fontSize) {
         this.viewerModel.set({ fontSize : fontSize });
+        this.trigger("displayedContentChanged");
         if (this.annotations) {
             this.annotations.redraw();
         }
@@ -346,6 +350,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
     setMargin : function (margin) {
         this.viewerModel.set({ currentMargin : margin });
+        this.trigger("displayedContentChanged");
         if (this.annotations) {
             this.annotations.redraw();
         }
@@ -353,6 +358,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
     setTheme : function (theme) {
         this.viewerModel.set({ currentTheme : theme });
+        this.trigger("displayedContentChanged");
         if (this.annotations) {
             this.annotations.redraw();
         }
@@ -364,6 +370,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         if (isSynthetic !== this.viewerModel.get("syntheticLayout")) {
             this.viewerModel.set({ syntheticLayout : isSynthetic });
             this.pages.toggleTwoUp(isSynthetic, this.spineItemModel.get("firstPageIsOffset"));
+            this.trigger("displayedContentChanged");
         }
         if (this.annotations) {
             this.annotations.redraw();
@@ -372,14 +379,36 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
     nextPage : function () {
 
-        var isSynthetic = this.viewerModel.get("syntheticLayout");
-        this.pages.nextPage(isSynthetic);
+        if (!this.onLastPage()) {
+            var isSynthetic = this.viewerModel.get("syntheticLayout");
+            this.pages.nextPage(isSynthetic);
+            this.trigger("atNextPage");
+            this.trigger("displayedContentChanged");
+
+            if (this.onLastPage()) {
+                this.trigger("onLastPage");
+            }
+        } 
+        else {
+            this.trigger("onLastPage");
+        }
     },
 
     previousPage : function () {
 
-        var isSynthetic = this.viewerModel.get("syntheticLayout");
-        this.pages.prevPage(isSynthetic);
+        if (!this.onFirstPage()) {
+            var isSynthetic = this.viewerModel.get("syntheticLayout");
+            this.pages.prevPage(isSynthetic);
+            this.trigger("atPreviousPage");
+            this.trigger("displayedContentChanged");
+
+            if (this.onFirstPage()) {
+                this.trigger("onFirstPage");
+            }
+        }
+        else {
+            this.trigger("onFirstPage");
+        }
     },
 
 	// ------------------------------------------------------------------------------------ //
@@ -418,6 +447,11 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         }
     },
 
+    linkClickHandler : function (e) {
+
+        this.trigger("internalLinkClicked", e);
+    },
+
 	pageChangeHandler: function() {
 
         var that = this;
@@ -442,6 +476,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 	rePaginationHandler: function() {
 
 		this.paginateContentDocument();
+        this.trigger("displayedContentChanged");
 	},
 
 	themeChangeHandler : function () {
