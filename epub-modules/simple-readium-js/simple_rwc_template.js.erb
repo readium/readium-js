@@ -1,6 +1,6 @@
 <%= epub_reading_system %>
 
-var SimpleRWC = function (elementToBindReaderTo, viewerPreferences, packageDocumentURL, packageDocumentXML, renderStrategy) {
+var SimpleReadiumJs = function (elementToBindReaderTo, viewerPreferences, packageDocumentURL, packageDocumentXML, renderStrategy) {
     
     // Epub modules
     var EpubCFI = {};
@@ -38,20 +38,53 @@ var SimpleRWC = function (elementToBindReaderTo, viewerPreferences, packageDocum
         // -- None added so far 
 
         // epub viewer module api
-        render : function () { return epubViewer.render.call(epubViewer); },
-        showSpineItem : function (spineIndex, callback, callbackContext) { return epubViewer.showSpineItem.call(epubViewer, spineIndex, callback, callbackContext); },
-        showPageByCFI : function (CFI, callback, callbackContext) { return epubViewer.showPageByCFI.call(epubViewer, CFI, callback, callbackContext); },
-        showPageByElementId : function (spineIndex, hashFragmentId, callback, callbackContext) { return epubViewer.showPageByElementId.call(epubViewer, spineIndex, hashFragmentId, callback, callbackContext); },
-        nextPage : function (callback, callbackContext) { return epubViewer.nextPage.call(epubViewer, callback, callbackContext); },
-        previousPage : function (callback, callbackContext) { return epubViewer.previousPage.call(epubViewer, callback, callbackContext); },
-        setFontSize : function (fontSize) { return epubViewer.setFontSize.call(epubViewer, fontSize); },
-        setMargin : function (margin) { return epubViewer.setMargin.call(epubViewer, margin); },
-        setTheme : function (theme) { return epubViewer.setTheme.call(epubViewer, theme); },
-        setSyntheticLayout : function (isSynthetic) { return epubViewer.setSyntheticLayout.call(epubViewer, isSynthetic); },
-        getNumberOfPages : function () { return epubViewer.getNumberOfPages.call(epubViewer); },
-        getCurrentPage : function () { return epubViewer.getCurrentPage.call(epubViewer); },
-        on : function (eventName, callback, callbackContext) { return epubViewer.on.call(epubViewer, eventName, callback, callbackContext); },
-        off : function (eventName) { return epubViewer.off.call(epubViewer, eventName); }, 
-        getViewerSettings : function () { return epubViewer.getViewerSettings.call(epubViewer); }
+        render : function () { 
+            return epubViewer.render(); 
+        },
+        showSpineItem : function (spineIndex, callback, callbackContext) { 
+            return epubViewer.showSpineItem(spineIndex, callback, callbackContext); 
+        },
+        showPageByCFI : function (CFI, callback, callbackContext) { 
+            return epubViewer.showPageByCFI(CFI, callback, callbackContext); 
+        },
+        showPageByElementId : function (spineIndex, hashFragmentId, callback, callbackContext) { 
+            return epubViewer.showPageByElementId(spineIndex, hashFragmentId, callback, callbackContext); 
+        },
+        nextPage : function (callback, callbackContext) { 
+            return epubViewer.nextPage(callback, callbackContext); 
+        },
+        previousPage : function (callback, callbackContext) { 
+            return epubViewer.previousPage(callback, callbackContext); 
+        },
+        setFontSize : function (fontSize) { 
+            return epubViewer.setFontSize(fontSize); 
+        },
+        setMargin : function (margin) { 
+            return epubViewer.setMargin(margin); 
+        },
+        setTheme : function (theme) { 
+            return epubViewer.setTheme(theme); 
+        },
+        setSyntheticLayout : function (isSynthetic) { 
+            return epubViewer.setSyntheticLayout(isSynthetic); 
+        },
+        getNumberOfPages : function () { 
+            return epubViewer.getNumberOfPages(); 
+        },
+        getCurrentPage : function () { 
+            return epubViewer.getCurrentPage.call(epubViewer); 
+        },
+        on : function (eventName, callback, callbackContext) { 
+            return epubViewer.on(eventName, callback, callbackContext); 
+        },
+        off : function (eventName) { 
+            return epubViewer.off(eventName); 
+        }, 
+        getViewerSettings : function () { 
+            return epubViewer.getViewerSettings(); 
+        },
+        resizeContent : function () { 
+            return epubViewer.resizeContent(); 
+        }
     };
 };

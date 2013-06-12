@@ -1,6 +1,3 @@
-#Dir.glob('here/tasks/Rakefile*').each { |r| import r }
-#import 'here/Rakefile'
-
 require "erb"
 
 # ------------------------------------------------------------------------------------------------------------------------
@@ -50,6 +47,13 @@ end
 # ------------------------------------------------------------------------------------------------------------------------
 #  Tasks
 # ------------------------------------------------------------------------------------------------------------------------
+
+task :create_release do
+
+    Rake::Task[:build].invoke()
+    `java -jar build/yuicompressor-2.4.7.jar epub-modules/release/SimpleReadium.js -o epub-modules/release/SimpleReadium.min.js`
+    `gzip -fc epub-modules/release/SimpleReadium.min.js > epub-modules/release/SimpleReadium.min.js.gz`
+end
 
 task :gen_all_modules do 
     puts ":gen_all_modules"
