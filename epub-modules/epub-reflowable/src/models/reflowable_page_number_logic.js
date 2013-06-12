@@ -15,8 +15,7 @@ EpubReflowable.ReflowablePageNumberLogic = Backbone.Model.extend({
     //   gotoPageNumber (integer): The page number to "go to"
     //   twoUp (boolean): Are two pages currently displayed in the reader?
     //  )
-    // REFACTORING CANDIDATE: This might be better named as getPageNumsToDisplay; the "goto" is confusing
-    getGotoPageNumsToDisplay: function(gotoPageNumber, twoUp, firstPageOffset) {
+    getPageNumbers : function (gotoPageNumber, twoUp, firstPageOffset) {
 
         if (twoUp) {
             
@@ -47,30 +46,47 @@ EpubReflowable.ReflowablePageNumberLogic = Backbone.Model.extend({
 
     // Description: Get the pages numbers to display when moving in reverse reading order
     // Arguments (
-    //   prevPageNumberToDisplay (integer): The page to move to; this page must be one of the displayed pages
     //  )
-    getPrevPageNumsToDisplay: function (prevPageNumberToDisplay) {
+    getPreviousPageNumbers: function (currentPages, twoUp) {
 
-        return [prevPageNumberToDisplay - 1, prevPageNumberToDisplay];
+        var previousVisiblePageNumber = currentPages[0] - 1;
+
+        if (!twoUp){
+
+            return [previousVisiblePageNumber];
+        }
+        else {
+
+            return [previousVisiblePageNumber - 1, previousVisiblePageNumber];
+        }
     },
 
     // Description: Get the pages to display when moving in reading order
     // Arguments (
-    //   nextPageNumberToDisplay (integer): The page to move to; this page must be one of the displayed pages
     //  )
-    getNextPageNumsToDisplay: function (nextPageNumberToDisplay) {
+    getNextPageNumbers : function (currentPages, twoUp) {
 
-        return [nextPageNumberToDisplay, nextPageNumberToDisplay + 1];
+        // Rationale: The length will be 1 or 2.
+        var highestVisiblePageNumber = currentPages[currentPages.length - 1];
+        var firstVisiblePageNumber = highestVisiblePageNumber + 1;
+
+        if (!twoUp) {
+
+            return [firstVisiblePageNumber];
+        }
+        else {
+
+            return [firstVisiblePageNumber, firstVisiblePageNumber + 1];
+        }
     },
 
     // Description: This method determines which page numbers to display when switching
     //   between a single page and side-by-side page views and vice versa.
     // Arguments (
-    //   twoUp (boolean): Are two pages currently displayed in the reader?
     //   displayedPageNumbers (array of integers): An array of page numbers that are currently displayed    
     //   firstPageOffset: Is the first page of a reflowable EPUB offset, to create a blank page for the first page? 
     //  )
-    getPageNumbersForTwoUp: function(twoUp, displayedPageNumbers, firstPageOffset) {
+    getToggledLayoutPageNumbers : function (displayedPageNumbers, firstPageOffset) {
 
         var displayed = displayedPageNumbers;
         var twoPagesDisplayed = displayed.length === 2 ? true : false;
@@ -122,5 +138,4 @@ EpubReflowable.ReflowablePageNumberLogic = Backbone.Model.extend({
     // ------------------------------------------------------------------------------------ //
     //  "PRIVATE" HELPERS                                                                   //
     // ------------------------------------------------------------------------------------ //
-
 });

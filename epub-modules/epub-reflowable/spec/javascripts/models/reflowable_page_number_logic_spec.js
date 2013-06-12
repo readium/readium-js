@@ -1,6 +1,6 @@
 describe("EpubReflowable.ReflowablePageNumberLogic", function () {
 
-    describe("getGotoPageNumsToDisplay()", function () {
+    describe("getPageNumbers()", function () {
 
         beforeEach(function () {
             this.pageNumSelector = new EpubReflowable.ReflowablePageNumberLogic();
@@ -9,7 +9,7 @@ describe("EpubReflowable.ReflowablePageNumberLogic", function () {
             //   EPUB, the page to go to and the expected result.
             this.testGetPageNumber = function (params) {
 
-                var selectedPageNums = this.pageNumSelector.getGotoPageNumsToDisplay(
+                var selectedPageNums = this.pageNumSelector.getPageNumbers(
                     params.goToPage, 
                     params.twoUp, // two pages displayed?
                     params.firstPageOffset // first page offset
@@ -82,7 +82,7 @@ describe("EpubReflowable.ReflowablePageNumberLogic", function () {
         });
     });
 
-    describe("getPrevPageNumsToDisplay()", function () {
+    describe("getPreviousPageNumbers()", function () {
 
         beforeEach(function () {
             this.pageNumSelector = new EpubReflowable.ReflowablePageNumberLogic();
@@ -91,47 +91,44 @@ describe("EpubReflowable.ReflowablePageNumberLogic", function () {
             //   EPUB, the page to navigate to, and the expected result.
             this.testPrevPage = function (params) {
 
-                var selectedPageNums = this.pageNumSelector.getPrevPageNumsToDisplay(
-                    params.prevPageNum, 
-                    params.firstPageOffset // first page offset
+                var selectedPageNums = this.pageNumSelector.getPreviousPageNumbers(
+                    params.currentPages, 
+                    params.isSynthetic // first page offset
                     );
 
                 return selectedPageNums;
             };
         });
 
-        describe("LTR", function () {
+        describe("LTR & RTL", function () {
 
-            it("go to p in [p-1, p]", function () {
+            describe("synthetic layout", function () {
+            
+                it("[p, p+1] -> [p-2, p-1]", function () {
 
-                var pageNums = this.testPrevPage({firstPageOffset : false, prevPageNum : 2});
-                expect(pageNums).toEqual([1, 2]);
+                    var pageNums = this.testPrevPage({currentPages : [3, 4], isSynthetic : true});
+                    expect(pageNums).toEqual([1, 2]);
+                });
+
+                it("[p, p+1] -> [p-2, p-1]; offset", function () {
+
+                    var pageNums = this.testPrevPage({currentPages : [2, 3], isSynthetic : true});
+                    expect(pageNums).toEqual([0, 1]);
+                });
             });
 
-            it("go to p in [p-1, p]; offset", function () {
+            describe("single page layout", function () {
 
-                var pageNums = this.testPrevPage({firstPageOffset : true, prevPageNum : 3});
-                expect(pageNums).toEqual([2, 3]);
-            });
-        });
+                it("[p] -> [p-1]", function () {
 
-        describe("RTL", function () {
-
-            it("go to p in [p, p-1]", function () {
-
-                var pageNums = this.testPrevPage({firstPageOffset : false, prevPageNum : 2});
-                expect(pageNums).toEqual([1, 2]);
-            });
-
-            it("go to p in [p, p-1]; offset", function () {
-
-                var pageNums = this.testPrevPage({firstPageOffset : true, prevPageNum : 3});
-                expect(pageNums).toEqual([2, 3]);
+                    var pageNums = this.testPrevPage({currentPages : [2], isSynthetic : false});
+                    expect(pageNums).toEqual([1]);
+                }); 
             });
         });
     });
 
-    describe("getNextPageNumsToDisplay()", function () {
+    describe("getNextPageNumbers()", function () {
 
         beforeEach(function () {
             this.pageNumSelector = new EpubReflowable.ReflowablePageNumberLogic();
@@ -140,47 +137,44 @@ describe("EpubReflowable.ReflowablePageNumberLogic", function () {
             //   EPUB, the page to navigate to, and the expected result.
             this.testNextPage = function (params) {
 
-                var selectedPageNums = this.pageNumSelector.getNextPageNumsToDisplay(
-                    params.prevPageNum, 
-                    params.firstPageOffset // first page offset
+                var selectedPageNums = this.pageNumSelector.getNextPageNumbers(
+                    params.currentPages, 
+                    params.isSynthetic // first page offset
                     );
 
                 return selectedPageNums;
             };
         });
 
-        describe("LTR", function () {
+        describe("LTR & RTL", function () {
 
-            it("go to p in [p, p+1]", function () {
+            describe("synthetic layout", function () {
 
-                var pageNums = this.testNextPage({firstPageOffset : false, prevPageNum : 3});
-                expect(pageNums).toEqual([3, 4]);
+                it("[p, p+1] -> [p+2, p+3]", function () {
+
+                    var pageNums = this.testNextPage({currentPages : [1, 2], isSynthetic : true});
+                    expect(pageNums).toEqual([3, 4]);
+                });
+
+                it("[p, p+1] -> [p+2, p+3]; offset", function () {
+
+                    var pageNums = this.testNextPage({currentPages : [0, 1], isSynthetic : true});
+                    expect(pageNums).toEqual([2, 3]);
+                });
             });
 
-            it("go to p in [p, p+1]; offset", function () {
+            describe("single page layout", function () {
+                
+                it("[p] -> [p+1]", function () {
 
-                var pageNums = this.testNextPage({firstPageOffset : true, prevPageNum : 2});
-                expect(pageNums).toEqual([2, 3]);
-            });
-        });
-
-        describe("RTL", function () {
-
-            it("go to p in [p+1, p]", function () {
-
-                var pageNums = this.testNextPage({firstPageOffset : false, prevPageNum : 3});
-                expect(pageNums).toEqual([3, 4]);
-            });
-
-            it("go to p in [p+1, p]; offset", function () {
-
-                var pageNums = this.testNextPage({firstPageOffset : true, prevPageNum : 2});
-                expect(pageNums).toEqual([2, 3]);
+                    var pageNums = this.testNextPage({currentPages : [1], isSynthetic : false});
+                    expect(pageNums).toEqual([2]);
+                });
             });
         });
     });
 
-    describe("getPageNumsForTwoUp()", function () {
+    describe("getToggledLayoutPageNumbers()", function () {
 
         beforeEach(function () {
             this.pageNumSelector = new EpubReflowable.ReflowablePageNumberLogic();
@@ -189,8 +183,7 @@ describe("EpubReflowable.ReflowablePageNumberLogic", function () {
             //   EPUB, the page to navigate to, and the expected result.
             this.testGotoPageNums = function (params) {
 
-                var selectedPageNums = this.pageNumSelector.getPageNumbersForTwoUp(
-                    params.twoUp, 
+                var selectedPageNums = this.pageNumSelector.getToggledLayoutPageNumbers(
                     params.current_pages, // the pages currently displayed 
                     params.firstPageOffset // first page is offset
                     );

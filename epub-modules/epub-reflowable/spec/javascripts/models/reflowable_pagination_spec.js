@@ -13,29 +13,29 @@ describe("EpubReflowable.ReflowablePagination", function () {
                 it('1 page -> 2 pages', function () {
 
                     this.pages.set({
-                        num_pages: 10,
-                        current_page: [2]
+                        numberOfPages: 10,
+                        currentPages: [2]
                     });
 
                     var twoUp = false;
                     var firstPageIsOffset = false;
 
                     this.pages.toggleTwoUp(twoUp, firstPageIsOffset);
-                    expect(this.pages.get('current_page')).toEqual([1, 2]);
+                    expect(this.pages.get('currentPages')).toEqual([1, 2]);
                 });
 
                 it('2 pages -> 1 page', function () {
 
                     this.pages.set({
-                        num_pages: 10,
-                        current_page: [1, 2]
+                        numberOfPages: 10,
+                        currentPages: [1, 2]
                     });
 
                     var twoUp = true;
                     var firstPageIsOffset = false;
 
                     this.pages.toggleTwoUp(twoUp, firstPageIsOffset);
-                    expect(this.pages.get('current_page')).toEqual([1]);
+                    expect(this.pages.get('currentPages')).toEqual([1]);
                 });
             });
             
@@ -44,29 +44,29 @@ describe("EpubReflowable.ReflowablePagination", function () {
                 it('1 page -> 2 pages', function () {
 
                     this.pages.set({
-                        num_pages: 10,
-                        current_page: [2]
+                        numberOfPages: 10,
+                        currentPages: [2]
                     });
 
                     var twoUp = false;
                     var firstPageIsOffset = false;
 
                     this.pages.toggleTwoUp(twoUp, firstPageIsOffset);
-                    expect(this.pages.get('current_page')).toEqual([1, 2]);
+                    expect(this.pages.get('currentPages')).toEqual([1, 2]);
                 });
 
                 it('2 pages -> 1 page', function () {
 
                     this.pages.set({
-                        num_pages: 10,
-                        current_page: [1, 2]
+                        numberOfPages: 10,
+                        currentPages: [1, 2]
                     });
 
                     var twoUp = true;
                     var firstPageIsOffset = false;
 
                     this.pages.toggleTwoUp(twoUp, firstPageIsOffset);
-                    expect(this.pages.get('current_page')).toEqual([1]);
+                    expect(this.pages.get("currentPages")).toEqual([1]);
                 });
             });
         });
@@ -76,8 +76,8 @@ describe("EpubReflowable.ReflowablePagination", function () {
             beforeEach(function () {
                 
                 this.pages.set({
-                    num_pages: 10,
-                    current_page: [2]
+                    numberOfPages: 10,
+                    currentPages: [2]
                 });
             });
 
@@ -85,14 +85,14 @@ describe("EpubReflowable.ReflowablePagination", function () {
 
                 var twoUp = false;
                 this.pages.nextPage(twoUp);
-                expect(this.pages.get("current_page")).toEqual([3]);
+                expect(this.pages.get("currentPages")).toEqual([3]);
             });
 
             it('decrements the page number if there are more pages', function () {
 
                 var twoUp = false;
                 this.pages.prevPage(twoUp);
-                expect(this.pages.get("current_page")).toEqual([1]);
+                expect(this.pages.get("currentPages")).toEqual([1]);
             });
         });
 
@@ -101,8 +101,8 @@ describe("EpubReflowable.ReflowablePagination", function () {
             beforeEach(function () {
                 
                 this.pages.set({
-                    num_pages: 10,
-                    current_page: [3, 4]
+                    numberOfPages: 10,
+                    currentPages: [3, 4]
                 });
             });
 
@@ -111,7 +111,7 @@ describe("EpubReflowable.ReflowablePagination", function () {
                 var twoUp = true;
                 var pageProgressionDirection = "ltr";
                 this.pages.nextPage(twoUp);
-                expect(this.pages.get("current_page")).toEqual([5, 6]);
+                expect(this.pages.get("currentPages")).toEqual([5, 6]);
             });
 
             it('decrements the page number if there are more pages', function () {
@@ -119,7 +119,7 @@ describe("EpubReflowable.ReflowablePagination", function () {
                 var twoUp = true;
                 var pageProgressionDirection = "ltr";
                 this.pages.prevPage(twoUp);
-                expect(this.pages.get("current_page")).toEqual([1, 2]);
+                expect(this.pages.get("currentPages")).toEqual([1, 2]);
             });
         });
     });

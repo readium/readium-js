@@ -185,6 +185,38 @@ EpubReflowable.ReflowableElementInfo = Backbone.Model.extend({
         return $firstVisibleTextNode;
     },
 
+    // The package document needs to get passed into the view, or the API needs to change. This is not critical at the moment.
+    //
+    // // Description: Generates a CFI for an element is that is currently visible on the page. This CFI and a last-page payload
+    // //   is then saved for the current EPUB.
+    // savePosition : function () {
+
+    //     var $visibleTextNode;
+    //     var CFI;
+
+    //     // Get first visible element with a text node 
+    //     $visibleTextNode = this.reflowableElementsInfo.findVisibleTextNode(
+    //         this.getEpubContentDocument(), 
+    //         this.viewerModel.get("two_up"),
+    //         // REFACTORING CANDIDATE: These two properties should be stored another way. This should be 
+    //         //   temporary.
+    //         this.reflowablePaginator.gap_width,
+    //         this.reflowablePaginator.page_width
+    //         );
+
+    //     CFI = this.annotations.findExistingLastPageMarker($visibleTextNode);
+    //     if (!CFI) {
+
+    //      CFI = this.annotations.generateCharacterOffsetCFI(
+    //          this.reflowableElementsInfo.findVisibleCharacterOffset($visibleTextNode, this.getEpubContentDocument()),
+                // $visibleTextNode[0],
+                // this.spineItemModel.get("idref"),
+                // this.epubController.getPackageDocumentDOM()
+       //       );
+    //     }
+    //     this.annotations.saveAnnotation(CFI, this.spineItemModel.get("spine_index"));
+    // },
+
     findVisiblePageElements: function(flowingWrapper, epubContentDocument) {
 
         var $elements = $(epubContentDocument).find("[id]");

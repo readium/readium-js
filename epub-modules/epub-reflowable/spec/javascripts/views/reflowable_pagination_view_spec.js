@@ -113,8 +113,7 @@ describe("EpubReflowable.ReflowablePaginationView", function () {
                 }
             ];
 
-            spyOn(EpubReflowable.ReflowablePaginationView.prototype, "rePaginationHandler");
-            spyOn(EpubReflowable.ReflowablePaginationView.prototype, "themeChangeHandler");
+            spyOn(EpubReflowable.ReflowablePaginationView.prototype, "paginateContentDocument");
             spyOn(EpubReflowable.ReflowablePagination.prototype, "toggleTwoUp");
             this.view = new EpubReflowable.ReflowablePaginationView({
                 spineItem : spineItem,
@@ -136,7 +135,7 @@ describe("EpubReflowable.ReflowablePaginationView", function () {
             it("calls the rePagination handler", function () {
 
                 this.view.setFontSize(12);
-                expect(this.view.rePaginationHandler).toHaveBeenCalled();
+                expect(this.view.paginateContentDocument).toHaveBeenCalled();
             });
         });
 
@@ -151,23 +150,11 @@ describe("EpubReflowable.ReflowablePaginationView", function () {
             it("calls the rePagination handler", function () {
 
                 this.view.setMargin(12);
-                expect(this.view.rePaginationHandler).toHaveBeenCalled();
+                expect(this.view.paginateContentDocument).toHaveBeenCalled();
             });
         });
 
         describe("setTheme()", function () {
-
-            it("sets the theme", function () {
-
-                this.view.setTheme("other");
-                expect(this.view.viewerModel.get("currentTheme")).toBe("other");
-            }); 
-
-            it("calls the theme changed handler", function () {
-
-                this.view.setTheme("other");
-                expect(this.view.themeChangeHandler).toHaveBeenCalled();
-            });
         });
 
         describe("setSyntheticLayout()", function () {
@@ -229,9 +216,14 @@ describe("EpubReflowable.ReflowablePaginationView", function () {
                     contentDocumentCFIs : contentDocumentCFIs,
                     bindings : bindings
                 });
+
                 spyOn(this.view, "trigger");
+
+                // Rationale: Shortcut this for testing events, otherwise it throws an error
+                spyOn(this.view, "moveViewportToPage").andCallFake(function () {});
             });
 
+            // Rationale: Need to load an actual content document
             // it("triggers contentDocumentLoaded once rendered", function () {
             // });
 
@@ -246,17 +238,79 @@ describe("EpubReflowable.ReflowablePaginationView", function () {
 
             it("triggers the nextPage event", function () {
 
+                this.view.pages.set("numberOfPages", 4);
                 this.view.nextPage();
                 expect(this.view.trigger).toHaveBeenCalledWith("atNextPage");
             });
 
             it("triggers the previousPage event", function () {
 
-                this.view.pages.set("current_page", [2]);
+                this.view.pages.set("currentPages", [2]);
                 this.view.previousPage();
                 expect(this.view.trigger).toHaveBeenCalledWith("atPreviousPage");
             });
 
+            it("triggers layoutChanged: when layout changes to synthetic", function () {
+
+                // Initialize some extra test state
+                this.view.viewerModel.set("syntheticLayout", false);
+
+                // Test
+                this.view.setSyntheticLayout(true);
+                expect(this.view.trigger).toHaveBeenCalledWith("layoutChanged", true);
+            });
+
+            it("triggers layoutChanged: when layout changes to single", function () {
+
+                // Initialize some extra test state
+                this.view.viewerModel.set("syntheticLayout", true);
+
+                // Test
+                this.view.setSyntheticLayout(false);
+                expect(this.view.trigger).toHaveBeenCalledWith("layoutChanged", false);
+            });
+
+            it("triggers onFirstPage WHILE ON first page", function () {
+
+                this.view.pages.set("currentPages", [1]);
+                this.view.viewerModel.set("syntheticLayout", false);
+                this.view.previousPage();
+
+                expect(this.view.trigger).toHaveBeenCalledWith("onFirstPage");
+            });
+
+            it("triggers onFirstPage WHEN first page reached", function () {
+
+                this.view.pages.set("currentPages", [2]);
+                this.view.viewerModel.set("syntheticLayout", false);
+                this.view.previousPage();
+
+                expect(this.view.trigger).toHaveBeenCalledWith("onFirstPage");
+            });
+
+            it("triggers onLastPage WHILE ON last page", function () {
+
+                this.view.pages.set("numberOfPages", 4);
+                this.view.viewerModel.set("syntheticLayout", false);
+                this.view.pages.set("currentPages", [4]);
+                this.view.nextPage();
+
+                expect(this.view.trigger).toHaveBeenCalledWith("onLastPage");
+            });
+
+            it("triggers onLastPage WHEN last page reached", function () {
+
+                this.view.pages.set("numberOfPages", 4);
+                this.view.viewerModel.set("syntheticLayout", false);
+                this.view.pages.set("currentPages", [3]);
+                this.view.nextPage();
+
+                expect(this.view.trigger).toHaveBeenCalledWith("onLastPage");
+            });
+
+            // Rationale: These would be cleaner if an actual content document were loaded in the iframe; some
+            //   are commented out as the lack of a loaded iframe throws to errors unrelated to the code being
+            //   tested here.
             describe("contentChanged event", function () {
 
                 it("triggers the displayedContentChanged event: next page", function () {
@@ -267,58 +321,26 @@ describe("EpubReflowable.ReflowablePaginationView", function () {
 
                 it("triggers the displayedContentChanged event: previous page", function () {
 
-                    this.view.pages.set("current_page", [2]);
+                    this.view.pages.set("currentPages", [2]);
                     this.view.previousPage();
                     expect(this.view.trigger).toHaveBeenCalledWith("displayedContentChanged");
                 });
 
-                // Need to refactor to test the "show" page methods
-                // it("triggers the displayedContentChanged event: show by page number", function () {
+                it("triggers the displayedContentChanged event: show by page number", function () {
 
-                //     this.view.pages.set("num_pages", 3);
-                //     this.view.showPageByNumber(3);
-                //     expect(this.view.trigger).toHaveBeenCalledWith("displayedContentChanged");
-                // });
+                    this.view.pages.set("numberOfPages", 3);
+                    this.view.showPageByNumber(3);
+                    expect(this.view.trigger).toHaveBeenCalledWith("displayedContentChanged");
+                });
                 
-                // it("triggers the displayedContentChanged event: show by CFI", function () {
-                //     expect(this.view.trigger).toHaveBeenCalledWith("displayedContentChanged");
+                // it("triggers the displayedContentChanged event: show by cfi", function () {
                 // });
 
                 // it("triggers the displayedContentChanged event: show by id", function () {
-                //     expect(this.view.trigger).toHaveBeenCalledWith("displayedContentChanged");
                 // });
 
-                it("triggers the displayedContentChanged event: re-pagination", function () {
-
-                    this.spyOn(this.view, "paginateContentDocument").andCallFake(function () {});
-                    this.view.rePaginationHandler();
-                    expect(this.view.trigger).toHaveBeenCalledWith("displayedContentChanged");
-                });
-            });
-
-            it("triggers styleChanged: when margin changed", function () {
-
-                expect(this.view.trigger).toHaveBeenCalledWith("styleChanged");
-            });
-
-            it("triggers layoutChanged: when layout changes to synthetic", function () {
-
-                expect(this.view.trigger).toHaveBeenCalledWith("layoutChanged", true);
-            });
-
-            it("triggers layoutChanged: when layout changes to single", function () {
-
-                expect(this.view.trigger).toHaveBeenCalledWith("layoutChanged", false);
-            });
-
-            it("triggers onFirstPage on first page of content document", function () {
-
-                expect(this.view.trigger).toHaveBeenCalledWith("onFirstPage");
-            });
-
-            it("triggesr onLastPage on last page of content document", function () {
-
-                expect(this.view.trigger).toHaveBeenCalledWith("onLastPage");
+                // it("triggers the displayedContentChanged event: re-pagination", function () {
+                // });
             });
         });
     });

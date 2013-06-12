@@ -33,7 +33,7 @@ var EpubReflowableModule = function(spineObject, viewerSettingsObject, CFIAnnota
             return reflowableView.previousPage();
         },
         showPageByHashFragment : function (hashFragmentId) {
-            return reflowableView.goToHashFragment(hashFragmentId);
+            return reflowableView.showPageByElementId(hashFragmentId);
         },
         showPageByNumber : function (pageNumber) {
             return reflowableView.showPageByNumber(pageNumber);
@@ -42,10 +42,10 @@ var EpubReflowableModule = function(spineObject, viewerSettingsObject, CFIAnnota
             return reflowableView.showPageByCFI(CFI);
         },
         onFirstPage : function () {
-            return reflowableView.onFirstPage();
+            return reflowableView.pages.onFirstPage();
         },
         onLastPage : function () {
-            return reflowableView.onLastPage();
+            return reflowableView.pages.onLastPage();
         },
         showPagesView : function () {
             return reflowableView.showView();
@@ -54,10 +54,10 @@ var EpubReflowableModule = function(spineObject, viewerSettingsObject, CFIAnnota
             return reflowableView.hideView();
         },
         numberOfPages : function () {
-            return reflowableView.pages.get("num_pages");
+            return reflowableView.pages.get("numberOfPages");
         },
         currentPage : function () {
-            return reflowableView.pages.get("current_page");
+            return reflowableView.pages.get("currentPages");
         },
         setFontSize : function (fontSize) {
             return reflowableView.setFontSize(fontSize);
