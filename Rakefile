@@ -51,8 +51,17 @@ end
 task :create_release do
 
     Rake::Task[:build].invoke()
-    `java -jar build/yuicompressor-2.4.7.jar epub-modules/release/SimpleReadium.js -o epub-modules/release/SimpleReadium.min.js`
+    readium_js_modules = "epub-modules/development/epub_cfi.js " +
+                         "epub-modules/development/epub_fixed_module.js " +
+                         "epub-modules/development/epub_module.js " +
+                         "epub-modules/development/epub_parser_module.js " +
+                         "epub-modules/development/epub_reading_system.js " +
+                         "epub-modules/development/epub_reflowable_module.js " +
+                         "epub-modules/development/epub_reader_module.js "
+    `java -jar build/yuicompressor-2.4.7.jar epub-modules/development/SimpleReadium.js -o epub-modules/release/SimpleReadium.min.js`
     `gzip -fc epub-modules/release/SimpleReadium.min.js > epub-modules/release/SimpleReadium.min.js.gz`
+    `zip epub-modules/release/Readium.js.zip #{readium_js_modules}`
+    `zip epub-modules/release/SimpleReadium.js.zip epub-modules/development/SimpleReadium.js`
 end
 
 task :gen_all_modules do 
@@ -88,13 +97,11 @@ task :build do
     
     Rake::Task[:gen_all_modules].invoke()
     
-    gen_simple_api_consolidated("epub-modules/simple-readium-js/simple_rwc_template.js.erb", "epub-modules/release/SimpleReadium.js")
+    gen_simple_api_consolidated("epub-modules/simple-readium-js/simple_rwc_template.js.erb", "epub-modules/development/SimpleReadium.js")
     puts "=> SimpleReadium.js"
-    `cp "epub-modules/release/SimpleReadium.js" "epub-modules/development/SimpleReadium.js"`
         
-    gen_simple_api_non_consolidated("epub-modules/simple-readium-js/simple_rwc_template.js.erb", "epub-modules/release/SimpleReadium_Dev.js")
+    gen_simple_api_non_consolidated("epub-modules/simple-readium-js/simple_rwc_template.js.erb", "epub-modules/development/SimpleReadium_Dev.js")
     puts "=> SimpleReadium_Dev.js"
-    `cp "epub-modules/release/SimpleReadium_Dev.js" "epub-modules/development/SimpleReadium_Dev.js"`
   
     Rake::Task[:copy_all_dependencies].invoke()
 end

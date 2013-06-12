@@ -1,6 +1,6 @@
 
 
-var SimpleReadiumJS = function (elementToBindReaderTo, viewerPreferences, packageDocumentURL, packageDocumentXML, renderStrategy) {
+var SimpleReadiumJs = function (elementToBindReaderTo, viewerPreferences, packageDocumentURL, packageDocumentXML, renderStrategy) {
     
     // Epub modules
     var EpubCFI = {};
