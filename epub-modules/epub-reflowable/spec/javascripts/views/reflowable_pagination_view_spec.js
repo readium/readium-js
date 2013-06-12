@@ -270,42 +270,42 @@ describe("EpubReflowable.ReflowablePaginationView", function () {
                 expect(this.view.trigger).toHaveBeenCalledWith("layoutChanged", false);
             });
 
-            it("triggers onFirstPage WHILE ON first page", function () {
+            it("triggers atFirstPage WHILE ON first page", function () {
 
                 this.view.pages.set("currentPages", [1]);
                 this.view.viewerModel.set("syntheticLayout", false);
                 this.view.previousPage();
 
-                expect(this.view.trigger).toHaveBeenCalledWith("onFirstPage");
+                expect(this.view.trigger).toHaveBeenCalledWith("atFirstPage");
             });
 
-            it("triggers onFirstPage WHEN first page reached", function () {
+            it("triggers atFirstPage WHEN first page reached", function () {
 
                 this.view.pages.set("currentPages", [2]);
                 this.view.viewerModel.set("syntheticLayout", false);
                 this.view.previousPage();
 
-                expect(this.view.trigger).toHaveBeenCalledWith("onFirstPage");
+                expect(this.view.trigger).toHaveBeenCalledWith("atFirstPage");
             });
 
-            it("triggers onLastPage WHILE ON last page", function () {
+            it("triggers atLastPage WHILE ON last page", function () {
 
                 this.view.pages.set("numberOfPages", 4);
                 this.view.viewerModel.set("syntheticLayout", false);
                 this.view.pages.set("currentPages", [4]);
                 this.view.nextPage();
 
-                expect(this.view.trigger).toHaveBeenCalledWith("onLastPage");
+                expect(this.view.trigger).toHaveBeenCalledWith("atLastPage");
             });
 
-            it("triggers onLastPage WHEN last page reached", function () {
+            it("triggers atLastPage WHEN last page reached", function () {
 
                 this.view.pages.set("numberOfPages", 4);
                 this.view.viewerModel.set("syntheticLayout", false);
                 this.view.pages.set("currentPages", [3]);
                 this.view.nextPage();
 
-                expect(this.view.trigger).toHaveBeenCalledWith("onLastPage");
+                expect(this.view.trigger).toHaveBeenCalledWith("atLastPage");
             });
 
             // Rationale: These would be cleaner if an actual content document were loaded in the iframe; some

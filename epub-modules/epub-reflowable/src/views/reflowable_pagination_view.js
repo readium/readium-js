@@ -252,10 +252,10 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
             // Trigger events
             this.trigger("atNextPage");
-            this.pages.onLastPage() ? this.trigger("onLastPage") : undefined;
+            this.pages.onLastPage() ? this.trigger("atLastPage") : undefined;
         } 
         else {
-            this.trigger("onLastPage");
+            this.trigger("atLastPage");
         }
     },
 
@@ -269,10 +269,10 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
             // Trigger events
             this.trigger("atPreviousPage");
-            this.pages.onFirstPage() ? this.trigger("onFirstPage") : undefined; 
+            this.pages.onFirstPage() ? this.trigger("atFirstPage") : undefined; 
         }
         else {
-            this.trigger("onFirstPage");
+            this.trigger("atFirstPage");
         }
     },
 

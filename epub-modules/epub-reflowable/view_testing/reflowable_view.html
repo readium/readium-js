@@ -14,10 +14,18 @@
 		<!--script src="../lib/SimpleReadium_Dev.js" type="text/javascript"></script-->
 		
 		<script src="initialization_test.js" type="text/javascript"></script>
+        <script src="event_tests.js" type="text/javascript"></script>
 		
         <script type="text/javascript">
+
             $(document).ready(function () {
-                initializationTest();
+
+                var that = this;
+                this.view = initializationTest();
+                this.view.on("contentDocumentLoaded", function () {
+                    bindEventTests(that.view);
+                });
+                $("#reader").html(this.view.render(false, undefined));
             });
 			
             // Note: the epubReadingSystem object may not be ready when directly using the
