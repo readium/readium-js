@@ -48,7 +48,7 @@ RWCDemoApp.parseXMLFromDOM = function (data) {
                         }
 
                         // THE MOST IMPORTANT PART - INITIALIZING THE SIMPLE RWC MODEL
-                        RWCDemoApp.epubViewer = new SimpleRWC(
+                        RWCDemoApp.epubViewer = new SimpleReadiumJs(
                             elementToBindReaderTo, viewerPreferences, packageDocumentURL, result, "lazy"
                         );
 
