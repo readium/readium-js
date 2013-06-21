@@ -207,27 +207,31 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
     setFontSize : function (fontSize) {
 
-        this.viewerModel.set("fontSize", fontSize);
-        this.paginateContentDocument();
+        if (fontSize !== this.viewerModel.get("fontSize")) {
+            this.viewerModel.set("fontSize", fontSize);
+            this.paginateContentDocument();    
+        }
     },
 
     setMargin : function (margin) {
 
-        this.viewerModel.set("currentMargin", margin);
-        this.paginateContentDocument();
+        if (margin !== this.viewerModel.get("currentMargin")) {
+            this.viewerModel.set("currentMargin", margin);
+            this.paginateContentDocument();    
+        }
     },
 
     setTheme : function (theme) {
 
-        this.viewerModel.set("currentTheme", theme);
-        this.reflowableLayout.injectTheme(
-            this.viewerModel.get("currentTheme"), 
-            this.getEpubContentDocument(), 
-            this.getFlowingWrapper()
-        );
-        this.redrawAnnotations();
-
-        this.trigger("displayedContentChanged");
+        if (theme !== this.viewerModel.get("currentTheme")) {
+            this.viewerModel.set("currentTheme", theme);
+            this.reflowableLayout.injectTheme(
+                this.viewerModel.get("currentTheme"), 
+                this.getEpubContentDocument(), 
+                this.getFlowingWrapper()
+            );
+            this.paginateContentDocument();
+        }
     },
 
     setSyntheticLayout : function (isSynthetic) {
