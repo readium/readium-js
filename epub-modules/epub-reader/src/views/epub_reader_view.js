@@ -48,11 +48,14 @@ EpubReader.EpubReaderView = Backbone.View.extend({
         var that = this;
         var pagesViewIndex = this.reader.getPagesViewIndex(spineIndex);
         this.$el.css("opacity", "0");
-        this.reader.renderPagesView(pagesViewIndex, false, undefined, function () {
+        this.reader.renderPagesView(pagesViewIndex, function () {
 
             var pagesViewInfo = this.reader.getCurrentPagesViewInfo();
 
             // If the pages view is fixed
+            // REFACTORING CANDIDATE: This will cause a displayedContentChanged event to be triggered twice when another show
+            //   method calls this to first load the spine item; Part of this method could be extracted and turned into a 
+            //   helper to prevent this.
             if (pagesViewInfo.type === "fixed") {
                 pageNumber = that.getPageNumber(pagesViewInfo, spineIndex);
                 pagesViewInfo.pagesView.showPageByNumber(pageNumber);
@@ -122,6 +125,9 @@ EpubReader.EpubReaderView = Backbone.View.extend({
         }
         else {
             currentPagesView.nextPage();
+            if (currentPagesView.onLastPage() && !this.reader.hasNextPagesView()) {
+                that.trigger("atLastPage");
+            }
         }
     },
 
@@ -149,6 +155,9 @@ EpubReader.EpubReaderView = Backbone.View.extend({
         }
         else {
             currentPagesView.previousPage();
+            if (currentPagesView.onFirstPage() && !this.reader.hasPreviousPagesView()) {
+                that.trigger("atFirstPage");
+            }
         }
     },
 

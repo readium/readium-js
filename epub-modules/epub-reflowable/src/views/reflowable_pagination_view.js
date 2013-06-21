@@ -102,18 +102,19 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 			//   to follow a link should supersede restoring the last-page position, as this should only be done for the 
 			//   case where Readium is re-opening the book, from the library view. 
 			if (hashFragmentId) {
-                that.goToHashFragment(hashFragmentId);
+                that.showPageByElementId(hashFragmentId);
             }
             else if (lastPageElementId) {
-                that.goToHashFragment(lastPageElementId);
+                that.showPageByElementId(lastPageElementId);
             }
             else {
 
                 if (goToLastPage) {
-                    that.pages.goToLastPage(that.viewerModel.get("syntheticLayout"), that.spineItemModel.get("firstPageIsOffset"));
+                    // that.pages.goToLastPage(that.viewerModel.get("syntheticLayout"), that.spineItemModel.get("firstPageIsOffset"));
                 }
                 else {
-                    that.pages.goToPage(1, that.viewerModel.get("syntheticLayout"), that.spineItemModel.get("firstPageIsOffset"));
+                    that.showPageByNumber(1);
+                    // that.pages.goToPage(1, that.viewerModel.get("syntheticLayout"), that.spineItemModel.get("firstPageIsOffset"));
                 }
             }
 

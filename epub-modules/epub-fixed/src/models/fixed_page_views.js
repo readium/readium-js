@@ -42,7 +42,6 @@ EpubFixed.FixedPageViews = Backbone.Model.extend({
             pageSetEventContext.trigger("atNextPage");
             pageSetEventContext.trigger("displayedContentChanged");
             this.onLastPage() ? pageSetEventContext.trigger("atLastPage") : undefined;
-            
         }
         else {
             pageSetEventContext.trigger("atLastPage");
