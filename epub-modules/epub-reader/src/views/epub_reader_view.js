@@ -1,5 +1,16 @@
 EpubReader.EpubReaderView = Backbone.View.extend({
 
+    pageSetEvents : {
+        "contentDocumentLoaded" : false,
+        "internalLinkClicked" : true,
+        "atNextPage" : false,
+        "atPreviousPage" : false,
+        "atFirstPage" : false,
+        "atLastPage" : false,
+        "layoutChanged" : false,
+        "displayedContentChanged" : false
+    },
+
     initialize : function (options) {
 
         var that = this;
@@ -15,6 +26,7 @@ EpubReader.EpubReaderView = Backbone.View.extend({
             that.trigger("epubLoaded");
             // that.$el.css("opacity", "1");
         }, this);
+        this.startPropogatingEvents();
 
         this.readerBoundElement = options.readerElement;
         this.cfi = new EpubCFIModule();
@@ -93,11 +105,20 @@ EpubReader.EpubReaderView = Backbone.View.extend({
 
         if (currentPagesView.onLastPage()) {
 
-            this.$el.css("opacity", "0");
-            this.reader.renderNextPagesView(function () {
-                that.$el.css("opacity", "1");
+            if (this.reader.hasNextPagesView()) {
+
+                this.$el.css("opacity", "0");
+                this.reader.renderNextPagesView(function () {
+
+                    that.$el.css("opacity", "1");
+                    that.trigger("atNextPage");
+                    callback.call(callbackContext);
+                }, this);
+            }
+            else {
+                this.trigger("atLastPage");
                 callback.call(callbackContext);
-            }, this);
+            }
         }
         else {
             currentPagesView.nextPage();
@@ -111,11 +132,20 @@ EpubReader.EpubReaderView = Backbone.View.extend({
 
         if (currentPagesView.onFirstPage()) {
 
-            this.$el.css("opacity", "0");
-            this.reader.renderPreviousPagesView(function () {
-                that.$el.css("opacity", "1");
+            if (this.reader.hasPreviousPagesView()) {
+                
+                this.$el.css("opacity", "0");
+                this.reader.renderPreviousPagesView(function () {
+
+                    that.$el.css("opacity", "1");
+                    that.trigger("atPreviousPage");
+                    callback.call(callbackContext);
+                }, this);
+            }
+            else {
+                this.trigger("atFirstPage");
                 callback.call(callbackContext);
-            }, this);
+            }
         }
         else {
             currentPagesView.previousPage();
@@ -165,14 +195,13 @@ EpubReader.EpubReaderView = Backbone.View.extend({
         return this.reader.get("viewerSettings");
     },
 
-    assignEventHandler : function (eventName, callback, callbackContext) {
+    attachEventHandler : function (eventName, callback, callbackContext) {
 
-        if (eventName === "keydown-left") {
+        // Page set events
+        if (this.canHandlePageSetEvent(eventName)) {
             this.reader.attachEventHandler(eventName, callback, callbackContext);
         }
-        else if (eventName === "keydown-right") {
-            this.reader.attachEventHandler(eventName, callback, callbackContext);
-        } 
+        // Reader events
         else {
             this.on(eventName, callback, callbackContext);
         }
@@ -180,12 +209,11 @@ EpubReader.EpubReaderView = Backbone.View.extend({
 
     removeEventHandler : function (eventName) {
 
-        if (eventName === "keydown-left") {
-            this.reader.removeEventHandler(eventName);
+        // Page set events
+        if (this.canHandlePageSetEvent(eventName)) {
+            this.reader.removeEventHandler(eventName, callback, callbackContext);
         }
-        else if (eventName === "keydown-right") {
-            this.reader.removeEventHandler(eventName);
-        } 
+        // Reader events
         else {
             this.off(eventName);
         }
@@ -219,5 +247,34 @@ EpubReader.EpubReaderView = Backbone.View.extend({
         });
 
         return pageNumber;
+    },
+
+    canHandlePageSetEvent : function (eventName) {
+
+        if (this.pageSetEvents[eventName] === true) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    },
+
+    startPropogatingEvents : function () {
+
+        this.reader.attachEventHandler("atNextPage", function () {
+            this.trigger("atNextPage");
+        }, this);
+
+        this.reader.attachEventHandler("atPreviousPage", function () {
+            this.trigger("atPreviousPage");
+        }, this);
+
+        this.reader.attachEventHandler("layoutChanged", function (isSynthetic) {
+            this.trigger("layoutChanged", isSynthetic);
+        }, this);
+
+        this.reader.attachEventHandler("displayedContentChanged", function () {
+            this.trigger("displayedContentChanged");
+        }, this);        
     }
 });

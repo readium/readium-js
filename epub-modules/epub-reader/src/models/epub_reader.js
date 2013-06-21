@@ -108,26 +108,14 @@ EpubReader.EpubReader = Backbone.Model.extend({
 
     renderNextPagesView : function (callback, callbackContext) {
 
-        var nextPagesViewIndex;
-        if (this.hasNextPagesView()) {
-            nextPagesViewIndex = this.get("currentPagesViewIndex") + 1;
-            this.renderPagesView(nextPagesViewIndex, false, undefined, callback, callbackContext);
-        }
-        else {
-            callback.call(callbackContext);
-        }
+        var nextPagesViewIndex = this.get("currentPagesViewIndex") + 1;
+        this.renderPagesView(nextPagesViewIndex, false, undefined, callback, callbackContext);
     },
 
     renderPreviousPagesView : function (callback, callbackContext) {
 
-        var previousPagesViewIndex;
-        if (this.hasPreviousPagesView()) {
-            previousPagesViewIndex = this.get("currentPagesViewIndex") - 1;
-            this.renderPagesView(previousPagesViewIndex, true, undefined, callback, callbackContext);
-        }
-        else {
-            callback.call(callbackContext);
-        }
+        var previousPagesViewIndex = this.get("currentPagesViewIndex") - 1;
+        this.renderPagesView(previousPagesViewIndex, true, undefined, callback, callbackContext);
     },
 
     attachEventHandler : function (eventName, callback, callbackContext) {
