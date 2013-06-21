@@ -2,7 +2,7 @@ EpubReader.EpubReaderView = Backbone.View.extend({
 
     pageSetEvents : {
         "contentDocumentLoaded" : false,
-        "internalLinkClicked" : true,
+        "epubLinkClicked" : true,
         "atNextPage" : false,
         "atPreviousPage" : false,
         "atFirstPage" : false,

@@ -233,7 +233,7 @@ describe("EpubReflowable.ReflowablePaginationView", function () {
 
                 var eventObject = $.Event("click");
                 this.view.linkClickHandler(eventObject);
-                expect(this.view.trigger).toHaveBeenCalledWith("internalLinkClicked", eventObject);
+                expect(this.view.trigger).toHaveBeenCalledWith("epubLinkClicked", eventObject);
             });
 
             it("triggers the nextPage event", function () {

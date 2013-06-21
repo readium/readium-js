@@ -123,7 +123,7 @@ describe("EpubFixed.FixedPaginationView", function () {
 
                 var eventObject = $.Event("click");
                 fixedPaginationView.linkClickHandler(eventObject);
-                expect(fixedPaginationView.trigger).toHaveBeenCalledWith("internalLinkClicked", eventObject);
+                expect(fixedPaginationView.trigger).toHaveBeenCalledWith("epubLinkClicked", eventObject);
             });
 
             it("triggers the atNextPage event", function () {

@@ -132,7 +132,7 @@ EpubFixed.FixedPaginationView = Backbone.View.extend({
 
     linkClickHandler : function (e) {
 
-        this.trigger("internalLinkClicked", e);
+        this.trigger("epubLinkClicked", e);
     }
 
 	// setFontSize: function() {

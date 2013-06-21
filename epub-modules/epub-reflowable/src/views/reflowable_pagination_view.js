@@ -319,7 +319,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
     linkClickHandler : function (e) {
 
-        this.trigger("internalLinkClicked", e);
+        this.trigger("epubLinkClicked", e);
     },
 
 	// ------------------------------------------------------------------------------------ //
