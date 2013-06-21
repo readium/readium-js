@@ -18,14 +18,14 @@ EpubFixed.ImagePageView = Backbone.View.extend({
         }
     },
 
-    render : function () {
+    // REFACTORING CANDIDATE: Use page set event context to trigger the contentDocumentLoaded event
+    render : function (goToLast, elementIdToShow, linkClickHandler, handlerContext) {
 
         var that = this;
         $("img", this.$el).attr("src", this.imageSrc);
         this.$("img").on("load", function() { 
 
             that.sizing = new EpubFixed.FixedSizing({ contentDocument : $("img", this.el)[0] });
-            // that.injectLinkHandler();
             // that.applyKeydownHandler($(view.iframe()));
             // that.mediaOverlayController.pagesLoaded();
             that.setPageSize();

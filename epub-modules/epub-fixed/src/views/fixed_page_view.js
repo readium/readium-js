@@ -24,7 +24,8 @@ EpubFixed.FixedPageView = Backbone.View.extend({
         }
     },
 
-    render : function () {
+    // REFACTORING CANDIDATE: Use page set event context to trigger the content document loaded event
+    render : function (goToLast, elementIdToShow, linkClickHandler, handlerContext) {
 
         var that = this;
         this.get$iframe().attr("src", this.iframeSrc);
@@ -55,7 +56,7 @@ EpubFixed.FixedPageView = Backbone.View.extend({
             }
 
             that.sizing = new EpubFixed.FixedSizing({ contentDocument : that.get$iframe()[0].contentDocument });
-            // this.injectLinkHandler(e.srcElement);
+            that.injectLinkHandler(that.get$iframe(), linkClickHandler, handlerContext);
             // that.applyKeydownHandler($(view.iframe()));
             that.setPageSize();
             that.trigger("contentDocumentLoaded");
@@ -109,5 +110,13 @@ EpubFixed.FixedPageView = Backbone.View.extend({
             transformCss = this.sizing.fitToScreen($readerElement.width(), $readerElement.height());
             this.$el.css(transformCss);
         }
+    },
+
+    injectLinkHandler : function ($iframe, linkClickHandler, handlerContext) {
+
+        var that = this;
+        $('a', $iframe).on("click", function (e) {
+            linkClickHandler.call(handlerContext, e);
+        });
     }
 });

@@ -19,7 +19,7 @@ EpubFixed.FixedPageViews = Backbone.Model.extend({
         this.set("pageProgressionDirection", this.get("spineObjects")[0].pageProgressionDirection);
     },
 
-    loadFixedPages : function (bindingElement, viewerSettings) {
+    renderFixedPages : function (bindingElement, viewerSettings, linkClickHandler, handlerContext) {
 
         // Reset the default for a synthetic layout
         if (viewerSettings.syntheticLayout) {
@@ -27,29 +27,44 @@ EpubFixed.FixedPageViews = Backbone.Model.extend({
         }
 
         this.loadPageViews(viewerSettings);
-        this.renderAll(bindingElement);
+        this.renderAll(bindingElement, linkClickHandler, handlerContext);
     },
 
-    nextPage : function (twoUp) {
+    nextPage : function (twoUp, pageSetEventContext) {
 
         var newPageNums;
-        if (this.onLastPage()) {
-            return;
-        }
+        if (!this.onLastPage()) {
 
-        newPageNums = this.fixedPagination.getNextPageNumbers(this.get("currentPages"), twoUp, this.get("pageProgressionDirection"));
-        this.resetCurrentPages(newPageNums);
+            newPageNums = this.fixedPagination.getNextPageNumbers(this.get("currentPages"), twoUp, this.get("pageProgressionDirection"));
+            this.resetCurrentPages(newPageNums);
+
+            // Trigger events
+            pageSetEventContext.trigger("atNextPage");
+            pageSetEventContext.trigger("displayedContentChanged");
+            this.onLastPage() ? pageSetEventContext.trigger("atLastPage") : undefined;
+            
+        }
+        else {
+            pageSetEventContext.trigger("atLastPage");
+        }
     },
 
-    previousPage : function (twoUp) {
+    previousPage : function (twoUp, pageSetEventContext) {
 
         var newPageNums;
-        if (this.onFirstPage()) {
-            return;
-        }
+        if (!this.onFirstPage()) {
 
-        newPageNums = this.fixedPagination.getPreviousPageNumbers(this.get("currentPages"), twoUp, this.get("pageProgressionDirection"));
-        this.resetCurrentPages(newPageNums);
+            newPageNums = this.fixedPagination.getPreviousPageNumbers(this.get("currentPages"), twoUp, this.get("pageProgressionDirection"));
+            this.resetCurrentPages(newPageNums);
+            
+            // Trigger events
+            pageSetEventContext.trigger("atPreviousPage");
+            pageSetEventContext.trigger("displayedContentChanged");
+            this.onFirstPage() ? pageSetEventContext.trigger("atFirstPage") : undefined;
+        }
+        else {
+            pageSetEventContext.trigger("atFirstPage");
+        }
     },
 
     onFirstPage : function () {
@@ -148,7 +163,9 @@ EpubFixed.FixedPageViews = Backbone.Model.extend({
         });
     },
 
-    renderAll : function (bindingElement) {
+    // REFACTORING CANDIDATE: the pageSetEventContext can be used to trigger the epubLoaded event; also, epubLoaded 
+    //   should be renamed to something like pageSetLoaded.
+    renderAll : function (bindingElement, linkClickHandler, handlerContext) {
 
         var that = this;
         var numFixedPages = this.get("fixedPages").length;
@@ -166,7 +183,7 @@ EpubFixed.FixedPageViews = Backbone.Model.extend({
                 }
             });
             
-            that.addPageViewToDom(bindingElement, fixedPageViewInfo.fixedPageView.render(false, undefined));
+            that.addPageViewToDom(bindingElement, fixedPageViewInfo.fixedPageView.render(false, undefined, linkClickHandler, handlerContext));
         });
 
         setTimeout(function () { 

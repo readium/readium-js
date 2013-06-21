@@ -30,20 +30,22 @@ EpubFixed.FixedPaginationView = Backbone.View.extend({
 
 	render : function (goToLastPage, hashFragmentId) {
 
-		var that = this;
-		this.fixedPageViews.loadFixedPages(this.$el[0], this.viewerSettings);
+		this.fixedPageViews.renderFixedPages(this.$el[0], this.viewerSettings, this.linkClickHandler, this);
 		return this.el;
 	},
 
-    // REFACTORING CANDIDATE: Might want these methods to be the goLeft and goRight methods
+    // REFACTORING CANDIDATE: Might want these methods to be the goLeft and goRight methods, 
+    //   Also, at the moment, the page-turn events are triggered from the delegate, as well as 
+    //   checking of page boundry conditions. Not sure if this makes sense, or if it would be clearer
+    //   if that stuff was in these two methods instead. 
 	nextPage : function () {
 
-		this.fixedPageViews.nextPage(this.viewerSettings.syntheticLayout);
+		this.fixedPageViews.nextPage(this.viewerSettings.syntheticLayout, this);
 	},
 
 	previousPage : function () {
 
-		this.fixedPageViews.previousPage(this.viewerSettings.syntheticLayout);
+		this.fixedPageViews.previousPage(this.viewerSettings.syntheticLayout, this);
 	},
 
     setSyntheticLayout : function (isSynthetic) {
@@ -51,16 +53,23 @@ EpubFixed.FixedPaginationView = Backbone.View.extend({
         if (isSynthetic && this.viewerSettings.syntheticLayout === false) {
             this.viewerSettings.syntheticLayout = true;
             this.fixedPageViews.setSyntheticLayout(true);
+            this.trigger("layoutChanged", true);
         }
         else if (!isSynthetic && this.viewerSettings.syntheticLayout === true) {
             this.viewerSettings.syntheticLayout = false;
             this.fixedPageViews.setSyntheticLayout(false);
+            this.trigger("layoutChanged", false);
         }
     },
 
     showPageNumber : function (pageNumber) {
 
+        var startPageNumbers = this.fixedPageViews.get("currentPages");
         this.fixedPageViews.showPageNumber(pageNumber, this.viewerSettings.syntheticLayout);
+
+        if (startPageNumbers != this.fixedPageViews.get("currentPages")) {
+            this.trigger("displayedContentChanged");    
+        }
     },
 
     showPagesView : function () {
@@ -74,6 +83,12 @@ EpubFixed.FixedPaginationView = Backbone.View.extend({
 
         this.$el.hide();
         this.fixedPageViews.hidePageViews();
+    },
+
+    resizePageViews : function () {
+
+        this.fixedPageViews.resizePageViews();
+        this.trigger("displayedContentChanged");
     },
     
  //    // override
@@ -110,10 +125,15 @@ EpubFixed.FixedPaginationView = Backbone.View.extend({
 
 	destruct : function () {
 
+        this.off("epubLoaded");
         // this.mediaOverlayController.off("change:mo_text_id", this.highlightText);
         // this.mediaOverlayController.off("change:active_mo", this.indicateMoIsPlaying);
-		// this.resetEl();
 	},
+
+    linkClickHandler : function (e) {
+
+        this.trigger("internalLinkClicked", e);
+    }
 
 	// setFontSize: function() {
 	// 	var size = this.model.get("font_size") / 10;
@@ -121,26 +141,18 @@ EpubFixed.FixedPaginationView = Backbone.View.extend({
 	// 	this.showCurrentPages();
 	// },
 
-	applyKeydownHandler : function ($pageViewContainer) {
+	// applyKeydownHandler : function ($pageViewContainer) {
 
-		var that = this;
-		$pageViewContainer.contents().keydown(function (e) {
+	// 	var that = this;
+	// 	$pageViewContainer.contents().keydown(function (e) {
 
-			if (e.which == 39) {
-				that.pages.goRight(); // Have to get ppd and two up
-			}
+	// 		if (e.which == 39) {
+	// 			that.pages.goRight(); // Have to get ppd and two up
+	// 		}
 							
-			if (e.which == 37) {
-				that.pages.goLeft(); // Have to get ppd and two up
-			}
-		});
-	},
-
-	injectLinkHandler : function (iframe) {
-
-    	var that = this;
-    	$('a', iframe.contentDocument).click(function(e) {
-    		that.linkClickHandler(e)
-    	});
-    }
+	// 		if (e.which == 37) {
+	// 			that.pages.goLeft(); // Have to get ppd and two up
+	// 		}
+	// 	});
+	// }
 });

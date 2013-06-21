@@ -104,7 +104,6 @@ EpubFixed.FixedSizing = Backbone.Model.extend({
         return undefined;
     },
 
-    // Have to modernizer this
     generateTransformCSS : function (scale) {
 
         var transformString = "scale(" + scale + ")";
@@ -116,6 +115,7 @@ EpubFixed.FixedSizing = Backbone.Model.extend({
     },
 
     modernizrCssPrefix : function (attr) {
+        
         var str = Modernizr.prefixed(attr);
         return str.replace(/([A-Z])/g, function(str, m1){ 
             return '-' + m1.toLowerCase(); 
