@@ -16,6 +16,7 @@
 		<!--script src="../lib/SimpleReadium_Dev.js" type="text/javascript"></script-->
 		
 		<script src="initialization_test.js" type="text/javascript"></script>
+        <script src="event_tests.js" type="text/javascript"></script>
 		
         <script type="text/javascript">
 
@@ -30,6 +31,7 @@
 
                 var testCallbackForLoad = function () { 
                     console.log("The fixed epub was loaded - the event fired");
+                    bindEventTests(window.fixedView);
                     window.fixedView.showPageByNumber(3);
                 };
 

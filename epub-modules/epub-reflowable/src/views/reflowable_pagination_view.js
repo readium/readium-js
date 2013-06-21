@@ -102,18 +102,19 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 			//   to follow a link should supersede restoring the last-page position, as this should only be done for the 
 			//   case where Readium is re-opening the book, from the library view. 
 			if (hashFragmentId) {
-                that.goToHashFragment(hashFragmentId);
+                that.showPageByElementId(hashFragmentId);
             }
             else if (lastPageElementId) {
-                that.goToHashFragment(lastPageElementId);
+                that.showPageByElementId(lastPageElementId);
             }
             else {
 
                 if (goToLastPage) {
-                    that.pages.goToLastPage(that.viewerModel.get("syntheticLayout"), that.spineItemModel.get("firstPageIsOffset"));
+                    // that.pages.goToLastPage(that.viewerModel.get("syntheticLayout"), that.spineItemModel.get("firstPageIsOffset"));
                 }
                 else {
-                    that.pages.goToPage(1, that.viewerModel.get("syntheticLayout"), that.spineItemModel.get("firstPageIsOffset"));
+                    that.showPageByNumber(1);
+                    // that.pages.goToPage(1, that.viewerModel.get("syntheticLayout"), that.spineItemModel.get("firstPageIsOffset"));
                 }
             }
 
@@ -207,27 +208,31 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
     setFontSize : function (fontSize) {
 
-        this.viewerModel.set("fontSize", fontSize);
-        this.paginateContentDocument();
+        if (fontSize !== this.viewerModel.get("fontSize")) {
+            this.viewerModel.set("fontSize", fontSize);
+            this.paginateContentDocument();    
+        }
     },
 
     setMargin : function (margin) {
 
-        this.viewerModel.set("currentMargin", margin);
-        this.paginateContentDocument();
+        if (margin !== this.viewerModel.get("currentMargin")) {
+            this.viewerModel.set("currentMargin", margin);
+            this.paginateContentDocument();    
+        }
     },
 
     setTheme : function (theme) {
 
-        this.viewerModel.set("currentTheme", theme);
-        this.reflowableLayout.injectTheme(
-            this.viewerModel.get("currentTheme"), 
-            this.getEpubContentDocument(), 
-            this.getFlowingWrapper()
-        );
-        this.redrawAnnotations();
-
-        this.trigger("displayedContentChanged");
+        if (theme !== this.viewerModel.get("currentTheme")) {
+            this.viewerModel.set("currentTheme", theme);
+            this.reflowableLayout.injectTheme(
+                this.viewerModel.get("currentTheme"), 
+                this.getEpubContentDocument(), 
+                this.getFlowingWrapper()
+            );
+            this.paginateContentDocument();
+        }
     },
 
     setSyntheticLayout : function (isSynthetic) {

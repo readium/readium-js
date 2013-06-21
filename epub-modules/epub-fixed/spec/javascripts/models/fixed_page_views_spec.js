@@ -44,10 +44,12 @@ describe("EpubFixed.FixedPageViews", function () {
         //   the spine of the package document fixture used for these tests
         describe("nextPage()", function () {
 
+            var pageSetContext = { trigger : function () {} };
+
             it("increments the page number", function () {
 
                 pageViews.set("currentPages", [1, 2]);
-                pageViews.nextPage(true);
+                pageViews.nextPage(true, pageSetContext);
 
                 expect(pageViews.get("currentPages")).toEqual([3, 4]);
             });
@@ -56,7 +58,7 @@ describe("EpubFixed.FixedPageViews", function () {
 
                 var numPages = pageViews.numberOfPages();
                 pageViews.set("currentPages", [numPages - 1, numPages]);
-                pageViews.nextPage(true);
+                pageViews.nextPage(true, pageSetContext);
 
                 expect(pageViews.get("currentPages")).toEqual([numPages - 1, numPages]);
             });
@@ -64,10 +66,12 @@ describe("EpubFixed.FixedPageViews", function () {
 
         describe("previousPage()", function () {
 
+            var pageSetContext = { trigger : function () {} };
+
             it("does not decrement the page number past the first page", function () {
 
                 pageViews.set("currentPages", [1, 2]);
-                pageViews.previousPage(true);
+                pageViews.previousPage(true, pageSetContext);
 
                 expect(pageViews.get("currentPages")).toEqual([1, 2]);
             });
@@ -75,7 +79,7 @@ describe("EpubFixed.FixedPageViews", function () {
             it("decrements the page number", function () {
 
                 pageViews.set("currentPages", [3, 4]);
-                pageViews.previousPage(true);
+                pageViews.previousPage(true, pageSetContext);
 
                 expect(pageViews.get("currentPages")).toEqual([1, 2]);
             });

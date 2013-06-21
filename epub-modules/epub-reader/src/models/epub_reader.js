@@ -58,7 +58,7 @@ EpubReader.EpubReader = Backbone.Model.extend({
         return this.get("loadedPagesViews")[this.get("currentPagesViewIndex")].pagesView;
     },
 
-    renderPagesView : function (pagesViewIndex, renderLast, hashFragmentId, callback, callbackContext) {
+    renderPagesView : function (pagesViewIndex, callback, callbackContext) {
 
         var pagesViewInfo;
         var pagesView;
@@ -76,9 +76,6 @@ EpubReader.EpubReader = Backbone.Model.extend({
                 pagesView.showPagesView();
                 this.applyPreferences(pagesView);
                 this.fitCurrentPagesView();
-                if (renderLast) {
-                    pagesView.showPageByNumber(pagesView.numberOfPages());
-                }
                 callback.call(callbackContext, pagesView);
             }
             else {
@@ -88,9 +85,6 @@ EpubReader.EpubReader = Backbone.Model.extend({
 
                     pagesView.showPagesView();
                     that.applyPreferences(pagesView);
-                    if (renderLast) {
-                        pagesView.showPageByNumber(pagesView.numberOfPages());
-                    }
 
                     _.each(that.get("pagesViewEventList"), function (eventInfo) {
                         pagesView.on(eventInfo.eventName, eventInfo.callback, eventInfo.callbackContext);
@@ -108,26 +102,22 @@ EpubReader.EpubReader = Backbone.Model.extend({
 
     renderNextPagesView : function (callback, callbackContext) {
 
-        var nextPagesViewIndex;
-        if (this.hasNextPagesView()) {
-            nextPagesViewIndex = this.get("currentPagesViewIndex") + 1;
-            this.renderPagesView(nextPagesViewIndex, false, undefined, callback, callbackContext);
-        }
-        else {
+        var nextPagesViewIndex = this.get("currentPagesViewIndex") + 1;
+        this.renderPagesView(nextPagesViewIndex, function (pagesView) {
+
+            pagesView.showPageByNumber(1);
             callback.call(callbackContext);
-        }
+        }, callbackContext);
     },
 
     renderPreviousPagesView : function (callback, callbackContext) {
 
-        var previousPagesViewIndex;
-        if (this.hasPreviousPagesView()) {
-            previousPagesViewIndex = this.get("currentPagesViewIndex") - 1;
-            this.renderPagesView(previousPagesViewIndex, true, undefined, callback, callbackContext);
-        }
-        else {
+        var previousPagesViewIndex = this.get("currentPagesViewIndex") - 1;
+        this.renderPagesView(previousPagesViewIndex, function (pagesView) {
+
+            pagesView.showPageByNumber(pagesView.numberOfPages());
             callback.call(callbackContext);
-        }
+        }, callbackContext);
     },
 
     attachEventHandler : function (eventName, callback, callbackContext) {
@@ -169,6 +159,9 @@ EpubReader.EpubReader = Backbone.Model.extend({
         }, this);
     },
 
+    // REFACTORING CANDIDATE: For consistency, it might make more sense if each of the page sets kept track
+    //   of their own last size and made the decision as to whether to resize or not. Or maybe that doesn't make
+    //   sense.... something to think about. 
     fitCurrentPagesView : function () {
 
         var readerElementHeight = this.get("parentElement").height();

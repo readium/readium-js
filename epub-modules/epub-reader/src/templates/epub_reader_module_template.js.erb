@@ -55,7 +55,7 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
             return epubReaderView.getCurrentPage();
         },
         on : function (eventName, callback, callbackContext) {
-            return epubReaderView.assignEventHandler(eventName, callback, callbackContext);
+            return epubReaderView.attachEventHandler(eventName, callback, callbackContext);
         },
         off : function (eventName) {
             return epubReaderView.removeEventHandler(eventName);
