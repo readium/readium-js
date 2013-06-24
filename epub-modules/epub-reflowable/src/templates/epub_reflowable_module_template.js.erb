@@ -12,6 +12,8 @@ var EpubReflowableModule = function(spineObject, viewerSettingsObject, CFIAnnota
     <%= reflowable_paginator %>
     <%= trigger %>
     <%= reflowable_pagination_view %>
+    <%= reflowable_customizer %>
+    <%= border_style_view %>
 
     var reflowableView = new EpubReflowable.ReflowablePaginationView({
         spineItem : spineObject,
@@ -79,6 +81,9 @@ var EpubReflowableModule = function(spineObject, viewerSettingsObject, CFIAnnota
         },
         resizeContent : function () {
             return reflowableView.paginateContentDocument();
+        },
+        customize : function (customElement, styleNameOrCSSObject) {
+            return reflowableView.customizer.setCustomStyle(customElement, styleNameOrCSSObject);
         }
     };
 };

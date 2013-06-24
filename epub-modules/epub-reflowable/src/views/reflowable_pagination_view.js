@@ -4,7 +4,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
             <iframe scrolling='no' \
                     frameborder='0' \
                     height='100%' \
-                    class='readium-flowing-content'> \
+                    class='readium-flowing-content' style='z-index:1;position:relative'> \
             </iframe> \
             <div class='reflowing-spine-divider'></div> \
           </div>",
@@ -26,9 +26,13 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 		this.reflowableElementsInfo = new EpubReflowable.ReflowableElementInfo();
 		this.pages = new EpubReflowable.ReflowablePagination();
 
+        // Initialize custom style views
+        this.customizer = new EpubReflowable.ReflowableCustomizer({
+            parentElement : this.getFlowingWrapper()
+        });
+
         // So this can be any callback, doesn't have to be the epub controller
 		this.annotations;
-
         this.cfi = new EpubCFIModule();
 
         // this.mediaOverlayController = this.model.get("media_overlay_controller");
@@ -90,6 +94,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
                iFrameWindow.navigator.epubReadingSystem = ers;
             }
 
+            var borderElement;
 			var lastPageElementId = that.initializeContentDocument();
 
 			// Rationale: The content document must be paginated in order for the subsequent "go to page" methods
@@ -124,6 +129,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
                 contentDocumentDOM : that.getEpubContentDocument().parentNode
             });
 
+            that.customizer.renderCustomStyles();
             that.trigger("contentDocumentLoaded", that.el);
 		});
         
@@ -183,11 +189,10 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
         var targetElement = $("#" + elementId, this.getEpubContentDocument())[0];
         if (!targetElement) {
-            // couldn't find the el. just give up
             return;
         }
 
-        // we get more precise results if we look at the first children
+        // Rationale: We get more precise results if we look at the first children
         while (targetElement.children.length > 0) {
             targetElement = targetElement.children[0];
         }
@@ -327,7 +332,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 	// ------------------------------------------------------------------------------------ //
 
     // Rationale: The "paginator" model uses the scrollWidth of the paginated xhtml content document in order
-    //   to calculate it's number of pages (given the current screen size etc.). It appears that 
+    //   to calculate the number of pages (given the current screen size etc.). It appears that 
     //   the scroll width property is either buggy, unreliable, or changes by small amounts between the time the content
     //   document is paginated and when it is used. Regardless of the cause, the scroll width is understated, which causes
     //   the number of pages to be understated. As a result, the last page of a content document is often not shown when 
@@ -368,6 +373,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 		this.pages.set("numberOfPages", pageInfo[0]);
         this.redrawAnnotations();
         this.pages.resetCurrentPages();
+        this.customizer.resizeCustomStyles();
 		this.showCurrentPages();
 	},
 
