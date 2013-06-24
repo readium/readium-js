@@ -1,12 +1,11 @@
 EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
-    el : "<div class='flowing-wrapper clearfix' style='display:block;margin-left:auto;margin-right:auto'> \
+    el : "<div class='flowing-wrapper clearfix' style='display:block;margin-left:auto;margin-right:auto;position:relative'> \
             <iframe scrolling='no' \
                     frameborder='0' \
                     height='100%' \
                     class='readium-flowing-content' style='z-index:1;position:relative'> \
             </iframe> \
-            <div class='reflowing-spine-divider'></div> \
           </div>",
 
 	initialize : function (options) {
@@ -31,7 +30,6 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
             parentElement : this.getFlowingWrapper()
         });
 
-        // So this can be any callback, doesn't have to be the epub controller
 		this.annotations;
         this.cfi = new EpubCFIModule();
 
@@ -373,7 +371,6 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 		this.pages.set("numberOfPages", pageInfo[0]);
         this.redrawAnnotations();
         this.pages.resetCurrentPages();
-        this.customizer.resizeCustomStyles();
 		this.showCurrentPages();
 	},
 

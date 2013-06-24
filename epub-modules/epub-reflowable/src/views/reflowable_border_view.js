@@ -1,4 +1,4 @@
-EpubReflowable.BorderStyleView = Backbone.View.extend({
+EpubReflowable.ReflowableBorderView = Backbone.View.extend({
 
     el : "<div class='reflowing-border-styles'></div>",
 
@@ -6,34 +6,20 @@ EpubReflowable.BorderStyleView = Backbone.View.extend({
 
     initialize : function (options) {
 
-        this.borderSize = {
-            "top" : 0,
-            "left" : 0,
-            "width" : 0,
-            "height" : 0
-        };
         this.currentStyle = {};
 
         if (options && options.customStyle) {
             this.setCurrentStyle(options.customStyle);
         }
         else {
-            this.setCurrentStyle("no-border");
+            this.setCurrentStyle("none");
         }
     },
 
-    destruct : function () {},
+    render : function () {
 
-    render : function (contentTop, contentLeft, contentWidth, contentHeight) {
-
-        this.resizeBorderElement(contentTop, contentLeft, contentWidth, contentHeight);
-        return this.el;
-    },
-
-    resizeBorderElement : function (contentTop, contentLeft, contentWidth, contentHeight) {
-
-        this.setBorderSize(contentTop, contentLeft, contentWidth, contentHeight);
         this.renderCurrentStyle();
+        return this.el;
     },
 
     setCurrentStyle : function (styleNameOrCSSObject) {
@@ -62,7 +48,8 @@ EpubReflowable.BorderStyleView = Backbone.View.extend({
     // ------ PRIVATE HELPERS --------------------------------------------------------------
 
     renderCurrentStyle : function () {
-        this.$el.attr('style', '');
+
+        this.$el.attr("style", "");
         this.$el.css(this.currentStyle);
     },
 
@@ -72,7 +59,7 @@ EpubReflowable.BorderStyleView = Backbone.View.extend({
         if (defaultName === "box-shadow") {
             return this.addRequiredPositionCSS({ "-webkit-box-shadow" : "0 0 5px 5px rgba(80, 80, 80, 0.5)" });
         }
-        else if (defaultName == "no-border") {
+        else if (defaultName == "none") {
             return this.addRequiredPositionCSS({});
         }
         else {
@@ -80,26 +67,15 @@ EpubReflowable.BorderStyleView = Backbone.View.extend({
         }
     },
 
-    setBorderSize : function (contentTop, contentLeft, contentWidth, contentHeight) {
-
-        this.borderSize.top = contentTop;
-        this.borderSize.left = contentLeft;
-        this.borderSize.width = contentWidth;
-        this.borderSize.height = contentHeight;
-
-        // Rationale: Update the current style with the new position information
-        this.currentStyle = this.addRequiredPositionCSS(this.currentStyle);
-    },
-
     addRequiredPositionCSS : function (customCSS) {
 
         var positionCSS = {
             "position" : "absolute",
             "z-index" : "0",
-            "top" : this.borderSize.top + "px",
-            "left" : this.borderSize.left + "px",
-            "width" : this.borderSize.width + "px",
-            "height" : this.borderSize.height + "px"
+            "top" : "0px",
+            "left" : "0px",
+            "width" : "100%",
+            "height" : "100%"
         };
 
         // Rationale: The underscore.js extend method will combine two (or more) objects. However, any properties in the second

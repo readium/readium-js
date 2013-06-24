@@ -1,10 +1,10 @@
 EpubReflowable.ReflowableCustomizer = Backbone.Model.extend({
 
-    // Expects 1) the reflowableView element, 2) the borderStyleView, 3) the spineDividerView, 4) the epubTheme
     initialize : function (attributes, options) {
 
         this.$parentEl = $(this.get("parentElement"));
-        this.set("borderStyleView", new EpubReflowable.BorderStyleView());
+        this.set("reflowableBorderView", new EpubReflowable.ReflowableBorderView());
+        this.set("spineDividerStyleView", new EpubReflowable.ReflowableSpineDividerView());
     },
 
     // ----- PUBLIC INTERFACE -------------------------------------------------------------------
@@ -13,53 +13,31 @@ EpubReflowable.ReflowableCustomizer = Backbone.Model.extend({
 
         // Do something with the loaded epub
 
-        var borderStyleView = this.get("borderStyleView");    
+        var reflowableBorderView = this.get("reflowableBorderView");
+        var spineDividerStyleView = this.get("spineDividerStyleView");
 
-        this.$parentEl.append(
-            borderStyleView.render(
-                this.$parentEl.offset().top, 
-                this.$parentEl.offset().left, 
-                this.$parentEl.width(), 
-                this.$parentEl.height()
-            )
-        );
+        this.$parentEl.append(reflowableBorderView.render());
+        this.$parentEl.append(spineDividerStyleView.render());
     },
 
     setCustomStyle : function (customProperty, styleNameOrCSS) {
 
         if (customProperty === "border") {
-
-            // border
-            this.get("borderStyleView").setCurrentStyle(styleNameOrCSS);
+            this.get("reflowableBorderView").setCurrentStyle(styleNameOrCSS);
         }
         else if (customProperty === "spine-divider") {
-
-            // spine
-            // this.get("spineDividerView").setCurrentStyle(styleNameOrCSS);
+            this.get("spineDividerStyleView").setCurrentStyle(styleNameOrCSS);
         }
         else if (customProperty === "page-border") {
-
-            // spine & border 
-            this.get("borderStyleView").setCurrentStyle(styleNameOrCSS);
-            // this.get("spineDividerView").setCurrentStyle(styleNameOrCSS);
+            this.get("reflowableBorderView").setCurrentStyle(styleNameOrCSS);
+            this.get("spineDividerStyleView").setCurrentStyle(styleNameOrCSS);
         }
         else if (customProperty === "theme") {
 
             // set internal theme
             // this.get("epubThemeView").setCurrentStyle(styleNameOrCSS);
         }
-    },
-
-    resizeCustomStyles : function () {
-
-        this.get("borderStyleView").resizeBorderElement(
-            this.$parentEl.offset().top, 
-            this.$parentEl.offset().left, 
-            this.$parentEl.width(), 
-            this.$parentEl.height()
-        );
-        // this.spineDividerView.resizeSpineDivider(top, left, width, height);
-    },
+    }
 
     // ----- PRIVATE HELPERS -------------------------------------------------------------------
 });

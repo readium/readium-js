@@ -30,8 +30,9 @@ def render_epub_reflowable_module_template(template_file_path, output_file_path,
     reflowable_paginator = File.read(path_from_executing_dir + '/src/models/reflowable_paginator.js')
     trigger = File.read(path_from_executing_dir + '/src/models/trigger.js')
     reflowable_pagination_view = File.read(path_from_executing_dir + '/src/views/reflowable_pagination_view.js')
-    border_style_view = File.read(path_from_executing_dir + '/src/views/border_style_view.js')
     reflowable_customizer = File.read(path_from_executing_dir + '/src/models/reflowable_customizer.js')
+    reflowable_border_view = File.read(path_from_executing_dir + '/src/views/reflowable_border_view.js')
+    reflowable_spine_divider_view = File.read(path_from_executing_dir + '/src/views/reflowable_spine_divider_view.js')
 
     template = File.read(template_file_path)
     erb = ERB.new(template)
