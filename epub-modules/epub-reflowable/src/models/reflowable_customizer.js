@@ -3,10 +3,9 @@ EpubReflowable.ReflowableCustomizer = Backbone.Model.extend({
     initialize : function (attributes, options) {
 
         this.$parentEl = $(this.get("parentElement"));
-        this.set("customBorder", 
-            new EpubReflowable.ReflowableCustomBorder({ targetElement : this.get("readiumFlowingContent") })
-        );
+        this.set("customBorder", new EpubReflowable.ReflowableCustomBorder({ targetElement : this.get("readiumFlowingContent") }));
         this.set("spineDividerStyleView", new EpubReflowable.ReflowableSpineDividerView());
+        this.set("customTheme", new EpubReflowable.ReflowableCustomTheme({ iframeElement : this.get("readiumFlowingContent") }));
     },
 
     // ----- PUBLIC INTERFACE -------------------------------------------------------------------
@@ -31,10 +30,8 @@ EpubReflowable.ReflowableCustomizer = Backbone.Model.extend({
             this.get("customBorder").setCurrentStyle(styleNameOrCSS);
             this.get("spineDividerStyleView").setCurrentStyle(styleNameOrCSS);
         }
-        else if (customProperty === "theme") {
-
-            // set internal theme
-            // this.get("epubThemeView").setCurrentStyle(styleNameOrCSS);
+        else if (customProperty === "page-theme") {
+            this.get("customTheme").setCurrentStyle(styleNameOrCSS);
         }
     }
 

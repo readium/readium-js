@@ -1,8 +1,7 @@
-// REFACTORING CANDIDATE: Need a better name for this
 EpubReflowable.ReflowableLayout = Backbone.Model.extend({
 
     initialize: function (options) {
-        // make sure we have proper vendor prefixed props for when we need them
+
 		this.epubCFI = new EpubCFIModule();
     },
 
@@ -10,7 +9,7 @@ EpubReflowable.ReflowableLayout = Backbone.Model.extend({
     //  "PUBLIC" METHODS (THE API)                                                          //
     // ------------------------------------------------------------------------------------ //
 
-    initializeContentDocument : function (epubContentDocument, epubCFIs, currSpinePosition, readiumFlowingContent, linkClickHandler, handlerContext, currentTheme, flowingWrapper, readiumFlowingContent, keydownHandler, bindings) {
+    initializeContentDocument : function (epubContentDocument, epubCFIs, currSpinePosition, readiumFlowingContent, linkClickHandler, handlerContext, keydownHandler, bindings) {
 
         var triggers;
         var lastPageElementId = this.injectCFIElements(
@@ -27,12 +26,6 @@ EpubReflowable.ReflowableLayout = Backbone.Model.extend({
         this.applyTriggers(epubContentDocument, triggers);
         $(epubContentDocument).attr('title');//, Acc.page + ' - ' + Acc.title);
 
-        this.injectTheme(
-            currentTheme, 
-            epubContentDocument, 
-            flowingWrapper
-        );
-
         this.injectKeydownHandler(
             readiumFlowingContent, 
             keydownHandler, 
@@ -42,53 +35,9 @@ EpubReflowable.ReflowableLayout = Backbone.Model.extend({
         return lastPageElementId;
     },
 
-    injectTheme : function (currentTheme, epubContentDocument, flowingWrapper) {
-
-        var theme = currentTheme;
-        if (theme === "default") {
-            theme = "default-theme";
-        }
-
-        $(epubContentDocument).css({
-            "color": this.themes[theme]["color"],
-            "background-color": this.themes[theme]["background-color"]
-        });
-        
-        // stop flicker due to application for alternate style sheets
-        // just set content to be invisible
-        $(flowingWrapper).css("visibility", "hidden");
-        this.activateEPubStyle(epubContentDocument, currentTheme);
-
-        // wait for new stylesheets to parse before setting back to visible
-        setTimeout(function() {
-            $(flowingWrapper).css("visibility", "visible"); 
-        }, 100);
-    },
-
     // ------------------------------------------------------------------------------------ //
     //  PRIVATE HELPERS                                                                     //
     // ------------------------------------------------------------------------------------ //
-
-    // Description: Activates a style set for the ePub, based on the currently selected theme. At present, 
-    //   only the day-night alternate tags are available as an option.  
-    activateEPubStyle : function (bookDom, currentTheme) {
-
-        var selector;
-        
-        // Apply night theme for the book; nothing will be applied if the ePub's style sheets do not contain a style
-        // set with the 'night' tag
-        if (currentTheme === "night-theme") {
-
-            selector = new EpubReflowable.AlternateStyleTagSelector;
-            bookDom = selector.activateAlternateStyleSet(["night"], bookDom);
-
-        }
-        else {
-
-            selector = new EpubReflowable.AlternateStyleTagSelector;
-            bookDom = selector.activateAlternateStyleSet([""], bookDom);
-        }
-    },
 
     injectCFIElements : function (epubContentDocument, epubCFIs, currSpinePosition) {
 
@@ -270,40 +219,5 @@ EpubReflowable.ReflowableLayout = Backbone.Model.extend({
         $(readiumFlowingContent).contents().keydown(function (e) {
             keydownHandler.call(handlerContext, e);
         });
-    },
-
-    // Rationale: sadly this is just a reprint of what is already in the
-    //   themes stylesheet. It isn't very DRY but the implementation is
-    //   cleaner this way
-    themes: {
-        "default-theme": {
-            "background-color": "white",
-            "color": "black",
-            "mo-color": "#777"
-        },
-
-        "vancouver-theme": {
-            "background-color": "#DDD",
-            "color": "#576b96",
-            "mo-color": "#777"
-        },
-
-        "ballard-theme": {
-            "background-color": "#576b96",
-            "color": "#DDD",
-            "mo-color": "#888"
-        },
-
-        "parchment-theme": {
-            "background-color": "#f7f1cf",
-            "color": "#774c27",
-            "mo-color": "#eebb22"
-        },
-
-        "night-theme": {
-            "background-color": "#141414",
-            "color": "white",
-            "mo-color": "#666"
-        }
     }
 });

@@ -33,6 +33,7 @@ def render_epub_reflowable_module_template(template_file_path, output_file_path,
     reflowable_customizer = File.read(path_from_executing_dir + '/src/models/reflowable_customizer.js')
     reflowable_custom_border = File.read(path_from_executing_dir + '/src/models/reflowable_custom_border.js')
     reflowable_spine_divider_view = File.read(path_from_executing_dir + '/src/views/reflowable_spine_divider_view.js')
+    reflowable_custom_theme = File.read(path_from_executing_dir + '/src/models/reflowable_custom_theme.js')
 
     template = File.read(template_file_path)
     erb = ERB.new(template)

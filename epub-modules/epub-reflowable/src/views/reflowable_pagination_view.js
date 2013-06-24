@@ -226,11 +226,13 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
         if (theme !== this.viewerModel.get("currentTheme")) {
             this.viewerModel.set("currentTheme", theme);
-            this.reflowableLayout.injectTheme(
-                this.viewerModel.get("currentTheme"), 
-                this.getEpubContentDocument(), 
-                this.getFlowingWrapper()
-            );
+
+            // inject the theme here
+            // this.reflowableLayout.injectTheme(
+            //     this.viewerModel.get("currentTheme"), 
+            //     this.getEpubContentDocument(), 
+            //     this.getFlowingWrapper()
+            // );
             this.paginateContentDocument();
         }
     },
@@ -381,9 +383,6 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 			this.getReadiumFlowingContent(), 
 			this.linkClickHandler, 
 			this, 
-			this.viewerModel.get("currentTheme"), 
-			this.getFlowingWrapper(), 
-			this.getReadiumFlowingContent(), 
 			this.keydownHandler,
             this.bindings
 			);
