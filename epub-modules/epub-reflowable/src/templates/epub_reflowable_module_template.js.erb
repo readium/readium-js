@@ -63,15 +63,6 @@ var EpubReflowableModule = function(spineObject, viewerSettingsObject, CFIAnnota
         currentPage : function () {
             return reflowableView.pages.get("currentPages");
         },
-        setFontSize : function (fontSize) {
-            return reflowableView.setFontSize(fontSize);
-        },
-        setMargin : function (margin) {
-            return reflowableView.setMargin(margin);
-        },
-        setTheme : function (theme) {
-            return reflowableView.setTheme(theme);
-        },
         setSyntheticLayout : function (isSynthetic) {
             return reflowableView.setSyntheticLayout(isSynthetic);
         },
@@ -85,7 +76,8 @@ var EpubReflowableModule = function(spineObject, viewerSettingsObject, CFIAnnota
             return reflowableView.paginateContentDocument();
         },
         customize : function (customElement, styleNameOrCSSObject) {
-            return reflowableView.customizer.setCustomStyle(customElement, styleNameOrCSSObject);
+            reflowableView.customizeStyles(customElement, styleNameOrCSSObject);
+            return this;
         }
     };
 };

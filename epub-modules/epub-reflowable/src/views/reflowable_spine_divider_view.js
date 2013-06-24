@@ -45,6 +45,14 @@ EpubReflowable.ReflowableSpineDividerView = Backbone.View.extend({
         }
     },
 
+    hide : function () {
+        this.$el.hide();
+    },
+
+    show : function () {
+        this.$el.show();
+    },
+
     // ------ PRIVATE HELPERS --------------------------------------------------------------
 
     renderCurrentStyle : function () {
@@ -64,7 +72,7 @@ EpubReflowable.ReflowableSpineDividerView = Backbone.View.extend({
                 "-webkit-box-shadow" : "0 0 5px 5px rgba(80, 80, 80, 0.5)" 
             });
         }
-        else if (defaultName == "none") {
+        else if (defaultName === "none") {
             return this.addRequiredPositionCSS({});
         }
         else {

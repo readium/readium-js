@@ -26,9 +26,13 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 		this.pages = new EpubReflowable.ReflowablePagination();
 
         // Initialize custom style views
+        this.spineDivider = new EpubReflowable.ReflowableSpineDividerView();
+        this.$el.append(this.spineDivider.render());
+
         this.customizer = new EpubReflowable.ReflowableCustomizer({
             parentElement : this.getFlowingWrapper(),
-            readiumFlowingContent : this.getReadiumFlowingContent()
+            readiumFlowingContent : this.getReadiumFlowingContent(),
+            spineDividerStyleView : this.spineDivider
         });
 
 		this.annotations;
@@ -124,7 +128,6 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
                 contentDocumentDOM : that.getEpubContentDocument().parentNode
             });
 
-            that.customizer.renderCustomStyles();
             that.trigger("contentDocumentLoaded", that.el);
 		});
         
@@ -206,6 +209,22 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         this.$el.hide();
     },
 
+    // REFACTORING CANDIDATE: This method is delegating to setFontSize and setMargin. These could both be added 
+    //   as customizable style objects - essentially treated the same way
+    customizeStyles : function (customElement, styleNameOrCSSObject) {
+
+        if (customElement === "margin") {
+            this.setMargin(parseInt(styleNameOrCSSObject));
+        }
+        else if (customElement === "fontSize") {
+            this.setFontSize(parseInt(styleNameOrCSSObject));
+        }
+        else {
+            this.customizer.setCustomStyle(customElement, styleNameOrCSSObject);
+        }
+        this.paginateContentDocument();
+    },
+
     setFontSize : function (fontSize) {
 
         if (fontSize !== this.viewerModel.get("fontSize")) {
@@ -218,21 +237,6 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
         if (margin !== this.viewerModel.get("currentMargin")) {
             this.viewerModel.set("currentMargin", margin);
-            this.paginateContentDocument();    
-        }
-    },
-
-    setTheme : function (theme) {
-
-        if (theme !== this.viewerModel.get("currentTheme")) {
-            this.viewerModel.set("currentTheme", theme);
-
-            // inject the theme here
-            // this.reflowableLayout.injectTheme(
-            //     this.viewerModel.get("currentTheme"), 
-            //     this.getEpubContentDocument(), 
-            //     this.getFlowingWrapper()
-            // );
             this.paginateContentDocument();
         }
     },
@@ -245,9 +249,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
             this.viewerModel.set("syntheticLayout", isSynthetic);
             this.pages.toggleTwoUp(isSynthetic, this.spineItemModel.get("firstPageIsOffset"));
             this.paginateContentDocument();
-            isSynthetic ? 
-                this.customizer.setCustomStyle("spine-divider", "box-shadow") : 
-                this.customizer.setCustomStyle("spine-divider", "none");
+            this.viewerModel.get("syntheticLayout") ? this.spineDivider.show() : this.spineDivider.hide();
             this.trigger("layoutChanged", isSynthetic);
         }
     },
@@ -366,9 +368,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 			);
 
 		this.pages.set("numberOfPages", pageInfo[0]);
-        this.viewerModel.get("syntheticLayout") ? 
-                this.customizer.setCustomStyle("spine-divider", "box-shadow") : 
-                this.customizer.setCustomStyle("spine-divider", "none");
+        this.viewerModel.get("syntheticLayout") ? this.spineDivider.show() : this.spineDivider.hide();
         this.redrawAnnotations();
         this.pages.resetCurrentPages();
 		this.showCurrentPages();
