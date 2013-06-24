@@ -65,22 +65,6 @@ EpubReflowable.ReflowableLayout = Backbone.Model.extend({
         }, 100);
     },
 
-    resetEl : function (epubContentDocument, flowingWrapper, spineDivider, zoomer) {
-
-        $("body", epubContentDocument).removeClass("apple-fixed-layout");
-        $(flowingWrapper).attr("style", "");
-        $(flowingWrapper).toggleClass("two-up", false);
-        $(spineDivider).toggle(false);
-        // zoomer.reset();
-
-        $(flowingWrapper).css({
-            "position": "relative",
-            "right": "0px", 
-            "top": "0px",
-            "-webkit-transform": "scale(1.0) translate(0px, 0px)"
-        });
-    },
-
     // ------------------------------------------------------------------------------------ //
     //  PRIVATE HELPERS                                                                     //
     // ------------------------------------------------------------------------------------ //

@@ -4,7 +4,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
             <iframe scrolling='no' \
                     frameborder='0' \
                     height='100%' \
-                    class='readium-flowing-content' style='z-index:1;position:relative'> \
+                    class='readium-flowing-content'> \
             </iframe> \
           </div>",
 
@@ -27,7 +27,8 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
         // Initialize custom style views
         this.customizer = new EpubReflowable.ReflowableCustomizer({
-            parentElement : this.getFlowingWrapper()
+            parentElement : this.getFlowingWrapper(),
+            readiumFlowingContent : this.getReadiumFlowingContent()
         });
 
 		this.annotations;
@@ -47,10 +48,6 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 		// Remove all handlers so they don't hang around in memory	
 		// this.mediaOverlayController.off("change:mo_text_id", this.highlightText, this);
   		// this.mediaOverlayController.off("change:active_mo", this.indicateMoIsPlaying, this);
-        this.reflowableLayout.resetEl(
-        	this.getEpubContentDocument(), 
-        	this.el, 
-        	this.getSpineDivider());
 	},
 
 	// ------------------------------------------------------------------------------------ //
@@ -246,6 +243,9 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
             this.viewerModel.set("syntheticLayout", isSynthetic);
             this.pages.toggleTwoUp(isSynthetic, this.spineItemModel.get("firstPageIsOffset"));
             this.paginateContentDocument();
+            isSynthetic ? 
+                this.customizer.setCustomStyle("spine-divider", "box-shadow") : 
+                this.customizer.setCustomStyle("spine-divider", "none");
             this.trigger("layoutChanged", isSynthetic);
         }
     },
@@ -301,10 +301,6 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 		return $($($(this.el).children()[0]).contents()[0]).children()[0];
 	},
 
-	getSpineDivider : function () {
-		return $(".reflowing-spine-divider")[0];
-	},
-
 	// ------------------------------------------------------------------------------------ //
 	//  PRIVATE EVENT HANDLERS                               								//
 	// ------------------------------------------------------------------------------------ //
@@ -355,7 +351,6 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 	paginateContentDocument : function () {
 
 		var pageInfo = this.reflowablePaginator.paginateContentDocument(
-			this.getSpineDivider(),
 			this.viewerModel.get("syntheticLayout"),
 			this.offsetDirection(),
 			this.getEpubContentDocument(),
@@ -369,6 +364,9 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 			);
 
 		this.pages.set("numberOfPages", pageInfo[0]);
+        this.viewerModel.get("syntheticLayout") ? 
+                this.customizer.setCustomStyle("spine-divider", "box-shadow") : 
+                this.customizer.setCustomStyle("spine-divider", "none");
         this.redrawAnnotations();
         this.pages.resetCurrentPages();
 		this.showCurrentPages();

@@ -9,13 +9,7 @@ EpubReflowable.ReflowablePaginator = Backbone.Model.extend({
     //  "PUBLIC" METHODS (THE API)                                                          //
     // ------------------------------------------------------------------------------------ //
 
-    paginateContentDocument : function (spineDivider, isTwoUp, offsetDir, epubContentDocument, readiumFlowingContent, flowingWrapper, firstPageOffset, currentPages, ppd, currentMargin, fontSize) {
-
-        this.toggleSyntheticLayout(
-            flowingWrapper, 
-            spineDivider, 
-            isTwoUp
-            );
+    paginateContentDocument : function (isTwoUp, offsetDir, epubContentDocument, readiumFlowingContent, flowingWrapper, firstPageOffset, currentPages, ppd, currentMargin, fontSize) {
 
         var page = this.adjustIframeColumns(
             offsetDir, 
@@ -67,13 +61,6 @@ EpubReflowable.ReflowablePaginator = Backbone.Model.extend({
     // ------------------------------------------------------------------------------------ //
     //  PRIVATE METHODS
     // ------------------------------------------------------------------------------------ //
-
-    // Description: Changes the html to make either 1 or 2 pages visible in their iframes
-    toggleSyntheticLayout : function (flowingWrapper, spineDivider, isTwoUp) {
-
-        $(flowingWrapper).toggleClass("two-up", isTwoUp);
-        $(spineDivider).toggle(isTwoUp);
-    },
 
     // Description: calculate the number of pages in the current section,
     //   based on section length : page size ratio

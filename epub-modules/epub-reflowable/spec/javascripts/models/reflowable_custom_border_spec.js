@@ -1,23 +1,25 @@
-describe("EpubReflowable.ReflowableBorderView", function () {
+describe("EpubReflowable.ReflowableCustomBorder", function () {
 
     describe("initialization", function () {
 
         it("exist in namespace", function () {
 
-            expect(EpubReflowable.ReflowableBorderView).toBeDefined();
+            expect(EpubReflowable.ReflowableCustomBorder).toBeDefined();
         });
 
         it("can be initialized", function () {
 
-            var borderStyleView = new EpubReflowable.ReflowableBorderView();
+            var borderStyleView = new EpubReflowable.ReflowableCustomBorder({ 
+                targetElement : $(document.createElement("div"))
+            });
             expect(borderStyleView).toBeDefined();
         });
 
         it("sets a custom style if provided", function () {
 
-            var borderStyleView = new EpubReflowable.ReflowableBorderView({"customStyle" : { "color" : "black", "border-width" : "10px" }});
+            var borderStyleView = new EpubReflowable.ReflowableCustomBorder({"customStyle" : { "color" : "black", "border-width" : "10px" }});
             expect(borderStyleView.currentStyle).toEqual({
-                "position" : "absolute",
+                "position" : "relative",
                 "z-index" : "0",
                 "top" : "0px",
                 "left" : "0px",
@@ -30,9 +32,9 @@ describe("EpubReflowable.ReflowableBorderView", function () {
 
         it("sets no-border as default", function () {
 
-            var borderStyleView = new EpubReflowable.ReflowableBorderView();
+            var borderStyleView = new EpubReflowable.ReflowableCustomBorder();
             expect(borderStyleView.currentStyle).toEqual({
-                "position" : "absolute",
+                "position" : "relative",
                 "z-index" : "0",
                 "top" : "0px",
                 "left" : "0px",
@@ -44,39 +46,21 @@ describe("EpubReflowable.ReflowableBorderView", function () {
 
     describe("public interface", function () {
 
-        describe("render()", function () {
-
-            var borderStyleView;
-            beforeEach(function () {
-
-                borderStyleView = new EpubReflowable.ReflowableBorderView();
-            });
-
-            it("sets the element style", function () {
-
-                borderStyleView.render();
-
-                expect(borderStyleView.$el.css("position")).toBe("absolute");
-                expect(borderStyleView.$el.css("top")).toBe("0px");
-                expect(borderStyleView.$el.css("left")).toBe("0px");
-                expect(borderStyleView.$el.css("width")).toBe("100%");
-                expect(borderStyleView.$el.css("height")).toBe("100%");
-            });
-        });
-
         describe("setCurrentStyle", function () {
 
             var borderStyleView;
             beforeEach(function () {
 
-                borderStyleView = new EpubReflowable.ReflowableBorderView();
+                borderStyleView = new EpubReflowable.ReflowableCustomBorder({ 
+                    targetElement : $(document.createElement("div"))
+                });
             });
 
             it("sets the current style from a default", function () {
 
                 borderStyleView.setCurrentStyle("box-shadow");
                 expect(borderStyleView.currentStyle).toEqual({
-                    "position" : "absolute",
+                    "position" : "relative",
                     "z-index" : "0",
                     "top" : "0px",
                     "left" : "0px",
@@ -90,13 +74,13 @@ describe("EpubReflowable.ReflowableBorderView", function () {
 
                 borderStyleView.setCurrentStyle("box-shadow");
 
-                expect(borderStyleView.$el.css("position")).toBe("absolute");
-                expect(borderStyleView.$el.css("z-index")).toBe("0");
-                expect(borderStyleView.$el.css("top")).toBe("0px");
-                expect(borderStyleView.$el.css("left")).toBe("0px");
-                expect(borderStyleView.$el.css("width")).toBe("100%");
-                expect(borderStyleView.$el.css("height")).toBe("100%");
-                expect(borderStyleView.$el.css("-webkit-box-shadow")).toBe("rgba(80, 80, 80, 0.498039) 0px 0px 5px 5px");
+                expect(borderStyleView.$element.css("position")).toBe("relative");
+                expect(borderStyleView.$element.css("z-index")).toBe("0");
+                expect(borderStyleView.$element.css("top")).toBe("0px");
+                expect(borderStyleView.$element.css("left")).toBe("0px");
+                expect(borderStyleView.$element.css("width")).toBe("100%");
+                expect(borderStyleView.$element.css("height")).toBe("100%");
+                expect(borderStyleView.$element.css("-webkit-box-shadow")).toBe("rgba(80, 80, 80, 0.498039) 0px 0px 5px 5px");
             });
 
             it("does nothing if the default is undefined", function () {
@@ -104,7 +88,7 @@ describe("EpubReflowable.ReflowableBorderView", function () {
                 borderStyleView.setCurrentStyle("this is not defined");
 
                 expect(borderStyleView.currentStyle).toEqual({
-                    "position" : "absolute",
+                    "position" : "relative",
                     "z-index" : "0",
                     "top" : "0px",
                     "left" : "0px",
@@ -121,7 +105,7 @@ describe("EpubReflowable.ReflowableBorderView", function () {
                 });
 
                 expect(borderStyleView.currentStyle).toEqual({
-                    "position" : "absolute",
+                    "position" : "relative",
                     "z-index" : "0",
                     "top" : "0px",
                     "left" : "0px",
@@ -139,14 +123,14 @@ describe("EpubReflowable.ReflowableBorderView", function () {
                     "border-width" : "10px"
                 });
 
-                expect(borderStyleView.$el.css("position")).toBe("absolute");
-                expect(borderStyleView.$el.css("z-index")).toBe("0");
-                expect(borderStyleView.$el.css("top")).toBe("0px");
-                expect(borderStyleView.$el.css("left")).toBe("0px");
-                expect(borderStyleView.$el.css("width")).toBe("100%");
-                expect(borderStyleView.$el.css("height")).toBe("100%");
-                expect(borderStyleView.$el.css("border-color")).toBe("black");
-                expect(borderStyleView.$el.css("border-width")).toBe("10px");
+                expect(borderStyleView.$element.css("position")).toBe("relative");
+                expect(borderStyleView.$element.css("z-index")).toBe("0");
+                expect(borderStyleView.$element.css("top")).toBe("0px");
+                expect(borderStyleView.$element.css("left")).toBe("0px");
+                expect(borderStyleView.$element.css("width")).toBe("100%");
+                expect(borderStyleView.$element.css("height")).toBe("100%");
+                expect(borderStyleView.$element.css("border-color")).toBe("black");
+                expect(borderStyleView.$element.css("border-width")).toBe("10px");
             });
         });
     });

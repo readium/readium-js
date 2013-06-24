@@ -1,25 +1,18 @@
-EpubReflowable.ReflowableBorderView = Backbone.View.extend({
-
-    el : "<div class='reflowing-border-styles'></div>",
+EpubReflowable.ReflowableCustomBorder = Backbone.Model.extend({
 
     // ------ PUBLIC INTERFACE --------------------------------------------------------------
 
-    initialize : function (options) {
+    initialize : function (attributes, options) {
 
+        this.$element = $(this.get("targetElement"));
         this.currentStyle = {};
 
-        if (options && options.customStyle) {
-            this.setCurrentStyle(options.customStyle);
+        if (this.get("customStyle")) {
+            this.setCurrentStyle(this.get("customStyle"));
         }
         else {
             this.setCurrentStyle("none");
         }
-    },
-
-    render : function () {
-
-        this.renderCurrentStyle();
-        return this.el;
     },
 
     setCurrentStyle : function (styleNameOrCSSObject) {
@@ -49,8 +42,8 @@ EpubReflowable.ReflowableBorderView = Backbone.View.extend({
 
     renderCurrentStyle : function () {
 
-        this.$el.attr("style", "");
-        this.$el.css(this.currentStyle);
+        this.$element.attr("style", "");
+        this.$element.css(this.currentStyle);
     },
 
     getDefaultBorderStyle : function (defaultName) {
@@ -70,7 +63,7 @@ EpubReflowable.ReflowableBorderView = Backbone.View.extend({
     addRequiredPositionCSS : function (customCSS) {
 
         var positionCSS = {
-            "position" : "absolute",
+            "position" : "relative",
             "z-index" : "0",
             "top" : "0px",
             "left" : "0px",
