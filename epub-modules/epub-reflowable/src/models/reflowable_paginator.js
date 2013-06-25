@@ -209,17 +209,22 @@ EpubReflowable.ReflowablePaginator = Backbone.Model.extend({
 
         this.frame_width = parseInt($frame.width(), 10);
         this.frame_height = parseInt($frame.height(), 10);
-        this.gap_width = Math.floor(this.frame_width / 7);
+        this.gap_width = Math.floor(this.frame_width / 10);
+        this.padding_width = Math.floor(this.gap_width / 2);
+
         if (isTwoUp) {
-            this.page_width = Math.floor((this.frame_width - this.gap_width) / 2);
+            this.page_width = Math.floor((this.frame_width - this.gap_width - (this.padding_width * 2)) / 2);
         }
         else {
-            this.page_width = this.frame_width;
+            this.page_width = Math.floor(this.frame_width - (this.padding_width * 2));
         }
 
         // it is important for us to make sure there is no padding or
         // margin on the <html> elem, or it will mess with our column code
         $(epubContentDocument).css( this.getBodyColumnCss() );
+        $(readiumFlowingContent).css("width", this.frame_width - this.padding_width - this.padding_width);
+        $(readiumFlowingContent).css("padding-left", this.padding_width);
+        $(readiumFlowingContent).css("padding-right", this.padding_width);
 
         page = this.accountForOffset(readiumFlowingContent, isTwoUp, firstPageOffset, currentPages, ppd);
         return page;
