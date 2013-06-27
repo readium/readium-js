@@ -45,7 +45,7 @@ EpubFixed.FixedCustomSpineDivider = Backbone.Model.extend({
 
         var defaultCSS;
         if (defaultName === "box-shadow") {
-            return { "-webkit-box-shadow" : "0 0 5px 5px rgba(80, 80, 80, 0.5)" };
+            return { "box-shadow" : "0 0 5px 5px rgba(80, 80, 80, 0.5)" };
         }
         else if (defaultName == "none") {
             return {};

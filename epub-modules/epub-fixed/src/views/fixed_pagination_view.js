@@ -222,12 +222,21 @@ EpubFixed.FixedPaginationView = Backbone.View.extend({
         var maxWidth;
         var firstPageNumber = this.fixedPageViews.get("currentPages")[0];
         var secondPageNumber = this.fixedPageViews.get("currentPages")[1];
+        var NUMBER_OF_PAGES_SHOWN = 2;
 
         firstPage = this.fixedPageViews.getPageViewInfo(firstPageNumber).fixedPageView;
-        secondPage = this.fixedPageViews.getPageViewInfo(secondPageNumber).fixedPageView;
 
-        maxHeight = Math.max(firstPage.getTransformedHeight(), secondPage.getTransformedHeight());
-        maxWidth = Math.max(firstPage.getTransformedWidth(), secondPage.getTransformedWidth()) * 2;
+        // Rationale: Might only be showing one page in synthetic mode
+        if (secondPageNumber !== undefined) { 
+            secondPage = this.fixedPageViews.getPageViewInfo(secondPageNumber).fixedPageView;
+
+            maxHeight = Math.max(firstPage.getTransformedHeight(), secondPage.getTransformedHeight());
+            maxWidth = Math.max(firstPage.getTransformedWidth(), secondPage.getTransformedWidth()) * NUMBER_OF_PAGES_SHOWN;
+        }
+        else {
+            maxHeight = firstPage.getTransformedHeight();
+            maxWidth = firstPage.getTransformedWidth() * NUMBER_OF_PAGES_SHOWN;
+        }
         
         return {
             height : maxHeight,

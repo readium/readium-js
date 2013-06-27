@@ -69,7 +69,7 @@ EpubReflowable.ReflowableSpineDividerView = Backbone.View.extend({
                 "width" : "1px",
                 "height" : "93%",
                 "top" : "3%",
-                "-webkit-box-shadow" : "0 0 5px 5px rgba(80, 80, 80, 0.5)" 
+                "box-shadow" : "0 0 5px 5px rgba(80, 80, 80, 0.5)" 
             });
         }
         else if (defaultName === "none") {

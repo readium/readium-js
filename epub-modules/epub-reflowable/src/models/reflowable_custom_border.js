@@ -50,7 +50,7 @@ EpubReflowable.ReflowableCustomBorder = Backbone.Model.extend({
 
         var defaultCSS;
         if (defaultName === "box-shadow") {
-            return this.addRequiredPositionCSS({ "-webkit-box-shadow" : "0 0 5px 5px rgba(80, 80, 80, 0.5)" });
+            return this.addRequiredPositionCSS({ "box-shadow" : "0 0 5px 5px rgba(80, 80, 80, 0.5)" });
         }
         else if (defaultName == "none") {
             return this.addRequiredPositionCSS({});

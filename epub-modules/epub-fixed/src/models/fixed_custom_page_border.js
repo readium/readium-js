@@ -66,10 +66,10 @@ EpubFixed.FixedCustomPageBorder = Backbone.Model.extend({
         if (defaultName === "box-shadow") {
 
             if (pageSpread === "left") {
-                return { "-webkit-box-shadow" : "0px 0px 5px 5px rgba(80, 80, 80, 0.5)" };
+                return { "box-shadow" : "0px 0px 5px 5px rgba(80, 80, 80, 0.5)" };
             }
             else if (pageSpread === "right") {
-                return { "-webkit-box-shadow" : "0px 0px 5px 5px rgba(80, 80, 80, 0.5)" };
+                return { "box-shadow" : "0px 0px 5px 5px rgba(80, 80, 80, 0.5)" };
             }
             else {
                 return undefined;
@@ -87,7 +87,7 @@ EpubFixed.FixedCustomPageBorder = Backbone.Model.extend({
 
         var defaultCSS;
         if (defaultName === "box-shadow") {
-            return { "-webkit-box-shadow" : "0 0 5px 5px rgba(80, 80, 80, 0.5)" };
+            return { "box-shadow" : "0 0 5px 5px rgba(80, 80, 80, 0.5)" };
         }
         else if (defaultName == "none") {
             return {};
