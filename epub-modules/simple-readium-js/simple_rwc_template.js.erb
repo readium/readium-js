@@ -85,6 +85,10 @@ var SimpleReadiumJs = function (elementToBindReaderTo, viewerPreferences, packag
         },
         resizeContent : function () { 
             return epubViewer.resizeContent(); 
+        },
+        customize : function (customElement, styleNameOrCSSObject) {
+            reflowableView.customizeStyles(customElement, styleNameOrCSSObject);
+            return this;
         }
     };
 };
