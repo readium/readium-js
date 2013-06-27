@@ -11,17 +11,17 @@ EpubReflowable.ReflowableCustomizer = Backbone.Model.extend({
 
     setCustomStyle : function (customProperty, styleNameOrCSS) {
 
-        if (customProperty === "border") {
+        if (customProperty === "reflowable-epub-border" || customProperty === "epub-border") {
             this.get("customBorder").setCurrentStyle(styleNameOrCSS);
         }
-        else if (customProperty === "spine-divider") {
+        else if (customProperty === "reflowable-spine-divider" || customProperty === "spine-divider") {
             this.get("spineDividerStyleView").setCurrentStyle(styleNameOrCSS);
         }
-        else if (customProperty === "page-border") {
+        else if (customProperty === "reflowable-page-border" || customProperty === "page-border") {
             this.get("customBorder").setCurrentStyle(styleNameOrCSS);
             this.get("spineDividerStyleView").setCurrentStyle(styleNameOrCSS);
         }
-        else if (customProperty === "page-theme") {
+        else if (customProperty === "reflowable-page-theme") {
             this.get("customTheme").setCurrentStyle(styleNameOrCSS);
         }
     }
