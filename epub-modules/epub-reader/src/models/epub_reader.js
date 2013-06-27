@@ -14,6 +14,7 @@ EpubReader.EpubReader = Backbone.Model.extend({
         this.set("spine", spineInfo.spine);
         this.set("bindings", spineInfo.bindings);
         this.set("annotations", spineInfo.annotations);
+        this.get("viewerSettings").customStyles = [];
 
         this.loadStrategy = new EpubReader.LoadStrategy({ spineInfo : this.get("spine")});
         this.cfi = new EpubCFIModule();
@@ -322,9 +323,13 @@ EpubReader.EpubReader = Backbone.Model.extend({
 
         var preferences = this.get("viewerSettings");
         pagesView.setSyntheticLayout(preferences.syntheticLayout);
-        pagesView.setMargin(preferences.currentMargin);
-        pagesView.setTheme(preferences.currentTheme);
-        pagesView.setFontSize(preferences.fontSize);
+
+        // Apply all current preferences to the next page set
+        pagesView.customize("margin", preferences.currentMargin + "");
+        pagesView.customize("fontSize", preferences.fontSize + "")
+        _.each(preferences.customStyles, function (customStyle) {
+            pagesView.customize(customStyle.customProperty, customStyle.styleNameOrCSSObject);
+        });
     },
 
     setLastRenderSize : function (pagesViewInfo, height, width) {

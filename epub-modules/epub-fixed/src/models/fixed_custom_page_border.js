@@ -16,7 +16,7 @@ EpubFixed.FixedCustomPageBorder = Backbone.Model.extend({
             // Iterate through each page view and set it's style
             _.each(pageViews, function (pageViewInfo) {
 
-                if (pageViewInfo.pageSpread !== pageSpread) {
+                if (pageSpread && pageViewInfo.pageSpread !== pageSpread) {
                     return;
                 }
 

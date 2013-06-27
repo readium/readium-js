@@ -161,6 +161,29 @@ EpubReader.EpubReaderView = Backbone.View.extend({
         }
     },
 
+    // REFACTORING CANDIDATE: setFontSize and setMargin can be rolled into the custom
+    //   proprety infrastructure at some point
+    customize : function (customProperty, styleNameOrCSSObject) {
+
+        var currentView;
+
+        // delegate to font size, margin and theme
+        if (customProperty === "fontSize") {
+            this.setFontSize(parseInt(styleNameOrCSSObject));
+        }
+        else if (customProperty === "margin") {
+            this.setMargin(parseInt(styleNameOrCSSObject));
+        }
+        else {
+            currentView = this.reader.getCurrentPagesView();
+            currentView.customize(customProperty, styleNameOrCSSObject);
+            this.reader.get("viewerSettings")["customStyles"].push({ 
+                "customProperty" : customProperty,
+                "styleNameOrCSSObject" : styleNameOrCSSObject
+            });
+        }
+    },
+
     setFontSize : function (fontSize) {
 
         var currentView = this.reader.getCurrentPagesView();
@@ -173,13 +196,6 @@ EpubReader.EpubReaderView = Backbone.View.extend({
         var currentView = this.reader.getCurrentPagesView();
         currentView.setMargin(margin);
         this.reader.get("viewerSettings").currentMargin = margin;
-    },
-
-    setTheme : function (theme) {
-
-        var currentView = this.reader.getCurrentPagesView();
-        currentView.setTheme(theme);
-        this.reader.get("viewerSettings").currentTheme = theme;
     },
 
     setSyntheticLayout : function (isSynthetic) {

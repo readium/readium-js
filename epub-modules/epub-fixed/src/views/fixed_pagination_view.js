@@ -56,11 +56,15 @@ EpubFixed.FixedPaginationView = Backbone.View.extend({
         if (isSynthetic && this.viewerSettings.syntheticLayout === false) {
             this.viewerSettings.syntheticLayout = true;
             this.fixedPageViews.setSyntheticLayout(true);
+            $(".fixed-spine-divider", this.$el).show();
+            this.createEpubBorder();
             this.trigger("layoutChanged", true);
         }
         else if (!isSynthetic && this.viewerSettings.syntheticLayout === true) {
             this.viewerSettings.syntheticLayout = false;
             this.fixedPageViews.setSyntheticLayout(false);
+            $(".fixed-spine-divider", this.$el).hide();
+            this.createEpubBorder();
             this.trigger("layoutChanged", false);
         }
     },
@@ -91,11 +95,13 @@ EpubFixed.FixedPaginationView = Backbone.View.extend({
     resizePageViews : function () {
 
         this.fixedPageViews.resizePageViews();
-        that.createEpubBorder();
+        this.createEpubBorder();
         this.trigger("displayedContentChanged");
     },
 
     customize : function (customProperty, styleNameOrCSS) {
+
+        // Font size, margin and theme are not included
 
         this.customizer.setCustomStyle(
             customProperty, 
@@ -151,6 +157,8 @@ EpubFixed.FixedPaginationView = Backbone.View.extend({
         this.trigger("epubLinkClicked", e);
     },
 
+    // Rationale: Wraps a border around the absolutely position pages on the screen. This is used for both layout (in the case
+    //   of a single page spread, and for having a border around the pages that can be styled. 
     createEpubBorder : function () {
 
         var currentPages = this.fixedPageViews.get("currentPages");
@@ -166,8 +174,8 @@ EpubFixed.FixedPaginationView = Backbone.View.extend({
             epubBorderSize = this.getSinglePageBorderSize();
         }
 
-        originalWidth = this.$el.width();
-        originalHeight = this.$el.height();
+        originalWidth = this.$el.outerWidth(true);
+        originalHeight = this.$el.outerHeight(true);
 
         if (epubBorderSize.width < originalWidth) {
             this.setHorizontalMarginsForBorder(epubBorderSize.width, originalWidth);

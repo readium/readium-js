@@ -13,7 +13,8 @@ EpubFixed.FixedLayoutStyle = Backbone.Model.extend({
             "-moz-transform-origin" : "top left",
             "-o-transform-origin" : "top left",
             "-ms-transform-origin" : "top left",
-            "left" : "25%"
+            "left" : "0%" // Expects that the parent element is resized to wrap it perfectly; this is done with
+            //   javascript in the fixed pagination view
         };
     },
 

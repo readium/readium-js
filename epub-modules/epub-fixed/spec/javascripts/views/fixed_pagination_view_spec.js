@@ -147,6 +147,7 @@ describe("EpubFixed.FixedPaginationView", function () {
                 // Initialize some extra test state
                 fixedPaginationView.viewerSettings.syntheticLayout = false;
                 spyOn(fixedPaginationView.fixedPageViews, "resetCurrentPages").andCallFake(function () {});
+                spyOn(fixedPaginationView, "createEpubBorder").andCallFake(function () {});
 
                 // Test
                 fixedPaginationView.setSyntheticLayout(true);
@@ -158,6 +159,7 @@ describe("EpubFixed.FixedPaginationView", function () {
                 // Initialize some extra test state
                 fixedPaginationView.viewerSettings.syntheticLayout = true;
                 spyOn(fixedPaginationView.fixedPageViews, "resetCurrentPages").andCallFake(function () {});
+                spyOn(fixedPaginationView, "createEpubBorder").andCallFake(function () {});
 
                 // Test
                 fixedPaginationView.setSyntheticLayout(false);
@@ -220,6 +222,7 @@ describe("EpubFixed.FixedPaginationView", function () {
                 it("triggers the displayedContentChanged event: page re-size", function () {
 
                     spyOn(fixedPaginationView.fixedPageViews, "resizePageViews").andCallFake(function () {});
+                    spyOn(fixedPaginationView, "createEpubBorder").andCallFake(function () {});
                     fixedPaginationView.resizePageViews();
                     expect(fixedPaginationView.trigger).toHaveBeenCalledWith("displayedContentChanged"); 
                 });
