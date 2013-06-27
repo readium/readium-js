@@ -43,6 +43,14 @@ EpubFixed.ImagePageView = Backbone.View.extend({
         this.$el.show();
     },
 
+    getTransformedWidth : function () {
+        return this.sizing.transformedPageSize.width;
+    },
+
+    getTransformedHeight : function () {
+        return this.sizing.transformedPageSize.height;
+    },
+
     setSinglePageSpreadStyle : function () {
 
         var transformCss;

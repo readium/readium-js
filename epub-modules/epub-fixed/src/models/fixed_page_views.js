@@ -121,6 +121,12 @@ EpubFixed.FixedPageViews = Backbone.Model.extend({
         this.resetCurrentPages(newPageNumbers);
     },
 
+    getPageViewInfo : function (pageNumber) {
+
+        var pageIndex = pageNumber - 1;
+        return this.get("fixedPages")[pageIndex];
+    },
+
     // -------------------------------------------- PRIVATE HELPERS ---------------------------------
 
     hidePageViews : function () {
@@ -155,7 +161,8 @@ EpubFixed.FixedPageViews = Backbone.Model.extend({
                 fixedPageView : fixedPageView,
                 pageType : spineObject.fixedLayoutType,
                 isRendered : false,
-                spineIndex : spineObject.spineIndex
+                spineIndex : spineObject.spineIndex,
+                pageSpread : spineObject.pageSpread
             };
 
             that.get("fixedPages").push(fixedPageViewInfo);
@@ -211,12 +218,6 @@ EpubFixed.FixedPageViews = Backbone.Model.extend({
         if (currentPages[1] !== undefined && currentPages[1] !== null) {
             this.getPageViewInfo(currentPages[1]).fixedPageView.showPage();
         }
-    },
-
-    getPageViewInfo : function (pageNumber) {
-
-        var pageIndex = pageNumber - 1;
-        return this.get("fixedPages")[pageIndex];
     },
 
     initializeImagePage : function (pageSpread, imageSrc, viewerSettings) {

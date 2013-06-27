@@ -4,7 +4,6 @@ EpubFixed.FixedLayoutStyle = Backbone.Model.extend({
 
     getSinglePageSpreadCSS : function () {
 
-        // @include box-shadow(0 0 5px 5px rgba(80,80,80,0.5));
         return {
             "position" : "absolute",
             "overflow" : "hidden",

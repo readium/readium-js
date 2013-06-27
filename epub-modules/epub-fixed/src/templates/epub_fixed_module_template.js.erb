@@ -10,6 +10,10 @@ var EpubFixedModule = function (spineObjects, viewerSettingsObject) {
     <%= fixed_page_view %>
     <%= image_page_view %>
     <%= fixed_pagination_view %>
+    <%= fixed_customizer %>
+    <%= fixed_custom_page_border %>
+    <%= fixed_custom_epub_border %>
+    <%= fixed_custom_spine_divider %>
 
     var fixedView = new EpubFixed.FixedPaginationView({
         spineObjects : spineObjects,
@@ -75,6 +79,10 @@ var EpubFixedModule = function (spineObjects, viewerSettingsObject) {
         },
         resizeContent : function () {
             return fixedView.resizePageViews();
+        },
+        customize : function (customProperty, styleNameOrCSS) {
+            fixedView.customize(customProperty, styleNameOrCSS);
+            return this;
         }
     };
 };

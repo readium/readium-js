@@ -28,6 +28,10 @@ def render_epub_fixed_module_template(template_file_path, output_file_path, path
     fixed_page_view = File.read(path_from_executing_dir + '/src/views/fixed_page_view.js')
     image_page_view = File.read(path_from_executing_dir + '/src/views/image_page_view.js')
     fixed_pagination_view = File.read(path_from_executing_dir + '/src/views/fixed_pagination_view.js')
+    fixed_customizer = File.read(path_from_executing_dir + '/src/models/fixed_customizer.js')
+    fixed_custom_page_border = File.read(path_from_executing_dir + '/src/models/fixed_custom_page_border.js')
+    fixed_custom_epub_border = File.read(path_from_executing_dir + '/src/models/fixed_custom_epub_border.js')
+    fixed_custom_spine_divider = File.read(path_from_executing_dir + '/src/models/fixed_custom_spine_divider.js')
 
     template = File.read(template_file_path)
     erb = ERB.new(template)

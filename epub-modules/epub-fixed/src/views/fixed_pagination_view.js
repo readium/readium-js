@@ -1,7 +1,7 @@
 EpubFixed.FixedPaginationView = Backbone.View.extend({
 
-	el : "<div class='fixed-pages-view' style='position:relative;'> \
-            <div class='fixed-spine-divider'></div> \
+	el : "<div class='fixed-pages-view' style='position:relative; height:100%'> \
+            <div class='fixed-spine-divider' style='position:absolute;z-index:2;width:1px;left:50%;top:3%;height:93%;'></div> \
           </div>",
 
 	// ------------------------------------------------------------------------------------ //
@@ -17,8 +17,11 @@ EpubFixed.FixedPaginationView = Backbone.View.extend({
 		// Rationale: Propagate the loaded event after all the content documents are loaded
         this.fixedPageViews.on("epubLoaded", function () {
             that.trigger("contentDocumentLoaded");
+            that.createEpubBorder();
             that.$el.css("opacity", "1");
         }, this);
+
+        this.customizer = new EpubFixed.FixedCustomizer();
 
 		// this.mediaOverlayController = this.model.get("media_overlay_controller");
         // this.mediaOverlayController.setPages(this.pages);
@@ -88,7 +91,20 @@ EpubFixed.FixedPaginationView = Backbone.View.extend({
     resizePageViews : function () {
 
         this.fixedPageViews.resizePageViews();
+        that.createEpubBorder();
         this.trigger("displayedContentChanged");
+    },
+
+    customize : function (customProperty, styleNameOrCSS) {
+
+        this.customizer.setCustomStyle(
+            customProperty, 
+            styleNameOrCSS, 
+            this.fixedPageViews.get("fixedPages"),
+            this.el,
+            $(".fixed-spine-divider", this.$el)[0],
+            this.viewerSettings.syntheticLayout
+        );
     },
     
  //    // override
@@ -133,6 +149,82 @@ EpubFixed.FixedPaginationView = Backbone.View.extend({
     linkClickHandler : function (e) {
 
         this.trigger("epubLinkClicked", e);
+    },
+
+    createEpubBorder : function () {
+
+        var currentPages = this.fixedPageViews.get("currentPages");
+        var currPageViewInfo;
+        var epubBorderSize;
+        var originalWidth;
+        var originalHeight;
+
+        if (this.viewerSettings.syntheticLayout) {
+            epubBorderSize = this.getSyntheticBorderSize();   
+        }
+        else {
+            epubBorderSize = this.getSinglePageBorderSize();
+        }
+
+        originalWidth = this.$el.width();
+        originalHeight = this.$el.height();
+
+        if (epubBorderSize.width < originalWidth) {
+            this.setHorizontalMarginsForBorder(epubBorderSize.width, originalWidth);
+        }
+        else if (epubBorderSize.height < originalHeight) {
+            this.setVerticalMarginsForBorder(epubBorderSize.height, originalHeight);
+        }
+    },
+
+    setHorizontalMarginsForBorder : function (epubBorderWidth, currentWidth) {
+
+        var HEURISTIC_ADJUSTMENT = 5;
+        var difference = currentWidth - epubBorderWidth;
+        var margin = Math.ceil(difference / 2) - HEURISTIC_ADJUSTMENT;
+        this.$el.css({ "margin-left" : margin , "margin-right" : margin });
+    },
+
+    setVerticalMarginsForBorder : function (epubBorderHeight, currentHeight) {
+
+        var HEURISTIC_ADJUSTMENT = 5;
+        var difference = currentHeight - epubBorderHeight;
+        var margin = Math.ceil(difference / 2) - HEURISTIC_ADJUSTMENT;
+        this.$el.css({ "margin-top" : margin , "margin-bottom" : margin });
+    },
+
+    getSinglePageBorderSize : function () {
+
+        var page;
+        var currentPageNumber = this.fixedPageViews.get("currentPages")[0];
+
+        currentPage = this.fixedPageViews.getPageViewInfo(currentPageNumber).fixedPageView;
+
+        return {
+            height : currentPage.getTransformedHeight(),
+            width : currentPage.getTransformedWidth(),
+        };
+    },
+
+    getSyntheticBorderSize : function () {
+
+        var firstPage; 
+        var secondPage;
+        var maxHeight;
+        var maxWidth;
+        var firstPageNumber = this.fixedPageViews.get("currentPages")[0];
+        var secondPageNumber = this.fixedPageViews.get("currentPages")[1];
+
+        firstPage = this.fixedPageViews.getPageViewInfo(firstPageNumber).fixedPageView;
+        secondPage = this.fixedPageViews.getPageViewInfo(secondPageNumber).fixedPageView;
+
+        maxHeight = Math.max(firstPage.getTransformedHeight(), secondPage.getTransformedHeight());
+        maxWidth = Math.max(firstPage.getTransformedWidth(), secondPage.getTransformedWidth()) * 2;
+        
+        return {
+            height : maxHeight,
+            width : maxWidth,
+        };
     }
 
 	// setFontSize: function() {

@@ -1,11 +1,10 @@
 EpubFixed.FixedSizing = Backbone.Model.extend({
 
-    metaSize : {
-        width : undefined,
-        height : undefined
-    },
+    initialize : function (attributes) {
 
-    initialize : function (attributes) {},
+        this.metaSize = { width : undefined, height : undefined };
+        this.transformedPageSize = {};
+    },
 
     // ------------------ PUBLIC INTERFACE ---------------------------------
 
@@ -60,6 +59,9 @@ EpubFixed.FixedSizing = Backbone.Model.extend({
         var scale = Math.min(horScale, verScale);
 
         var css = this.generateTransformCSS(scale);
+
+        this.transformedPageSize.width = Math.ceil(scale * bookSize.width);
+        this.transformedPageSize.height = Math.ceil(scale * bookSize.height);
         css["width"] = bookSize.width;
         css["height"] = bookSize.height;
 
