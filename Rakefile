@@ -95,6 +95,8 @@ task :build do
     
     puts ":build"
     
+    `mkdir epub-modules/development`
+
     Rake::Task[:gen_all_modules].invoke()
     
     gen_simple_api_consolidated("epub-modules/simple-readium-js/simple_rwc_template.js.erb", "epub-modules/development/SimpleReadium.js")
