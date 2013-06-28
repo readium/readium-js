@@ -6,4 +6,5 @@ epub-modules/epub-fixed/lib
 epub-modules/epub-parser/lib
 epub-modules/epub-reader/lib
 epub-modules/epub-reflowable/lib
+epub-modules/epub-media-overlays/lib
 samples-project-testing/lib
