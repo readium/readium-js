@@ -20,9 +20,6 @@ task :copy_dependencies do
   
   parent_dir = get_parent_directory()
 
-  # Generate this module, which will import it into this module's lib directory
-  # Rake::Task[:gen_module].invoke()
-
   # Import other dependencies
   lib_dependency_filenames = [
       "jquery-1.9.1.js",
@@ -56,11 +53,7 @@ task :copy_dependencies do
   module_dependency_filenames.each do |filename|
       puts "---> #{filename}"
       `cp -a "#{parent_dir}/epub-modules/development/#{filename}" "#{path_to_this_dir}/lib/#{filename}"`
-  end
-    
-#    `cp -a "../epub-modules/development/" "lib"`
-#    `cp -a "../epub-modules/lib/" "lib"`
-#    `cp -a "../epub-modules/release/" "lib"`
+  end    
 end
 
 task :server do
