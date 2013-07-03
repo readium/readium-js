@@ -1,0 +1,140 @@
+{
+    "library_epubs" : [
+        {
+            "title" : "Accessible EPUB 3",
+            "url_to_package_doc" : "../epub_samples_project/accessible_epub_3-20121024/EPUB/package.opf"
+        },
+        {
+            "title" : "Shared Culture",
+            "url_to_package_doc" : "../epub_samples_project/cc-shared-culture-20120130/EPUB/package.opf"
+        },
+        {
+            "title" : "Children's literature",
+            "url_to_package_doc" : "../epub_samples_project/childrens-literature-20120722/EPUB/package.opf"
+        },
+        {
+            "title" : "Children's Media Query",
+            "url_to_package_doc" : "../epub_samples_project/childrens-media-query-20120412/EPUB/content.opf"
+        },
+        {
+            "title" : "Cole Voyage of Life",
+            "url_to_package_doc" : "../epub_samples_project/cole-voyage-of-life-20120320/EPUB/cole.opf"
+        },
+        {
+            "title" : "Cole Voyage of Life TOL",
+            "url_to_package_doc" : "../epub_samples_project/cole-voyage-of-life-tol-20120405/EPUB/cole.opf"
+        },
+        {
+            "title" : "EPUB 3 specification",
+            "url_to_package_doc" : "../epub_samples_project/epub30-spec-20120228/EPUB/package.opf"
+        },
+        {
+            "title" : "Georgia CFI",
+            "url_to_package_doc" : "../epub_samples_project/georgia-cfi-20120521/EPUB/package.opf"
+        },
+        {
+            "title" : "Georgia PLS",
+            "url_to_package_doc" : "../epub_samples_project/georgia-pls-ssml-20120322/EPUB/package.opf"
+        },
+        {
+            "title" : "GHV OEB Page",
+            "url_to_package_doc" : "../epub_samples_project/GhV-oeb-page-20121015/EPUB/content.opf"
+        },
+        {
+            "title" : "Haruko HTML JPEG",
+            "url_to_package_doc" : "../epub_samples_project/haruko-html-jpeg-20120524/OPS/package.opf"
+        },
+        {
+            "title" : "Haruko JPEG",
+            "url_to_package_doc" : "../epub_samples_project/haruko-jpeg-20120814/OPS/package.opf"
+        },
+        {
+            "title" : "Hefty Water",
+            "url_to_package_doc" : "../epub_samples_project/hefty-water-20120404/EPUB/package.opf"
+        },
+        {
+            "title" : "Israeli Sailing",
+            "url_to_package_doc" : "../epub_samples_project/israelsailing_20120909/OEPBS/content.opf"
+        },
+        {
+            "title" : "Japanese Requirements",
+            "url_to_package_doc" : "../epub_samples_project/jlreq_20120525/OEBPS/jlreq.opf"
+        },
+        {
+            "title" : "Japanese Requirements JA",
+            "url_to_package_doc" : "../epub_samples_project/jlreq_20120525_ja/OEBPS/jlreq_ja.opf"
+        },
+        {
+            "title" : "Kusamakura Japenese Vertical Writing",
+            "url_to_package_doc" : "../epub_samples_project/kusamakura-japanese-vertical-writing-20121124/OPS/package.opf"
+        },
+        {
+            "title" : "Linear Algebra",
+            "url_to_package_doc" : "../epub_samples_project/linear-algebra-20120306/EPUB/package.opf"
+        },
+        {
+            "title" : "Mahabharata",
+            "url_to_package_doc" : "../epub_samples_project/mahabharata-20120305/EPUB/mahabharata.opf"
+        },
+        {
+            "title" : "Moby Dick",
+            "url_to_package_doc" : "../epub_samples_project/moby-dick-20120118/OPS/package.opf"
+        },
+        {
+            "title" : "Moby Dick MO",
+            "url_to_package_doc" : "../epub_samples_project/moby-dick-mo-20120214/OPS/package.opf"
+        },
+        {
+            "title" : "Page Blanche",
+            "url_to_package_doc" : "../epub_samples_project/page-blanche-20121022/EPUB/package.opf"
+        },
+        {
+            "title" : "Page Blanche (bitmaps in spine)",
+            "url_to_package_doc" : "../epub_samples_project/page-blanche-bitmaps-in-spine-20120809/EPUB/package.opf"
+        },
+        {
+            "title" : "Regime Anti-Cancer Arabic",
+            "url_to_package_doc" : "../epub_samples_project/regime-anticancer-arabic-20121022/EPUB/package.opf"
+        },
+        {
+            "title" : "Sash for you",
+            "url_to_package_doc" : "../epub_samples_project/sash-for-you-20120827/OEBPS/sash_for_you.opf"
+        },
+        {
+            "title" : "Sous le Vent",
+            "url_to_package_doc" : "../epub_samples_project/sous-le-vent-20121022/EPUB/package.opf"
+        },
+        {
+            "title" : "Sous le Vent SVG in spine",
+            "url_to_package_doc" : "../epub_samples_project/sous-le-vent_svg-in-spine-20121022/EPUB/package.opf"
+        },
+        {
+            "title" : "SVG in spine",
+            "url_to_package_doc" : "../epub_samples_project/svg-in-spine-20120417/OPS/content.opf"
+        },
+        {
+            "title" : "Trees",
+            "url_to_package_doc" : "../epub_samples_project/trees-20120417/EPUB/package.opf"
+        },
+        {
+            "title" : "Wasteland",
+            "url_to_package_doc" : "../epub_samples_project/wasteland-20120118/EPUB/wasteland.opf"
+        },
+        {
+            "title" : "Wasteland OTF",
+            "url_to_package_doc" : "../epub_samples_project/wasteland-otf-20120118/EPUB/wasteland.opf"
+        },
+        {
+            "title" : "Wasteland WOFF",
+            "url_to_package_doc" : "../epub_samples_project/wasteland-woff-20120118/EPUB/wasteland.opf"
+        },
+        {
+            "title" : "Widget Figure Gallery",
+            "url_to_package_doc" : "../epub_samples_project/widget-figure-gallery-20121022/EPUB/package.opf"
+        },
+        {
+            "title" : "Widget Quiz",
+            "url_to_package_doc" : "../epub_samples_project/widget-quiz-20121022/EPUB/package.opf"
+        }
+    ]
+}

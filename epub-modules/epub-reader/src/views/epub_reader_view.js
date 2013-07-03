@@ -16,9 +16,9 @@ EpubReader.EpubReaderView = Backbone.View.extend({
         var that = this;
         this.packageDocumentDOM = options.packageDocumentDOM;
         this.reader = new EpubReader.EpubReader({
-            spineInfo : options.spineInfo,
-            viewerSettings : options.viewerSettings,
-            parentElement : options.readerElement,
+            spineInfo : $.extend(true, {}, options.spineInfo),
+            viewerSettings : $.extend(true, {}, options.viewerSettings),
+            parentElement : $(options.readerElement),
             renderStrategy : options.renderStrategy
         });
         // Rationale: Propagate the loaded event after all the content documents are loaded
@@ -236,7 +236,7 @@ EpubReader.EpubReaderView = Backbone.View.extend({
 
         // Page set events
         if (this.canHandlePageSetEvent(eventName)) {
-            this.reader.removeEventHandler(eventName, callback, callbackContext);
+            this.reader.removeEventHandler(eventName);
         }
         // Reader events
         else {
