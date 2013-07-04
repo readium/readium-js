@@ -69,6 +69,14 @@ describe("EpubReader.EpubReader", function () {
             this.reader.loadSpineItems();
         });
 
+        describe("getFirstSpineIndex()", function () {
+
+            it("gets the first index in the primary reading order", function () {
+
+                expect(this.reader.getFirstSpineIndex()).toBe(1);
+            });
+        });
+
         describe("getRenderedPagesView()", function () {
         });
 

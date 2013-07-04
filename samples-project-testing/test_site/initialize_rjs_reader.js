@@ -16,14 +16,42 @@ RJSDemoApp.addLibraryList = function ($ulElementContainer, libraryJson) {
 
         var $currLi = $('<li><a id="' + currEpub.url_to_package_doc + '" href="#">' + currEpub.title + '</a></li>');
         $currLi.on("click", function () {
-            RJSDemoApp.loadAndRenderEpub(currEpub.url_to_package_doc);
+            RJSDemoApp.loadAndRenderEpub(currEpub.url_to_package_doc, RJSDemoApp.viewerPreferences);
         });
         $ulElementContainer.append($currLi);
     });
 };
 
 RJSDemoApp.addTOC = function (tocIframe) {
-    $(tocIframe).attr("src", RJSDemoApp.epub.getToc());
+
+    $(tocIframe).off("load");
+
+    // On TOC load, add all the link handlers
+    if (!RJSDemoApp.epub.tocIsNcx()) {
+
+        $(tocIframe).on("load", function () {
+            $(tocIframe).show();
+            RJSDemoApp.applyViewerHandlers(RJSDemoApp.epubViewer, $(tocIframe)[0].contentDocument);
+        });
+    }
+
+    var tocUrl = RJSDemoApp.epub.getTocURL();
+    if (RJSDemoApp.epub.tocIsNcx()) {
+
+        $.ajax({
+
+            url : tocUrl,
+            success : function (result) {
+                var navList = RJSDemoApp.epub.generateTocListDOM(result);
+                $(tocIframe).parent().append(navList);
+                $(tocIframe).hide();
+                RJSDemoApp.applyViewerHandlers(RJSDemoApp.epubViewer, $(tocIframe).parent()[0]);
+            }
+        });
+    }
+    else {
+        $(tocIframe).attr("src", tocUrl);
+    }
 };
 
 // This function will retrieve a package document and load an EPUB
@@ -61,18 +89,12 @@ RJSDemoApp.loadAndRenderEpub = function (packageDocumentURL, viewerPreferences) 
             // Set the TOC
             RJSDemoApp.addTOC($("#toc-iframe")[0]);
 
-            // On TOC load, add all the link handlers
-            $("#toc-iframe").off("load");
-            $("#toc-iframe").on("load", function () {
-                RJSDemoApp.applyViewerHandlers(RJSDemoApp.epubViewer, $("#toc-iframe")[0].contentDocument);
-            });
-
             RJSDemoApp.applyToolbarHandlers();
 
             // Set a fixed height for the epub viewer container, as a function of the document height
             RJSDemoApp.setModuleContainerHeight();
             RJSDemoApp.epubViewer.on("epubLoaded", function () { 
-                RJSDemoApp.epubViewer.showSpineItem(0, function () {
+                RJSDemoApp.epubViewer.showFirstPage(function () {
                     console.log("showed first spine item"); 
                 });
             }, that);

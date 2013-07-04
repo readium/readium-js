@@ -21,6 +21,9 @@ var EpubReaderModule = function(readerBoundElement, epubSpineInfo, viewerSetting
         render : function () {
             return epubReaderView.render();
         },
+        showFirstPage : function (callback, callbackContext) {
+            return epubReaderView.showFirstPage(callback, callbackContext);
+        },
         showSpineItem : function (spineIndex, callback, callbackContext) {
             return epubReaderView.showSpineItem(spineIndex, callback, callbackContext);
         },

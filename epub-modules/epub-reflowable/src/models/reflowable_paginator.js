@@ -1,9 +1,7 @@
 
 EpubReflowable.ReflowablePaginator = Backbone.Model.extend({
 
-    initialize: function (options) {
-        // make sure we have proper vendor prefixed props for when we need them
-    },
+    initialize: function (options) {},
 
     // ------------------------------------------------------------------------------------ //
     //  "PUBLIC" METHODS (THE API)                                                          //
@@ -111,8 +109,11 @@ EpubReflowable.ReflowablePaginator = Backbone.Model.extend({
         else if (margin === 4) {
             isTwoUp ? (width = 0.77) : (width = 0.60); 
         }
-        else {
+        else if (margin === 5) {
             isTwoUp ? (width = 0.70) : (width = 0.50); 
+        }
+        else {
+            isTwoUp ? (width = 1.0) : (width = 0.95);
         }
         
         return Math.floor( flowingWrapperWidth * width );
@@ -195,6 +196,10 @@ EpubReflowable.ReflowablePaginator = Backbone.Model.extend({
         }
     },
 
+    // REFACTORING CANDIDATE: There is a very important assumption encoded in this method: That the direct parent of the "flowingWrapper"
+    //   element will be the "reader" element in the DOM in which EPUB content is being displayed. The height and width of this parent are
+    //   used to paginate the reflowable content document. This assumption should be made clearer - in fact, this whole model needs to get
+    //   refactored at some point. 
     adjustIframeColumns : function (offsetDir, epubContentDocument, readiumFlowingContent, flowingWrapper, isTwoUp, firstPageOffset, currentPages, ppd, currentMargin ) {
 
         var prop_dir = offsetDir;

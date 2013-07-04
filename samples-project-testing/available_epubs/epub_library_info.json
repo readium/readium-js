@@ -117,6 +117,10 @@
             "url_to_package_doc" : "../epub_samples_project/trees-20120417/EPUB/package.opf"
         },
         {
+            "title" : "Wasteland NCX",
+            "url_to_package_doc" : "../epub_samples_project/wasteland-ncx-only/EPUB/wasteland.opf"
+        },
+        {
             "title" : "Wasteland",
             "url_to_package_doc" : "../epub_samples_project/wasteland-20120118/EPUB/wasteland.opf"
         },

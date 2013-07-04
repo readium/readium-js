@@ -21,7 +21,6 @@ Epub.PackageDocument = Backbone.Model.extend({
         var that = this;
         var spineInfo = [];
         this.spine.each(function (spineItem) {
-
             spineInfo.push(that.generateSpineInfo(spineItem));
         });
 
@@ -217,6 +216,7 @@ Epub.PackageDocument = Backbone.Model.extend({
         var isFixedLayout = false;
         var fixedLayoutType = undefined;
         var manifestItem = this.getManifestModelByIdref(spineItem.get("idref"));
+        var isLinear;
 
         // Get fixed layout properties
         if (spineItem.isFixedLayout() || this.isFixedLayout()) {
@@ -233,6 +233,13 @@ Epub.PackageDocument = Backbone.Model.extend({
             }
         }
 
+        if (spineItem.get("linear").trim() === "no") {
+            isLinear = false;
+        }
+        else {
+            isLinear = true;
+        }
+
         return {
             contentDocumentURI : this.getManifestItemByIdref(spineItem.get("idref")).contentDocumentURI,
             title : this.metadata.get("title"),
@@ -242,7 +249,8 @@ Epub.PackageDocument = Backbone.Model.extend({
             pageSpread : spineItem.get("page_spread"),
             isFixedLayout : isFixedLayout, 
             fixedLayoutType : fixedLayoutType,
-            mediaType : manifestItem.get("media_type")
+            mediaType : manifestItem.get("media_type"),
+            linear : isLinear
         };
     },
 
@@ -263,8 +271,75 @@ Epub.PackageDocument = Backbone.Model.extend({
         return null;
     },
 
+    // Description: This is a convenience method that will generate an html list structure from an ncx XML 
+    //   document. 
+    generateTocListDOM : function (ncxXML) {
+
+        var that = this;
+        var ncxDOM;
+        var $ncxOrderedList;
+
+        if (typeof ncxXML !== "string") {
+            return undefined;
+        }
+
+        ncxDOM = (new DOMParser()).parseFromString(ncxXML,"text/xml");
+        $ncxOrderedList = this.getNcxOrderedList($("navMap", ncxDOM));
+        return $ncxOrderedList[0];
+    },
+
+    tocIsNcx : function () {
+
+        var contentDocURI = this.getTocItem().get("contentDocumentURI");
+        var fileExtension = contentDocURI.substr(contentDocURI.lastIndexOf('.') + 1);
+
+        if (fileExtension.trim().toLowerCase() === "ncx") {
+            return true;
+        }
+        else {
+            return false;
+        }
+    },
 
     // ----------------------- PRIVATE HELPERS -------------------------------- //
+
+    getNcxOrderedList : function ($navMapDOM) {
+
+        var that = this;
+        var $ol = $("<ol></ol>");
+        $.each($navMapDOM.children("navPoint"), function (index, navPoint) {
+            that.addNavPointElements($(navPoint), $ol);
+        });
+        return $ol;
+    },
+
+    // Description: Constructs an html representation of NCX navPoints, based on an object of navPoint information
+    // Rationale: This is a recursive method, as NCX navPoint elements can nest 0 or more of themselves as children
+    addNavPointElements : function ($navPointDOM, $ol) {
+
+        var that = this;
+
+        // Add the current navPoint element to the TOC html 
+        var navText = $navPointDOM.children("navLabel").text().trim();
+        var navHref = $navPointDOM.children("content").attr("src");
+        var $navPointLi = $("<li class='nav-elem'><a href='" + navHref + "'>'" + navText + "'</a></li>");
+        
+        // Append nav point info
+        $ol.append($navPointLi);
+
+        // Append ordered list of nav points
+        if ($navPointDOM.children("navPoint").length > 0 ) {
+
+            var $newLi = $("<li></li>");
+            var $newOl = $("<ol></ol>");
+            $.each($navPointDOM.children("navPoint"), function (navIndex, navPoint) {
+                $newOl.append(that.addNavPointElements($(navPoint), $newOl));
+            });
+
+            $newLi.append($newOl);
+            $ol.append($newLi);
+        }
+    },
 
     // Refactoring candidate: This search will always iterate through entire manifest; this should be modified to 
     //   return when the manifest item is found.

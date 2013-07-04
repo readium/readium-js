@@ -178,6 +178,19 @@ EpubReader.EpubReader = Backbone.Model.extend({
         }
     },
 
+    // Description: Finds the first spine index in the primary reading order
+    getFirstSpineIndex : function () {
+
+        var foundSpineItem = _.find(this.get("spine"), function (spineItem, index) { 
+
+            if (spineItem.linear) {
+                return true;
+            }
+        });
+
+        return foundSpineItem.spineIndex;
+    },
+
     // ------------------------------------------------------------------------------------ //
     //  "PRIVATE" HELPERS                                                                   //
     // ------------------------------------------------------------------------------------ //

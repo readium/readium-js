@@ -4,12 +4,14 @@
             "title" : "Chapter 1", 
             "firstPageIsOffset" : false,
             "pageProgressionDirection" : "ltr", 
+            "linear" : false,
             "spineIndex" : 0
         },
         {
             "contentDocumentURI" : "view_test_artifacts/epub_content/accessible_epub_3/EPUB/ch02.xhtml",
             "title" : "Chapter 2", 
             "firstPageIsOffset" : false,
+            "linear" : true,
             "pageProgressionDirection" : "ltr", 
             "spineIndex" : 1 
         },
@@ -17,6 +19,7 @@
             "contentDocumentURI" : "view_test_artifacts/epub_content/accessible_epub_3/EPUB/ch03.xhtml",
             "title" : "Chapter 3", 
             "firstPageIsOffset" : false,
+            "linear" : true,
             "pageProgressionDirection" : "ltr", 
             "spineIndex" : 2 
         },
@@ -24,6 +27,7 @@
             "contentDocumentURI" : "view_test_artifacts/epub_content/accessible_epub_3/EPUB/ch04.xhtml",
             "title" : "Chapter 4", 
             "firstPageIsOffset" : false,
+            "linear" : true,
             "pageProgressionDirection" : "ltr", 
             "spineIndex" : 3 
         },
@@ -31,6 +35,7 @@
             "contentDocumentURI" : "view_test_artifacts/epub_content/accessible_epub_3/EPUB/ch05.xhtml",
             "title" : "Chapter 5", 
             "firstPageIsOffset" : false,
+            "linear" : true,
             "pageProgressionDirection" : "ltr", 
             "spineIndex" : 4 
         }

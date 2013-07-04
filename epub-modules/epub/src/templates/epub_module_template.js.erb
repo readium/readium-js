@@ -61,8 +61,14 @@ var EpubModule = function(packageDocumentObject, packageDocumentXML) {
         getPackageDocumentDOM : function () {
             return packageDoc.getPackageDocumentDOM();
         },
-        getToc : function () {
+        getTocURL : function () {
             return packageDoc.getToc();
+        },
+        generateTocListDOM : function (ncxXML) {
+            return packageDoc.generateTocListDOM(ncxXML);
+        },
+        tocIsNcx : function () {
+            return packageDoc.tocIsNcx();
         }
     };
 };

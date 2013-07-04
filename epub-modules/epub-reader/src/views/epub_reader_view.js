@@ -69,6 +69,14 @@ EpubReader.EpubReaderView = Backbone.View.extend({
         }, this);
     },
 
+    showFirstPage : function (callback, callbackContext) {
+
+        var firstSpineIndexInReadingOrder = this.reader.getFirstSpineIndex();
+        this.showSpineItem(firstSpineIndexInReadingOrder, function () {
+            callback.call(callbackContext);
+        }, this);
+    },
+
     // Rationale: As with the CFI library API, it is up to calling code to ensure that the content document CFI component is
     //   is a reference into the content document pointed to by the supplied spine index. 
     showPageByCFI : function (CFI, callback, callbackContext) {
