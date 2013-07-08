@@ -19,8 +19,8 @@ EpubReflowable.ReflowableLayout = Backbone.Model.extend({
             );
 
         // this.applyBindings( readiumFlowingContent, epubContentDocument );
-        this.applySwitches( epubContentDocument, readiumFlowingContent ); 
-        // this.injectMathJax(epubContentDocument);
+        this.applySwitches(epubContentDocument); 
+        this.injectMathJax(epubContentDocument);
         this.injectLinkHandler(epubContentDocument, linkClickHandler, handlerContext);
         triggers = this.parseTriggers(epubContentDocument);
         this.applyTriggers(epubContentDocument, triggers);
@@ -150,13 +150,13 @@ EpubReflowable.ReflowableLayout = Backbone.Model.extend({
 
     // Description: Parse the epub "switch" tags and hide
     //   cases that are not supported
-    applySwitches: function (epubContentDocument, readiumFlowingContent) {
+    applySwitches: function (epubContentDocument) {
 
         // helper method, returns true if a given case node
         // is supported, false otherwise
         var isSupported = function(caseNode) {
 
-            var ns = caseNode.attributes["required-namespace"];
+            var ns = $(caseNode).attr("required-namespace");
             if(!ns) {
                 // the namespace was not specified, that should
                 // never happen, we don't support it then
@@ -169,40 +169,41 @@ EpubReflowable.ReflowableLayout = Backbone.Model.extend({
             return _.include(supportedNamespaces, ns);
         };
 
-        $('switch', epubContentDocument.parentNode).each(function(ind) {
+        $('switch', epubContentDocument.parentNode).each(function(index, switchElement) {
             
-            // keep track of whether or now we found one
+            // keep track of whether or not we found one
             var found = false;
 
-            $('case', readiumFlowingContent).each(function() {
+            $('case', switchElement).each(function(index, caseElement) {
 
-                if( !found && isSupported(readiumFlowingContent) ) {
+                if (!found && isSupported(caseElement)) {
                     found = true; // we found the node, don't remove it
                 }
                 else {
-                    $(readiumFlowingContent).remove(); // remove the node from the dom
+                    $(caseElement).remove(); // remove the node from the dom
                 }
             });
 
-            if(found) {
+            if (found) {
                 // if we found a supported case, remove the default
-                $('default', readiumFlowingContent).remove();
+                $('default', switchElement).remove();
             }
         })
     },
 
-    // inject mathML parsing code into an iframe
-    injectMathJax: function (epubContentDocument) {
+    // Description: Inject mathML parsing code into the content document iframe
+    injectMathJax : function (epubContentDocument) {
 
-        var doc, script, head;
-        doc = epubContentDocument.parentNode;
-        head = doc.getElementsByTagName("head")[0];
-        // if the content doc is SVG there is no head, and thus
+        var script;
+        var head;
+        head = $("head", epubContentDocument)[0];
+        
+        // Rationale: If the content doc is SVG there is no head, and thus
         // mathjax will not be required
-        if(head) {
-            script = doc.createElement("script");
+        if (head) {
+            script = document.createElement("script");
             script.type = "text/javascript";
-            script.src = MathJax.Hub.config.root+"/MathJax.js?config=readium-iframe";
+            script.src = "https://c328740.ssl.cf1.rackcdn.com/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
             head.appendChild(script);
         }
     },
