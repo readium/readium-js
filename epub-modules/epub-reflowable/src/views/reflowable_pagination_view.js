@@ -94,7 +94,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
             }
 
             var borderElement;
-			var lastPageElementId = that.initializeContentDocument();
+			that.initializeContentDocument();
 
 			// Rationale: The content document must be paginated in order for the subsequent "go to page" methods
 			//   to have access to the number of pages in the content document.
@@ -107,9 +107,6 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 			//   case where Readium is re-opening the book, from the library view. 
 			if (hashFragmentId) {
                 that.showPageByElementId(hashFragmentId);
-            }
-            else if (lastPageElementId) {
-                that.showPageByElementId(lastPageElementId);
             }
             else {
 
@@ -158,6 +155,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         this.showCurrentPages();
     },
 
+    // TODO: Check to see if it's a character offset CFI. If it is, inject it and keep track of the injection.
     showPageByCFI : function (CFI) {
 
         var $rangeTargetElements;
@@ -167,11 +165,23 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
             // Check if it's a CFI range type
             if (new RegExp(/.+,.+,.+/).test(CFI)) {
-                $rangeTargetElements = this.cfi.getRangeTargetElements(CFI, $(this.getEpubContentDocument()).parent()[0]);
+                $rangeTargetElements = this.cfi.getRangeTargetElements(
+                    CFI, 
+                    $(this.getEpubContentDocument()).parent()[0],
+                    [],
+                    [],
+                    ["MathJax_Message"]
+                );
                 targetElement = $rangeTargetElements[0];
             }
             else {
-                $standardTargetElement = this.cfi.getTargetElement(CFI, $(this.getEpubContentDocument()).parent()[0]);
+                $standardTargetElement = this.cfi.getTargetElement(
+                    CFI, 
+                    $(this.getEpubContentDocument()).parent()[0],
+                    [],
+                    [],
+                    ["MathJax_Message"]
+                );
                 targetElement = $standardTargetElement[0];
             }
         }
@@ -180,7 +190,12 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
             throw error;
         }
 
-        this.showPageByElement(targetElement);
+        if (targetElement.nodeType === Node.TEXT_NODE) {
+            this.showPageByElement($(targetElement).parent()[0])
+        }
+        else {
+            this.showPageByElement(targetElement);
+        }
     },
 
     showPageByElementId : function (elementId) {
@@ -365,7 +380,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 			this.spineItemModel.get("pageProgressionDirection"),
 			this.viewerModel.get("currentMargin"),
 			this.viewerModel.get("fontSize")
-			);
+		);
 
 		this.pages.set("numberOfPages", pageInfo[0]);
         this.viewerModel.get("syntheticLayout") ? this.spineDivider.show() : this.spineDivider.hide();
@@ -376,18 +391,14 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
 	initializeContentDocument : function () {
 
-		var elementId = this.reflowableLayout.initializeContentDocument(
-			this.getEpubContentDocument(), 
-			this.epubCFIs, 
-			this.spineItemModel.get("spine_index"), 
+		this.reflowableLayout.initializeContentDocument(
+			this.getEpubContentDocument(),
 			this.getReadiumFlowingContent(), 
 			this.linkClickHandler, 
 			this, 
 			this.keydownHandler,
             this.bindings
-			);
-
-		return elementId;
+		);
 	},
 
     showPageByElement : function (element) {

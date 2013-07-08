@@ -73,7 +73,7 @@ EpubReader.LoadStrategy = Backbone.Model.extend({
             viewerSettings, 
             annotations, 
             bindings
-            );
+        );
 
         var pagesViewInfo = {
             pagesView : view, 

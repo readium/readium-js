@@ -80,20 +80,34 @@ RJSDemoApp.epubLinkClicked = function (e) {
         href = e.currentTarget.attributes["href"].value;
     }
 
-    // Get the hash id if it exists
-    href = href.trim();
-    splitHref = href.split("#");
+    // It's a CFI
+    if (href.match("epubcfi")) {
 
-    spineIndex = RJSDemoApp.epub.getSpineIndexByHref(href);
-    if (splitHref[1] === undefined) {      
-        RJSDemoApp.epubViewer.showSpineItem(spineIndex, function () {
-            console.log("Spine index shown: " + splitHref[0]);
-        });
+        href = href.trim();
+        splitHref = href.split("#");
+    
+        RJSDemoApp.epubViewer.showPageByCFI(splitHref[1], function () {
+            console.log("Showed the page using a CFI");
+        }, this);        
     }
+    // It's a regular id
     else {
-        RJSDemoApp.epubViewer.showPageByElementId(spineIndex, splitHref[1], function () {
-            console.log("Page shown: href: " + splitHref[0] + " & hash id: " + splitHref[1]);
-        });
+
+        // Get the hash id if it exists
+        href = href.trim();
+        splitHref = href.split("#");
+
+        spineIndex = RJSDemoApp.epub.getSpineIndexByHref(href);
+        if (splitHref[1] === undefined) {      
+            RJSDemoApp.epubViewer.showSpineItem(spineIndex, function () {
+                console.log("Spine index shown: " + splitHref[0]);
+            });
+        }
+        else {
+            RJSDemoApp.epubViewer.showPageByElementId(spineIndex, splitHref[1], function () {
+                console.log("Page shown: href: " + splitHref[0] + " & hash id: " + splitHref[1]);
+            });
+        }
     }
 };
 

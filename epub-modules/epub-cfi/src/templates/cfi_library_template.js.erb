@@ -21,27 +21,26 @@ var EpubCFIModule = function () {
         injectElement : function (CFI, contentDocument, elementToInject, classBlacklist, elementBlacklist, idBlacklist) {
             return interpreter.injectElement(CFI, contentDocument, elementToInject, classBlacklist, elementBlacklist, idBlacklist);
         },
-        getTargetElement : function (CFI, contentDocument) {
-            return interpreter.getTargetElement(CFI, contentDocument);
+        getTargetElement : function (CFI, contentDocument, classBlacklist, elementBlacklist, idBlacklist) {
+            return interpreter.getTargetElement(CFI, contentDocument, classBlacklist, elementBlacklist, idBlacklist);
         },
-        getTargetElementWithPartialCFI : function (contentDocumentCFI, contentDocument) {
-            return interpreter.getTargetElementWithPartialCFI(contentDocumentCFI, contentDocument);
+        getTargetElementWithPartialCFI : function (contentDocumentCFI, contentDocument, classBlacklist, elementBlacklist, idBlacklist) {
+            return interpreter.getTargetElementWithPartialCFI(contentDocumentCFI, contentDocument, classBlacklist, elementBlacklist, idBlacklist);
         },
-        getTextTerminusInfoWithPartialCFI : function (contentDocumentCFI, contentDocument) {
-            return interpreter.getTextTerminusInfoWithPartialCFI(contentDocumentCFI, contentDocument);
+        getTextTerminusInfoWithPartialCFI : function (contentDocumentCFI, contentDocument, classBlacklist, elementBlacklist, idBlacklist) {
+            return interpreter.getTextTerminusInfoWithPartialCFI(contentDocumentCFI, contentDocument, classBlacklist, elementBlacklist, idBlacklist);
         },
-
-        generateCharacterOffsetCFIComponent : function (startTextNode, characterOffset) {
-            return generator.generateCharacterOffsetCFIComponent(startTextNode, characterOffset);
+        generateCharacterOffsetCFIComponent : function (startTextNode, characterOffset, classBlacklist, elementBlacklist, idBlacklist) {
+            return generator.generateCharacterOffsetCFIComponent(startTextNode, characterOffset, classBlacklist, elementBlacklist, idBlacklist);
         },
-        generateElementCFIComponent : function (startElement) {
-            return generator.generateElementCFIComponent(startElement);
+        generateElementCFIComponent : function (startElement, classBlacklist, elementBlacklist, idBlacklist) {
+            return generator.generateElementCFIComponent(startElement, classBlacklist, elementBlacklist, idBlacklist);
         },
-        generatePackageDocumentCFIComponent : function (contentDocumentName, packageDocument) {
-            return generator.generatePackageDocumentCFIComponent(contentDocumentName, packageDocument);
+        generatePackageDocumentCFIComponent : function (contentDocumentName, packageDocument, classBlacklist, elementBlacklist, idBlacklist) {
+            return generator.generatePackageDocumentCFIComponent(contentDocumentName, packageDocument, classBlacklist, elementBlacklist, idBlacklist);
         },
-        generatePackageDocumentCFIComponentWithSpineIndex : function (spineIndex, packageDocument) {
-            return generator.generatePackageDocumentCFIComponentWithSpineIndex(spineIndex, packageDocument);
+        generatePackageDocumentCFIComponentWithSpineIndex : function (spineIndex, packageDocument, classBlacklist, elementBlacklist, idBlacklist) {
+            return generator.generatePackageDocumentCFIComponentWithSpineIndex(spineIndex, packageDocument, classBlacklist, elementBlacklist, idBlacklist);
         },
         generateCompleteCFI : function (packageDocumentCFIComponent, contentDocumentCFIComponent) {
             return generator.generateCompleteCFI(packageDocumentCFIComponent, contentDocumentCFIComponent);

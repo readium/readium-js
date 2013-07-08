@@ -9,14 +9,9 @@ EpubReflowable.ReflowableLayout = Backbone.Model.extend({
     //  "PUBLIC" METHODS (THE API)                                                          //
     // ------------------------------------------------------------------------------------ //
 
-    initializeContentDocument : function (epubContentDocument, epubCFIs, currSpinePosition, readiumFlowingContent, linkClickHandler, handlerContext, keydownHandler, bindings) {
+    initializeContentDocument : function (epubContentDocument, readiumFlowingContent, linkClickHandler, handlerContext, keydownHandler, bindings) {
 
         var triggers;
-        var lastPageElementId = this.injectCFIElements(
-            epubContentDocument, 
-            epubCFIs, 
-            currSpinePosition
-            );
 
         // this.applyBindings( readiumFlowingContent, epubContentDocument );
         this.applySwitches(epubContentDocument); 
@@ -24,64 +19,18 @@ EpubReflowable.ReflowableLayout = Backbone.Model.extend({
         this.injectLinkHandler(epubContentDocument, linkClickHandler, handlerContext);
         triggers = this.parseTriggers(epubContentDocument);
         this.applyTriggers(epubContentDocument, triggers);
-        $(epubContentDocument).attr('title');//, Acc.page + ' - ' + Acc.title);
+        $(epubContentDocument).attr('title');
 
         this.injectKeydownHandler(
             readiumFlowingContent, 
             keydownHandler, 
             handlerContext
         );
-
-        return lastPageElementId;
     },
 
     // ------------------------------------------------------------------------------------ //
     //  PRIVATE HELPERS                                                                     //
     // ------------------------------------------------------------------------------------ //
-
-    injectCFIElements : function (epubContentDocument, epubCFIs, currSpinePosition) {
-
-        var that = this;
-        var contentDocument;
-        var epubCFIs;
-        var lastPageElementId;
-
-        // Get the content document (assumes a reflowable publication)
-        contentDocument = epubContentDocument;
-
-        // TODO: Could check to make sure the document returned from the iframe has the same name as the 
-        //   content document specified by the href returned by the CFI.
-
-        // Inject elements for all the CFIs that reference this content document
-        epubCFIs = epubCFIs; // What is this about? 
-        _.each(epubCFIs, function (cfi, key) {
-
-            if (cfi.contentDocSpinePos === currSpinePosition) {
-
-                try {
-					that.epubCFI.injectElement(
-                        key,
-                        contentDocument.parentNode,
-                        cfi.payload,
-                        ["cfi-marker", "audiError"],
-                        [],
-                        ["MathJax_Message"]);
-
-                    if (cfi.type === "last-page") {
-                        lastPageElementId = $(cfi.payload).attr("id");
-                    }
-                } 
-                catch (e) {
-
-                    console.log("Could not inject CFI");
-                    console.log(e);
-                }
-            }
-        });
-
-        // This will be undefined unless there is a "last-page" element injected into the page
-        return lastPageElementId;
-    },
 
     // // REFACTORING CANDIDATE: It looks like this could go on the package document itself
     // getBindings: function (packageDocument) {
@@ -215,9 +164,9 @@ EpubReflowable.ReflowableLayout = Backbone.Model.extend({
         });
     },
 
-    injectKeydownHandler : function (readiumFlowingContent, keydownHandler, handlerContext) {
+    injectKeydownHandler : function (epubContentDocument, keydownHandler, handlerContext) {
 
-        $(readiumFlowingContent).contents().keydown(function (e) {
+        $(epubContentDocument).on("keydown", function (e) {
             keydownHandler.call(handlerContext, e);
         });
     }
