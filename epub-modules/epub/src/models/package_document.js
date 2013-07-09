@@ -217,6 +217,8 @@ Epub.PackageDocument = Backbone.Model.extend({
         var fixedLayoutType = undefined;
         var manifestItem = this.getManifestModelByIdref(spineItem.get("idref"));
         var isLinear;
+        var firstPageIsOffset;
+        var pageSpread;
 
         // Get fixed layout properties
         if (spineItem.isFixedLayout() || this.isFixedLayout()) {
@@ -233,6 +235,7 @@ Epub.PackageDocument = Backbone.Model.extend({
             }
         }
 
+        // Set primary reading order attribute
         if (spineItem.get("linear").trim() === "no") {
             isLinear = false;
         }
@@ -240,13 +243,27 @@ Epub.PackageDocument = Backbone.Model.extend({
             isLinear = true;
         }
 
+        // Set first page is offset parameter
+        pageSpread = spineItem.get("page_spread");
+        if (!isFixedLayout) {
+            if (this.pageProgressionDirection() === "ltr" && pageSpread === "right") {
+                firstPageIsOffset = true;
+            }
+            else if (this.pageProgressionDirection() === "rtl" && pageSpread === "left") {
+                firstPageIsOffset = true;
+            }
+            else {
+                firstPageIsOffset = false;
+            }
+        }
+
         return {
             contentDocumentURI : this.getManifestItemByIdref(spineItem.get("idref")).contentDocumentURI,
             title : this.metadata.get("title"),
-            firstPageIsOffset : false, // This needs to be determined
+            firstPageIsOffset : firstPageIsOffset,
             pageProgressionDirection : this.pageProgressionDirection(),
             spineIndex : this.getSpineIndex(spineItem),
-            pageSpread : spineItem.get("page_spread"),
+            pageSpread : pageSpread,
             isFixedLayout : isFixedLayout, 
             fixedLayoutType : fixedLayoutType,
             mediaType : manifestItem.get("media_type"),

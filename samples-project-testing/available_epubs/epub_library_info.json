@@ -139,6 +139,118 @@
         {
             "title" : "Widget Quiz",
             "url_to_package_doc" : "../epub_samples_project/widget-quiz-20121022/EPUB/package.opf"
+        },
+        {
+            "title" : "internal_link",
+            "url_to_package_doc" : "../additional_samples/internal_link/OEBPS/internal_link.opf"
+        },
+        {
+            "title" : "Issue 144:jp_various",
+            "url_to_package_doc" : "../additional_samples/Issue 144/jp_various/OEBPS/jp_various.opf"
+        },
+        {
+            "title" : "Issue 144:jp_various_updated",
+            "url_to_package_doc" : "../additional_samples/Issue 144/jp_various_updated/OEBPS/jp_various.opf"
+        },
+        {
+            "title" : "Issue 144:ss3",
+            "url_to_package_doc" : "../additional_samples/Issue 144/ss3/OEBPS/ss3.opf"
+        },
+        {
+            "title" : "Issue 144:ss4",
+            "url_to_package_doc" : "../additional_samples/Issue 144/ss4/OEBPS/ss4.opf"
+        },
+        {
+            "title" : "Issue 182:georgia-first-page-offset",
+            "url_to_package_doc" : "../additional_samples/Issue 182/georgia-first-page-offset/EPUB/package.opf"
+        },
+        {
+            "title" : "Issue 182:georgia-first-page-offset-rtl",
+            "url_to_package_doc" : "../additional_samples/Issue 182/georgia-first-page-offset-rtl/EPUB/package.opf"
+        },
+        {
+            "title" : "Issue 182:kusamakura-japanese-offset-rtl",
+            "url_to_package_doc" : "../additional_samples/Issue 182/kusamakura-japanese-offset-rtl/OPS/package.opf"
+        },
+        {
+            "title" : "Issue 182:pagespread_nofxl",
+            "url_to_package_doc" : "../additional_samples/Issue 182/pagespread_nofxl/OEBPS/pagespread_nofxl.opf"
+        },
+        {
+            "title" : "Issue 182:pagespread_with_text_fxl",
+            "url_to_package_doc" : "../additional_samples/Issue 182/pagespread_with_text_fxl/OEBPS/ps_with_text_fxl.opf"
+        },
+        {
+            "title" : "Issue 182:pagespread_with_text_nofxl",
+            "url_to_package_doc" : "../additional_samples/Issue 182/pagespread_with_text_nofxl/OEBPS/ps_with_text_nofxl.opf"
+        },
+        {
+            "title" : "jsrpd-pigs",
+            "url_to_package_doc" : "../additional_samples/jsrpd-pigs/Publication/package.opf"
+        },
+        {
+            "title" : "link_with_svg_clickablemap",
+            "url_to_package_doc" : "../additional_samples/link_with_svg_clickablemap/OEBPS/link_with_svg_clickablemap.opf"
+        },
+        {
+            "title" : "moby-dick-whitespace-prewrap",
+            "url_to_package_doc" : "../additional_samples/moby-dick-whitespace-prewrap/OPS/package.opf"
+        },
+        {
+            "title" : "pagespread_ltr",
+            "url_to_package_doc" : "../additional_samples/pagespread_ltr/OEBPS/pagespread.opf"
+        },
+        {
+            "title" : "pagespread_ltr_adjacency_test",
+            "url_to_package_doc" : "../additional_samples/pagespread_ltr_adjacency_test/OEBPS/pagespread.opf"
+        },
+        {
+            "title" : "pagespread_noSpread_ltr",
+            "url_to_package_doc" : "../additional_samples/pagespread_noSpread_ltr/OEBPS/pagespread.opf"
+        },
+        {
+            "title" : "pagespread_noSpread_rtl",
+            "url_to_package_doc" : "../additional_samples/pagespread_noSpread_rtl/OEBPS/pagespread.opf"
+        },
+        {
+            "title" : "pagespread_rtl_adjacency_test",
+            "url_to_package_doc" : "../additional_samples/pagespread_rtl_adjacency_test/OEBPS/pagespread.opf"
+        },
+        {
+            "title" : "readium_test_css_background",
+            "url_to_package_doc" : "../additional_samples/readium_test_css_background/OEBPS/content.opf"
+        },
+        {
+            "title" : "spread-rtl-fl-jpg-cc-lr",
+            "url_to_package_doc" : "../additional_samples/spread-rtl-fl-jpg-cc-lr/EPUB/package.opf"
+        },
+        {
+            "title" : "TBF:amaebi",
+            "url_to_package_doc" : "../additional_samples/TBF/amaebi/OEBPS/amaebi.opf"
+        },
+        {
+            "title" : "TBF:ebookgirl",
+            "url_to_package_doc" : "../additional_samples/TBF/ebookgirl/OEBPS/ebookgirl.opf"
+        },
+        {
+            "title" : "TBF:hanakanzashi01",
+            "url_to_package_doc" : "../additional_samples/TBF/hanakanzashi01/OEBPS/hanakanzashi01.opf"
+        },
+        {
+            "title" : "TBF:kimini",
+            "url_to_package_doc" : "../additional_samples/TBF/kimini/OEBPS/kimini.opf"
+        },
+        {
+            "title" : "TBF:magazink",
+            "url_to_package_doc" : "../additional_samples/TBF/magazink/OEBPS/magazink.opf"
+        },
+        {
+            "title" : "TBF:nagato",
+            "url_to_package_doc" : "../additional_samples/TBF/nagato/OEBPS/nagato.opf"
+        },
+        {
+            "title" : "toc_link_jp",
+            "url_to_package_doc" : "../additional_samples/toc_link_jp/OEBPS/toclink.opf"
         }
     ]
 }

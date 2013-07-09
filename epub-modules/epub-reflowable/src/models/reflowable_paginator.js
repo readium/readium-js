@@ -171,13 +171,13 @@ EpubReflowable.ReflowablePaginator = Backbone.Model.extend({
 
                 if (ppd === "rtl") {
 
-                    firstPageOffset = -(2 * (this.page_width + this.gap_width));
+                    firstPageOffset = -(this.page_width + this.gap_width);
                     $reflowableIframe.css("margin-left", firstPageOffset + "px");
                 }
                 // Left-to-right pagination
                 else {
 
-                    firstPageOffset = this.page_width + (this.gap_width * 2);
+                    firstPageOffset = this.page_width + (this.gap_width * 2) - this.padding_width;
                     $reflowableIframe.css("margin-left", firstPageOffset + "px");
                 }
 

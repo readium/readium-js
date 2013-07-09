@@ -1,6 +1,6 @@
 EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
-    el : "<div class='flowing-wrapper clearfix' style='display:block;margin-left:auto;margin-right:auto;position:relative'> \
+    el : "<div class='flowing-wrapper clearfix' style='display:block;margin-left:auto;margin-right:auto;position:relative;overflow:hidden;'> \
             <iframe scrolling='no' \
                     frameborder='0' \
                     height='100%' \
@@ -424,10 +424,17 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
 
     showCurrentPages : function () {
 
-        var that = this;
+        var currentPageNumber;
         this.hideContent();
-        that.moveViewportToPage(that.pages.get("currentPages")[0]);
-        that.showContent();
+        currentPageNumber = this.reflowablePaginator.accountForOffset(
+            this.getReadiumFlowingContent(),
+            this.viewerModel.get("syntheticLayout"),
+            this.spineItemModel.get("firstPageIsOffset"),
+            this.pages.get("currentPages"),
+            this.spineItemModel.get("pageProgressionDirection")
+        );
+        this.moveViewportToPage(currentPageNumber);
+        this.showContent();
         this.trigger("displayedContentChanged");
     },
 
