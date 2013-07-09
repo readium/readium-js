@@ -51,6 +51,12 @@ RJSDemoApp.applyToolbarHandlers = function () {
     $("#toggle-synthetic-btn").on("click", function () {
         RJSDemoApp.toggleLayout();
     });
+
+    // Layout
+    $("#toggle-ast-btn").off("click");
+    $("#toggle-ast-btn").on("click", function () {
+        RJSDemoApp.toggleAST();
+    });
 };
 
 RJSDemoApp.applyViewerHandlers = function (epubViewer, tocDocument) {
@@ -171,6 +177,18 @@ RJSDemoApp.toggleLayout = function () {
     else {
         RJSDemoApp.epubViewer.setSyntheticLayout(true);
         RJSDemoApp.viewerPreferences.syntheticLayout = true;
+    }
+};
+
+RJSDemoApp.toggleAST = function () {
+
+    if (RJSDemoApp.viewerPreferences.day) {
+        RJSDemoApp.epubViewer.customize("alt-style-tag", "night");
+        RJSDemoApp.viewerPreferences.day = false;
+    }
+    else {
+        RJSDemoApp.epubViewer.customize("alt-style-tag", "day");
+        RJSDemoApp.viewerPreferences.day = true;
     }
 };
 

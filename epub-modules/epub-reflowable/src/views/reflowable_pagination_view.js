@@ -28,12 +28,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
         // Initialize custom style views
         this.spineDivider = new EpubReflowable.ReflowableSpineDividerView();
         this.$el.append(this.spineDivider.render());
-
-        this.customizer = new EpubReflowable.ReflowableCustomizer({
-            parentElement : this.getFlowingWrapper(),
-            readiumFlowingContent : this.getReadiumFlowingContent(),
-            spineDividerStyleView : this.spineDivider
-        });
+        this.customizer;
 
 		this.annotations;
         this.cfi = new EpubCFIModule();
@@ -123,6 +118,13 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
                 saveCallback : undefined,
                 callbackContext : undefined,
                 contentDocumentDOM : that.getEpubContentDocument().parentNode
+            });
+
+            that.customizer = new EpubReflowable.ReflowableCustomizer({
+                parentElement : that.getFlowingWrapper(),
+                readiumFlowingContent : that.getReadiumFlowingContent(),
+                spineDividerStyleView : that.spineDivider,
+                epubContentDocument : that.getEpubContentDocument()
             });
 
             that.trigger("contentDocumentLoaded", that.el);

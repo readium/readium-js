@@ -33,6 +33,19 @@ EpubReflowable.ReflowableCustomTheme = Backbone.Model.extend({
         }
     },
 
+    // Description: Activates a style set for the ePub, based on the currently selected theme. At present, 
+    //   only the day-night alternate tags are available as an option.  
+    setAlternateStyleTag : function (themeName, epubContentDocument) {
+
+        var selector = new EpubReflowable.AlternateStyleTagSelector();        
+        if (themeName === "night") {
+            selector.activateAlternateStyleSet(["night"], epubContentDocument);
+        }
+        else if (themeName === "day" || themeName === "none") {
+            selector.activateAlternateStyleSet(["day"], epubContentDocument);
+        }
+    },
+
     // ------ PRIVATE HELPERS --------------------------------------------------------------
 
     renderCurrentStyle : function () {
@@ -80,24 +93,4 @@ EpubReflowable.ReflowableCustomTheme = Backbone.Model.extend({
 
         return $("body", this.get("iframeElement").contentDocument)[0];
     }
-
-    // Description: Activates a style set for the ePub, based on the currently selected theme. At present, 
-    //   only the day-night alternate tags are available as an option.  
-    // activateEPubStyle : function (bookDom, currentTheme) {
-
-    //     var selector;
-        
-    //     // Apply night theme for the book; nothing will be applied if the ePub's style sheets do not contain a style
-    //     // set with the 'night' tag
-    //     if (currentTheme === "night-theme") {
-
-    //         selector = new EpubReflowable.AlternateStyleTagSelector;
-    //         bookDom = selector.activateAlternateStyleSet(["night"], bookDom);
-    //     }
-    //     else {
-
-    //         selector = new EpubReflowable.AlternateStyleTagSelector;
-    //         bookDom = selector.activateAlternateStyleSet([""], bookDom);
-    //     }
-    // }
 });

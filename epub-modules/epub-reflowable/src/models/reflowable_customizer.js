@@ -24,6 +24,9 @@ EpubReflowable.ReflowableCustomizer = Backbone.Model.extend({
         else if (customProperty === "reflowable-page-theme") {
             this.get("customTheme").setCurrentStyle(styleNameOrCSS);
         }
+        else if (customProperty === "alt-style-tag") {
+            this.get("customTheme").setAlternateStyleTag(styleNameOrCSS, this.get("epubContentDocument"));
+        }
     }
 
     // ----- PRIVATE HELPERS -------------------------------------------------------------------
