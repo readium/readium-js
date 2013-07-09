@@ -176,7 +176,7 @@ EpubReflowable.ReflowablePaginationView = Backbone.View.extend({
             }
             else {
                 $standardTargetElement = this.cfi.getTargetElement(
-                    CFI, 
+                    CFI,
                     $(this.getEpubContentDocument()).parent()[0],
                     [],
                     [],

@@ -80,6 +80,7 @@ EpubReflowable.ReflowableLayout = Backbone.Model.extend({
     // },
 
     applyTriggers: function (epubContentDocument, triggers) {
+
         for(var i = 0 ; i < triggers.length; i++) {
             triggers[i].subscribe(epubContentDocument.parentNode);
         }
@@ -88,10 +89,10 @@ EpubReflowable.ReflowableLayout = Backbone.Model.extend({
     // Description: For reflowable content we only add what is in the body tag.
     //   Lots of times the triggers are in the head of the dom
     parseTriggers: function (epubContentDocument) {
+
         var triggers = [];
-        $('trigger', epubContentDocument.parentNode).each(function() {
-            
-            triggers.push(new EpubReflowable.Trigger(epubContentDocument.parentNode) );
+        $('trigger', epubContentDocument.parentNode).each(function(index, triggerElement) {
+            triggers.push(new EpubReflowable.Trigger(triggerElement) );
         });
         
         return triggers;
