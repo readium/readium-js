@@ -16,6 +16,9 @@ EpubFixed.FixedPageView = Backbone.View.extend({
         this.styles = new EpubFixed.FixedLayoutStyle();
         this.pageSpread = options.pageSpread;
         this.iframeSrc = options.iframeSrc;
+        this.fixedLayoutType = options.fixedLayoutType;
+
+        // REFACTORING CANDIDATE: See if this can be done in the render method
         if (options.viewerSettings.syntheticLayout) {
             this.setSyntheticPageSpreadStyle();       
         }
@@ -25,7 +28,7 @@ EpubFixed.FixedPageView = Backbone.View.extend({
     },
 
     // REFACTORING CANDIDATE: Use page set event context to trigger the content document loaded event
-    render : function (goToLast, elementIdToShow, linkClickHandler, handlerContext) {
+    render : function (goToLast, elementIdToShow, linkClickHandler, handlerContext, isSynthetic) {
 
         var that = this;
         this.get$iframe().attr("src", this.iframeSrc);
@@ -58,7 +61,9 @@ EpubFixed.FixedPageView = Backbone.View.extend({
             that.sizing = new EpubFixed.FixedSizing({ contentDocument : that.get$iframe()[0].contentDocument });
             that.injectLinkHandler(that.get$iframe(), linkClickHandler, handlerContext);
             // that.applyKeydownHandler($(view.iframe()));
-            that.setPageSize();
+            if (that.fixedLayoutType !== "svg") {
+                that.setPageSize(isSynthetic);
+            }
             that.trigger("contentDocumentLoaded");
         });
         
@@ -87,35 +92,58 @@ EpubFixed.FixedPageView = Backbone.View.extend({
 
     setSinglePageSpreadStyle : function () {
 
-        var transformCss;
-        this.$el.css(this.styles.getSinglePageSpreadCSS());
-        this.setPageSize();
+        var singlePageCss;
+        if (this.fixedLayoutType === "svg") {
+            singlePageCss = this.styles.getSvgSinglePageSpreadCSS();
+            this.$el.css(singlePageCss);
+        }
+        else {
+            singlePageCss = this.styles.getSinglePageSpreadCSS();
+            this.$el.css(singlePageCss);
+            this.setPageSize(false);
+        }
     },
 
     setSyntheticPageSpreadStyle : function () {
 
         var pageSpread = this.pageSpread;
-        var transformCss;
-        if (pageSpread === "left") {
-            this.$el.css(this.styles.getPageSpreadLeftCSS());
+        var syntheticPageCss;
+
+        if (this.fixedLayoutType === "svg") {
+            if (pageSpread === "left") {
+                syntheticPageCss = this.styles.getSvgPageSpreadLeftCSS();
+            }
+            else if (pageSpread === "right") {
+                syntheticPageCss = this.styles.getSvgPageSpreadRightCSS();
+            }
+            else if (pageSpread === "center") {
+                syntheticPageCss = this.styles.getSvgPageSpreadCenterCSS();
+            }
+            this.$el.css(syntheticPageCss);
         }
-        else if (pageSpread === "right") {
-            this.$el.css(this.styles.getPageSpreadRightCSS());
+        else {
+            if (pageSpread === "left") {
+                syntheticPageCss = this.styles.getPageSpreadLeftCSS();
+            }
+            else if (pageSpread === "right") {
+                syntheticPageCss = this.styles.getPageSpreadRightCSS();
+            }
+            else if (pageSpread === "center") {
+                syntheticPageCss = this.styles.getPageSpreadCenterCSS();
+            }
+            this.$el.css(syntheticPageCss);
+            this.setPageSize(true);
         }
-        else if (pageSpread === "center") {
-            this.$el.css(this.styles.getPageSpreadCenterCSS());
-        }
-        this.setPageSize();
     },
 
-    setPageSize : function () {
+    setPageSize : function (isSynthetic) {
 
         var $readerElement = this.$el.parent().parent();
         if (this.sizing !== undefined) {
 
             var transformCss;
             this.sizing.updateMetaSize();
-            transformCss = this.sizing.fitToScreen($readerElement.width(), $readerElement.height());
+            transformCss = this.sizing.fitToScreen($readerElement.width(), $readerElement.height(), isSynthetic);
             this.$el.css(transformCss);
         }
     },

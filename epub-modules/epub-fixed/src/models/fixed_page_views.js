@@ -27,7 +27,7 @@ EpubFixed.FixedPageViews = Backbone.Model.extend({
         }
 
         this.loadPageViews(viewerSettings);
-        this.renderAll(bindingElement, linkClickHandler, handlerContext);
+        this.renderAll(bindingElement, linkClickHandler, handlerContext, viewerSettings.syntheticLayout);
     },
 
     nextPage : function (twoUp, pageSetEventContext) {
@@ -153,7 +153,7 @@ EpubFixed.FixedPageViews = Backbone.Model.extend({
             }
             // SVG and all others
             else {
-                fixedPageView = that.initializeFixedPage(spineObject.pageSpread, spineObject.contentDocumentURI, viewerSettings);
+                fixedPageView = that.initializeFixedPage(spineObject.pageSpread, spineObject.fixedLayoutType, spineObject.contentDocumentURI, viewerSettings);
             }
 
             // Create info object
@@ -171,7 +171,7 @@ EpubFixed.FixedPageViews = Backbone.Model.extend({
 
     // REFACTORING CANDIDATE: the pageSetEventContext can be used to trigger the epubLoaded event; also, epubLoaded 
     //   should be renamed to something like pageSetLoaded.
-    renderAll : function (bindingElement, linkClickHandler, handlerContext) {
+    renderAll : function (bindingElement, linkClickHandler, handlerContext, isSynthetic) {
 
         var that = this;
         var numFixedPages = this.get("fixedPages").length;
@@ -189,7 +189,16 @@ EpubFixed.FixedPageViews = Backbone.Model.extend({
                 }
             });
             
-            that.addPageViewToDom(bindingElement, fixedPageViewInfo.fixedPageView.render(false, undefined, linkClickHandler, handlerContext));
+            that.addPageViewToDom(
+                bindingElement, 
+                fixedPageViewInfo.fixedPageView.render(
+                    false, 
+                    undefined, 
+                    linkClickHandler, 
+                    handlerContext,
+                    isSynthetic
+                )
+            );
         });
 
         setTimeout(function () { 
@@ -229,19 +238,20 @@ EpubFixed.FixedPageViews = Backbone.Model.extend({
                     });
     },
 
-    initializeFixedPage : function (pageSpread, iframeSrc, viewerSettings) {
+    initializeFixedPage : function (pageSpread, fixedLayoutType, iframeSrc, viewerSettings) {
 
         return new EpubFixed.FixedPageView({
                         pageSpread : pageSpread,
+                        fixedLayoutType : fixedLayoutType,
                         iframeSrc : iframeSrc,
                         viewerSettings : viewerSettings
                     });
     },
 
-    resizePageViews : function () {
+    resizePageViews : function (isSynthetic) {
 
         _.each(this.get("fixedPages"), function (fixedPageViewInfo) {
-            fixedPageViewInfo.fixedPageView.setPageSize();
+            fixedPageViewInfo.fixedPageView.setPageSize(isSynthetic);
         });
     }
 });

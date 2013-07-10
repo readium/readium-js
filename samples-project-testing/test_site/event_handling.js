@@ -69,6 +69,12 @@ RJSDemoApp.applyViewerHandlers = function (epubViewer, tocDocument) {
     $(tocDocument).find("a").on("click", function (e) {
         RJSDemoApp.tocLinkClicked(e);
     });
+
+    $(window).off("resize");
+    $(window).on("resize", function () {
+        RJSDemoApp.setModuleContainerHeight();
+        RJSDemoApp.resizeContent();
+    });
 };
 
 RJSDemoApp.epubLinkClicked = function (e) {

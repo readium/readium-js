@@ -19,16 +19,16 @@ EpubFixed.ImagePageView = Backbone.View.extend({
     },
 
     // REFACTORING CANDIDATE: Use page set event context to trigger the contentDocumentLoaded event
-    render : function (goToLast, elementIdToShow, linkClickHandler, handlerContext) {
+    render : function (goToLast, elementIdToShow, linkClickHandler, handlerContext, isSynthetic) {
 
         var that = this;
         $("img", this.$el).attr("src", this.imageSrc);
         this.$("img").on("load", function() { 
 
-            that.sizing = new EpubFixed.FixedSizing({ contentDocument : $("img", this.el)[0] });
+            that.sizing = new EpubFixed.FixedSizing({ contentDocument : $("img", that.el)[0] });
             // that.applyKeydownHandler($(view.iframe()));
             // that.mediaOverlayController.pagesLoaded();
-            that.setPageSize();
+            that.setPageSize(isSynthetic);
             that.trigger("contentDocumentLoaded");
         });
 
@@ -55,7 +55,7 @@ EpubFixed.ImagePageView = Backbone.View.extend({
 
         var transformCss;
         this.$el.css(this.styles.getSinglePageSpreadCSS());
-        this.setPageSize();
+        this.setPageSize(false);
     },
 
     setSyntheticPageSpreadStyle : function () {
@@ -71,17 +71,17 @@ EpubFixed.ImagePageView = Backbone.View.extend({
         else if (pageSpread === "center") {
             this.$el.css(this.styles.getPageSpreadCenterCSS());
         }
-        this.setPageSize();
+        this.setPageSize(true);
     },
 
-    setPageSize : function () {
+    setPageSize : function (isSynthetic) {
 
         var $readerElement = this.$el.parent().parent();
         if (this.sizing !== undefined) {
 
             var transformCss;
             this.sizing.updateMetaSize();
-            transformCss = this.sizing.fitToScreen($readerElement.width(), $readerElement.height());
+            transformCss = this.sizing.fitToScreen($readerElement.width(), $readerElement.height(), isSynthetic);
             this.$el.css(transformCss);
         }
     }

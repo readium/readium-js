@@ -46,7 +46,7 @@ EpubFixed.FixedSizing = Backbone.Model.extend({
         }
     },
 
-    fitToScreen : function (containerWidth, containerHeight) {
+    fitToScreen : function (containerWidth, containerHeight, isSynthetic) {
 
         var bookSize = this.metaSize;
         if (bookSize.width == 0) {
@@ -55,6 +55,9 @@ EpubFixed.FixedSizing = Backbone.Model.extend({
 
         var horScale = containerWidth / bookSize.width;
         var verScale = containerHeight / bookSize.height;
+        if (isSynthetic) {
+            horScale = horScale / 2;
+        }
 
         var scale = Math.min(horScale, verScale);
 

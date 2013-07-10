@@ -37,8 +37,8 @@ EpubFixed.FixedPaginationView = Backbone.View.extend({
 		return this.el;
 	},
 
-    // REFACTORING CANDIDATE: Might want these methods to be the goLeft and goRight methods, 
-    //   Also, at the moment, the page-turn events are triggered from the delegate, as well as 
+    // REFACTORING CANDIDATE: 
+    //   At the moment, the page-turn events are triggered from the delegate, as well as 
     //   checking of page boundry conditions. Not sure if this makes sense, or if it would be clearer
     //   if that stuff was in these two methods instead. 
 	nextPage : function () {
@@ -94,7 +94,7 @@ EpubFixed.FixedPaginationView = Backbone.View.extend({
 
     resizePageViews : function () {
 
-        this.fixedPageViews.resizePageViews();
+        this.fixedPageViews.resizePageViews(this.viewerSettings.syntheticLayout);
         this.createEpubBorder();
         this.trigger("displayedContentChanged");
     },

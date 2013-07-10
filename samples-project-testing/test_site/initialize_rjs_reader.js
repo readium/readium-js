@@ -1,7 +1,7 @@
 RJSDemoApp = {};
 
 RJSDemoApp.setModuleContainerHeight = function () {
-    $("#epub-reader-container").css({ "height" : $(document).height() * 0.85 + "px" });
+    $("#reader").css({ "height" : $(window).height() * 0.85 + "px" });
 };
 
 RJSDemoApp.parseXMLFromDOM = function (data) {
