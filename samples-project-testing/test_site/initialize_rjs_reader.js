@@ -68,6 +68,8 @@ require(['jquery', 'underscore', 'backbone', 'epub-fetch/epub_fetch_module', 'ep
                 } else {
                     var tocContentDocument = tocIframe.contentDocument;
                     tocContentDocument.replaceChild(navList.documentElement, tocContentDocument.documentElement);
+                    // load event doesn't trigger when replacing on the DOM level - need to trigger it artificially:
+                    $(tocIframe).trigger('load');
                 }
             }
         });
