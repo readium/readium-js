@@ -1,90 +1,104 @@
+require.config({
+    baseUrl: '../lib/',
+    shim: {
+        underscore: {
+            exports: '_'
+        },
+        backbone: {
+            deps: ['underscore', 'jquery'],
+            exports: 'Backbone'
+        }
+    },
+    paths: {
+        jquery: 'jquery-1.9.1',
+        underscore: 'underscore-1.4.4',
+        backbone: 'backbone-0.9.10'
+    }
+});
+
+// TODO: eliminate this global
 RJSDemoApp = {};
 
-RJSDemoApp.setModuleContainerHeight = function () {
-    $("#reader").css({ "height" : $(window).height() * 0.85 + "px" });
-};
 
-RJSDemoApp.parseXMLFromDOM = function (data) {
-    var serializer = new XMLSerializer();
-    var packageDocumentXML = serializer.serializeToString(data);
-    return packageDocumentXML;
-};
+require(['jquery', 'underscore', 'backbone', 'epub-fetch/epub_fetch_module', 'epub-parser/epub_parser_module',
+    'epub/epub_module', 'epub-reader/epub_reader_module', 'epub-ers/epub_reading_system', '../test_site/event_handling'
+], function ($, _, Backbone, EpubFetchModule, EpubParserModule, EpubModule, EpubReaderModule, EpubReadingSystem,
+             EventHandling) {
 
-RJSDemoApp.addLibraryList = function ($ulElementContainer, libraryJson) {
+        RJSDemoApp.setModuleContainerHeight = function () {
+        $("#reader").css({ "height": $(window).height() * 0.85 + "px" });
+    };
 
-    _.each(libraryJson.library_epubs, function (currEpub) {
+    RJSDemoApp.addLibraryList = function ($ulElementContainer, libraryJson) {
 
-        var $currLi = $('<li><a id="' + currEpub.url_to_package_doc + '" href="#">' + currEpub.title + '</a></li>');
-        $currLi.on("click", function () {
-            RJSDemoApp.loadAndRenderEpub(currEpub.url_to_package_doc, RJSDemoApp.viewerPreferences);
+        _.each(libraryJson.library_epubs, function (currEpub) {
+
+            var $currLi = $('<li><a id="' + currEpub.url_to_package_doc + '" href="#">' + currEpub.title + '</a></li>');
+            $currLi.on("click", function () {
+                RJSDemoApp.loadAndRenderEpub(currEpub.url_to_package_doc, RJSDemoApp.viewerPreferences);
+            });
+            $ulElementContainer.append($currLi);
         });
-        $ulElementContainer.append($currLi);
-    });
-};
+    };
 
-RJSDemoApp.addTOC = function (tocIframe) {
+    RJSDemoApp.addTOC = function (tocIframe) {
 
-    $(tocIframe).off("load");
+        $(tocIframe).off("load");
 
-    // On TOC load, add all the link handlers
-    if (!RJSDemoApp.epub.tocIsNcx()) {
+        // On TOC load, add all the link handlers
+        if (!RJSDemoApp.epub.tocIsNcx()) {
 
-        $(tocIframe).on("load", function () {
-            $(tocIframe).show();
-            RJSDemoApp.applyViewerHandlers(RJSDemoApp.epubViewer, $(tocIframe)[0].contentDocument);
-        });
-    }
+            $(tocIframe).on("load", function () {
+                $(tocIframe).show();
+                RJSDemoApp.applyViewerHandlers(RJSDemoApp.epubViewer, $(tocIframe)[0].contentDocument);
+            });
+        }
 
-    var tocUrl = RJSDemoApp.epub.getTocURL();
-    if (RJSDemoApp.epub.tocIsNcx()) {
+        var tocUrl = RJSDemoApp.epub.getTocURL();
 
-        $.ajax({
-
-            url : tocUrl,
-            success : function (result) {
-                var navList = RJSDemoApp.epub.generateTocListDOM(result);
+        RJSDemoApp.epub.generateTocListDOM(function (navList) {
+            if (RJSDemoApp.epub.tocIsNcx()) {
                 $(tocIframe).parent().append(navList);
                 $(tocIframe).hide();
                 RJSDemoApp.applyViewerHandlers(RJSDemoApp.epubViewer, $(tocIframe).parent()[0]);
+            } else {
+                if (RJSDemoApp.epubFetch.isPackageExploded()) {
+                    // With exploded documents, can simply set the TOC IFRAME's src
+                    $(tocIframe).attr("src", tocUrl);
+                } else {
+                    var tocContentDocument = tocIframe.contentDocument;
+                    tocContentDocument.replaceChild(navList.documentElement, tocContentDocument.documentElement);
+                }
             }
         });
-    }
-    else {
-        $(tocIframe).attr("src", tocUrl);
-    }
-};
+    };
 
-// This function will retrieve a package document and load an EPUB
-RJSDemoApp.loadAndRenderEpub = function (packageDocumentURL, viewerPreferences) {
+    // This function will retrieve a package document and load an EPUB
+    RJSDemoApp.loadAndRenderEpub = function (packageDocumentURL, viewerPreferences) {
 
-    var that = this;
+        var that = this;
 
-    // Clear the viewer, if it has been defined -> to load a new epub
-    RJSDemoApp.epubViewer = undefined;
+        // Clear the viewer, if it has been defined -> to load a new epub
+        RJSDemoApp.epubViewer = undefined;
 
-    // Get the package document and load the modules
-    $.ajax({
-        url : packageDocumentURL,
-        success : function (result) {
+        var jsLibDir = '../lib/';
 
-            // Get the HTML element to bind the module reader to
-            var elementToBindReaderTo = $("#reader")[0];
-            $(elementToBindReaderTo).html("");
+        // Get the HTML element to bind the module reader to
+        var elementToBindReaderTo = $("#reader")[0];
+        $(elementToBindReaderTo).html("");
 
-            if (result.nodeType) {
-                result = RJSDemoApp.parseXMLFromDOM(result);
-            }
+        RJSDemoApp.epubFetch = new EpubFetchModule({
+            packageDocumentURL: packageDocumentURL,
+            libDir: jsLibDir
+        });
+        RJSDemoApp.epubParser = new EpubParserModule(RJSDemoApp.epubFetch);
 
-            // THE MOST IMPORTANT PART - INITIALIZING THE SIMPLE RWC MODEL
-            var packageDocumentXML = result;
-            RJSDemoApp.epubParser = new EpubParserModule(packageDocumentURL, packageDocumentXML);
-            var packageDocumentObject = RJSDemoApp.epubParser.parse();
-            RJSDemoApp.epub = new EpubModule(packageDocumentObject, packageDocumentXML);
+        RJSDemoApp.epubParser.parse(function (packageDocumentObject) {
+            RJSDemoApp.epub = new EpubModule(packageDocumentObject, RJSDemoApp.epubFetch);
             var spineInfo = RJSDemoApp.epub.getSpineInfo();
 
-            RJSDemoApp.epubViewer = new EpubReaderModule(
-                elementToBindReaderTo, spineInfo, viewerPreferences, RJSDemoApp.epub.getPackageDocumentDOM(), "lazy"
-            );
+            RJSDemoApp.epubViewer =
+                new EpubReaderModule(elementToBindReaderTo, spineInfo, viewerPreferences, RJSDemoApp.epubFetch, "lazy");
 
             // Set the TOC
             RJSDemoApp.addTOC($("#toc-iframe")[0]);
@@ -93,13 +107,67 @@ RJSDemoApp.loadAndRenderEpub = function (packageDocumentURL, viewerPreferences) 
 
             // Set a fixed height for the epub viewer container, as a function of the document height
             RJSDemoApp.setModuleContainerHeight();
-            RJSDemoApp.epubViewer.on("epubLoaded", function () { 
+            RJSDemoApp.epubViewer.on("epubLoaded", function () {
                 RJSDemoApp.epubViewer.showFirstPage(function () {
-                    console.log("showed first spine item"); 
+                    console.log("showed first spine item");
                 });
             }, that);
-			
+
             RJSDemoApp.epubViewer.render(0);
-        }
+
+        });
+    };
+
+    loadInitialEpub($)
+
+});
+
+function loadInitialEpub($) {
+
+    $(document).ready(function () {
+
+        // Create an object of viewer preferences
+        RJSDemoApp.viewerPreferences = {
+            fontSize: 12,
+            syntheticLayout: false,
+            currentMargin: 0,
+            tocVisible: false,
+            currentTheme: "default",
+            libraryIsVisible: true,
+            tocIsVisible: false,
+            day: true
+        };
+
+        // Load Moby Dick by default
+        RJSDemoApp.loadAndRenderEpub("../epub_samples_project/moby-dick-20120118/OPS/package.opf", RJSDemoApp.viewerPreferences);
+
+        // Generate the library
+        $.getJSON('../available_epubs/epub_library_info.json',function (data) {
+
+            // Generate the library list in a drop-down
+            RJSDemoApp.addLibraryList($("#library-list"), data);
+        }).fail(function (result) {
+                console.log("The library could not be loaded");
+            });
     });
-};
+
+    // Note: the epubReadingSystem object may not be ready when directly using the
+    // window.onload callback function (from within an (X)HTML5 EPUB3 content document's Javascript code)
+    // To address this issue, the recommended code is:
+    // -----
+    function doSomething() {
+        console.log(navigator.epubReadingSystem);
+    };
+    //
+    // // With jQuery:
+    // $(document).ready(function () { setTimeout(doSomething, 200); });
+    //
+    // // With the window "load" event:
+    // window.addEventListener("load", function () { setTimeout(doSomething, 200); }, false);
+    //
+    // // With the modern document "DOMContentLoaded" event:
+    document.addEventListener("DOMContentLoaded", function (e) {
+        setTimeout(doSomething, 200);
+    }, false);
+    // -----
+}

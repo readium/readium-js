@@ -16,7 +16,7 @@ src_files:
     - lib/json2.js
     - lib/underscore-1.4.4.js
     - lib/backbone-0.9.10.js
-    - lib/URI-1.10.0.js
+    - lib/URI.js
     - src/**/*.js
     - lib/epub_cfi.js
     - lib/epub_reflowable_module.js

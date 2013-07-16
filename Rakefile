@@ -10,6 +10,7 @@ def gen_simple_api_consolidated(template_file_path, output_file_path)
     
     epub_reading_system = File.read('epub-modules/development/epub_reading_system.js')
     epubcfi = File.read('epub-modules/development/epub_cfi.js')
+    epub_fetch = File.read('epub-modules/development/epub_fetch_module.js')
     epub_reflowable = File.read('epub-modules/development/epub_reflowable_module.js')
     epub_fixed = File.read('epub-modules/development/epub_fixed_module.js')
     epub_parser = File.read('epub-modules/development/epub_parser_module.js')
@@ -30,6 +31,7 @@ def gen_simple_api_non_consolidated(template_file_path, output_file_path)
   
     epub_reading_system = ""
     epubcfi = ""
+    epub_fetch = ""
     epub_reflowable = ""
     epub_fixed = ""
     epub_parser = ""
@@ -64,7 +66,9 @@ task :create_release do
     `zip epub-modules/release/SimpleReadium.js.zip epub-modules/development/SimpleReadium.js`
 end
 
-task :gen_all_modules do 
+directory "epub-modules/development"
+
+task :gen_all_modules => "epub-modules/development" do 
     puts ":gen_all_modules"
 
     puts "epub_reading_system.js"
@@ -72,6 +76,7 @@ task :gen_all_modules do
     
     puts `rake -f epub-modules/epub/Rakefile gen_module`
     puts `rake -f epub-modules/epub-cfi/Rakefile gen_module`
+    puts `rake -f epub-modules/epub-fetch/Rakefile gen_module`
     puts `rake -f epub-modules/epub-fixed/Rakefile gen_module`
     puts `rake -f epub-modules/epub-parser/Rakefile gen_module`
     puts `rake -f epub-modules/epub-reader/Rakefile gen_module`
@@ -83,6 +88,7 @@ task :copy_all_dependencies do
 
     puts `rake -f epub-modules/epub/Rakefile copy_dependencies`
     puts `rake -f epub-modules/epub-cfi/Rakefile copy_dependencies`
+    puts `rake -f epub-modules/epub-fetch/Rakefile copy_dependencies`
     puts `rake -f epub-modules/epub-fixed/Rakefile copy_dependencies`
     puts `rake -f epub-modules/epub-parser/Rakefile copy_dependencies`
     puts `rake -f epub-modules/epub-reader/Rakefile copy_dependencies`

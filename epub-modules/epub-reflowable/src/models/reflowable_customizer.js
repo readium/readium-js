@@ -1,33 +1,37 @@
-EpubReflowable.ReflowableCustomizer = Backbone.Model.extend({
+define(
+    ['require', 'module', 'jquery', 'underscore', 'backbone', './reflowable_custom_border', './reflowable_custom_theme'
+    ], function (require, module, $, _, Backbone, ReflowableCustomBorder, ReflowableCustomTheme) {
 
-    initialize : function (attributes, options) {
+        var ReflowableCustomizer = Backbone.Model.extend({
 
-        this.$parentEl = $(this.get("parentElement"));
-        this.set("customBorder", new EpubReflowable.ReflowableCustomBorder({ targetElement : this.get("readiumFlowingContent") }));
-        this.set("customTheme", new EpubReflowable.ReflowableCustomTheme({ iframeElement : this.get("readiumFlowingContent") }));
-    },
+            initialize: function (attributes, options) {
 
-    // ----- PUBLIC INTERFACE -------------------------------------------------------------------
+                this.$parentEl = $(this.get("parentElement"));
+                this.set("customBorder",
+                    new ReflowableCustomBorder({ targetElement: this.get("readiumFlowingContent") }));
+                this.set("customTheme",
+                    new ReflowableCustomTheme({ iframeElement: this.get("readiumFlowingContent") }));
+            },
 
-    setCustomStyle : function (customProperty, styleNameOrCSS) {
+            // ----- PUBLIC INTERFACE -------------------------------------------------------------------
 
-        if (customProperty === "reflowable-epub-border" || customProperty === "epub-border") {
-            this.get("customBorder").setCurrentStyle(styleNameOrCSS);
-        }
-        else if (customProperty === "reflowable-spine-divider" || customProperty === "spine-divider") {
-            this.get("spineDividerStyleView").setCurrentStyle(styleNameOrCSS);
-        }
-        else if (customProperty === "reflowable-page-border" || customProperty === "page-border") {
-            this.get("customBorder").setCurrentStyle(styleNameOrCSS);
-            this.get("spineDividerStyleView").setCurrentStyle(styleNameOrCSS);
-        }
-        else if (customProperty === "reflowable-page-theme") {
-            this.get("customTheme").setCurrentStyle(styleNameOrCSS);
-        }
-        else if (customProperty === "alt-style-tag") {
-            this.get("customTheme").setAlternateStyleTag(styleNameOrCSS, this.get("epubContentDocument"));
-        }
-    }
+            setCustomStyle: function (customProperty, styleNameOrCSS) {
 
-    // ----- PRIVATE HELPERS -------------------------------------------------------------------
-});
+                if (customProperty === "reflowable-epub-border" || customProperty === "epub-border") {
+                    this.get("customBorder").setCurrentStyle(styleNameOrCSS);
+                } else if (customProperty === "reflowable-spine-divider" || customProperty === "spine-divider") {
+                    this.get("spineDividerStyleView").setCurrentStyle(styleNameOrCSS);
+                } else if (customProperty === "reflowable-page-border" || customProperty === "page-border") {
+                    this.get("customBorder").setCurrentStyle(styleNameOrCSS);
+                    this.get("spineDividerStyleView").setCurrentStyle(styleNameOrCSS);
+                } else if (customProperty === "reflowable-page-theme") {
+                    this.get("customTheme").setCurrentStyle(styleNameOrCSS);
+                } else if (customProperty === "alt-style-tag") {
+                    this.get("customTheme").setAlternateStyleTag(styleNameOrCSS, this.get("epubContentDocument"));
+                }
+            }
+
+            // ----- PRIVATE HELPERS -------------------------------------------------------------------
+        });
+        return ReflowableCustomizer;
+    });

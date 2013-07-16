@@ -1,64 +1,70 @@
 // Description: This is a set of runtime errors that the CFI interpreter can throw. 
 // Rationale: These error types extend the basic javascript error object so error things like the stack trace are 
 //   included with the runtime errors. 
+define(['require', 'module'], function (require, module) {
 
-// REFACTORING CANDIDATE: This type of error may not be required in the long run. The parser should catch any syntax errors, 
-//   provided it is error-free, and as such, the AST should never really have any node type errors, which are essentially errors
-//   in the structure of the AST. This error should probably be refactored out when the grammar and interpreter are more stable.
-EPUBcfi.NodeTypeError = function (node, message) {
+    var CFIErrors = {};
 
-    function NodeTypeError () {
+    // REFACTORING CANDIDATE: This type of error may not be required in the long run. The parser should catch any syntax errors,
+    //   provided it is error-free, and as such, the AST should never really have any node type errors, which are essentially errors
+    //   in the structure of the AST. This error should probably be refactored out when the grammar and interpreter are more stable.
+    CFIErrors.NodeTypeError = function (node, message) {
 
-        this.node = node;
-    }
+        function NodeTypeError () {
 
-    NodeTypeError.prototype = new Error(message);
-    NodeTypeError.constructor = NodeTypeError;
+            this.node = node;
+        }
 
-    return new NodeTypeError();
-};
+        NodeTypeError.prototype = new Error(message);
+        NodeTypeError.constructor = NodeTypeError;
 
-// REFACTORING CANDIDATE: Might make sense to include some more specifics about the out-of-rangeyness.
-EPUBcfi.OutOfRangeError = function (targetIndex, maxIndex, message) {
+        return new NodeTypeError();
+    };
 
-    function OutOfRangeError () {
+    // REFACTORING CANDIDATE: Might make sense to include some more specifics about the out-of-rangeyness.
+    CFIErrors.OutOfRangeError = function (targetIndex, maxIndex, message) {
 
-        this.targetIndex = targetIndex;
-        this.maxIndex = maxIndex;
-    }
+        function OutOfRangeError () {
 
-    OutOfRangeError.prototype = new Error(message);
-    OutOfRangeError.constructor = OutOfRangeError()
+            this.targetIndex = targetIndex;
+            this.maxIndex = maxIndex;
+        }
 
-    return new OutOfRangeError();
-};
+        OutOfRangeError.prototype = new Error(message);
+        OutOfRangeError.constructor = OutOfRangeError()
 
-// REFACTORING CANDIDATE: This is a bit too general to be useful. When I have a better understanding of the type of errors
-//   that can occur with the various terminus conditions, it'll make more sense to revisit this. 
-EPUBcfi.TerminusError = function (terminusType, terminusCondition, message) {
+        return new OutOfRangeError();
+    };
 
-    function TerminusError () {
+    // REFACTORING CANDIDATE: This is a bit too general to be useful. When I have a better understanding of the type of errors
+    //   that can occur with the various terminus conditions, it'll make more sense to revisit this.
+    CFIErrors.TerminusError = function (terminusType, terminusCondition, message) {
 
-        this.terminusType = terminusType;
-        this.terminusCondition = terminusCondition;
-    }
+        function TerminusError () {
 
-    TerminusError.prototype = new Error(message);
-    TerminusError.constructor = TerminusError();
+            this.terminusType = terminusType;
+            this.terminusCondition = terminusCondition;
+        }
 
-    return new TerminusError();
-};
+        TerminusError.prototype = new Error(message);
+        TerminusError.constructor = TerminusError();
 
-EPUBcfi.CFIAssertionError = function (expectedAssertion, targetElementAssertion, message) {
+        return new TerminusError();
+    };
 
-    function CFIAssertionError () {
+    CFIErrors.CFIAssertionError = function (expectedAssertion, targetElementAssertion, message) {
 
-        this.expectedAssertion = expectedAssertion;
-        this.targetElementAssertion = targetElementAssertion;
-    }
+        function CFIAssertionError () {
 
-    CFIAssertionError.prototype = new Error(message);
-    CFIAssertionError.constructor = CFIAssertionError();
+            this.expectedAssertion = expectedAssertion;
+            this.targetElementAssertion = targetElementAssertion;
+        }
 
-    return new CFIAssertionError();
-};
+        CFIAssertionError.prototype = new Error(message);
+        CFIAssertionError.constructor = CFIAssertionError();
+
+        return new CFIAssertionError();
+    };
+
+    return CFIErrors;
+});

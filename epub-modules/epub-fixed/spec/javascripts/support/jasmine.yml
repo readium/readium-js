@@ -14,7 +14,7 @@ src_files:
     - spec/javascripts/test_namespace.js
     - lib/jquery-1.9.1.js
     - lib/json2.js
-    - lib/URI-1.10.0.js
+    - lib/URI.js
     - lib/modernizr-2.5.3.min.js
     - lib/underscore-1.4.4.js
     - lib/backbone-0.9.10.js

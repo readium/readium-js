@@ -1,3 +1,4 @@
+task :default => [:copy_dependencies]
 
 def get_module_name
     return "samples-project-testing"
@@ -11,36 +12,53 @@ def get_parent_directory
     return File.expand_path("..", File.dirname(__FILE__))
 end
 
-task :copy_dependencies do
+
+library_directory = get_this_directory() + '/lib'
+
+require 'rake/clean'
+CLEAN.include(library_directory)
+
+
+directory library_directory
+
+task :copy_dependencies => [ 'clean', library_directory ] do
   
   module_name = get_module_name()
   puts ":copy_dependencies => #{module_name}"
   
   path_to_this_dir = get_this_directory()
+
   
   parent_dir = get_parent_directory()
 
   # Import other dependencies
   lib_dependency_filenames = [
+      "require.js",
       "jquery-1.9.1.js",
       "json2.js",
       "underscore-1.4.4.js",
       "backbone-0.9.10.js",
-      "URI-1.10.0.js",
+      "URIjs",
       "modernizr-2.5.3.min.js",
-      "bootstrap.min.js"
+      "bootstrap.min.js",
+      "deflate.js",
+      "inflate.js",
+      "mime-types.js",
+      "zip-ext.js",
+      "zip-fs.js",
+      "zip.js"
   ]
 
-  module_dependency_filenames = [
-    "epub_cfi.js",
-    "epub_module.js",
-    "epub_reader_module.js",
-    "epub_reflowable_module.js",
-    "epub_fixed_module.js",
-    "epub_parser_module.js",
-    "epub_reading_system.js",
-    "SimpleReadium.js",
-    "SimpleReadium_Dev.js"
+  module_dependency_names = [
+    "epub-cfi",
+    "epub",
+    "epub-reader",
+    "epub-fetch",
+    "epub-reflowable",
+    "epub-fixed",
+    "epub-parser",
+    "epub-ers",
+    "simple-readium-js"
   ]
 
   # Get all the lib dependencies
@@ -50,9 +68,9 @@ task :copy_dependencies do
   end
 
   # Get all the epub module dependencies
-  module_dependency_filenames.each do |filename|
-      puts "---> #{filename}"
-      `cp -a "#{parent_dir}/epub-modules/development/#{filename}" "#{path_to_this_dir}/lib/#{filename}"`
+  module_dependency_names.each do |modname|
+      puts "---> #{modname}"
+      `cp -a "#{parent_dir}/epub-modules/#{modname}/src" "#{path_to_this_dir}/lib/#{modname}"`
   end    
 end
 

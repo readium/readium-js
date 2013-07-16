@@ -1,119 +1,110 @@
-EpubReflowable.ReflowablePagination = Backbone.Model.extend({ 
+define(['require', 'module', 'jquery', 'underscore', 'backbone', './reflowable_page_number_logic'],
+    function (require, module, $, _, Backbone, ReflowablePageNumberLogic) {
 
-    defaults : {
-        "numberOfPages" : 0,
-        "currentPages" : [1]
-    },
+        var ReflowablePagination = Backbone.Model.extend({
 
-    // ------------------------------------------------------------------------------------ //
-    //  "PUBLIC" METHODS (THE API)                                                          //
-    // ------------------------------------------------------------------------------------ //
+            defaults: {
+                "numberOfPages": 0,
+                "currentPages": [1]
+            },
 
-    initialize : function () {
+            // ------------------------------------------------------------------------------------ //
+            //  "PUBLIC" METHODS (THE API)                                                          //
+            // ------------------------------------------------------------------------------------ //
 
-        // Instantiate an object responsible for deciding which pages to display
-        this.pageNumberDisplayLogic = new EpubReflowable.ReflowablePageNumberLogic();
-        
-        // Rationale: Need to adjust the page number to the last page if, when the number of pages changes, the current
-        //   page is greater than the number of changes. 
-        // Probably a memory leak here, should add a destructor
-        this.on("change:numberOfPages", this.adjustCurrentPage, this);
-    },
+            initialize: function () {
 
-    onFirstPage : function () {
+                // Instantiate an object responsible for deciding which pages to display
+                this.pageNumberDisplayLogic = new ReflowablePageNumberLogic();
 
-        // Rationale: Need to check for both single and synthetic page spread
-        var oneOfCurrentPagesIsFirstPage = this.get("currentPages")[0] === 1 ? true :
-                                           this.get("currentPages")[1] === 1 ? true : false;
+                // Rationale: Need to adjust the page number to the last page if, when the number of pages changes, the current
+                //   page is greater than the number of changes.
+                // Probably a memory leak here, should add a destructor
+                this.on("change:numberOfPages", this.adjustCurrentPage, this);
+            },
 
-        if (oneOfCurrentPagesIsFirstPage) {
-            return true;
-        }
-        else {
-            return false;
-        }
-    },
+            onFirstPage: function () {
 
-    onLastPage : function () {
+                // Rationale: Need to check for both single and synthetic page spread
+                var oneOfCurrentPagesIsFirstPage = this.get("currentPages")[0] === 1 ? true :
+                    this.get("currentPages")[1] === 1 ? true : false;
 
-        // Rationale: Need to check for both single and synthetic page spread
-        var oneOfCurrentPagesIsLastPage = this.get("currentPages")[0] === this.get("numberOfPages") ? true :
-                                          this.get("currentPages")[1] === this.get("numberOfPages") ? true : false;
+                if (oneOfCurrentPagesIsFirstPage) {
+                    return true;
+                } else {
+                    return false;
+                }
+            },
 
-        if (oneOfCurrentPagesIsLastPage) {
-            return true;
-        }
-        else {
-            return false;
-        }
-    },
+            onLastPage: function () {
 
-    toggleTwoUp : function (twoUp, firstPageIsOffset) { 
+                // Rationale: Need to check for both single and synthetic page spread
+                var oneOfCurrentPagesIsLastPage = this.get("currentPages")[0] === this.get("numberOfPages") ? true :
+                    this.get("currentPages")[1] === this.get("numberOfPages") ? true : false;
 
-        // if (this.epubController.epub.get("can_two_up")) {
+                if (oneOfCurrentPagesIsLastPage) {
+                    return true;
+                } else {
+                    return false;
+                }
+            },
 
-        var layoutPageNumbers = this.pageNumberDisplayLogic.getToggledLayoutPageNumbers(
-            this.get("currentPages"),
-            firstPageIsOffset
-        );
-        if (!twoUp) {
-            layoutPageNumbers = this.adjustForMaxPageNumber(layoutPageNumbers);
-        }
-        this.set("currentPages", layoutPageNumbers);
-        // }   
-    },
+            toggleTwoUp: function (twoUp, firstPageIsOffset) {
 
-    prevPage : function (twoUp) {
+                // if (this.epubController.epub.get("can_two_up")) {
 
-        var previousPageNumbers = this.pageNumberDisplayLogic.getPreviousPageNumbers(
-                                    this.get("currentPages"),
-                                    twoUp
-                                  );
-        this.set("currentPages", previousPageNumbers);
-    },
+                var layoutPageNumbers = this.pageNumberDisplayLogic.getToggledLayoutPageNumbers(this.get("currentPages"),
+                    firstPageIsOffset);
+                if (!twoUp) {
+                    layoutPageNumbers = this.adjustForMaxPageNumber(layoutPageNumbers);
+                }
+                this.set("currentPages", layoutPageNumbers);
+                // }
+            },
 
-    nextPage : function (twoUp) {
+            prevPage: function (twoUp) {
 
-        var nextPageNumbers = this.pageNumberDisplayLogic.getNextPageNumbers(
-                                this.get("currentPages"),
-                                twoUp
-                              );
-        this.set("currentPages", nextPageNumbers);
-    },
+                var previousPageNumbers = this.pageNumberDisplayLogic.getPreviousPageNumbers(this.get("currentPages"),
+                    twoUp);
+                this.set("currentPages", previousPageNumbers);
+            },
 
-    goToPage : function (pageNumber, twoUp, firstPageIsOffset) {
+            nextPage: function (twoUp) {
 
-        var gotoPageNumbers = this.pageNumberDisplayLogic.getPageNumbers(
-                            pageNumber,
-                            twoUp,
-                            firstPageIsOffset
-                            );
-        this.set("currentPages", gotoPageNumbers);
-    },
+                var nextPageNumbers = this.pageNumberDisplayLogic.getNextPageNumbers(this.get("currentPages"), twoUp);
+                this.set("currentPages", nextPageNumbers);
+            },
 
-    resetCurrentPages : function () {
+            goToPage: function (pageNumber, twoUp, firstPageIsOffset) {
 
-        var originalPageNumbers = this.get("currentPages");
-        var adjustedPageNumbers = this.adjustForMaxPageNumber(originalPageNumbers);
+                var gotoPageNumbers = this.pageNumberDisplayLogic.getPageNumbers(pageNumber, twoUp, firstPageIsOffset);
+                this.set("currentPages", gotoPageNumbers);
+            },
 
-        if (adjustedPageNumbers !== originalPageNumbers) {
-            this.set("currentPages", adjustedPageNumbers);
-        }
-    },
+            resetCurrentPages: function () {
 
-    // ------------------------------------------------------------------------------------ //  
-    //  "PRIVATE" HELPERS                                                                   //
-    // ------------------------------------------------------------------------------------ //
-    adjustForMaxPageNumber : function (newPageNumbers) {
+                var originalPageNumbers = this.get("currentPages");
+                var adjustedPageNumbers = this.adjustForMaxPageNumber(originalPageNumbers);
 
-        var currentPages = this.get("currentPages");
-        var numberOfPages = this.get("numberOfPages");
+                if (adjustedPageNumbers !== originalPageNumbers) {
+                    this.set("currentPages", adjustedPageNumbers);
+                }
+            },
 
-        if (newPageNumbers[0] > numberOfPages) {
-            return [numberOfPages];
-        }
-        else {
-            return newPageNumbers;
-        }
-    }
-});
+            // ------------------------------------------------------------------------------------ //
+            //  "PRIVATE" HELPERS                                                                   //
+            // ------------------------------------------------------------------------------------ //
+            adjustForMaxPageNumber: function (newPageNumbers) {
+
+                var currentPages = this.get("currentPages");
+                var numberOfPages = this.get("numberOfPages");
+
+                if (newPageNumbers[0] > numberOfPages) {
+                    return [numberOfPages];
+                } else {
+                    return newPageNumbers;
+                }
+            }
+        });
+        return ReflowablePagination;
+    });
