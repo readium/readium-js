@@ -253,6 +253,10 @@
             "url_to_package_doc" : "../additional_samples/toc_link_jp/OEBPS/toclink.opf"
         },
         {
+            "title" : "internal_link.epub",
+            "url_to_package_doc" : "../additional_samples/internal_link.epub"
+        },
+        {
             "title" : "accessible_epub_3-20121024.epub",
             "url_to_package_doc" : "../epub_samples_project/accessible_epub_3-20121024.epub"
         },
