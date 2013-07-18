@@ -1,5 +1,5 @@
-define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-reflowable/epub_reflowable_module',
-    'epub-fixed/epub_fixed_module'], function (require, module, $, _, Backbone, EpubReflowableModule, EpubFixedModule) {
+define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub_reflowable_module', 'epub_fixed_module'],
+    function (require, module, $, _, Backbone, EpubReflowableModule, EpubFixedModule) {
 
     var LoadStrategy = Backbone.Model.extend({
 

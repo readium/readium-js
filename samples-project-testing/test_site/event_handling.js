@@ -1,4 +1,4 @@
-require(['jquery'], function ($) {
+define(['jquery'], function ($) {
 
     console.log('Event handling initialization...');
 
@@ -201,5 +201,5 @@ require(['jquery'], function ($) {
             RJSDemoApp.viewerPreferences.day = true;
         }
     };
-
+    return RJSDemoApp;
 });

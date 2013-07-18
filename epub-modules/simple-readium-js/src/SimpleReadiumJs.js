@@ -1,6 +1,6 @@
-define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/epub_fetch_module',
-    'epub-parser/epub_parser_module', 'epub/epub_module', 'epub-reader/epub_reader_module',
-    'epub-ers/epub_reading_system'],
+define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub_fetch_module',
+    'epub_parser_module', 'epub_module', 'epub_reader_module',
+    'epub_reading_system'],
     function (require, module, $, _, Backbone, EpubFetchModule, EpubParserModule, EpubModule, EpubReaderModule,
               EpubReadingSystem) {
         /**

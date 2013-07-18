@@ -1,3 +1,25 @@
+var pathsSimpleReadium = {
+    jquery: 'jquery-1.9.1',
+    underscore: 'underscore-1.4.4',
+    backbone: 'backbone-0.9.10',
+    SimpleReadiumJs: 'simple-readium-js/SimpleReadiumJs.min'
+};
+
+var pathsSeparateEpubModules = {
+    jquery: 'jquery-1.9.1',
+    underscore: 'underscore-1.4.4',
+    backbone: 'backbone-0.9.10',
+    'cfi_module': 'epub-cfi/cfi_module.min',
+    'epub_fetch_module': 'epub-fetch/epub_fetch_module.min',
+    'epub_parser_module': 'epub-parser/epub_parser_module.min',
+    'epub_module': 'epub/epub_module.min',
+    'epub_reader_module': 'epub-reader/epub_reader_module.min',
+    'epub_module': 'epub/epub_module.min',
+    'epub_fixed_module': 'epub-fixed/epub_fixed_module.min',
+    'epub_reflowable_module': 'epub-reflowable/epub_reflowable_module.min',
+    'epub_reading_system': 'epub-ers/epub_reading_system.min'
+};
+
 require.config({
     baseUrl: '../lib/',
     shim: {
@@ -9,23 +31,18 @@ require.config({
             exports: 'Backbone'
         }
     },
-    paths: {
-        jquery: 'jquery-1.9.1',
-        underscore: 'underscore-1.4.4',
-        backbone: 'backbone-0.9.10'
-    }
+    paths: pathsSeparateEpubModules
 });
 
 // TODO: eliminate this global
 RJSDemoApp = {};
 
 
-require(['jquery', 'underscore', 'backbone', 'epub-fetch/epub_fetch_module', 'epub-parser/epub_parser_module',
-    'epub/epub_module', 'epub-reader/epub_reader_module', 'epub-ers/epub_reading_system', '../test_site/event_handling'
-], function ($, _, Backbone, EpubFetchModule, EpubParserModule, EpubModule, EpubReaderModule, EpubReadingSystem,
-             EventHandling) {
+require(['jquery', 'underscore', 'epub_fetch_module', 'epub_parser_module',
+    'epub_module', 'epub_reader_module', 'epub_reading_system', '../test_site/event_handling'
+], function ($, _, EpubFetchModule, EpubParserModule, EpubModule, EpubReaderModule, EpubReadingSystem, EventHandling) {
 
-        RJSDemoApp.setModuleContainerHeight = function () {
+    RJSDemoApp.setModuleContainerHeight = function () {
         $("#reader").css({ "height": $(window).height() * 0.85 + "px" });
     };
 

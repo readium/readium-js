@@ -28,10 +28,31 @@ CLEAN.include(out_dir)
 directory out_dir
 
 desc "generate #{module_name} module"
-task :gen_module => ['clean', out_dir] do
+task :gen_module => ['epub_reader:gen_module', 'epub_fetch:gen_module', 'epub_parser:gen_module', 'epub:gen_module', 'epub_ers:gen_module', 'clean', out_dir] do
 
   optimizer_file_path = "#{module_dir}/../../build/r.js"
-  sh "node #{optimizer_file_path} -o #{module_dir}/build.js name=#{module_file_name} baseUrl=#{src_dir} optimize=none"\
+  sh "node #{optimizer_file_path} -o #{module_dir}/build.js name=#{module_file_name} baseUrl=#{src_dir} "\
   " out=#{out_dir}/#{module_file_name}.min.js"
 
 end
+
+namespace "epub_reader" do
+  load "#{module_dir}/../epub-reader/Rakefile"
+end
+
+namespace "epub_fetch" do
+  load "#{module_dir}/../epub-fetch/Rakefile"
+end
+
+namespace "epub_parser" do
+  load "#{module_dir}/../epub-parser/Rakefile"
+end
+
+namespace "epub" do
+  load "#{module_dir}/../epub/Rakefile"
+end
+
+namespace "epub_ers" do
+  load "#{module_dir}/../epub-ers/Rakefile"
+end
+

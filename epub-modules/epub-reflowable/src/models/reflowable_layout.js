@@ -1,4 +1,4 @@
-define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-cfi/cfi_module', './trigger'],
+define(['require', 'module', 'jquery', 'underscore', 'backbone', 'cfi_module', './trigger'],
     function (require, module, $, _, Backbone, EpubCFIModule, Trigger) {
 
         var ReflowableLayout = Backbone.Model.extend({

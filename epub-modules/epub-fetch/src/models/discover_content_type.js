@@ -1,4 +1,4 @@
-define(['require', 'module', 'jquery', 'URIjs/URI'], function (require, module, $, URI) {
+define(['require', 'module', 'jquery', 'backbone', 'URIjs/URI'], function (require, module, $, Backbone, URI) {
     console.log('discover_content_type module id: ' + module.id);
 
     var ContentTypeDiscovery = Backbone.Model.extend({

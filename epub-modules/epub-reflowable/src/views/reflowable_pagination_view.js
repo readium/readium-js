@@ -1,4 +1,4 @@
-define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-cfi/cfi_module', '../models/reflowable_layout',
+define(['require', 'module', 'jquery', 'underscore', 'backbone', 'cfi_module', '../models/reflowable_layout',
     '../models/reflowable_paginator', '../models/reflowable_element_info', '../models/reflowable_pagination',
     '../models/reflowable_annotations', '../models/reflowable_customizer', './reflowable_spine_divider_view'],
     function (require, module, $, _, Backbone, EpubCFIModule, ReflowableLayout, ReflowablePaginator,

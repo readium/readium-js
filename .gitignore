@@ -10,4 +10,5 @@ epub-modules/epub-reflowable/min/
 epub-modules/epub-fixed/min/
 epub-modules/epub-fetch/min/
 epub-modules/epub-parser/min/
+epub-modules/epub-ers/min/
 epub-modules/simple-readium-js/min/

@@ -1,4 +1,4 @@
-define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-cfi/cfi_module'],
+define(['require', 'module', 'jquery', 'underscore', 'backbone', 'cfi_module'],
     function (require, module, $, _, Backbone, EpubCFIModule) {
 
         var ReflowableAnnotations = Backbone.Model.extend({

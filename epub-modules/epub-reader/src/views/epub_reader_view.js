@@ -1,4 +1,4 @@
-define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-cfi/cfi_module', '../models/epub_reader'],
+define(['require', 'module', 'jquery', 'underscore', 'backbone', 'cfi_module', '../models/epub_reader'],
     function (require, module, $, _, Backbone, EpubCFIModule, EpubReader) {
 
     var EpubReaderView = Backbone.View.extend({
