@@ -12,6 +12,28 @@ RJSDemoApp.applyToolbarHandlers = function () {
         RJSDemoApp.toggleTOCPanel();
     });
 
+	// Decrease font size
+	(function() {
+		var $decreaseFont = $("#decrease-font-btn");
+
+		$decreaseFont.off("click");
+		$decreaseFont.on("click", function() {
+			var settings = RJSDemoApp.epubViewer.getViewerSettings()
+			RJSDemoApp.epubViewer.setFontSize(settings.fontSize - 2);
+		});
+	})();
+
+	// Increase font size
+	(function() {
+		var $increaseFont = $("#increase-font-btn");
+
+		$increaseFont.off("click");
+		$increaseFont.on("click", function() {
+			var settings = RJSDemoApp.epubViewer.getViewerSettings()
+			RJSDemoApp.epubViewer.setFontSize(settings.fontSize + 2);
+		});
+	})();
+
     // Prev
     // Remove any existing click handlers
     $("#previous-page-btn").off("click");
