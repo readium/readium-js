@@ -251,6 +251,158 @@
         {
             "title" : "toc_link_jp",
             "url_to_package_doc" : "../additional_samples/toc_link_jp/OEBPS/toclink.opf"
+        },
+        {
+            "title" : "internal_link.epub",
+            "url_to_package_doc" : "../additional_samples/internal_link.epub"
+        },
+        {
+            "title" : "accessible_epub_3-20121024.epub",
+            "url_to_package_doc" : "../epub_samples_project/accessible_epub_3-20121024.epub"
+        },
+        {
+            "title" : "cc-shared-culture-20120130.epub",
+            "url_to_package_doc" : "../epub_samples_project/cc-shared-culture-20120130.epub"
+        },
+        {
+            "title" : "childrens-literature-20120722.epub",
+            "url_to_package_doc" : "../epub_samples_project/childrens-literature-20120722.epub"
+        },
+        {
+            "title" : "childrens-media-query-20120412.epub",
+            "url_to_package_doc" : "../epub_samples_project/childrens-media-query-20120412.epub"
+        },
+        {
+            "title" : "cole-voyage-of-life-20120320.epub",
+            "url_to_package_doc" : "../epub_samples_project/cole-voyage-of-life-20120320.epub"
+        },
+        {
+            "title" : "cole-voyage-of-life-tol-20120405 (1).epub",
+            "url_to_package_doc" : "../epub_samples_project/cole-voyage-of-life-tol-20120405 (1).epub"
+        },
+        {
+            "title" : "epub30-spec-20120228.epub",
+            "url_to_package_doc" : "../epub_samples_project/epub30-spec-20120228.epub"
+        },
+        {
+            "title" : "epub30-spec-20121128.epub",
+            "url_to_package_doc" : "../epub_samples_project/epub30-spec-20121128.epub"
+        },
+        {
+            "title" : "georgia-cfi-20120521 (2).epub",
+            "url_to_package_doc" : "../epub_samples_project/georgia-cfi-20120521 (2).epub"
+        },
+        {
+            "title" : "georgia-pls-ssml-20120322 (1).epub",
+            "url_to_package_doc" : "../epub_samples_project/georgia-pls-ssml-20120322 (1).epub"
+        },
+        {
+            "title" : "GhV-oeb-page-20121015.epub",
+            "url_to_package_doc" : "../epub_samples_project/GhV-oeb-page-20121015.epub"
+        },
+        {
+            "title" : "haruko-html-jpeg-20120524 (1).epub",
+            "url_to_package_doc" : "../epub_samples_project/haruko-html-jpeg-20120524 (1).epub"
+        },
+        {
+            "title" : "haruko-jpeg-20120814.epub",
+            "url_to_package_doc" : "../epub_samples_project/haruko-jpeg-20120814.epub"
+        },
+        {
+            "title" : "hefty-water-20120404.epub",
+            "url_to_package_doc" : "../epub_samples_project/hefty-water-20120404.epub"
+        },
+        {
+            "title" : "israelsailing_20120909.epub",
+            "url_to_package_doc" : "../epub_samples_project/israelsailing_20120909.epub"
+        },
+        {
+            "title" : "jlreq_20120525.epub",
+            "url_to_package_doc" : "../epub_samples_project/jlreq_20120525.epub"
+        },
+        {
+            "title" : "jlreq_20120525_ja (1).epub",
+            "url_to_package_doc" : "../epub_samples_project/jlreq_20120525_ja (1).epub"
+        },
+        {
+            "title" : "kusamakura-japanese-vertical-writing-20121124.epub",
+            "url_to_package_doc" : "../epub_samples_project/kusamakura-japanese-vertical-writing-20121124.epub"
+        },
+        {
+            "title" : "linear-algebra-20120306.epub",
+            "url_to_package_doc" : "../epub_samples_project/linear-algebra-20120306.epub"
+        },
+        {
+            "title" : "mahabharata-20120305.epub",
+            "url_to_package_doc" : "../epub_samples_project/mahabharata-20120305.epub"
+        },
+        {
+            "title" : "moby-dick-20120118.epub",
+            "url_to_package_doc" : "../epub_samples_project/moby-dick-20120118.epub"
+        },
+        {
+            "title" : "moby-dick-mo-20120214 (2).epub",
+            "url_to_package_doc" : "../epub_samples_project/moby-dick-mo-20120214 (2).epub"
+        },
+        {
+            "title" : "page-blanche-20121022.epub",
+            "url_to_package_doc" : "../epub_samples_project/page-blanche-20121022.epub"
+        },
+        {
+            "title" : "page-blanche-bitmaps-in-spine-20120809.epub",
+            "url_to_package_doc" : "../epub_samples_project/page-blanche-bitmaps-in-spine-20120809.epub"
+        },
+        {
+            "title" : "regime-anticancer-arabic-20121022.epub",
+            "url_to_package_doc" : "../epub_samples_project/regime-anticancer-arabic-20121022.epub"
+        },
+        {
+            "title" : "sash-for-you-20120827.epub",
+            "url_to_package_doc" : "../epub_samples_project/sash-for-you-20120827.epub"
+        },
+        {
+            "title" : "sous-le-vent-20121022.epub",
+            "url_to_package_doc" : "../epub_samples_project/sous-le-vent-20121022.epub"
+        },
+        {
+            "title" : "sous-le-vent_svg-in-spine-20121022.epub",
+            "url_to_package_doc" : "../epub_samples_project/sous-le-vent_svg-in-spine-20121022.epub"
+        },
+        {
+            "title" : "svg-in-spine-20120417.epub",
+            "url_to_package_doc" : "../epub_samples_project/svg-in-spine-20120417.epub"
+        },
+        {
+            "title" : "trees-20120417 (1).epub",
+            "url_to_package_doc" : "../epub_samples_project/trees-20120417 (1).epub"
+        },
+        {
+            "title" : "wasteland-20120118 (1).epub",
+            "url_to_package_doc" : "../epub_samples_project/wasteland-20120118 (1).epub"
+        },
+        {
+            "title" : "wasteland-otf-20120118.epub",
+            "url_to_package_doc" : "../epub_samples_project/wasteland-otf-20120118.epub"
+        },
+        {
+            "title" : "wasteland-otf-obf-20120118 (1).epub",
+            "url_to_package_doc" : "../epub_samples_project/wasteland-otf-obf-20120118 (1).epub"
+        },
+        {
+            "title" : "wasteland-woff-20120118.epub",
+            "url_to_package_doc" : "../epub_samples_project/wasteland-woff-20120118.epub"
+        },
+        {
+            "title" : "wasteland-woff-obf-20120118 (1).epub",
+            "url_to_package_doc" : "../epub_samples_project/wasteland-woff-obf-20120118 (1).epub"
+        },
+        {
+            "title" : "widget-figure-gallery-20121022.epub",
+            "url_to_package_doc" : "../epub_samples_project/widget-figure-gallery-20121022.epub"
+        },
+        {
+            "title" : "widget-quiz-20121022.epub",
+            "url_to_package_doc" : "../epub_samples_project/widget-quiz-20121022.epub"
         }
     ]
 }

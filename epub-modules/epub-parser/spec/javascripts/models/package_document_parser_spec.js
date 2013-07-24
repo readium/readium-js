@@ -200,6 +200,7 @@ describe("EpubParser.PackageDocumentParser", function() {
 
         it("returns a javascript object", function() {
             var type;
+            // TODO: callback required?
             this.result = this.parser.parse();
             type = typeof this.result;
             expect(type).toEqual("object");
@@ -208,11 +209,13 @@ describe("EpubParser.PackageDocumentParser", function() {
         it("parses spine item properties", function() {
             var res;
             spyOn(this.parser, "parseSpineProperties");
+            // TODO: callback required?
             res = this.parser.parse();
             expect(this.parser.parseSpineProperties).toHaveBeenCalled();
         });
 
         it("parses the media:active-class metadata", function() {
+            // TODO: callback required?
             var res = this.parser.parse();
             expect(res.metadata.active_class).toEqual("-epub-media-overlay-active");
         });

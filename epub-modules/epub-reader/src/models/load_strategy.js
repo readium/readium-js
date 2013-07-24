@@ -1,109 +1,116 @@
-EpubReader.LoadStrategy = Backbone.Model.extend({
+define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub_reflowable_module', 'epub_fixed_module'],
+    function (require, module, $, _, Backbone, EpubReflowableModule, EpubFixedModule) {
 
-    defaults : {
-        "numFixedPagesPerView" : 100
-    },
+    var LoadStrategy = Backbone.Model.extend({
 
-    initialize : function (attributes, options) {},
+        defaults : {
+            "numFixedPagesPerView" : 100
+        },
 
-    // Description: This method chooses the appropriate page view to load for individual 
-    //   spine items, and sections of the spine. 
-    loadSpineItems : function (viewerSettings, annotations, bindings) {
+        initialize : function (attributes, options) {},
 
-        var spineIndex;
-        var currSpineItem;
-        var currFixedSpineItems = [];
-        var nextSpineItem;
-        var pagesViews = [];
-        var currPageView;
-        var nextSpineItem;
-        for (spineIndex = 0; spineIndex <= this.get("spineInfo").length - 1; spineIndex++) {
+        // Description: This method chooses the appropriate page view to load for individual
+        //   spine items, and sections of the spine.
+        loadSpineItems : function (viewerSettings, annotations, bindings) {
 
-            currSpineItem = this.get("spineInfo")[spineIndex];
+            var spineIndex;
+            var currSpineItem;
+            var currFixedSpineItems = [];
+            var nextSpineItem;
+            var pagesViews = [];
+            var currPageView;
+            var nextSpineItem;
+            for (spineIndex = 0; spineIndex <= this.get("spineInfo").length - 1; spineIndex++) {
 
-            // A fixed layout spine item
-            if (currSpineItem.isFixedLayout) {
+                currSpineItem = this.get("spineInfo")[spineIndex];
 
-                currFixedSpineItems.push(currSpineItem);
+                // A fixed layout spine item
+                if (currSpineItem.isFixedLayout) {
 
-                // Check how many fixed pages have been added for the next view
-                if (currFixedSpineItems.length === this.get("numFixedPagesPerView")) {
+                    currFixedSpineItems.push(currSpineItem);
 
-                    currPageView = this.loadFixedPagesView(currFixedSpineItems, viewerSettings);
-                    pagesViews.push(currPageView);
-                    currFixedSpineItems = [];
-                    continue;
-                }
+                    // Check how many fixed pages have been added for the next view
+                    if (currFixedSpineItems.length === this.get("numFixedPagesPerView")) {
 
-                nextSpineItem = this.get("spineInfo")[spineIndex + 1];
-                if (nextSpineItem) {
+                        currPageView = this.loadFixedPagesView(currFixedSpineItems, viewerSettings);
+                        pagesViews.push(currPageView);
+                        currFixedSpineItems = [];
+                        continue;
+                    }
 
-                    if (!nextSpineItem.isFixedLayout) {
+                    nextSpineItem = this.get("spineInfo")[spineIndex + 1];
+                    if (nextSpineItem) {
 
+                        if (!nextSpineItem.isFixedLayout) {
+
+                            currPageView = this.loadFixedPagesView(currFixedSpineItems, viewerSettings);
+                            pagesViews.push(currPageView);
+                            currFixedSpineItems = [];
+                        }
+                    }
+                    else {
                         currPageView = this.loadFixedPagesView(currFixedSpineItems, viewerSettings);
                         pagesViews.push(currPageView);
                         currFixedSpineItems = [];
                     }
                 }
+                // A scrolling spine item
+                else if (currSpineItem.shouldScroll) {
+
+                    // Load the scrolling pages view
+                }
+                // A reflowable spine item
                 else {
-                    currPageView = this.loadFixedPagesView(currFixedSpineItems, viewerSettings);
+                    currPageView = this.loadReflowablePagesView(currSpineItem, viewerSettings, annotations, bindings);
                     pagesViews.push(currPageView);
-                    currFixedSpineItems = [];
                 }
             }
-            // A scrolling spine item 
-            else if (currSpineItem.shouldScroll) {
 
-                // Load the scrolling pages view
-            }
-            // A reflowable spine item
-            else {
-                currPageView = this.loadReflowablePagesView(currSpineItem, viewerSettings, annotations, bindings);
-                pagesViews.push(currPageView);
-            }
+            return pagesViews;
+        },
+
+        loadReflowablePagesView : function (spineItem, viewerSettings, annotations, bindings) {
+
+            var view = new EpubReflowableModule(
+                this.get('epubFetch'),
+                spineItem,
+                viewerSettings,
+                annotations,
+                bindings
+            );
+
+            var pagesViewInfo = {
+                pagesView : view,
+                spineIndexes : [spineItem.spineIndex],
+                isRendered : false,
+                type : "reflowable"
+            };
+
+            return pagesViewInfo;
+        },
+
+        loadFixedPagesView : function (spineItemList, viewerSettings) {
+
+            var view = new EpubFixedModule(
+                this.get('epubFetch'),
+                spineItemList,
+                viewerSettings
+            );
+
+            var spineIndexes = [];
+            _.each(spineItemList, function (spineItem) {
+                spineIndexes.push(spineItem.spineIndex)
+            });
+
+            var pagesViewInfo = {
+                pagesView : view,
+                spineIndexes : spineIndexes,
+                isRendered : false,
+                type : "fixed"
+            };
+
+            return pagesViewInfo;
         }
-
-        return pagesViews;
-    },
-
-    loadReflowablePagesView : function (spineItem, viewerSettings, annotations, bindings) {
-
-        var view = new EpubReflowableModule(
-            spineItem,
-            viewerSettings, 
-            annotations, 
-            bindings
-        );
-
-        var pagesViewInfo = {
-            pagesView : view, 
-            spineIndexes : [spineItem.spineIndex],
-            isRendered : false,
-            type : "reflowable"
-        };
-
-        return pagesViewInfo;
-    },
-
-    loadFixedPagesView : function (spineItemList, viewerSettings) {
-
-        var view = new EpubFixedModule(
-            spineItemList,
-            viewerSettings
-        );
-
-        var spineIndexes = [];
-        _.each(spineItemList, function (spineItem) {
-            spineIndexes.push(spineItem.spineIndex)
-        });
-
-        var pagesViewInfo = {
-            pagesView : view, 
-            spineIndexes : spineIndexes,
-            isRendered : false,
-            type : "fixed"
-        };
-
-        return pagesViewInfo;
-    }
+    });
+    return LoadStrategy;
 });

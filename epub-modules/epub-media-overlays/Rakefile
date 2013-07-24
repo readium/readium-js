@@ -77,7 +77,7 @@ task :copy_dependencies do
         "json2.js",
         "underscore-1.4.4.js",
         "backbone-0.9.10.js",
-        "URI-1.10.0.js",
+        "URI.js",
         "modernizr-2.5.3.min.js"
     ]
 

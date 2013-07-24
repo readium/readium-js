@@ -6,300 +6,303 @@
 //
 // TODO: More validation for style sets with mixed rel="alternate ..." and rel="stylesheet"?
 // TODO: Ensure that the "default" style set (the default in the ePub) is activated if no tags are supplied
- 
+define(['require', 'module', 'jquery', 'underscore', 'backbone'], function (require, module, $, _, Backbone) {
 
-EpubReflowable.AlternateStyleTagSelector = Backbone.Model.extend({
+    var AlternateStyleTagSelector = Backbone.Model.extend({
 
-	// ------------------------------------------------------------------------------------ //
-	//  "PUBLIC" METHODS (THE API)                                                          //
-	// ------------------------------------------------------------------------------------ //
+        // ------------------------------------------------------------------------------------ //
+        //  "PUBLIC" METHODS (THE API)                                                          //
+        // ------------------------------------------------------------------------------------ //
 
-	initialize: function() {},
-
-	/* Description: Activate a style set based on a single, or set, of ePub alternate style tags
-	 * Arguments (
-	 *   altStyleTags: An array of ePUB alternate style tags
-	 *   bookDom: An epub document object
-	 * )
-	 */
-	activateAlternateStyleSet: function(altStyleTags, bookDom) {
+        initialize: function () {
+        },
+
+        /* Description: Activate a style set based on a single, or set, of ePub alternate style tags
+         * Arguments (
+         *   altStyleTags: An array of ePUB alternate style tags
+         *   bookDom: An epub document object
+         * )
+         */
+        activateAlternateStyleSet: function (altStyleTags, bookDom) {
 
-		var $bookStyleSheets;
-		var styleSetTitles = [];
-		var that = this;
-		var styleSetToActivate;
+            var $bookStyleSheets;
+            var styleSetTitles = [];
+            var that = this;
+            var styleSetToActivate;
 
-		// If there are no alternate tags supplied, do not change the style sets
-		if (altStyleTags.length === 0) {
+            // If there are no alternate tags supplied, do not change the style sets
+            if (altStyleTags.length === 0) {
 
-			return bookDom;
-		}
+                return bookDom;
+            }
 
-		// Get all style sheets in the book dom
-		$bookStyleSheets = $("link[rel*='stylesheet']", bookDom);
+            // Get all style sheets in the book dom
+            $bookStyleSheets = $("link[rel*='stylesheet']", bookDom);
 
-		// If the book does not have any stylesheets, do not change style sets
-		if ($bookStyleSheets.length === 0) {
+            // If the book does not have any stylesheets, do not change style sets
+            if ($bookStyleSheets.length === 0) {
 
-			return bookDom;
-		}
-
-		// Maintain original information about stylesheets
-		$bookStyleSheets = this._storeOriginalAttributes($bookStyleSheets);
+                return bookDom;
+            }
+
+            // Maintain original information about stylesheets
+            $bookStyleSheets = this._storeOriginalAttributes($bookStyleSheets);
+
+            // Get a list of the unique style set titles
+            styleSetTitles = this._getStyleSetTitles($bookStyleSheets);
+
+            // Determine which style set should be activated
+            styleSetToActivate = this._getStyleSetTitleToActivate($bookStyleSheets, styleSetTitles, altStyleTags);
+
+            // If no style was found to activate, based on the supplied tags, do not change the style sets
+            if (styleSetToActivate === null) {
+
+                return bookDom;
+            }
+
+            // Activate the specified style set, de-activing all others
+            this._activateStyleSet($bookStyleSheets, styleSetToActivate);
+
+            return bookDom;
+        },
+
+        // ------------------------------------------------------------------------------------ //
+        //  "PRIVATE" HELPERS                                                                   //
+        // ------------------------------------------------------------------------------------ //
+
+        /* Description: Activate the specified style set and de-activate all others
+         * Design rationale: The disabled property is used to activate/de-activate the style sheets, as opposed to changing
+         * attribute values, as this ensures that the document is re-rendered
+         * Arguments (
+         *   bookStyleSheets: A JQuery object of the ePubs style sheets
+         *   styleSetToActivate: The attribute value for the "title" property of the style set to activate
+         * )
+         */
+        _activateStyleSet: function (bookStyleSheets, styleSetToActivate) {
+
+            bookStyleSheets.each(function () {
 
-		// Get a list of the unique style set titles 
-		styleSetTitles = this._getStyleSetTitles($bookStyleSheets);
-
-		// Determine which style set should be activated
-		styleSetToActivate = this._getStyleSetTitleToActivate($bookStyleSheets, styleSetTitles, altStyleTags);
-
-		// If no style was found to activate, based on the supplied tags, do not change the style sets
-		if (styleSetToActivate === null) {
-
-			return bookDom;
-		}
-
-		// Activate the specified style set, de-activing all others
-		this._activateStyleSet($bookStyleSheets, styleSetToActivate);
-
-		return bookDom;
-	},
-
-	// ------------------------------------------------------------------------------------ //
-	//  "PRIVATE" HELPERS                                                                   //
-	// ------------------------------------------------------------------------------------ //
-
-	/* Description: Activate the specified style set and de-activate all others
-	 * Design rationale: The disabled property is used to activate/de-activate the style sheets, as opposed to changing 
-	 * attribute values, as this ensures that the document is re-rendered
-	 * Arguments (
-	 *   bookStyleSheets: A JQuery object of the ePubs style sheets
-	 *   styleSetToActivate: The attribute value for the "title" property of the style set to activate
-	 * )
-	 */
-	_activateStyleSet: function (bookStyleSheets, styleSetToActivate) {
+                $styleSheet = $(this);
+
+                // The stylesheets must all be set as preferred so that when enabled, they will be activated
+                $styleSheet.attr("rel", "stylesheet");
+                // Always leave persistent style sets activated
+                if ($styleSheet.attr('title') === undefined) {
+
+                    $styleSheet[0].disabled = false;
+                }
+                // Activate this style set
+                else if ($.trim($styleSheet.attr('title')) === styleSetToActivate) {
 
-		bookStyleSheets.each(function () {
+                    // Chrome is buggy and change to disabled = false is only
+                    // picked up if you first set it to true
+                    $styleSheet[0].disabled = true;
+                    $styleSheet[0].disabled = false;
+                }
+                // De-activate other style sets
+                else {
 
-			$styleSheet = $(this);
+                    $styleSheet[0].disabled = true;
+                }
+            });
+
+            return bookStyleSheets;
+        },
+
+        /* Description: Creates data attributes to store the original stylesheet attribute values
+         * Design rationale: The "rel" attribute must be modified in other methods but we need to "remember"
+         * the author's original style sheet specification
+         * Arguments (
+         *   bookStyleSheets: A JQuery object of the ePubs style sheets
+         * )
+         */
+        _storeOriginalAttributes: function (bookStyleSheets) {
+
+            var $styleSheet;
+
+            // For each style sheet, if the original value attributes are empty, set them
+            bookStyleSheets.each(function () {
+
+                $styleSheet = $(this);
+
+                if ($styleSheet.data('orig-rel') === undefined) {
+
+                    $styleSheet.attr('data-orig-rel', $styleSheet.attr("rel"));
+                }
+            });
+
+            return bookStyleSheets;
+        },
+
+        /* Description: Finds the title of the style set to activate using HTML preference rules for style sheets, as well as ePub
+         * alternate style tags.
+         * Arguments (
+         *   bookStyleSheets: A JQuery object of the ePubs style sheets
+         *   styleSetTitles: An array of the unique style set titles for the ePub
+         *   altStyleTags: An array of ePUB alternate style tags
+         * )
+         * Error handling: Returns null if not title is found
+         */
+        _getStyleSetTitleToActivate: function (bookStyleSheets, styleSetTitles, altStyleTags) {
+
+            var styleSetTagMatches = [];
+            var styleSetNum;
+            var $styleSet;
+            var maxNumTagMatches;
+            var styleSetCandidates = [];
+
+            // Find the style set with the most matching alternate tags, removing mututally exclusive tags
+            for (styleSetNum = 0; styleSetNum < styleSetTitles.length; styleSetNum += 1) {
+
+                $styleSet = bookStyleSheets.filter("link[title='" + styleSetTitles[styleSetNum] + "']");
+                $styleSet = this._removeMutuallyExclusiveAltTags($styleSet);
+                styleSetTagMatches.push({ "numAltTagMatches": this._getNumAltStyleTagMatches($styleSet, altStyleTags),
+                    "styleSetTitle": styleSetTitles[styleSetNum] });
+            }
+
+            // Get a list of the style sets with the maximum number of tag matches
+            // _.max returns one of the info elements with a maximum value, which is why the numAltTagMatches property is used to retrieve the actual max value
+            maxNumTagMatches = (_.max(styleSetTagMatches, function (styleSetTagMatchInfo) {
+                return styleSetTagMatchInfo.numAltTagMatches
+            })).numAltTagMatches;
+
+            // Do nothing if there are no matching tags
+            if (maxNumTagMatches === 0) {
+
+                return null;
+            }
+
+            // Get a list of the style sets that had the maximum number of alternate tag matches
+            _.each(styleSetTagMatches, function (styleSetTagMatchInfo) {
 
-			// The stylesheets must all be set as preferred so that when enabled, they will be activated
-			$styleSheet.attr("rel", "stylesheet");
-			// Always leave persistent style sets activated
-			if ($styleSheet.attr('title') === undefined) {
-
-				$styleSheet[0].disabled = false;
-			}
-			// Activate this style set
-			else if ($.trim($styleSheet.attr('title')) === styleSetToActivate) {
+                if (styleSetTagMatchInfo['numAltTagMatches'] === maxNumTagMatches) {
 
-				// Chrome is buggy and change to disabled = false is only
-				// picked up if you first set it to true
-				$styleSheet[0].disabled = true;
-				$styleSheet[0].disabled = false;
-			}
-			// De-activate other style sets
-			else {
+                    styleSetCandidates.push(styleSetTagMatchInfo["styleSetTitle"]);
+                }
+            });
 
-				$styleSheet[0].disabled = true;
-			}
-		});
-
-		return bookStyleSheets;
-	},
-
-	/* Description: Creates data attributes to store the original stylesheet attribute values
-	 * Design rationale: The "rel" attribute must be modified in other methods but we need to "remember" 
-	 * the author's original style sheet specification
-	 * Arguments (
-	 *   bookStyleSheets: A JQuery object of the ePubs style sheets
-	 * )
-	 */
-	_storeOriginalAttributes: function(bookStyleSheets) {
-
-		var $styleSheet;
-
-		// For each style sheet, if the original value attributes are empty, set them
-		bookStyleSheets.each(function() {
-
-			$styleSheet = $(this);
-
-			if ($styleSheet.data('orig-rel') === undefined) {
-
-				$styleSheet.attr('data-orig-rel', $styleSheet.attr("rel"));
-			}
-		});
-
-		return bookStyleSheets;
-	},
-
-	/* Description: Finds the title of the style set to activate using HTML preference rules for style sheets, as well as ePub 
-	 * alternate style tags.
-	 * Arguments (
-	 *   bookStyleSheets: A JQuery object of the ePubs style sheets 
-	 *   styleSetTitles: An array of the unique style set titles for the ePub
-	 *   altStyleTags: An array of ePUB alternate style tags
-	 * )
-	 * Error handling: Returns null if not title is found
-	 */
-	_getStyleSetTitleToActivate: function (bookStyleSheets, styleSetTitles, altStyleTags) {
-
-		var styleSetTagMatches = [];
-		var styleSetNum;
-		var $styleSet;
-		var maxNumTagMatches;
-		var styleSetCandidates = [];
-
-		// Find the style set with the most matching alternate tags, removing mututally exclusive tags
-		for (styleSetNum = 0; styleSetNum < styleSetTitles.length; styleSetNum += 1) {
-
-			$styleSet = bookStyleSheets.filter("link[title='" + styleSetTitles[styleSetNum] + "']");
-			$styleSet = this._removeMutuallyExclusiveAltTags($styleSet);
-			styleSetTagMatches.push(
-				{ "numAltTagMatches" : this._getNumAltStyleTagMatches($styleSet, altStyleTags),
-				  "styleSetTitle" : styleSetTitles[styleSetNum] }
-			);
-		}
-
-		// Get a list of the style sets with the maximum number of tag matches
-		// _.max returns one of the info elements with a maximum value, which is why the numAltTagMatches property is used to retrieve the actual max value
-		maxNumTagMatches = (_.max(styleSetTagMatches, function (styleSetTagMatchInfo) { return styleSetTagMatchInfo.numAltTagMatches } )).numAltTagMatches;
-
-		// Do nothing if there are no matching tags
-		if (maxNumTagMatches === 0) {
-
-			return null;
-		}
+            // If there is only one style set in the candidate list
+            if (styleSetCandidates === 1) {
 
-		// Get a list of the style sets that had the maximum number of alternate tag matches
-		_.each(styleSetTagMatches, function(styleSetTagMatchInfo) {
+                return styleSetCandidates[0];
+            }
+            // Since there are multiple candidates, return the style set that is preferred (the first style set with rel="stylesheet")
+            else {
 
-			if (styleSetTagMatchInfo['numAltTagMatches'] === maxNumTagMatches) {
+                var candidateNum;
+                for (candidateNum = 0; candidateNum < styleSetCandidates.length; candidateNum++) {
 
-				styleSetCandidates.push(styleSetTagMatchInfo["styleSetTitle"]);
-			}
-		});
+                    // TODO: This assumes that all the style sheets in the style set are marked as either preferred or alternate. It simply checks the first
+                    // style sheet of every style set.
+                    $styleSet = bookStyleSheets.filter("link[title='" + styleSetCandidates[candidateNum] + "']");
+                    if ($.trim($($styleSet[0]).attr("data-orig-rel")) === "stylesheet") {
 
-		// If there is only one style set in the candidate list
-		if (styleSetCandidates === 1) {
+                        return styleSetCandidates[candidateNum];
+                    }
+                }
 
-			return styleSetCandidates[0];
-		}
-		// Since there are multiple candidates, return the style set that is preferred (the first style set with rel="stylesheet")
-		else {
+                // If none of the stylesheets were preferred (only rel="alternate stylesheet"), return the first style set title
+                return styleSetCandidates[0];
+            }
+        },
 
-			var candidateNum;
-			for (candidateNum = 0; candidateNum < styleSetCandidates.length; candidateNum++) {
+        /* Description: Finds the unique list of style set titles from the set of style sheets for the ePub
+         * Arguments (
+         *   bookStyleSheets: A JQuery object of the ePub's style sheets
+         * )
+         */
+        _getStyleSetTitles: function (bookStyleSheets) {
 
-				// TODO: This assumes that all the style sheets in the style set are marked as either preferred or alternate. It simply checks the first 
-				// style sheet of every style set.
-				$styleSet = bookStyleSheets.filter("link[title='" + styleSetCandidates[candidateNum] + "']");
-				if ($.trim($($styleSet[0]).attr("data-orig-rel")) === "stylesheet") {
+            var styleSetTitles = [];
 
-					return styleSetCandidates[candidateNum];
-				}
-			}
+            // Find the unique style sets from the 'title' property
+            bookStyleSheets.each(function () {
 
-			// If none of the stylesheets were preferred (only rel="alternate stylesheet"), return the first style set title
-			return styleSetCandidates[0];
-		}
-	},
+                var styleSheetTitle = $(this).attr("title");
+                if (!_.include(styleSetTitles, styleSheetTitle)) {
 
-	/* Description: Finds the unique list of style set titles from the set of style sheets for the ePub
-	 * Arguments (
-	 *   bookStyleSheets: A JQuery object of the ePub's style sheets 
-	 * )
-	 */
-	_getStyleSetTitles: function (bookStyleSheets) {
+                    styleSetTitles.push(styleSheetTitle);
+                }
+            });
 
-		var styleSetTitles = [];
+            return styleSetTitles;
+        },
 
-		// Find the unique style sets from the 'title' property
-		bookStyleSheets.each(function() {
+        /* Description: Finds the number of alternate style tags in a style set's class attribute
+         * Arguments (
+         *   styleSet: A JQuery object that represents a single style set
+         *   altStyleTags: An array of ePUB alternate style tags
+         * )
+         */
+        _getNumAltStyleTagMatches: function (styleSet, altStyleTags) {
 
-			var styleSheetTitle = $(this).attr("title");
-			if (!_.include(styleSetTitles, styleSheetTitle)) {
+            var numMatches = 0;
 
-				styleSetTitles.push(styleSheetTitle);
-			}
-		});
+            // If the alt style tag is found in the style set, increment num matches
+            var altTagNum;
+            for (altTagNum = 0; altTagNum < altStyleTags.length; altTagNum += 1) {
 
-		return styleSetTitles;
-	},
+                // filter used so top-level elements are selected
+                if (styleSet.filter("link[class*='" + altStyleTags[altTagNum] + "']").length > 0) {
 
-	/* Description: Finds the number of alternate style tags in a style set's class attribute
-	 * Arguments (
-	 *   styleSet: A JQuery object that represents a single style set
-	 *   altStyleTags: An array of ePUB alternate style tags
-	 * )
-	 */
-	_getNumAltStyleTagMatches: function (styleSet, altStyleTags) {
+                    numMatches++;
+                }
+            }
 
-		var numMatches = 0;
+            return numMatches;
+        },
 
-		// If the alt style tag is found in the style set, increment num matches
-		var altTagNum;
-		for (altTagNum = 0; altTagNum < altStyleTags.length; altTagNum += 1) {
+        //
+        /* Description: This method removes, thus ignoring, mututally exclusive alternate tags within a style set
+         * Arguments (
+         *   styleSet: A JQuery object that represents a single style set
+         * )
+         */
+        //TODO: Maybe change this to act on data- attributes, rather than the actual class attribute
+        _removeMutuallyExclusiveAltTags: function (styleSet) {
 
-			// filter used so top-level elements are selected
-			if (styleSet.filter("link[class*='" + altStyleTags[altTagNum] + "']").length > 0) {
+            var $styleSheet;
 
-				numMatches++;	
-			}
-		}
+            if (styleSet.filter("link[class*='night']").length > 0 &&
+                styleSet.filter("link[class*='day']").length > 0) {
 
-		return numMatches;
-	},
+                styleSet.each(function () {
 
-	// 
-	/* Description: This method removes, thus ignoring, mututally exclusive alternate tags within a style set
-	 * Arguments (
-	 *   styleSet: A JQuery object that represents a single style set
-	 * )
-	 */
-	//TODO: Maybe change this to act on data- attributes, rather than the actual class attribute
-	_removeMutuallyExclusiveAltTags: function (styleSet) {
+                    $styleSheet = $(this);
 
-		var $styleSheet;
+                    if ($styleSheet.filter('.night').length > 0) {
 
-		if (styleSet.filter("link[class*='night']").length > 0 &&
-		    styleSet.filter("link[class*='day']").length > 0) {
+                        $styleSheet.toggleClass('night');
+                    }
 
-			styleSet.each(function () { 
+                    if ($styleSheet.filter('.day').length > 0) {
 
-				$styleSheet = $(this);
+                        $styleSheet.toggleClass('day');
+                    }
+                });
+            }
 
-				if ($styleSheet.filter('.night').length > 0) {
+            if (styleSet.filter("link[class*='vertical']").length > 0 &&
+                styleSet.filter("link[class*='horizontal']").length > 0) {
 
-					$styleSheet.toggleClass('night');
-				}
+                styleSet.each(function () {
 
-				if ($styleSheet.filter('.day').length > 0) {
+                    $styleSheet = $(this);
 
-					$styleSheet.toggleClass('day');
-				}
-			});
-		}
+                    if ($styleSheet.filter('.vertical').length > 0) {
 
-		if (styleSet.filter("link[class*='vertical']").length > 0 &&
-			styleSet.filter("link[class*='horizontal']").length > 0) {
+                        $styleSheet.toggleClass('vertical');
+                    }
 
-			styleSet.each(function () { 
+                    if ($styleSheet.filter('.horizontal').length > 0) {
 
-				$styleSheet = $(this);
+                        $styleSheet.toggleClass('horizontal');
+                    }
+                });
+            }
 
-				if ($styleSheet.filter('.vertical').length > 0) {
-					
-					$styleSheet.toggleClass('vertical');
-				}
-
-				if ($styleSheet.filter('.horizontal').length > 0) {
-
-					$styleSheet.toggleClass('horizontal');
-				}
-			});
-		}
-
-		return styleSet;
-	}
+            return styleSet;
+        }
+    });
+    return AlternateStyleTagSelector;
 });

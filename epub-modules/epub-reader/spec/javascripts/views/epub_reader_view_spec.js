@@ -109,6 +109,7 @@ describe("EpubReader.EpubReaderView", function () {
 
             it("gets the expected spine index", function () {
 
+                // TODO migrate to callback
                 var spineIndex = this.readerViewer.getSpineIndexFromCFI("epubcfi(/6/20!/4)");
                 expect(spineIndex).toBe(0);
             });
