@@ -3,6 +3,7 @@
     <head>
         <link rel="stylesheet" type="text/css" href="../css/more_styles.css">
         <link rel="stylesheet" type="text/css" href="../css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="./reader_sdk.css">
         <script src="../lib/modernizr-2.5.3.min.js" type="text/javascript"></script>
         <script src="../lib/json2.js" type="text/javascript"></script>
         <script src="../lib/zip.js" type="text/javascript"></script>
@@ -10,6 +11,15 @@
         <script src="../lib/zip-ext.js" type="text/javascript"></script>
 
         <script data-main="initialize_rjs_reader" src="../lib/require.js" type="text/javascript"></script>
+
+        <!--reflowable view-->
+<script type="text/html" id="template-reflowable-view"><div id="viewport_reflowable" class="clearfix">
+<iframe scrolling="no" id="epubContentIframe"></iframe></div></script>
+
+        <!-- Fixed Layout View -->
+<script type="text/html" id="template-fixed-view"><div id="viewport_fixed"><div id="spread-wrap" class="clearfix"></div></div></script>
+
+<script type="text/html" id="template-ope-fixed-page-view"><div class="fixed-page-wrap"><iframe class="fixed_iframe"></iframe></div></script>
 
     </head>
     <body>
@@ -33,11 +43,11 @@
                     <ul class="nav pull-right">
 
                         <!-- Table of contents -->
-                        <li class="navbar-el">
+                        <!-- <li class="navbar-el">
                             <a accesskey="t" href="#" id="toc-btn" role="button" title="TOC">
                                 TOC
                             </a>
-                        </li>
+                        </li> -->
 
                         <li class="divider-vertical"></li>
 
@@ -62,13 +72,6 @@
                                 Toggle layout
                             </a>
                         </li>
-
-                        <!-- Toggle alternate styles -->
-                        <li class="navbar-el">
-                            <a accesskey="n" href="#" id="toggle-ast-btn" role="button" title="Toggle AST">
-                                Toggle AST
-                            </a>
-                        </li>
                     </ul>
                 </div>
             </div>
@@ -84,7 +87,7 @@
                     <iframe id="toc-iframe" src="" style="height:100%;width:100%;border-style:none"></iframe>
                 </div>
                 <div id="reader-panel" class="span8">
-                    <div id="reader" style="height:700px">
+                    <div id="reader">
                     </div>
                 </div>
             </div>

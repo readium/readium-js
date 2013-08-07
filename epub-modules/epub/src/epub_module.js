@@ -1,18 +1,18 @@
 define(['require', 'module', 'jquery', 'underscore', 'backbone', './models/package_document' ],
     function (require, module, $, _, Backbone, PackageDocument) {
 
-        var EpubModule = function (packageDocumentObject, epubFetch) {
+        var EpubModule = function (epubFetch, callback) {
 
             var packageDoc = new PackageDocument({
-                packageDocumentObject: packageDocumentObject,
-                epubFetch: epubFetch
+                epubFetch : epubFetch,
+                onParsedCallback : callback
             });
 
             // Description: The public interface
             return {
 
-                getSpineInfo: function () {
-                    return packageDoc.getSpineInfo();
+                getPackageData: function () {
+                    return packageDoc.getPackageData();
                 },
                 isFixedLayout: function () {
                     return packageDoc.isFixedLayout();
@@ -49,10 +49,6 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', './models/packa
                 },
                 getSpineIndexByHref: function (manifestHref) {
                     return packageDoc.getSpineIndexByHref(manifestHref);
-                },
-                // TODO apparently unused method, and in the incorrect module (should be in epub-parser?)
-                getPackageDocumentDOM: function (callback) {
-                    return packageDoc.getPackageDocumentDOM(callback);
                 },
                 getTocURL: function () {
                     return packageDoc.getToc();

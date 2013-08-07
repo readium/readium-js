@@ -1,6 +1,6 @@
 define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs/URI', './manifest', './spine', './metadata',
-    './page_spread_property'],
-    function (require, module, $, _, Backbone, URI, Manifest, Spine, Metadata, PageSpreadProperty) {
+    './page_spread_property', './package_document_parser'],
+    function (require, module, $, _, Backbone, URI, Manifest, Spine, Metadata, PageSpreadProperty, PackageDocumentParser) {
     console.log('package_document module id: ' + module.id);
 
     // Description: This model provides an interface for navigating an EPUB's package document
@@ -8,30 +8,48 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs/URI', '.
 
         initialize : function (attributes, options) {
 
-            var packageDocument = this.get("packageDocumentObject");
-            this.manifest = new Manifest(packageDocument.manifest);
-            this.spine = new Spine(packageDocument.spine);
-            this.metadata = new Metadata(packageDocument.metadata);
-            this.bindings = new Spine(packageDocument.bindings);
-            this.pageSpreadProperty = new PageSpreadProperty();
-
-            // If this book is fixed layout, assign the page spread class
-            if (this.isFixedLayout()) {
-                this.assignPageSpreadClass();
-            }
-        },
-
-        getSpineInfo : function () {
-
             var that = this;
-            var spineInfo = [];
-            this.spine.each(function (spineItem) {
-                spineInfo.push(that.generateSpineInfo(spineItem));
+            // Initialize package document parser 
+            var packageDocParser = new PackageDocumentParser({
+                epubFetch : this.get("epubFetch")
             });
 
+            packageDocParser.parse(function (packageDocument) {
+
+                that.manifest = new Manifest(packageDocument.manifest);
+                that.spine = new Spine(packageDocument.spine);
+                that.metadata = new Metadata(packageDocument.metadata);
+                that.bindings = new Spine(packageDocument.bindings);
+                that.pageSpreadProperty = new PageSpreadProperty();
+
+                // If this book is fixed layout, assign the page spread class
+                if (that.isFixedLayout()) {
+                    that.assignPageSpreadClass();
+                }
+
+                that.get("onParsedCallback")();
+            });
+        },
+
+        getPackageData : function () {
+
+            var that = this;
+            var spinePackageData = [];
+            var packageDocumentURL = this.get("epubFetch").get("packageDocumentURL");
+            var packageDocRoot = packageDocumentURL.substr(0, packageDocumentURL.lastIndexOf("/"));
+
+            this.spine.each(function (spineItem) {
+                spinePackageData.push(that.generatePackageData(spineItem));
+            });
+            
+            // This is where the package data format thing is generated
             return {
-                spine : spineInfo,
-                bindings : this.bindings.toJSON()
+                rootUrl : packageDocRoot,
+                rendition_layout : this.isFixedLayout(),
+                spine : {
+                    direction : this.pageProgressionDirection(),
+                    items : spinePackageData    
+                }
             };
         },
 
@@ -216,69 +234,69 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs/URI', '.
             }
         },
 
-        generateSpineInfo : function (spineItem) {
+        generatePackageData : function (spineItem) {
 
-            var isFixedLayout = false;
-            var fixedLayoutType = undefined;
+            var fixedLayoutProperty = "reflowable";
+            // var fixedLayoutType = undefined;
             var manifestItem = this.getManifestModelByIdref(spineItem.get("idref"));
-            var isLinear;
-            var firstPageIsOffset;
+            // var isLinear;
+            // var firstPageIsOffset;
             var pageSpread;
 
             // Get fixed layout properties
             if (spineItem.isFixedLayout() || this.isFixedLayout()) {
                 isFixedLayout = true;
-
-                if (manifestItem.isSvg()) {
-                    fixedLayoutType = "svg";
-                }
-                else if (manifestItem.isImage()) {
-                    fixedLayoutType = "image";
-                }
-                else {
-                    fixedLayoutType = "xhtml";
-                }
+                fixedLayoutProperty = "pre-paginated";
+                // if (manifestItem.isSvg()) {
+                //     fixedLayoutType = "svg";
+                // }
+                // else if (manifestItem.isImage()) {
+                //     fixedLayoutType = "image";
+                // }
+                // else {
+                //     fixedLayoutType = "xhtml";
+                // }
             }
 
             // Set primary reading order attribute
-            if (spineItem.get("linear").trim() === "no") {
-                isLinear = false;
-            }
-            else {
-                isLinear = true;
-            }
+            // if (spineItem.get("linear").trim() === "no") {
+            //     isLinear = false;
+            // }
+            // else {
+            //     isLinear = true;
+            // }
 
-            // Set first page is offset parameter
             pageSpread = spineItem.get("page_spread");
-            if (!isFixedLayout) {
-                if (this.pageProgressionDirection() === "ltr" && pageSpread === "right") {
-                    firstPageIsOffset = true;
-                }
-                else if (this.pageProgressionDirection() === "rtl" && pageSpread === "left") {
-                    firstPageIsOffset = true;
-                }
-                else {
-                    firstPageIsOffset = false;
-                }
+            // Set first page is offset parameter
+            // if (!isFixedLayout) {
+            //     if (this.pageProgressionDirection() === "ltr" && pageSpread === "right") {
+            //         firstPageIsOffset = true;
+            //     }
+            //     else if (this.pageProgressionDirection() === "rtl" && pageSpread === "left") {
+            //         firstPageIsOffset = true;
+            //     }
+            //     else {
+            //         firstPageIsOffset = false;
+            //     }
+            // }
+
+            if (pageSpread === "left") {
+                pageSpread = "page-spread-left";
+            }
+            else if (pageSpread === "right") {
+                pageSpread = "page-spread-right";
+            }
+            else if (pageSpread === "center") {
+                pageSpread = "page-spread-center";
             }
 
             var spineInfo = {
-                contentDocumentURI : this.getManifestItemByIdref(spineItem.get("idref")).contentDocumentURI,
-                title : this.metadata.get("title"),
-                firstPageIsOffset : firstPageIsOffset,
-                pageProgressionDirection : this.pageProgressionDirection(),
-                spineIndex : this.getSpineIndex(spineItem),
-                pageSpread : pageSpread,
-                isFixedLayout : isFixedLayout,
-                fixedLayoutType : fixedLayoutType,
-                mediaType : manifestItem.get("media_type"),
-                linear : isLinear
+                href : this.getManifestItemByIdref(spineItem.get("idref")).contentDocumentURI,
+                idref : spineItem.get("idref"),
+                page_spread : pageSpread,
+                rendition_layout : fixedLayoutProperty
             };
-            console.log('generated spineInfo for spineItem,');
-            console.log('spineItem:');
-            console.log(spineItem);
-            console.log('generated spineInfo:');
-            console.log(spineInfo);
+
             return spineInfo;
         },
 

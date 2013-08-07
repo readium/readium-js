@@ -20,64 +20,20 @@ define(['jquery'], function ($) {
         // Remove any existing click handlers
         $("#previous-page-btn").off("click");
         $("#previous-page-btn").on("click", function () {
-
-            if (RJSDemoApp.epub.pageProgressionDirection() === "rtl") {
-                RJSDemoApp.epubViewer.nextPage(function () {
-                    console.log("the page turned");
-                });
-            }
-            else {
-                RJSDemoApp.epubViewer.previousPage(function () {
-                    console.log("the page turned");
-                });
-            }
+            RJSDemoApp.epubViewer.openPageLeft();
         });
 
         // Next
         // Remove any existing click handlers
         $("#next-page-btn").off("click");
         $("#next-page-btn").on("click", function () {
-
-            if (RJSDemoApp.epub.pageProgressionDirection() === "rtl") {
-                RJSDemoApp.epubViewer.previousPage(function () {
-                    console.log("the page turned");
-                });
-            }
-            else {
-                RJSDemoApp.epubViewer.nextPage(function () {
-                    console.log("the page turned");
-                });
-            }
+            RJSDemoApp.epubViewer.openPageRight();
         });
 
         // Layout
         $("#toggle-synthetic-btn").off("click");
         $("#toggle-synthetic-btn").on("click", function () {
             RJSDemoApp.toggleLayout();
-        });
-
-        // Layout
-        $("#toggle-ast-btn").off("click");
-        $("#toggle-ast-btn").on("click", function () {
-            RJSDemoApp.toggleAST();
-        });
-    };
-
-    RJSDemoApp.applyViewerHandlers = function (epubViewer, tocDocument) {
-
-        epubViewer.off("epubLinkClicked");
-        epubViewer.on("epubLinkClicked", function (e) {
-            RJSDemoApp.epubLinkClicked(e);
-        });
-
-        $(tocDocument).find("a").on("click", function (e) {
-            RJSDemoApp.tocLinkClicked(e);
-        });
-
-        $(window).off("resize");
-        $(window).on("resize", function () {
-            RJSDemoApp.setModuleContainerHeight();
-            RJSDemoApp.resizeContent();
         });
     };
 
@@ -102,9 +58,9 @@ define(['jquery'], function ($) {
             href = href.trim();
             splitHref = href.split("#");
 
-            RJSDemoApp.epubViewer.showPageByCFI(splitHref[1], function () {
-                console.log("Showed the page using a CFI");
-            }, this);
+            // RJSDemoApp.epubViewer.showPageByCFI(splitHref[1], function () {
+            //     console.log("Showed the page using a CFI");
+            // }, this);
         }
         // It's a regular id
         else {
@@ -115,14 +71,14 @@ define(['jquery'], function ($) {
 
             spineIndex = RJSDemoApp.epub.getSpineIndexByHref(href);
             if (splitHref[1] === undefined) {
-                RJSDemoApp.epubViewer.showSpineItem(spineIndex, function () {
-                    console.log("Spine index shown: " + splitHref[0]);
-                });
+                // RJSDemoApp.epubViewer.showSpineItem(spineIndex, function () {
+                //     console.log("Spine index shown: " + splitHref[0]);
+                // });
             }
             else {
-                RJSDemoApp.epubViewer.showPageByElementId(spineIndex, splitHref[1], function () {
-                    console.log("Page shown: href: " + splitHref[0] + " & hash id: " + splitHref[1]);
-                });
+                // RJSDemoApp.epubViewer.showPageByElementId(spineIndex, splitHref[1], function () {
+                //     console.log("Page shown: href: " + splitHref[0] + " & hash id: " + splitHref[1]);
+                // });
             }
         }
     };
@@ -130,22 +86,6 @@ define(['jquery'], function ($) {
     RJSDemoApp.tocLinkClicked = function (e) {
 
         RJSDemoApp.epubLinkClicked(e);
-    };
-
-    RJSDemoApp.resizeContent = function () {
-
-        var libraryIsVisible = RJSDemoApp.viewerPreferences.libraryIsVisible;
-        var tocIsVisible = RJSDemoApp.viewerPreferences.tocIsVisible;
-
-        if (!libraryIsVisible && !tocIsVisible) {
-            $("#reader-panel").removeClass("span8");
-            $("#reader-panel").addClass("span12");
-        }
-        else {
-            $("#reader-panel").removeClass("span12");
-            $("#reader-panel").addClass("span8");
-        }
-        RJSDemoApp.epubViewer.resizeContent();
     };
 
     RJSDemoApp.toggleLibraryPanel = function () {
@@ -160,7 +100,6 @@ define(['jquery'], function ($) {
             RJSDemoApp.viewerPreferences.tocIsVisible = false;
             RJSDemoApp.viewerPreferences.libraryIsVisible = true;
         }
-        RJSDemoApp.resizeContent();
     };
 
     RJSDemoApp.toggleTOCPanel = function () {
@@ -175,31 +114,19 @@ define(['jquery'], function ($) {
             RJSDemoApp.viewerPreferences.tocIsVisible = true;
             RJSDemoApp.viewerPreferences.libraryIsVisible = false;
         }
-        RJSDemoApp.resizeContent();
-    },
+    };
 
-        RJSDemoApp.toggleLayout = function () {
+    RJSDemoApp.toggleLayout = function () {
 
-            if (RJSDemoApp.viewerPreferences.syntheticLayout) {
-                RJSDemoApp.epubViewer.setSyntheticLayout(false);
-                RJSDemoApp.viewerPreferences.syntheticLayout = false;
-            }
-            else {
-                RJSDemoApp.epubViewer.setSyntheticLayout(true);
-                RJSDemoApp.viewerPreferences.syntheticLayout = true;
-            }
-        };
-
-    RJSDemoApp.toggleAST = function () {
-
-        if (RJSDemoApp.viewerPreferences.day) {
-            RJSDemoApp.epubViewer.customize("alt-style-tag", "night");
-            RJSDemoApp.viewerPreferences.day = false;
+        if (RJSDemoApp.viewerPreferences.syntheticLayout) {
+            RJSDemoApp.epubViewer.updateSettings({ "isSyntheticSpread" : false });
+            RJSDemoApp.viewerPreferences.syntheticLayout = false;
         }
         else {
-            RJSDemoApp.epubViewer.customize("alt-style-tag", "day");
-            RJSDemoApp.viewerPreferences.day = true;
+            RJSDemoApp.epubViewer.updateSettings({ "isSyntheticSpread" : true });
+            RJSDemoApp.viewerPreferences.syntheticLayout = true;
         }
     };
+
     return RJSDemoApp;
 });

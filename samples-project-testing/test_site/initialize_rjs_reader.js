@@ -1,23 +1,18 @@
-var pathsSimpleReadium = {
+var pathsReadium = {
     jquery: 'jquery-1.9.1',
     underscore: 'underscore-1.4.4',
     backbone: 'backbone-0.9.10',
-    SimpleReadiumJs: 'simple-readium-js/SimpleReadiumJs.min'
+    readiumjs: 'readium-js/Readium.min'
 };
 
 var pathsSeparateEpubModules = {
     jquery: 'jquery-1.9.1',
     underscore: 'underscore-1.4.4',
     backbone: 'backbone-0.9.10',
-    'cfi_module': 'epub-cfi/cfi_module.min',
-    'epub_fetch_module': 'epub-fetch/epub_fetch_module.min',
-    'epub_parser_module': 'epub-parser/epub_parser_module.min',
-    'epub_module': 'epub/epub_module.min',
-    'epub_reader_module': 'epub-reader/epub_reader_module.min',
-    'epub_module': 'epub/epub_module.min',
-    'epub_fixed_module': 'epub-fixed/epub_fixed_module.min',
-    'epub_reflowable_module': 'epub-reflowable/epub_reflowable_module.min',
-    'epub_reading_system': 'epub-ers/epub_reading_system.min'
+    EpubFetchModule: './epub-fetch/src/epub_fetch_module',
+    EpubModule: './epub/src/epub_module',
+    EpubRendererModule: './epub-renderer/epub_renderer_module',
+    EpubReadingSystem: './epub-ers/src/epub_reading_system'
 };
 
 require.config({
@@ -38,9 +33,8 @@ require.config({
 RJSDemoApp = {};
 
 
-require(['jquery', 'underscore', 'epub_fetch_module', 'epub_parser_module',
-    'epub_module', 'epub_reader_module', 'epub_reading_system', '../test_site/event_handling'
-], function ($, _, EpubFetchModule, EpubParserModule, EpubModule, EpubReaderModule, EpubReadingSystem, EventHandling) {
+require(['jquery', 'underscore', 'EpubFetchModule', 'EpubModule', 'EpubRendererModule', 'EpubReadingSystem', '../test_site/event_handling'], 
+    function ($, _, EpubFetchModule, EpubModule, EpubRendererModule, EpubReadingSystem, EventHandling) {
 
     RJSDemoApp.setModuleContainerHeight = function () {
         $("#reader").css({ "height": $(window).height() * 0.85 + "px" });
@@ -52,7 +46,7 @@ require(['jquery', 'underscore', 'epub_fetch_module', 'epub_parser_module',
 
             var $currLi = $('<li><a id="' + currEpub.url_to_package_doc + '" href="#">' + currEpub.title + '</a></li>');
             $currLi.on("click", function () {
-                RJSDemoApp.loadAndRenderEpub(currEpub.url_to_package_doc, RJSDemoApp.viewerPreferences);
+                RJSDemoApp.loadAndRenderEpub(currEpub.url_to_package_doc);
             });
             $ulElementContainer.append($currLi);
         });
@@ -60,40 +54,40 @@ require(['jquery', 'underscore', 'epub_fetch_module', 'epub_parser_module',
 
     RJSDemoApp.addTOC = function (tocIframe) {
 
-        $(tocIframe).off("load");
+        // $(tocIframe).off("load");
 
-        // On TOC load, add all the link handlers
-        if (!RJSDemoApp.epub.tocIsNcx()) {
+        // // On TOC load, add all the link handlers
+        // if (!RJSDemoApp.epub.tocIsNcx()) {
 
-            $(tocIframe).on("load", function () {
-                $(tocIframe).show();
-                RJSDemoApp.applyViewerHandlers(RJSDemoApp.epubViewer, $(tocIframe)[0].contentDocument);
-            });
-        }
+        //     $(tocIframe).on("load", function () {
+        //         $(tocIframe).show();
+        //         RJSDemoApp.applyViewerHandlers(RJSDemoApp.epubViewer, $(tocIframe)[0].contentDocument);
+        //     });
+        // }
 
-        var tocUrl = RJSDemoApp.epub.getTocURL();
+        // var tocUrl = RJSDemoApp.epub.getTocURL();
 
-        RJSDemoApp.epub.generateTocListDOM(function (navList) {
-            if (RJSDemoApp.epub.tocIsNcx()) {
-                $(tocIframe).parent().append(navList);
-                $(tocIframe).hide();
-                RJSDemoApp.applyViewerHandlers(RJSDemoApp.epubViewer, $(tocIframe).parent()[0]);
-            } else {
-                if (RJSDemoApp.epubFetch.isPackageExploded()) {
-                    // With exploded documents, can simply set the TOC IFRAME's src
-                    $(tocIframe).attr("src", tocUrl);
-                } else {
-                    var tocContentDocument = tocIframe.contentDocument;
-                    tocContentDocument.replaceChild(navList.documentElement, tocContentDocument.documentElement);
-                    // load event doesn't trigger when replacing on the DOM level - need to trigger it artificially:
-                    $(tocIframe).trigger('load');
-                }
-            }
-        });
+        // RJSDemoApp.epub.generateTocListDOM(function (navList) {
+        //     if (RJSDemoApp.epub.tocIsNcx()) {
+        //         $(tocIframe).parent().append(navList);
+        //         $(tocIframe).hide();
+        //         RJSDemoApp.applyViewerHandlers(RJSDemoApp.epubViewer, $(tocIframe).parent()[0]);
+        //     } else {
+        //         if (RJSDemoApp.epubFetch.isPackageExploded()) {
+        //             // With exploded documents, can simply set the TOC IFRAME's src
+        //             $(tocIframe).attr("src", tocUrl);
+        //         } else {
+        //             var tocContentDocument = tocIframe.contentDocument;
+        //             tocContentDocument.replaceChild(navList.documentElement, tocContentDocument.documentElement);
+        //             // load event doesn't trigger when replacing on the DOM level - need to trigger it artificially:
+        //             $(tocIframe).trigger('load');
+        //         }
+        //     }
+        // });
     };
 
     // This function will retrieve a package document and load an EPUB
-    RJSDemoApp.loadAndRenderEpub = function (packageDocumentURL, viewerPreferences) {
+    RJSDemoApp.loadAndRenderEpub = function (packageDocumentURL) {
 
         var that = this;
 
@@ -110,35 +104,19 @@ require(['jquery', 'underscore', 'epub_fetch_module', 'epub_parser_module',
             packageDocumentURL: packageDocumentURL,
             libDir: jsLibDir
         });
-        RJSDemoApp.epubParser = new EpubParserModule(RJSDemoApp.epubFetch);
 
-        RJSDemoApp.epubParser.parse(function (packageDocumentObject) {
-            RJSDemoApp.epub = new EpubModule(packageDocumentObject, RJSDemoApp.epubFetch);
-            var spineInfo = RJSDemoApp.epub.getSpineInfo();
+        RJSDemoApp.epub = new EpubModule(RJSDemoApp.epubFetch, function () {
 
-            RJSDemoApp.epubViewer =
-                new EpubReaderModule(elementToBindReaderTo, spineInfo, viewerPreferences, RJSDemoApp.epubFetch, "lazy");
-
-            // Set the TOC
+            var packageData = RJSDemoApp.epub.getPackageData();
+            RJSDemoApp.epubViewer = new EpubRendererModule(elementToBindReaderTo, packageData);
+            RJSDemoApp.epubViewer.openBook();
             RJSDemoApp.addTOC($("#toc-iframe")[0]);
-
             RJSDemoApp.applyToolbarHandlers();
-
-            // Set a fixed height for the epub viewer container, as a function of the document height
             RJSDemoApp.setModuleContainerHeight();
-            RJSDemoApp.epubViewer.on("epubLoaded", function () {
-                RJSDemoApp.epubViewer.showFirstPage(function () {
-                    console.log("showed first spine item");
-                });
-            }, that);
-
-            RJSDemoApp.epubViewer.render(0);
-
         });
     };
 
     loadInitialEpub($)
-
 });
 
 function loadInitialEpub($) {
@@ -148,17 +126,14 @@ function loadInitialEpub($) {
         // Create an object of viewer preferences
         RJSDemoApp.viewerPreferences = {
             fontSize: 12,
-            syntheticLayout: false,
-            currentMargin: 0,
+            syntheticLayout: true,
             tocVisible: false,
-            currentTheme: "default",
             libraryIsVisible: true,
-            tocIsVisible: false,
-            day: true
+            tocIsVisible: false
         };
 
         // Load Moby Dick by default
-        RJSDemoApp.loadAndRenderEpub("../epub_samples_project/moby-dick-20120118/OPS/package.opf", RJSDemoApp.viewerPreferences);
+        RJSDemoApp.loadAndRenderEpub("../epub_samples_project/moby-dick-20120118/OPS/package.opf");
 
         // Generate the library
         $.getJSON('../available_epubs/epub_library_info.json',function (data) {
