@@ -3,13 +3,10 @@ epub-modules/development/
 epub-modules/epub-media-overlays/lib/
 samples-project-testing/lib/
 samples-project-testing/additional_samples/TBF
-epub-modules/epub/min/
-epub-modules/epub-cfi/min/
-epub-modules/epub-reader/min/
-epub-modules/epub-reflowable/min/
-epub-modules/epub-fixed/min/
-epub-modules/epub-fetch/min/
-epub-modules/epub-parser/min/
-epub-modules/epub-ers/min/
-epub-modules/simple-readium-js/min/
+epub-modules/epub/out/
+epub-modules/epub-cfi/out/
+epub-modules/epub-renderer/out/
+epub-modules/epub-fetch/out/
+epub-modules/epub-ers/out/
+epub-modules/simple-readium-js/out/
 

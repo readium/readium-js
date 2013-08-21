@@ -48,6 +48,9 @@ define(['require', 'module', 'jquery', 'URIjs/URI', './fetch_base'], function (r
 
         fetchFileContents: function (relativePath, readCallback, onerror) {
             var thisFetcher = this;
+            if (typeof relativePath === 'undefined') {
+                throw 'Fetched file relative path is undefined!';
+            }
             this._withZipFsPerform(function (zipFs) {
                 var entry = zipFs.find(relativePath);
                 if (typeof entry === 'undefined' || entry === null) {

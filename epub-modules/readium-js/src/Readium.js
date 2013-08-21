@@ -13,37 +13,40 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub_fetch_mod
         var Readium = function (elementToBindReaderTo, packageDocumentURL, jsLibDir, definitionCallback) {
 
             // -------------- Initialization of viewer ------------------ //
-            var epubFetch = new EpubFetchModule(packageDocumentURL, jsLibDir);
+            var epubFetch = new EpubFetchModule({
+                packageDocumentURL: packageDocumentURL,
+                libDir: jsLibDir
+            });
             var epub = new EpubModule(epubFetch, function () {
 
-                var reader = new EpubRendererModule(elementToBindReaderTo, epub.getPackageData());
+                var renderer = new EpubRendererModule(elementToBindReaderTo, epub.getPackageData());
                 
                 // Readium.js module api
                 definitionCallback({
 
                     openBook : function () { 
-                        return reader.openBook(packageData);
+                        return renderer.openBook();
                     },
                     openSpineItemElementCfi : function (idref, elementCfi) { 
-                        return reader.openSpineItemElementCfi(idref, elementCfi); 
+                        return renderer.openSpineItemElementCfi(idref, elementCfi);
                     },
                     openSpineItemPage: function(idref, pageIndex) {
-                        return reader.openSpineItemPage(idref, pageIndex);
+                        return renderer.openSpineItemPage(idref, pageIndex);
                     },
                     openPageIndex: function(pageIndex) {
-                        return reader.openPageIndex(pageIndex);
+                        return renderer.openPageIndex(pageIndex);
                     },
                     openPageRight : function () { 
-                        return reader.openPageRight(); 
+                        return renderer.openPageRight();
                     },
                     openPageLeft : function () { 
-                        return reader.openPageLeft(); 
+                        return renderer.openPageLeft();
                     },
                     updateSettings : function (settingsData) {
-                        return reader.updateSettings(settingsData);
+                        return renderer.updateSettings(settingsData);
                     },
                     bookmarkCurrentPage : function () {
-                        return reader.bookmarkCurrentPage();
+                        return renderer.bookmarkCurrentPage();
                     }
                 });    
             });

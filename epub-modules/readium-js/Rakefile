@@ -16,7 +16,7 @@ end
 
 module_dir = File.dirname(__FILE__)
 src_dir = "#{module_dir}/src"
-out_dir = "#{module_dir}/min"
+out_dir = "#{module_dir}/out"
 module_file_name = module_name
 
 task :default => [:gen_module]
@@ -28,12 +28,34 @@ CLEAN.include(out_dir)
 directory out_dir
 
 desc "generate #{module_name} module"
-task :gen_module => ['epub_fetch:gen_module', 'epub:gen_module', 'epub_renderer:gen_module', 'epub_ers:gen_module', 'clean', out_dir] do
+task :gen_module => ['epub_cfi:gen_module', 'epub_fetch:gen_module', 'epub:gen_module', 'epub_renderer:gen_module', 'epub_ers:gen_module', 'clean', out_dir] do
 
   optimizer_file_path = "#{module_dir}/../../build/r.js"
-  sh "node #{optimizer_file_path} -o #{module_dir}/build.js name=#{module_file_name} baseUrl=#{src_dir} optimize=none"\
+  r_build_config="#{module_dir}/build.js"
+
+  sh "node #{optimizer_file_path} -o #{r_build_config} name=#{module_file_name} baseUrl=#{src_dir} optimize=none"\
+  " out=#{out_dir}/#{module_file_name}.js"
+
+  sh "node #{optimizer_file_path} -o #{r_build_config} name=#{module_file_name} baseUrl=#{src_dir}"\
   " out=#{out_dir}/#{module_file_name}.min.js"
 
+  # almond path MUST be in a relative form, it will have baseUrl appended at the beginning:
+  almond_file_path = "../../../build/almond"
+
+  sh "node #{optimizer_file_path} -o #{r_build_config} baseUrl=#{src_dir} optimize=none"\
+    " name=#{almond_file_path} include=define-sync,#{module_file_name}"\
+    " wrap.startFile=wrap-sync-start.frag wrap.endFile=wrap-sync-end.frag"\
+    " out=#{out_dir}/#{module_file_name}.syncload.js"
+
+  sh "node #{optimizer_file_path} -o #{r_build_config} baseUrl=#{src_dir}"\
+    " name=#{almond_file_path} include=define-sync,#{module_file_name}"\
+    " wrap.startFile=wrap-sync-start.frag wrap.endFile=wrap-sync-end.frag"\
+    " out=#{out_dir}/#{module_file_name}.syncload.min.js"
+
+end
+
+namespace "epub_cfi" do
+  load "#{module_dir}/../epub-cfi/Rakefile"
 end
 
 namespace "epub_fetch" do
@@ -49,5 +71,5 @@ namespace "epub_ers" do
 end
 
 namespace "epub_renderer" do
-  load "#{module_dir}/../Rakefile"
+  load "#{module_dir}/../epub-renderer/Rakefile"
 end

@@ -2,17 +2,7 @@ var pathsReadium = {
     jquery: 'jquery-1.9.1',
     underscore: 'underscore-1.4.4',
     backbone: 'backbone-0.9.10',
-    readiumjs: 'readium-js/Readium.min'
-};
-
-var pathsSeparateEpubModules = {
-    jquery: 'jquery-1.9.1',
-    underscore: 'underscore-1.4.4',
-    backbone: 'backbone-0.9.10',
-    EpubFetchModule: './epub-fetch/src/epub_fetch_module',
-    EpubModule: './epub/src/epub_module',
-    EpubRendererModule: './epub-renderer/epub_renderer_module',
-    EpubReadingSystem: './epub-ers/src/epub_reading_system'
+    Readium: './readium-js/out/Readium'
 };
 
 require.config({
@@ -26,15 +16,15 @@ require.config({
             exports: 'Backbone'
         }
     },
-    paths: pathsSeparateEpubModules
+    paths: pathsReadium
 });
 
 // TODO: eliminate this global
 RJSDemoApp = {};
 
 
-require(['jquery', 'underscore', 'EpubFetchModule', 'EpubModule', 'EpubRendererModule', 'EpubReadingSystem', '../test_site/event_handling'], 
-    function ($, _, EpubFetchModule, EpubModule, EpubRendererModule, EpubReadingSystem, EventHandling) {
+require(['jquery', 'underscore', 'Readium', '../test_site/event_handling'],
+    function ($, _, Readium,  EventHandling) {
 
     RJSDemoApp.setModuleContainerHeight = function () {
         $("#reader").css({ "height": $(window).height() * 0.85 + "px" });
@@ -100,15 +90,8 @@ require(['jquery', 'underscore', 'EpubFetchModule', 'EpubModule', 'EpubRendererM
         var elementToBindReaderTo = $("#reader")[0];
         $(elementToBindReaderTo).html("");
 
-        RJSDemoApp.epubFetch = new EpubFetchModule({
-            packageDocumentURL: packageDocumentURL,
-            libDir: jsLibDir
-        });
-
-        RJSDemoApp.epub = new EpubModule(RJSDemoApp.epubFetch, function () {
-
-            var packageData = RJSDemoApp.epub.getPackageData();
-            RJSDemoApp.epubViewer = new EpubRendererModule(elementToBindReaderTo, packageData);
+        RJSDemoApp.readium = new Readium(elementToBindReaderTo, packageDocumentURL, jsLibDir, function (epubViewer) {
+            RJSDemoApp.epubViewer = epubViewer;
             RJSDemoApp.epubViewer.openBook();
             RJSDemoApp.addTOC($("#toc-iframe")[0]);
             RJSDemoApp.applyToolbarHandlers();

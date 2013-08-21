@@ -25,9 +25,7 @@ lib_dependency_filenames = [
 ]
 
 module_dependency_names = [
-  "epub-ers",
-  "epub",
-  "epub-fetch"
+  "readium-js"
 ]
 
 require 'rake/clean'
@@ -51,9 +49,6 @@ task :copy_dependencies => [ 'clean', lib_dir ] do
       `cp -a "#{parent_dir}/epub-modules/#{modname}" "#{this_dir}/lib/#{modname}"`
   end
 
-  # Get the renderer module specifically
-  `mkdir ./lib/epub-renderer`
-  `cp -a ../epub-modules/min/epub_renderer_module.min.js ./lib/epub-renderer/epub_renderer_module.js`
 end
 
 task :server do
