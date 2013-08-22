@@ -2,7 +2,7 @@ var pathsReadium = {
     jquery: 'jquery-1.9.1',
     underscore: 'underscore-1.4.4',
     backbone: 'backbone-0.9.10',
-    Readium: './readium-js/out/Readium'
+    Readium: './readium-js/Readium'
 };
 
 require.config({

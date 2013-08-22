@@ -44,12 +44,12 @@ task :gen_module => ['epub_cfi:gen_module', 'epub_fetch:gen_module', 'epub:gen_m
 
   sh "node #{optimizer_file_path} -o #{r_build_config} baseUrl=#{src_dir} optimize=none"\
     " name=#{almond_file_path} include=define-sync,#{module_file_name}"\
-    " wrap.startFile=wrap-sync-start.frag wrap.endFile=wrap-sync-end.frag"\
+    " wrap.startFile=#{module_dir}/wrap-sync-start.frag wrap.endFile=#{module_dir}/wrap-sync-end.frag"\
     " out=#{out_dir}/#{module_file_name}.syncload.js"
 
   sh "node #{optimizer_file_path} -o #{r_build_config} baseUrl=#{src_dir}"\
     " name=#{almond_file_path} include=define-sync,#{module_file_name}"\
-    " wrap.startFile=wrap-sync-start.frag wrap.endFile=wrap-sync-end.frag"\
+    " wrap.startFile=#{module_dir}/wrap-sync-start.frag wrap.endFile=#{module_dir}/wrap-sync-end.frag"\
     " out=#{out_dir}/#{module_file_name}.syncload.min.js"
 
 end
