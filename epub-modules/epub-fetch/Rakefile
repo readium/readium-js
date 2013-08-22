@@ -15,7 +15,7 @@ end
 
 module_dir = File.dirname(__FILE__)
 src_dir = "#{module_dir}/src"
-out_dir = "#{module_dir}/min"
+out_dir = "#{module_dir}/out"
 module_file_name = "#{module_name}_module"
 
 task :default => [:gen_module]
@@ -31,7 +31,7 @@ task :gen_module => ['clean', out_dir] do
 
   optimizer_file_path = "#{module_dir}/../../build/r.js"
   sh "node #{optimizer_file_path} -o #{module_dir}/build.js name=#{module_file_name} baseUrl=#{src_dir} optimize=none"\
-  " out=#{out_dir}/#{module_file_name}.min.js"
+  " out=#{out_dir}/#{module_file_name}.js"
 
 end
 

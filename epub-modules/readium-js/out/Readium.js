@@ -96,6 +96,9 @@ define('models/plain_fetcher',['require', 'module', 'jquery', 'URIjs/URI', './fe
 
         fetchFileContentsText: function (fileUrl, fetchCallback, onerror) {
             var thisFetcher = this;
+            if (typeof fileUrl === 'undefined') {
+                throw 'Fetched file URL is undefined!';
+            }
             $.ajax({
                 url: fileUrl,
                 dataType: 'text',
@@ -182,6 +185,9 @@ define('models/zip_fetcher',['require', 'module', 'jquery', 'URIjs/URI', './fetc
 
         fetchFileContents: function (relativePath, readCallback, onerror) {
             var thisFetcher = this;
+            if (typeof relativePath === 'undefined') {
+                throw 'Fetched file relative path is undefined!';
+            }
             this._withZipFsPerform(function (zipFs) {
                 var entry = zipFs.find(relativePath);
                 if (typeof entry === 'undefined' || entry === null) {
@@ -886,7 +892,7 @@ define('models/package_document_parser',['require', 'module', 'jquery', 'undersc
                     "";
                 var manifestItem = {
 
-                    contentDocumentURI: epubFetch.resolveURI(currManifestElementHref),
+                    contentDocumentURI: currManifestElementHref,
                     href: currManifestElementHref,
                     id: $currManifestElement.attr("id") ? $currManifestElement.attr("id") : "",
                     media_overlay: $currManifestElement.attr("media-overlay") ?
@@ -894,12 +900,9 @@ define('models/package_document_parser',['require', 'module', 'jquery', 'undersc
                     media_type: $currManifestElement.attr("media-type") ? $currManifestElement.attr("media-type") : "",
                     properties: $currManifestElement.attr("properties") ? $currManifestElement.attr("properties") : ""
                 };
-                console.log('pushing manifest item to JSON manifest.');
-                console.log('currManifestElementHref:');
-                console.log(currManifestElementHref);
-                console.log('manifestItem.contentDocumentURI:');
-                console.log(manifestItem.contentDocumentURI);
-                console.log('manifestItem:');
+                console.log('pushing manifest item to JSON manifest. currManifestElementHref: [' + currManifestElementHref
+                    + '], manifestItem.contentDocumentURI: [' + manifestItem.contentDocumentURI
+                    + '], manifestItem:');
                 console.log(manifestItem);
                 jsonManifest.push(manifestItem);
             });
@@ -1026,6 +1029,7 @@ define('models/package_document_parser',['require', 'module', 'jquery', 'undersc
     });
     return PackageDocumentParser;
 });
+
 define('models/package_document',['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs/URI', './manifest', './spine', './metadata',
     './page_spread_property', './package_document_parser'],
     function (require, module, $, _, Backbone, URI, Manifest, Spine, Metadata, PageSpreadProperty, PackageDocumentParser) {
@@ -1063,14 +1067,17 @@ define('models/package_document',['require', 'module', 'jquery', 'underscore', '
 
             var that = this;
             var spinePackageData = [];
+            var packageDocumentURL = this.get("epubFetch").get("packageDocumentURL");
+            var packageDocRoot = packageDocumentURL.substr(0, packageDocumentURL.lastIndexOf("/"));
+
             this.spine.each(function (spineItem) {
                 spinePackageData.push(that.generatePackageData(spineItem));
             });
-
+            
             // This is where the package data format thing is generated
             return {
-                rootUrl : this.get("epubFetch").get("packageDocumentURL"),
-                rendering_layout : this.isFixedLayout(),
+                rootUrl : packageDocRoot,
+                rendition_layout : this.isFixedLayout(),
                 spine : {
                     direction : this.pageProgressionDirection(),
                     items : spinePackageData    
@@ -1259,7 +1266,7 @@ define('models/package_document',['require', 'module', 'jquery', 'underscore', '
             }
         },
 
-        generateSpineInfo : function (spineItem) {
+        generatePackageData : function (spineItem) {
 
             var fixedLayoutProperty = "reflowable";
             // var fixedLayoutType = undefined;
@@ -1319,7 +1326,7 @@ define('models/package_document',['require', 'module', 'jquery', 'underscore', '
                 href : this.getManifestItemByIdref(spineItem.get("idref")).contentDocumentURI,
                 idref : spineItem.get("idref"),
                 page_spread : pageSpread,
-                rendering_layout : fixedLayoutProperty
+                rendition_layout : fixedLayoutProperty
             };
 
             return spineInfo;
@@ -1649,6 +1656,7 @@ define('epub_module',['require', 'module', 'jquery', 'underscore', 'backbone', '
         };
         return EpubModule;
     });
+
 define('epub_reading_system',['require', 'module'], function (require, module) {
 
     // Taken from https://raw.github.com/readium/readium/master/scripts/epub_reading_system.js
@@ -1702,9 +1710,10 @@ define('epub_reading_system',['require', 'module'], function (require, module) {
     }
     return navigator.epubReadingSystem;
 });
-define('epub_renderer_module',['require', 'module', 'jquery', 'underscore', 'backbone'],
+define('epub_renderer_module', ['require', 'module', 'jquery', 'underscore', 'backbone'],
 
     function (require, module, $, _, Backbone) {
+
 //  LauncherOSX
 //
 //  Created by Boris Schneiderman.
@@ -2468,6 +2477,48 @@ ReadiumSDK.Models.Package = Backbone.Model.extend({
 });
 
 define("package", function(){});
+
+//  Created by Boris Schneiderman.
+//  Copyright (c) 2012-2013 The Readium Foundation.
+//
+//  The Readium SDK is free software: you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation, either version 3 of the License, or
+//  (at your option) any later version.
+//
+//  This program is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+//
+//  You should have received a copy of the GNU General Public License
+//  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+ReadiumSDK.Models.ViewerSettings = function(settingsData) {
+
+    this.isSyntheticSpread = true;
+    this.fontSize = 100;
+    this.columnGap = 20;
+
+    this.update = function(settingsData) {
+
+        if(settingsData.isSyntheticSpread !== undefined) {
+            this.isSyntheticSpread = settingsData.isSyntheticSpread;
+        }
+
+        if(settingsData.columnGap !== undefined) {
+            this.columnGap = settingsData.columnGap;
+        }
+
+        if(settingsData.fontSize !== undefined) {
+            this.fontSize = settingsData.fontSize;
+        }
+    };
+
+    this.update(settingsData);
+};
+define("viewerSettings", function(){});
 
 //  Created by Boris Schneiderman.
 //  Copyright (c) 2012-2013 The Readium Foundation.
@@ -6500,17 +6551,21 @@ define("readerView", function(){});
 
 define('epub_renderer_module',['require', 'module', 'jquery', 'underscore', 'backbone', 'readiumSDK', 'helpers', 
     'triggers', 'bookmarkData', 'spineItem', 'spine', 'fixedPageSpread',
-    'package', 'currentPagesInfo', 'pageOpenRequest', 'epubCfi', 'cfiNavigationLogic', 'reflowableView',
+    'package', 'viewerSettings', 'currentPagesInfo', 'pageOpenRequest', 'epubCfi', 'cfiNavigationLogic', 'reflowableView',
     'onePageView', 'fixedView', 'readerView'],
 
     function (require, module, $, _, Backbone, ReadiumSDK, helpers, triggers, bookmarkData, spineItem, spine, fixedPageSpread,
-        package, currentPagesInfo, pageOpenRequest, epubCfi, cfiNavigationLogic, reflowableView, onePageView, fixedView, readerView
+        package, viewerSettings, currentPagesInfo, pageOpenRequest, epubCfi, cfiNavigationLogic, reflowableView, onePageView, fixedView, readerView
         ) {
+
+            var ReadiumSDK;
 
     }
 );        var EpubRendererModule = function (elementToBindReaderTo, packageData) {
 
-            var reader = new ReadiumSDK.Views.ReaderView(elementToBindReaderTo);
+            var reader = new ReadiumSDK.Views.ReaderView({
+              el: elementToBindReaderTo
+            });
 
             // Description: The public interface
             return {
@@ -6558,37 +6613,40 @@ define('Readium',['require', 'module', 'jquery', 'underscore', 'backbone', 'epub
         var Readium = function (elementToBindReaderTo, packageDocumentURL, jsLibDir, definitionCallback) {
 
             // -------------- Initialization of viewer ------------------ //
-            var epubFetch = new EpubFetchModule(packageDocumentURL, jsLibDir);
+            var epubFetch = new EpubFetchModule({
+                packageDocumentURL: packageDocumentURL,
+                libDir: jsLibDir
+            });
             var epub = new EpubModule(epubFetch, function () {
 
-                var reader = new EpubRendererModule(elementToBindReaderTo, epub.getPackageData());
+                var renderer = new EpubRendererModule(elementToBindReaderTo, epub.getPackageData());
                 
                 // Readium.js module api
                 definitionCallback({
 
                     openBook : function () { 
-                        return reader.openBook(packageData);
+                        return renderer.openBook();
                     },
                     openSpineItemElementCfi : function (idref, elementCfi) { 
-                        return reader.openSpineItemElementCfi(idref, elementCfi); 
+                        return renderer.openSpineItemElementCfi(idref, elementCfi);
                     },
                     openSpineItemPage: function(idref, pageIndex) {
-                        return reader.openSpineItemPage(idref, pageIndex);
+                        return renderer.openSpineItemPage(idref, pageIndex);
                     },
                     openPageIndex: function(pageIndex) {
-                        return reader.openPageIndex(pageIndex);
+                        return renderer.openPageIndex(pageIndex);
                     },
                     openPageRight : function () { 
-                        return reader.openPageRight(); 
+                        return renderer.openPageRight();
                     },
                     openPageLeft : function () { 
-                        return reader.openPageLeft(); 
+                        return renderer.openPageLeft();
                     },
                     updateSettings : function (settingsData) {
-                        return reader.updateSettings(settingsData);
+                        return renderer.updateSettings(settingsData);
                     },
                     bookmarkCurrentPage : function () {
-                        return reader.bookmarkCurrentPage();
+                        return renderer.bookmarkCurrentPage();
                     }
                 });    
             });

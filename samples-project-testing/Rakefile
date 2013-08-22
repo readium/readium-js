@@ -25,9 +25,7 @@ lib_dependency_filenames = [
 ]
 
 module_dependency_names = [
-  "epub-ers",
-  "epub",
-  "epub-fetch"
+  "readium-js"
 ]
 
 require 'rake/clean'
@@ -35,7 +33,7 @@ CLEAN.include(lib_dir)
 
 directory lib_dir
 
-task :copy_dependencies => [ 'clean', lib_dir ] do
+task :copy_dependencies => ['epub_renderer:gen_module', 'clean', lib_dir] do
   
   puts ":copy_dependencies => #{module_name}"
 
@@ -48,15 +46,15 @@ task :copy_dependencies => [ 'clean', lib_dir ] do
   # Get all the epub module dependencies
   module_dependency_names.each do |modname|
       puts "---> #{modname}"
-      `cp -a "#{parent_dir}/epub-modules/#{modname}" "#{this_dir}/lib/#{modname}"`
+      `cp -a "#{parent_dir}/epub-modules/#{modname}/out" "#{this_dir}/lib/#{modname}"`
   end
 
-  # Get the renderer module specifically
-  `mkdir ./lib/epub-renderer`
-  `cp -a ../epub-modules/min/epub_renderer_module.min.js ./lib/epub-renderer/epub_renderer_module.js`
 end
 
 task :server do
     puts `thin -R static.ru start`
 end
 
+namespace "epub_renderer" do
+  load "#{this_dir}/../epub-modules/readium-js/Rakefile"
+end

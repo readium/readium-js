@@ -20,6 +20,9 @@ define(['require', 'module', 'jquery', 'URIjs/URI', './fetch_base'], function (r
 
         fetchFileContentsText: function (fileUrl, fetchCallback, onerror) {
             var thisFetcher = this;
+            if (typeof fileUrl === 'undefined') {
+                throw 'Fetched file URL is undefined!';
+            }
             $.ajax({
                 url: fileUrl,
                 dataType: 'text',

@@ -1,6 +1,8 @@
         var EpubRendererModule = function (elementToBindReaderTo, packageData) {
 
-            var reader = new ReadiumSDK.Views.ReaderView(elementToBindReaderTo);
+            var reader = new ReadiumSDK.Views.ReaderView({
+              el: elementToBindReaderTo
+            });
 
             // Description: The public interface
             return {
