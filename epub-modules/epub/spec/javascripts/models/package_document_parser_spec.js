@@ -128,7 +128,7 @@ describe("EpubParser.PackageDocumentParser", function() {
         });
 
         it("parses the rights property", function () {
-            expect(this.metadata.rights).toEqual("");
+            expect(this.metadata.rights).toEqual("copyright something or other");
         });
 
         it("parses the spread property", function () {

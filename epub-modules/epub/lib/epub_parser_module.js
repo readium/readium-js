@@ -82,24 +82,25 @@ EpubParser.PackageDocumentParser = Backbone.Model.extend({
 
         var xmlDom = this.get("xmlDom");
         var $metadata = $("metadata", xmlDom);
+        var namespace = "dc";
         var jsonMetadata = {};
 
         jsonMetadata.active_class = $("meta[property='media:active-class']", $metadata).text();
-        jsonMetadata.author = $("creator", $metadata).text();
-        jsonMetadata.description = $("description", $metadata).text();
+        jsonMetadata.author = this.getNamespacedTagContent("creator", namespace, $metadata);
+        jsonMetadata.description = this.getNamespacedTagContent("description", namespace, $metadata);
         jsonMetadata.epub_version = $("package", xmlDom).attr("version") ? $("package", xmlDom).attr("version") : "";
-        jsonMetadata.id = $("identifier", $metadata).text();
-        jsonMetadata.language = $("language", $metadata).text();
+        jsonMetadata.id = this.getNamespacedTagContent("identifier", namespace, $metadata);
+        jsonMetadata.language = this.getNamespacedTagContent("language", namespace, $metadata);;
         jsonMetadata.layout = $("meta[property='rendition:layout']", $metadata).text();
         jsonMetadata.modified_date = $("meta[property='dcterms:modified']", $metadata).text();
         jsonMetadata.ncx = $("spine", xmlDom).attr("toc") ? $("spine", xmlDom).attr("toc") : "";
         jsonMetadata.orientation = $("meta[property='rendition:orientation']", $metadata).text();
         jsonMetadata.page_prog_dir = $("spine", xmlDom).attr("page-progression-direction") ? $("spine", xmlDom).attr("page-progression-direction") : "";
-        jsonMetadata.pubdate = $("date", $metadata).text();
-        jsonMetadata.publisher = $("publisher", $metadata).text();
-        jsonMetadata.rights = $("rights").text();
+        jsonMetadata.pubdate = this.getNamespacedTagContent("date", namespace, $metadata);
+        jsonMetadata.publisher = this.getNamespacedTagContent("publisher", namespace, $metadata)
+        jsonMetadata.rights = this.getNamespacedTagContent("rights", namespace, $metadata);
         jsonMetadata.spread = $("meta[property='rendition:spread']", $metadata).text();
-        jsonMetadata.title = $("title", $metadata).text();
+        jsonMetadata.title = this.getNamespacedTagContent("title", namespace, $metadata);
 
         return jsonMetadata;
     },
@@ -253,6 +254,26 @@ EpubParser.PackageDocumentParser = Backbone.Model.extend({
         var epubResourceRelURI = new URI(epubResourceURI);
         var epubResourceAbsURI = epubResourceRelURI.absoluteTo(this.packageDocumentURI);
         return epubResourceAbsURI.toString();
+    },
+    
+    // ----- PRIVATE HELPERS -------------------------------------------------------------------
+    
+    // Description: Browser-insensitive method to retrieve text content of an xml tag in a namespace context (dc:title for example)
+    // Arguments (
+    //   tagName   (string) Tag name, without namespace information (title in the previous example)
+    //   namespace (string) Namespace prefix (dc in the previous example)
+    //   $context  (Object) jQuery object representing a set of xml elements to search in
+    //  )
+    //  Return (string) Content of the tag (empty string if not found)
+    getNamespacedTagContent: function(tagName, namespace, $context) {
+        var content = "";
+        content = $(tagName, $context).text();//Webkit way
+        if (!content)
+        {
+            content = $(namespace+"\\:"+tagName, $context).text();//Firefox way
+        }
+        
+        return content;
     }
 });
 

@@ -1,52 +1,48 @@
-define(['jquery'], function ($) {
+RJSDemoApp.applyToolbarHandlers = function () {
 
-    console.log('Event handling initialization...');
+    // Library panel
+    $("#toc-btn").off("click");
+    $("#library-btn").on("click", function () {
+        RJSDemoApp.toggleLibraryPanel();
+    });
 
-    RJSDemoApp.applyToolbarHandlers = function () {
+    // TOC
+    $("#toc-btn").off("click");
+    $("#toc-btn").on("click", function () {
+        RJSDemoApp.toggleTOCPanel();
+    });
 
-        // Library panel
-        $("#toc-btn").off("click");
-        $("#library-btn").on("click", function () {
-            RJSDemoApp.toggleLibraryPanel();
-        });
+	// Decrease font size
+	(function() {
+		var $decreaseFont = $("#decrease-font-btn");
 
-        // TOC
-        $("#toc-btn").off("click");
-        $("#toc-btn").on("click", function () {
-            RJSDemoApp.toggleTOCPanel();
-        });
+		$decreaseFont.off("click");
+		$decreaseFont.on("click", function() {
+			var settings = RJSDemoApp.epubViewer.getViewerSettings()
+			RJSDemoApp.epubViewer.setFontSize(settings.fontSize - 2);
+		});
+	})();
 
-        // Prev
-        // Remove any existing click handlers
-        $("#previous-page-btn").off("click");
-        $("#previous-page-btn").on("click", function () {
-            RJSDemoApp.epubViewer.openPageLeft();
-        });
+	// Increase font size
+	(function() {
+		var $increaseFont = $("#increase-font-btn");
 
-        // Next
-        // Remove any existing click handlers
-        $("#next-page-btn").off("click");
-        $("#next-page-btn").on("click", function () {
-            RJSDemoApp.epubViewer.openPageRight();
-        });
+		$increaseFont.off("click");
+		$increaseFont.on("click", function() {
+			var settings = RJSDemoApp.epubViewer.getViewerSettings()
+			RJSDemoApp.epubViewer.setFontSize(settings.fontSize + 2);
+		});
+	})();
 
-        // Layout
-        $("#toggle-synthetic-btn").off("click");
-        $("#toggle-synthetic-btn").on("click", function () {
-            RJSDemoApp.toggleLayout();
-        });
-    };
+    // Prev
+    // Remove any existing click handlers
+    $("#previous-page-btn").off("click");
+    $("#previous-page-btn").on("click", function () {
 
-    RJSDemoApp.epubLinkClicked = function (e) {
-
-        var href;
-        var splitHref;
-        var spineIndex;
-        e.preventDefault();
-
-        // Check for both href and xlink:href attribute and get value
-        if (e.currentTarget.attributes["xlink:href"]) {
-            href = e.currentTarget.attributes["xlink:href"].value;
+        if (RJSDemoApp.epub.pageProgressionDirection() === "rtl") {
+            RJSDemoApp.epubViewer.nextPage(function () {
+                console.log("the page turned");
+            });
         }
         else {
             href = e.currentTarget.attributes["href"].value;
