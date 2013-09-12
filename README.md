@@ -19,7 +19,6 @@ Downloads:
 
 API documentation can be found [here](http://readium.github.io/SDK-api-doc/).
 
-
 ## Changes from the initial Readium.js project
 
 The initial version of the Readium.js project had a different set of internal javascript modules for "rendering" EPUB content. Given that very similar javascript rendering functionality was being developed for the ReadiumSDK project, the decision was made to adopt the ReadiumSDK javascript components in place of the equivalent Readium.js components. This also provided the opportunity to adopt the ReadiumSDK API. 
