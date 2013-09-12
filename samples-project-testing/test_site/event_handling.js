@@ -1,48 +1,78 @@
-RJSDemoApp.applyToolbarHandlers = function () {
+define(['jquery'], function ($) {
+    RJSDemoApp.applyToolbarHandlers = function () {
 
-    // Library panel
-    $("#toc-btn").off("click");
-    $("#library-btn").on("click", function () {
-        RJSDemoApp.toggleLibraryPanel();
-    });
+        // Library panel
+        $("#toc-btn").off("click");
+        $("#library-btn").on("click", function () {
+            RJSDemoApp.toggleLibraryPanel();
+        });
 
-    // TOC
-    $("#toc-btn").off("click");
-    $("#toc-btn").on("click", function () {
-        RJSDemoApp.toggleTOCPanel();
-    });
+        // TOC
+        $("#toc-btn").off("click");
+        $("#toc-btn").on("click", function () {
+            RJSDemoApp.toggleTOCPanel();
+        });
 
-	// Decrease font size
-	(function() {
-		var $decreaseFont = $("#decrease-font-btn");
+        // Decrease font size
+        (function () {
+            var $decreaseFont = $("#decrease-font-btn");
 
-		$decreaseFont.off("click");
-		$decreaseFont.on("click", function() {
-			var settings = RJSDemoApp.epubViewer.getViewerSettings()
-			RJSDemoApp.epubViewer.setFontSize(settings.fontSize - 2);
-		});
-	})();
-
-	// Increase font size
-	(function() {
-		var $increaseFont = $("#increase-font-btn");
-
-		$increaseFont.off("click");
-		$increaseFont.on("click", function() {
-			var settings = RJSDemoApp.epubViewer.getViewerSettings()
-			RJSDemoApp.epubViewer.setFontSize(settings.fontSize + 2);
-		});
-	})();
-
-    // Prev
-    // Remove any existing click handlers
-    $("#previous-page-btn").off("click");
-    $("#previous-page-btn").on("click", function () {
-
-        if (RJSDemoApp.epub.pageProgressionDirection() === "rtl") {
-            RJSDemoApp.epubViewer.nextPage(function () {
-                console.log("the page turned");
+            $decreaseFont.off("click");
+            $decreaseFont.on("click", function () {
+                // ReadiumSDK.Views.ReaderView doesn't expose a method to retrieve current settings,
+                // so at the moment differential changes to fontSize cannot be implemented:
+                //var settings = RJSDemoApp.epubViewer.getViewerSettings()
+                //RJSDemoApp.epubViewer.setFontSize(settings.fontSize - 2);
+                console.log('differential changes to fontSize not supported with the ReadiumSDK version used.');
             });
+        })();
+
+        // Increase font size
+        (function () {
+            var $increaseFont = $("#increase-font-btn");
+
+            $increaseFont.off("click");
+            $increaseFont.on("click", function () {
+                // ReadiumSDK.Views.ReaderView doesn't expose a method to retrieve current settings,
+                // so at the moment differential changes to fontSize cannot be implemented:
+                //var settings = RJSDemoApp.epubViewer.getViewerSettings()
+                //RJSDemoApp.epubViewer.setFontSize(settings.fontSize + 2);
+                console.log('differential changes to fontSize not supported with the ReadiumSDK version used.');
+
+            });
+        })();
+
+        // Prev
+        // Remove any existing click handlers
+        $("#previous-page-btn").off("click");
+        $("#previous-page-btn").on("click", function () {
+            RJSDemoApp.epubViewer.openPageLeft();
+        });
+
+        // Next
+        // Remove any existing click handlers
+        $("#next-page-btn").off("click");
+        $("#next-page-btn").on("click", function () {
+            RJSDemoApp.epubViewer.openPageRight();
+        });
+
+        // Layout
+        $("#toggle-synthetic-btn").off("click");
+        $("#toggle-synthetic-btn").on("click", function () {
+            RJSDemoApp.toggleLayout();
+        });
+    };
+
+    RJSDemoApp.epubLinkClicked = function (e) {
+
+        var href;
+        var splitHref;
+        var spineIndex;
+        e.preventDefault();
+
+        // Check for both href and xlink:href attribute and get value
+        if (e.currentTarget.attributes["xlink:href"]) {
+            href = e.currentTarget.attributes["xlink:href"].value;
         }
         else {
             href = e.currentTarget.attributes["href"].value;
@@ -115,11 +145,11 @@ RJSDemoApp.applyToolbarHandlers = function () {
     RJSDemoApp.toggleLayout = function () {
 
         if (RJSDemoApp.viewerPreferences.syntheticLayout) {
-            RJSDemoApp.epubViewer.updateSettings({ "isSyntheticSpread" : false });
+            RJSDemoApp.epubViewer.updateSettings({ "isSyntheticSpread": false });
             RJSDemoApp.viewerPreferences.syntheticLayout = false;
         }
         else {
-            RJSDemoApp.epubViewer.updateSettings({ "isSyntheticSpread" : true });
+            RJSDemoApp.epubViewer.updateSettings({ "isSyntheticSpread": true });
             RJSDemoApp.viewerPreferences.syntheticLayout = true;
         }
     };
