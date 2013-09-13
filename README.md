@@ -57,4 +57,4 @@ If you're interested in contributing here on Github, here are some resources to 
   * How to [get set up](https://github.com/readium/Readium-Web-Components/wiki/Getting-Set-Up-For-Development) for development.
   * Some info about the [file and folder structure](https://github.com/readium/Readium-Web-Components/wiki/Project-structure) of this project
 
-If you have any questions, please email me: justinh@evidentpoint.com
+If you have any questions, please email Dmitry: dmitrym@evidentpoint.com
