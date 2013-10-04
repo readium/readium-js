@@ -132,7 +132,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone'], function (requ
                 };
                 console.log('pushing manifest item to JSON manifest. currManifestElementHref: [' + currManifestElementHref
                     + '], manifestItem.contentDocumentURI: [' + manifestItem.contentDocumentURI
-                    + '], manifestItem:');
+                    + '], manifestItem.media_type: [' + manifestItem.media_type + '], manifestItem:');
                 console.log(manifestItem);
                 jsonManifest.push(manifestItem);
             });
