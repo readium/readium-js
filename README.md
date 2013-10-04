@@ -1,3 +1,16 @@
+# Readium Web Components
+Extend the readium project to the world wide web!
+
+## Compiling
+Hello! So, some quick installation instructions to get you up and running. You will need an internet connection for this.
+
+To install the Readium web components, simply run the install.sh script. (eg, "./install.sh")
+
+If that didn't work, and it very well might not, you can follow these manual steps which will at least give you a better error message. :)
+1) Install node.js and node's package manager, npm. Assuming you're on a linux with apt-get, run "sudo apt-get install nodejs npm".
+2) Run "npm install" in this directory. This will make npm install the dependancies to compile the project.
+3) Run "grunt" in this directory. This will ready the Readium web components for release.
+
 # Readium.js
 
 Welcome to Readium.js!
