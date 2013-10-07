@@ -16,8 +16,9 @@
 		"grunt-contrib-clean": "~0.5.0",
 		"grunt-contrib-concat": "~0.3.0",
 		"grunt-contrib-copy": "~0.4.1",
+		"grunt-cli": "~0.1.9 (Installed globally by the install script)",
 		"grunt-contrib-uglify": "~0.2.4",
-		"grunt-requirejs": "~0.4.0"
+		"grunt-contrib-requirejs": "~0.4.0"
 	},
 	
 	"homepage": "http://readium.org",

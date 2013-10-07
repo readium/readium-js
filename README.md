@@ -4,7 +4,7 @@ Extend the Readium project to the world wide web.
 ## Compiling
 Hello! Here are some quick installation instructions to get you up and running. You will need an internet connection.
 
-To install the Readium web components, simply run the install.sh script. (eg, "./install.sh") Enter your sudo password if prompted.
+To install the Readium web components, simply run the install-*.sh script. (eg, "./install-linux.sh") Enter your sudo password if prompted.
 
 The installation script will do the following:
 1) Install node.js and node's package manager, npm, via "sudo apt-get install nodejs npm". As of writing, we use node v0.10.15 and npm 1.3.5.
