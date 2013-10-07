@@ -3,6 +3,7 @@ var pathsReadium = {
     underscore: 'underscore-1.4.4',
     backbone: 'backbone-0.9.10',
     Readium: './readium-js/Readium'
+    //Readium: './readium-js/Readium.min'
 };
 
 require.config({

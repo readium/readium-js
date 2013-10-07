@@ -1,5 +1,5 @@
 module.exports = function(grunt) {
-	"use strict";
+	//"use strict"; //This is disabled because it's picking up octal literal notation that is quoted in a string.
 	
 	//TODO: The following doesn't compile the JS right.
 	//Compile a list of paths and output files for our modules for requirejs to compile.
@@ -21,6 +21,18 @@ module.exports = function(grunt) {
 			}
 		};
 	});
+	
+	var watchTasks = {};
+	["epub-cfi", "epub-fetch", "epub", "epub-ers", "epub-renderer", ].forEach(function(module) {
+		watchTasks[module] = {
+				files: ['epub-modules/'+module+'/src/**/*.js'],
+				tasks: ['exec:compile_an_epub_module:'+module, 'exec:compile_readium_epub_module', 'build_samples_project_testing'],
+			};
+	});
+	watchTasks["readium-js"] = {
+		files: ['epub-modules/readium-js/src/**/*.js'],
+		tasks: ['exec:compile_readium_epub_module', 'build_samples_project_testing'],
+	};
 	
 	function compileModuleCMD(module_name, output_name, optimize) {
 		//Returns a new command-line command to compile a readium module. While this uses require.js, I can't get the require.js grunt module to work. The version we're referencing here, r.js, is the same version as the grunt module uses.
@@ -53,6 +65,19 @@ module.exports = function(grunt) {
 					compileModuleCMD("epub-ers",      "epub_reading_system",  false),
 					compileModuleCMD("epub-renderer", "epub_renderer_module", false),
 				].join(' && ') //Join all the compile commands using an and, because this way if one fails everything will.
+			},
+			
+			compile_an_epub_module: {
+				cmd: function(module_name) {
+					var module_output_file = {
+						"epub-cfi":      "cfi_module",
+						"epub-fetch":    "epub_fetch_module",
+						"epub":          "epub_module",
+						"epub-ers":      "epub_reading_system",
+						"epub-renderer": "epub_renderer_module",
+					};
+					return compileModuleCMD(module_name, module_output_file[module_name]);
+				},
 			},
 			
 			compile_readium_epub_module: {
@@ -96,12 +121,14 @@ module.exports = function(grunt) {
 			
 			start_example_server: {
 				cmd: 'python -m SimpleHTTPServer 3000 | gnome-open "http://localhost:3000/samples-project-testing/test_site/reader_view.html"',
-			}
+			},
+			
+			print_msg_ran: {
+				cmd: 'echo -e "\n\n\tNow we\'ve compiled the javascript files. We can include them in our project, as shown in the example in samples-project-testing/test_site. To view the site, run \'\033[1mgrunt server\033[0m\'.\n\tIf you\'re a developer, you can run \'grunt watch\' to have any changes you make to the source code automatically recompiled.\n\tTo build only the readium project, run \'grunt build_epub_modules\'"'
+			},
 		},
+		watch: watchTasks,
 	};
-	
-	console.log(config);
-	console.log(config.requirejs.epub);
 	
 	//Load the config file, then load all the grunt modules we specified in package.json.
 	grunt.initConfig(config);
@@ -111,23 +138,23 @@ module.exports = function(grunt) {
 	//Tasks to run. Default installs, clean removes install.
 	//grunt.registerTask('default', ['requirejs:epub']);
 	
-	grunt.registerTask('build_epub_modules', [
+	grunt.registerTask('build_epub_modules', 'Build the epub modules.', [
 		'exec:initialize_submodules',
 		'exec:compile_standard_epub_modules',
 		'exec:compile_readium_epub_module',
 	]);
 	
-	grunt.registerTask('build_samples_project_testing', [
+	grunt.registerTask('build_samples_project_testing', 'Compile the website.', [
 		'exec:copy_dependancies_to_samples_project_testing',
 	]);
 	
-	grunt.registerTask('default', [
+	grunt.registerTask('default', 'Compile the readium-web-components project.', [
 		'build_epub_modules',
 		'build_samples_project_testing',
+		'exec:print_msg_ran',
 	]);
 	
 	grunt.registerTask('server', 'Starts a server and opens the testing webpage.', [
 		'exec:start_example_server',
 	]);
-
 };
