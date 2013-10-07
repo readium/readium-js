@@ -120,7 +120,8 @@ module.exports = function(grunt) {
 			},
 			
 			start_example_server: {
-				cmd: 'python -m SimpleHTTPServer 3000 | gnome-open "http://localhost:3000/samples-project-testing/test_site/reader_view.html"',
+				cmd: 'node "test_site_server.js" | gnome-open "http://localhost:3000/test_site/reader_view.html"',
+				cwd: 'samples-project-testing',
 			},
 			
 			print_msg_ran: {

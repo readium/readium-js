@@ -3,6 +3,6 @@
 set -e
 set -u
 
-sudo apt-get install nodejs npm python
+sudo apt-get install nodejs npm
 npm install
 grunt
