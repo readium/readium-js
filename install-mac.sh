@@ -6,4 +6,4 @@ curl https://npmjs.org/install.sh | sh #Install npm, node's package manager.
 sudo npm install -g grunt-cli #Install grunt globally, because it won't work just locally.
 npm install
 grunt
-echo "You can compile the javascript again, if you want to make changes, by running 'grunt'.\n"
+echo "You can compile the javascript again, if you want to make changes, by running 'grunt'."

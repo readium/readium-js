@@ -98,8 +98,8 @@ module.exports = function(grunt) {
 					
 					//Build Readium.js
 					//First, compile the module normally. Next, compile it with almond.
-					commands += compileModuleCMD("readium-js", "Readium", false) + " && ";
-					commands += compileModuleCMD("readium-js", "Readium", true) + " && ";
+					commands += compileModuleCMD("readium-js", "Readium", false);// + " && ";
+					//commands += compileModuleCMD("readium-js", "Readium", true) + " && ";
 					
 					var module_name = "readium-js";
 					var output_name = "Readium";
@@ -112,8 +112,8 @@ module.exports = function(grunt) {
 						'wrap.endFile="epub-modules/'+module_name+'/wrap-sync-end.frag" ' +
 						'out="epub-modules/'+module_name+'/out/'+output_name;
 						
-					commands += almond_compile_string + '.syncload.js" optimize=none &&';
-					commands += almond_compile_string + '.syncload.min.js"';
+					//commands += almond_compile_string + '.syncload.js" optimize=none &&';
+					//commands += almond_compile_string + '.syncload.min.js"';
 					
 					//optimize=none
 					return commands;
@@ -136,9 +136,8 @@ module.exports = function(grunt) {
 			
 			start_example_server: {
 				//Start an example server.
-				cmd: 'echo "Serving example site at http://localhost:3000/test_site/reader_view.html." && ' +
-					'node "test_site_server.js" | ' + //Pipe the output, so we don't wait for the server to finish starting before opening the file. Since gnome-open is just a nicety, it doesn't really matter if it's not found or if kde-open is installed instead.
-					'gnome-open "http://localhost:3000/test_site/reader_view.html"',
+				cmd: 'echo "Now serving the example site for you at http://localhost:3000/test_site/reader_view.html." && ' +
+					'node "test_site_server.js"',
 				cwd: 'samples-project-testing',
 			},
 			
