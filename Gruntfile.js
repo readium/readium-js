@@ -1,8 +1,10 @@
 module.exports = function(grunt) {
-	//"use strict"; //This is disabled because it's picking up octal literal notation that is quoted in a string.
+	//"use strict"; 
+	//This is disabled because it's picking up octal literal notation that is quoted in a string.
 	
-	//TODO: The following doesn't compile the JS right.
+	
 	//Compile a list of paths and output files for our modules for requirejs to compile.
+	//TODO: Translate the command-line code to this.
 	var configRequireJSCompilePaths = {};
 	[
 		{folder_name:'epub', output_file:'epub_module.js'}
@@ -22,6 +24,9 @@ module.exports = function(grunt) {
 		};
 	});
 	
+	
+	//Generate a map of projects to watch, for use in the standard grunt configuration.
+	//First, add the tasks that use the standard build command.
 	var watchTasks = {};
 	["epub-cfi", "epub-fetch", "epub", "epub-ers", "epub-renderer", ].forEach(function(module) {
 		watchTasks[module] = {
@@ -29,10 +34,12 @@ module.exports = function(grunt) {
 				tasks: ['exec:compile_an_epub_module:'+module, 'exec:compile_readium_epub_module', 'build_samples_project_testing'],
 			};
 	});
+	//Next, add the more complex readium build command.
 	watchTasks["readium-js"] = {
 		files: ['epub-modules/readium-js/src/**/*.js'],
 		tasks: ['exec:compile_readium_epub_module', 'build_samples_project_testing'],
 	};
+	
 	
 	function compileModuleCMD(module_name, output_name, optimize) {
 		//Returns a new command-line command to compile a readium module. While this uses require.js, I can't get the require.js grunt module to work. The version we're referencing here, r.js, is the same version as the grunt module uses.
@@ -45,17 +52,18 @@ module.exports = function(grunt) {
 	}
 	
 	
-	//Configuration of Grunt
 	var config = {
 		pkg: grunt.file.readJSON('package.json'),
 		
 		requirejs: configRequireJSCompilePaths,
 		
+		watch: watchTasks,
+		
 		exec: {
-			
 			initialize_submodules: {
 				cmd: "git submodule init && git submodule update"
 			},
+			
 			
 			compile_standard_epub_modules: {
 				cmd: [             //↓Module Folder↓  ↓Compiled Module Name↓ 
@@ -66,6 +74,7 @@ module.exports = function(grunt) {
 					compileModuleCMD("epub-renderer", "epub_renderer_module", false),
 				].join(' && ') //Join all the compile commands using an and, because this way if one fails everything will.
 			},
+			
 			
 			compile_an_epub_module: {
 				cmd: function(module_name) {
@@ -80,7 +89,10 @@ module.exports = function(grunt) {
 				},
 			},
 			
+			
 			compile_readium_epub_module: {
+				//Compile four different versions, because that's how it was packaged originally.
+				//TODO: Analyze use cases and eliminate useless repetition.
 				cmd: (function() {
 					var commands = "";
 					
@@ -108,36 +120,42 @@ module.exports = function(grunt) {
 				})(),
 			},
 				
+				
 			copy_dependancies_to_samples_project_testing: {
+				//TODO: Would links be better here?
 				cmd: 'mkdir "samples-project-testing/lib"; ' + [
 						"require.js", "jquery-1.9.1.js", "json2.js", "underscore-1.4.4.js", "backbone-0.9.10.js", "URIjs", "modernizr-2.5.3.min.js", "bootstrap.min.js", "deflate.js", "inflate.js", "mime-types.js", "zip-ext.js", "zip-fs.js", "zip.js"
 					].map(function(filename) {
 						return 'cp -a "epub-modules/lib/'+filename+'" "samples-project-testing/lib/'+filename+'"';
-					}).join(' && ') + ' && ' + 
+					}).join(' && ') + ' && ' + //Join with "and", so failure stops build process.
 					'rm -r "samples-project-testing/lib/readium-js"; ' +
 					'cp -a "epub-modules/readium-js/out" "samples-project-testing/lib" && ' +
 					'mv "samples-project-testing/lib/out" "samples-project-testing/lib/readium-js"',
 			},
 			
+			
 			start_example_server: {
-				cmd: 'node "test_site_server.js" | gnome-open "http://localhost:3000/test_site/reader_view.html"',
+				//Start an example server.
+				cmd: 'echo "Serving example site at http://localhost:3000/test_site/reader_view.html." && ' +
+					'node "test_site_server.js" | ' + //Pipe the output, so we don't wait for the server to finish starting before opening the file. Since gnome-open is just a nicety, it doesn't really matter if it's not found or if kde-open is installed instead.
+					'gnome-open "http://localhost:3000/test_site/reader_view.html"',
 				cwd: 'samples-project-testing',
 			},
 			
+			
 			print_msg_ran: {
+				//Here, we print a friendly, helpful message answering the question, "What do I do next?" While more verbose than it could be, I think it will be very useful when people unfamiliar with the code try to use it. It gives it just a pinch of discoverability.
 				cmd: 'echo -e "\n\n\tNow we\'ve compiled the javascript files. We can include them in our project, as shown in the example in samples-project-testing/test_site. To view the site, run \'\033[1mgrunt server\033[0m\'.\n\tIf you\'re a developer, you can run \'grunt watch\' to have any changes you make to the source code automatically recompiled.\n\tTo build only the readium project, run \'grunt build_epub_modules\'"'
 			},
 		},
-		watch: watchTasks,
 	};
 	
-	//Load the config file, then load all the grunt modules we specified in package.json.
 	grunt.initConfig(config);
+	
+	
+	//Load all our package.json-included grunt modules.
 	require('load-grunt-tasks')(grunt);
 	
-	
-	//Tasks to run. Default installs, clean removes install.
-	//grunt.registerTask('default', ['requirejs:epub']);
 	
 	grunt.registerTask('build_epub_modules', 'Build the epub modules.', [
 		'exec:initialize_submodules',
