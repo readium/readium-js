@@ -1,8 +1,5 @@
 #Install the tools to run our installer, then run our installer.
 
-set -e
-set -u
-
 echo "Attempting to use Homebrew to install Node.js. If Homebrew is not installed, you can grab it from http://brew.sh/."
 brew install node
 curl https://npmjs.org/install.sh | sh #Install npm, node's package manager.
