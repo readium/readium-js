@@ -15,7 +15,7 @@
 
         <!--reflowable view-->
 <script type="text/html" id="template-reflowable-view"><div id="viewport_reflowable" class="clearfix">
-<iframe scrolling="no" id="epubContentIframe"></iframe></div></script>
+<iframe id="epubContentIframe"></iframe></div></script>
 
         <!-- Fixed Layout View -->
 <script type="text/html" id="template-fixed-view"><div id="viewport_fixed"><div id="spread-wrap" class="clearfix"></div></div></script>
@@ -93,11 +93,8 @@
         <div class="container-fluid" style="margin-top:45px">
             <div class="row-fluid">
                 <div id="library-panel" class="span4 sidebar">
-                    <ul id="library-list" role="menu" aria-labelledby="dlabel" style="height:700px">
+                    <ul id="library-list" role="menu" aria-labelledby="dlabel" style="">
                     </ul>
-                </div>
-                <div id="toc-panel" class="span4 sidebar" style="display:none;height:700px;margin:0px">
-                    <iframe id="toc-iframe" src="" style="height:100%;width:100%;border-style:none"></iframe>
                 </div>
                 <div id="reader-panel" class="span8">
                     <div id="reader">

@@ -1,4 +1,19 @@
 .sidebar {
-    overflow: scroll;
-    border-right: 1px ridge grey;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+body, div.container-fluid, div.row-fluid, #library-panel, #epubContentIframe, #viewport_reflowable, #reader, #reader-panel {
+	height: 100%;
+}
+
+#library-panel {
+	/*This offsets the library panel, so that the bottom of the list isn't off screen. calc() also works, but is less widely supported.*/
+	margin-top: -100px;
+	border-top: 100px solid transparent;
+}
+
+#epubContentIframe {
+	margin-top: -150px;
+	border-top: 150px solid transparent;
 }
