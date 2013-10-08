@@ -32,6 +32,10 @@ module.exports = function(grunt) {
 		watchTasks[module] = {
 				files: ['epub-modules/'+module+'/src/**/*.js'],
 				tasks: ['exec:compile_an_epub_module:'+module, 'exec:compile_readium_epub_module', 'build_samples_project_testing'],
+                options: {
+                    livereload: true,
+                },
+
 			};
 	});
 	//Next, add the more complex readium build command.
