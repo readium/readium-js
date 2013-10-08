@@ -161,7 +161,6 @@ module.exports = function(grunt) {
 	
 	
 	grunt.registerTask('build_epub_modules', 'Build the epub modules.', [
-		'exec:initialize_submodules',
 		'exec:compile_standard_epub_modules',
 		'exec:compile_readium_epub_module',
 	]);
