@@ -26,9 +26,10 @@ RJSDemoApp = {};
 
 require(['jquery', 'underscore', 'Readium', '../test_site/event_handling'],
     function ($, _, Readium,  EventHandling) {
+    "use strict";
 
     RJSDemoApp.setModuleContainerHeight = function () {
-        $("#reader").css({ "height": $(window).height() * 0.85 + "px" });
+        $("#reader").css({ "height": $(window).height() -100 + "px" });
     };
 
     RJSDemoApp.addLibraryList = function ($ulElementContainer, libraryJson) {
@@ -44,7 +45,7 @@ require(['jquery', 'underscore', 'Readium', '../test_site/event_handling'],
     };
 
     RJSDemoApp.addTOC = function (tocIframe) {
-
+        // Note: Add the tocIframe to the HTML layout before uncommenting this.
         // $(tocIframe).off("load");
 
         // // On TOC load, add all the link handlers
@@ -100,11 +101,12 @@ require(['jquery', 'underscore', 'Readium', '../test_site/event_handling'],
         });
     };
 
-    loadInitialEpub($)
+    loadInitialEpub($);
 });
 
 function loadInitialEpub($) {
-
+	"use strict";
+	
     $(document).ready(function () {
 
         // Create an object of viewer preferences
@@ -128,24 +130,4 @@ function loadInitialEpub($) {
                 console.log("The library could not be loaded");
             });
     });
-
-    // Note: the epubReadingSystem object may not be ready when directly using the
-    // window.onload callback function (from within an (X)HTML5 EPUB3 content document's Javascript code)
-    // To address this issue, the recommended code is:
-    // -----
-    function doSomething() {
-        console.log(navigator.epubReadingSystem);
-    };
-    //
-    // // With jQuery:
-    // $(document).ready(function () { setTimeout(doSomething, 200); });
-    //
-    // // With the window "load" event:
-    // window.addEventListener("load", function () { setTimeout(doSomething, 200); }, false);
-    //
-    // // With the modern document "DOMContentLoaded" event:
-    document.addEventListener("DOMContentLoaded", function (e) {
-        setTimeout(doSomething, 200);
-    }, false);
-    // -----
 }
