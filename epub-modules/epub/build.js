@@ -1,4 +1,4 @@
-({
+requirejs({
     shim: {
         underscore: {
             exports: '_'
@@ -15,4 +15,4 @@
         URIjs: '../../lib/URIjs'
     },
     exclude: ['jquery', 'underscore', 'backbone', 'URIjs/URI']
-})
+});

@@ -1,4 +1,4 @@
-({
+requirejs({
     shim: {
         underscore: {
             exports: '_'
