@@ -130,9 +130,9 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone'], function (requ
                     media_type: $currManifestElement.attr("media-type") ? $currManifestElement.attr("media-type") : "",
                     properties: $currManifestElement.attr("properties") ? $currManifestElement.attr("properties") : ""
                 };
-                // console.log('pushing manifest item to JSON manifest. currManifestElementHref: [' + currManifestElementHref
-                //     + '], manifestItem.contentDocumentURI: [' + manifestItem.contentDocumentURI
-                //     + '], manifestItem:');
+                // console.log('pushing manifest item to JSON manifest. currManifestElementHref: [' + currManifestElementHref + 
+                //     '], manifestItem.contentDocumentURI: [' + manifestItem.contentDocumentURI + 
+                //     '], manifestItem:');
                 // console.log(manifestItem);
                 jsonManifest.push(manifestItem);
             });

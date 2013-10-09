@@ -6,7 +6,7 @@ define(['require', 'module', 'jquery', 'URIjs/URI', './fetch_base'], function (r
         },
 
         _resolveResourceElements: function (elemName, refAttr, contentDocumentDom, contentDocumentURI,
-                                            resolutionDeferreds) {
+                                            resolutionDeferreds, onerror) {
             var thisResolver = this;
             var fetcher = thisResolver.get('_resourceFetcher');
             var resolvedElems = $(elemName + '[' + refAttr + ']', contentDocumentDom);
@@ -25,13 +25,13 @@ define(['require', 'module', 'jquery', 'URIjs/URI', './fetch_base'], function (r
                     fetcher.relativeToPackageFetchFileContents(uriRelativeToZipRoot, 'blob', function (resourceData) {
                         $(resolvedElem).attr(refAttr, window.URL.createObjectURL(resourceData));
                         resolutionDeferred.resolve();
-                    });
+                    }, onerror);
                 }
             });
         },
 
         resolveInternalPackageResources: function (contentDocumentURI, contentDocumentType, contentDocumentText,
-                                                   resolvedDocumentCallback) {
+                                                   resolvedDocumentCallback, onerror) {
             var thisResolver = this;
 
             var contentDocumentDom = this.parseMarkup(contentDocumentText, contentDocumentType);
@@ -39,9 +39,9 @@ define(['require', 'module', 'jquery', 'URIjs/URI', './fetch_base'], function (r
             var resolutionDeferreds = [];
 
             thisResolver._resolveResourceElements('img', 'src', contentDocumentDom, contentDocumentURI,
-                resolutionDeferreds);
+                resolutionDeferreds, onerror);
             thisResolver._resolveResourceElements('link', 'href', contentDocumentDom, contentDocumentURI,
-                resolutionDeferreds);
+                resolutionDeferreds, onerror);
 
             $.when.apply($, resolutionDeferreds).done(function () {
                 resolvedDocumentCallback(contentDocumentDom);

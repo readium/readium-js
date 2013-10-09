@@ -21,7 +21,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub_fetch_mod
             
             var epub = new EpubModule(epubFetch, function () {
 
-                var renderer = new EpubRendererModule(elementToBindReaderTo, epub.getPackageData());
+                var renderer = new EpubRendererModule(epubFetch, elementToBindReaderTo, epub.getPackageData());
                 
                 // Readium.js module api
                 definitionCallback({

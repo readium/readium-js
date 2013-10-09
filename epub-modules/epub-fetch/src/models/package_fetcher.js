@@ -73,9 +73,9 @@ define(['require', 'module', './fetch_base', './discover_content_type', './plain
             },
 
             resolveInternalPackageResources: function (contentDocumentURI, contentDocumentType, contentDocumentText,
-                                                       resolvedDocumentCallback) {
+                                                       resolvedDocumentCallback, onerror) {
                 this.get('_resourceResolver').resolveInternalPackageResources(contentDocumentURI, contentDocumentType,
-                    contentDocumentText, resolvedDocumentCallback);
+                    contentDocumentText, resolvedDocumentCallback, onerror);
             }
 
         }, {

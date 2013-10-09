@@ -33,9 +33,9 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', './models/packa
                     onerror);
             },
             resolveInternalPackageResources: function (contentDocumentURI, contentDocumentType, contentDocumentText,
-                                                       resolvedDocumentCallback) {
+                                                       resolvedDocumentCallback, onerror) {
                 this.get('packageFetcher').resolveInternalPackageResources(contentDocumentURI, contentDocumentType,
-                    contentDocumentText, resolvedDocumentCallback);
+                    contentDocumentText, resolvedDocumentCallback, onerror);
             }
 
         });

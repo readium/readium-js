@@ -291,7 +291,9 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs/URI', '.
             }
 
             var spineInfo = {
-                href : this.getManifestItemByIdref(spineItem.get("idref")).contentDocumentURI,
+                href : manifestItem.get('contentDocumentURI'),
+                media_type : manifestItem.get('media_type'),
+                media_overlay : manifestItem.get('media_overlay'),
                 idref : spineItem.get("idref"),
                 page_spread : pageSpread,
                 rendition_layout : fixedLayoutProperty
