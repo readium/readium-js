@@ -10,13 +10,15 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub_fetch_mod
          * @param jsLibDir The path (relative to the current document) in which dependant zip.js libraries can be found.
          * @param definitionCallback The callback function that asynchronously receives the object's public interface once it has been initialized (document has been parsed).
          */
+        "use strict";
         var Readium = function (elementToBindReaderTo, packageDocumentURL, jsLibDir, definitionCallback) {
-
+                    
             // -------------- Initialization of viewer ------------------ //
             var epubFetch = new EpubFetchModule({
                 packageDocumentURL: packageDocumentURL,
                 libDir: jsLibDir
             });
+            
             var epub = new EpubModule(epubFetch, function () {
 
                 var renderer = new EpubRendererModule(epubFetch, elementToBindReaderTo, epub.getPackageData());
@@ -56,6 +58,6 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub_fetch_mod
         // window.onload callback function (from within an (X)HTML5 EPUB3 content document's Javascript code)
         // To address this issue, the recommended code is:
         // -----
-        console.log(navigator.epubReadingSystem);
+        // console.log(navigator.epubReadingSystem);
         return Readium;
     });

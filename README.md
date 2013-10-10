@@ -1,5 +1,18 @@
-# Readium.js
+# Readium Web Components
+Extend the Readium project to the world wide web.
 
+## Compiling
+Hello! Here are some quick installation instructions to get you up and running. You will need an internet connection.
+
+To install the Readium web components, simply run the install-*.sh script. (eg, "./install-linux.sh") Enter your sudo password if prompted.
+
+The installation script will do the following:
+1) Install node.js and node's package manager, npm, via "sudo apt-get install nodejs npm". As of writing, we use node v0.10.15 and npm 1.3.5.
+2) Run "npm install". This uses npm to download and install the rest of the dependencies for the project. (They are listed in package.json, if you're curious.)
+3) Run "grunt". Grunt is a build script, like Make, that will ready the Readium web components for release.
+
+# Readium.js
+(From the readium.js github repo; slightly inaccurate now.)
 Welcome to Readium.js!
 
 If you want to learn more about the project, check out the [press release](http://readium.org/news/announcing-readiumjs-a-javascript-library-for-browser-based-epub-3-reading) announcing the project. 

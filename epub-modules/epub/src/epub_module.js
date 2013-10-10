@@ -1,6 +1,7 @@
 define(['require', 'module', 'jquery', 'underscore', 'backbone', './models/package_document' ],
     function (require, module, $, _, Backbone, PackageDocument) {
-
+        "use strict";
+        
         var EpubModule = function (epubFetch, callback) {
 
             var packageDoc = new PackageDocument({
