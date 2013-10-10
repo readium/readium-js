@@ -57,7 +57,7 @@ module.exports = function(grunt) {
 	["epub-cfi", "epub-fetch", "epub", "epub-ers", "epub-renderer", ].forEach(function(module) {
 		watchTasks[module] = {
 				files: ['epub-modules/'+module+'/src/**/*.js'],
-				tasks: ['requirejs:'+module, 'requirejs:readium-js', 'copy'],
+				tasks: ['requirejs:'+module, 'requirejs:readium-js', 'copy', 'notify:watch', ],
                 options: {
                     livereload: true,
                     interrupt: true,
@@ -66,7 +66,7 @@ module.exports = function(grunt) {
 	});
 	watchTasks["readium-js"] = {
 		files: ['epub-modules/readium-js/src/**/*.js'],
-		tasks: ['requirejs:readium-js', 'copy'],
+		tasks: ['requirejs:readium-js', 'copy', 'notify:watch', ],
 	};
 	
 	
@@ -102,6 +102,15 @@ module.exports = function(grunt) {
 			print_msg_ran: {
 				//Here, we print a friendly, helpful message answering the question, "What do I do next?" While more verbose than it could be, I think it will be very useful when people unfamiliar with the code try to use it. It gives it just a pinch of discoverability.
 				cmd: 'echo -e "\n\n\tNow we\'ve compiled the javascript files. We can include them in our project, as shown in the example in samples-project-testing/test_site. To view the site, run \'\033[1mgrunt server\033[0m\'.\n\tIf you\'re a developer, you can run \'grunt watch\' to have any changes you make to the source code automatically recompiled.\n\tTo build only the readium project, run \'grunt build_epub_modules\'"'
+			},
+		},
+		
+		notify: {
+			watch: {
+				options: {
+					title: 'Successful recompile.',
+					message: 'Your javascript changes are now live.',
+				}
 			},
 		},
 	};
