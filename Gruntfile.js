@@ -67,6 +67,10 @@ module.exports = function(grunt) {
 	watchTasks["readium-js"] = {
 		files: ['epub-modules/readium-js/src/**/*.js'],
 		tasks: ['requirejs:readium-js', 'copy', 'notify:watch', ],
+        options: {
+            livereload: true,
+            interrupt: true,
+        },
 	};
 	
 	
