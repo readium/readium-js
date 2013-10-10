@@ -9,12 +9,11 @@ body, div.container-fluid, div.row-fluid, #library-panel, #epubContentIframe, #v
 
 #library-panel {
 	/*This offsets the library panel, so that the bottom of the list isn't off screen. calc() also works, but is less widely supported.*/
-	margin-top: -50px;
-	border-top: 50px solid transparent;
+	margin-top: -100px;
+	border-top: 100px solid transparent;
 }
 
 #epubContentIframe {
-	margin-top: -100px;
-	border-top: 100px solid transparent;
 	/*Height is set in initialize_rjs_reader.js*/
+	height: calc(100% - 100px);
 }

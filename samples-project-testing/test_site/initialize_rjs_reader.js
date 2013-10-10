@@ -29,8 +29,11 @@ var RJSDemoApp = {};
         function ($, _, Readium,  EventHandling) {
 
         RJSDemoApp.setModuleContainerHeight = function () {
-            $("#reader").css({ "height": $(window).height() -100 + "px" });
+            $("#epubContentIframe").css({
+                height: "calc(100% - 100px)",
+            });
         };
+        window.setInterval(RJSDemoApp.setModuleContainerHeight, 250);
 
         RJSDemoApp.addLibraryList = function ($ulElementContainer, libraryJson) {
 
