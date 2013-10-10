@@ -2,8 +2,11 @@ module.exports = function(grunt) {
 	//"use strict"; 
 	//This is disabled because it's picking up octal literal notation that is quoted in a string.
 	
-	//--minify: Compress the build.
-	//--syncload: Generate syncload javascript. TODO: Insert short description of syncload here.
+	//usage: grunt [server | watch | (--minify &| --syncload)]
+	//server: Start a testing server for the website.
+	//watch: Automatically recompile part of the project when files are changed.
+	//--minify: Compress the build. (Has no effect when server option in use.)
+	//--syncload: Generate syncload javascript. TODO: Insert short description of syncload here. (Has no effect when server option in use.)
 	
 	// Compile a list of paths and output files for our modules for requirejs to compile.
 	// TODO: Translate the command-line code to this.
