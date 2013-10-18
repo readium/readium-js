@@ -1,7 +1,7 @@
 
-define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub_fetch/epub_fetch_module',
-    'epub/epub_module', 'epub_renderer/epub_renderer_module'],
-    function (require, module, $, _, Backbone, EpubFetchModule, EpubModule, EpubRendererModule) {
+define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub_renderer/epub_renderer_module', 'epub_fetch/epub_fetch_module',
+    'epub/epub_module'],
+    function (require, module, $, _, Backbone, EpubRendererModule, EpubFetchModule, EpubModule) {
         /**
          * Creates an instance of the Readium.js object.
          *
