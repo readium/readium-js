@@ -18,6 +18,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub_renderer/
                 packageDocumentURL: packageDocumentURL,
                 libDir: jsLibDir
             });
+
             var epub = new EpubModule(epubFetch, function () {
 
                 var renderer = new EpubRendererModule(epubFetch, elementToBindReaderTo, epub.getPackageData());

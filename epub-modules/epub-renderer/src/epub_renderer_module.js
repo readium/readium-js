@@ -5,15 +5,6 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'readerView'],
         var ReadiumSDK = window.ReadiumSDK;
 
         var origLoadIframeFunction = ReadiumSDK.Helpers.LoadIframe;
-        var origReadiumSDKModelSpineItem = ReadiumSDK.Models.SpineItem;
-        ReadiumSDK.Models.SpineItem = function(itemData, index, spine) {
-            function SpineItem() {
-                this.media_type = itemData.media_type;
-            }
-            SpineItem.prototype = new origReadiumSDKModelSpineItem(itemData, index, spine);
-            SpineItem.constructor = SpineItem;
-            return new SpineItem();
-        };
 
         var loadIframeFunctionGenerator = function(epubFetch) {
             return  function(iframe, src, callback, context) {
