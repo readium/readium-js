@@ -116,7 +116,7 @@ function loadInitialEpub($) {
         };
 
         // Load Moby Dick by default
-        RJSDemoApp.loadAndRenderEpub("../epub_samples_project/moby-dick-20120118/OPS/package.opf");
+        RJSDemoApp.loadAndRenderEpub("../epub_samples_project/hefty-water-20120404/EPUB/package.opf");
 
         // Generate the library
         $.getJSON('../available_epubs/epub_library_info.json',function (data) {
