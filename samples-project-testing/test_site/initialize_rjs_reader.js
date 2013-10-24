@@ -1,7 +1,7 @@
 var RJSDemoApp = {};
 (function() {
     "use strict";
-    var default_epub = "../epub_samples_project/moby-dick-20120118/OPS/package.opf";
+    var default_epub = "../epub_samples_project/hefty-water-20120404/EPUB/package.opf";
     
     var pathsReadium = {
         jquery: 'jquery-1.9.1',
