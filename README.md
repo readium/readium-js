@@ -14,8 +14,8 @@ An example of Readium.js loading using Require.js can be found [here](https://gi
 
 Downloads:
 
-* Require.js loading: [Readium.min.js](https://github.com/readium/Readium-Web-Components/blob/master/epub-modules/readium-js/out/Readium.min.js)
-* Script tag loading: [Readium.syncload.min.js](https://raw.github.com/readium/Readium-Web-Components/master/epub-modules/readium-js/out/Readium.syncload.min.js) 
+* Require.js loading: [Readium.min.js](https://github.com/readium/readium-js/blob/master/epub-modules/readium-js/out/Readium.min.js)
+* Script tag loading: [Readium.syncload.min.js](https://raw.github.com/readium/readium-js/master/epub-modules/readium-js/out/Readium.syncload.min.js)
 
 API documentation can be found [here](http://readium.github.io/SDK-api-doc/).
 
@@ -41,20 +41,20 @@ Readium.js is a client-side javascript library that can be included in any web a
 
 ### Internal components of the library
 
-The Readium.js library is composed of [a few different modules](https://github.com/readium/Readium-Web-Components/tree/master/epub-modules) and a stylesheet: 
+The Readium.js library is composed of [a few different modules](https://github.com/readium/readium-js/tree/master/epub-modules) and a stylesheet:
 
 * epub-fetch: A module responsible for providing ansynchronous fetching of packed and unpacked EPUB resources. 
 * epub: A javascript analogue of the core c++ components of ReadiumSDK. 
 * epub-renderer: A module that encapsulates the javascript rendering code used in ReadiumSDK. This module is responsible for the layout, behaviour and styling of EPUB contnent and provides most of the methods used to interact with an EPUB. 
-* stylesheets: The ReadiumSDK project architecture is such that a CSS stylesheet is written for each environment in which it is deployed. This stylesheet provides the required styles for deploying the ReadiumSDK javascript components in multiple browser environments. 
+* stylesheets: The ReadiumSDK project architecture isß such that a CSS stylesheet is written for each environment in which it is deployed. This stylesheet provides the required styles for deploying the ReadiumSDK javascript components in multiple browser environments.
 
 ## Development and contributing
 
 If you're interested in contributing here on Github, here are some resources to get started: 
 
-  * The repository [wiki](https://github.com/readium/Readium-Web-Components/wiki) index.
-  * How to [contribute](https://github.com/readium/Readium-Web-Components/wiki/How-to-contribute-to-Readium.js)
-  * How to [get set up](https://github.com/readium/Readium-Web-Components/wiki/Getting-Set-Up-For-Development) for development.
-  * Some info about the [file and folder structure](https://github.com/readium/Readium-Web-Components/wiki/Project-structure) of this project
+  * The repository [wiki](https://github.com/readium/readium-js/wiki) index.
+  * How to [contribute](https://github.com/readium/readium-js/wiki/How-to-contribute-to-Readium.js)
+  * How to [get set up](https://github.com/readium/readium-js/wiki/Getting-Set-Up-For-Development) for development.
+  * Some info about the [file and folder structure](https://github.com/readium/readium-js/wiki/Project-structure) of this project
 
 If you have any questions, please email Dmitry: dmitrym@evidentpoint.com
