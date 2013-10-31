@@ -25,7 +25,7 @@ define(['require', 'module', 'jquery', 'URIjs/URI', './fetch_base'], function (r
                 console.log('zip.workerScriptsPath = ' + libDir);
                 zip.workerScriptsPath = libDir;
                 _zipFs = new zip.fs.FS();
-                _zipFs.importHttpContent(baseUrl, false, function () {
+                _zipFs.importHttpContent(baseUrl, true, function () {
 
                     callback(_zipFs);
 
