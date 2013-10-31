@@ -5,86 +5,80 @@ define(['require', 'module', './fetch_base', './discover_content_type', './plain
         console.log('package_fetcher module id: ' + module.id);
 
 
-        var PackageFetcher = EpubFetchBase.extend({
+        var PackageFetcher = function(packageDocumentURL, libDir){
 
-            initialize: function (attributes) {
-                var contentTypeDiscovery = new ContentTypeDiscovery({'contentUrl': this.get('packageDocumentURL')});
-                this.set('_contentTypeDiscovery', contentTypeDiscovery);
-                this._setupPackageContentType();
-                this._setupResourceFetcher();
-            },
+            PackageFetcher.contentTypePackageReadStrategyMap = {
+                'application/oebps-package+xml': 'exploded',
+                    'application/epub+zip': 'zipped',
+                    'application/zip': 'zipped'
+            };
 
-            _setupPackageContentType: function () {
-                this.set('_packageContentType', this.get('_contentTypeDiscovery').identifyContentType());
-            },
 
-            _getPackageReadStrategy: function () {
+            var _contentTypeDiscovery = new ContentTypeDiscovery(packageDocumentURL);
+            var _packageContentType = _contentTypeDiscovery.identifyContentType();
+            var _packageReadStrategy = getPackageReadStrategy(_packageContentType);
+            var _resourceFetcher = createResourceFetcher(packageDocumentURL, libDir, _packageReadStrategy, _packageContentType);
+            var _resourceResolver = new ResourceResolver({'_resourceFetcher': _resourceFetcher });
+            var self = this;
+
+            function getPackageReadStrategy(packageContentType) {
                 var readStrategy = 'exploded';
-                var packageContentType = this.getPackageContentType();
-                if (packageContentType in this.constructor.contentTypePackageReadStrategyMap) {
-                    readStrategy = this.constructor.contentTypePackageReadStrategyMap[packageContentType]
+
+                if (packageContentType in PackageFetcher.contentTypePackageReadStrategyMap) {
+                    readStrategy = PackageFetcher.contentTypePackageReadStrategyMap[packageContentType]
                 }
                 return readStrategy;
-            },
+            }
 
-            _setupResourceFetcher: function () {
-                var thisFetcher = this;
-                var packageReadStrategy = thisFetcher._getPackageReadStrategy();
+            function createResourceFetcher(packageDocumentURL, libDir, packageReadStrategy, contentTypeDiscovery) {
+
                 if (packageReadStrategy === 'exploded') {
+
                     console.log('using new PlainExplodedFetcher');
-                    thisFetcher.set('_resourceFetcher', new PlainExplodedFetcher({
-                        'baseUrl': thisFetcher.get('packageDocumentURL'),
-                        '_contentTypeDiscovery': thisFetcher.get('_contentTypeDiscovery')
-                    }));
+                    return new PlainExplodedFetcher(packageDocumentURL);
+
                 } else if (packageReadStrategy === 'zipped') {
                     console.log('using new ZipFetcher');
-                    thisFetcher.set('_resourceFetcher', new ZipFetcher({
-                        'baseUrl': thisFetcher.get('packageDocumentURL'),
-                        '_contentTypeDiscovery': thisFetcher.get('_contentTypeDiscovery'),
-                        'libDir': thisFetcher.get('libDir')
-                    }));
+                    return new ZipFetcher({
+                        'baseUrl': packageDocumentURL,
+                        '_contentTypeDiscovery': contentTypeDiscovery,
+                        'libDir': libDir
+                    });
                 } else {
                     throw new Error('Unsupported package read strategy: ' + packageReadStrategy);
                 }
-                thisFetcher.set('_resourceResolver', new ResourceResolver({
-                    '_resourceFetcher': thisFetcher.get('_resourceFetcher')
-                }));
-            },
-
-            isPackageExploded: function () {
-                return this.get('_resourceFetcher').isExploded();
-            },
-
-            resolveURI: function (epubResourceURI) {
-                return this.get('_resourceFetcher').resolveURI(epubResourceURI);
-            },
-
-            relativeToPackageFetchFileContents: function (relativePath, fetchMode, fetchCallback, onerror) {
-                this.get('_resourceFetcher').relativeToPackageFetchFileContents(relativePath, fetchMode, fetchCallback,
-                    onerror);
-            },
-
-            getPackageContentType: function () {
-                return this.get('_packageContentType');
-            },
-
-            getPackageDom: function (callback) {
-                this.get('_resourceFetcher').getPackageDom(callback);
-            },
-
-            resolveInternalPackageResources: function (contentDocumentURI, contentDocumentType, contentDocumentText,
-                                                       resolvedDocumentCallback, onerror) {
-                this.get('_resourceResolver').resolveInternalPackageResources(contentDocumentURI, contentDocumentType,
-                    contentDocumentText, resolvedDocumentCallback, onerror);
             }
 
-        }, {
-            contentTypePackageReadStrategyMap: {
-                'application/oebps-package+xml': 'exploded',
-                'application/epub+zip': 'zipped',
-                'application/zip': 'zipped'
-            }
-        });
+            this.getPackageDocumentURL = function() {
+                return packageDocumentURL;
+            };
+
+            this.isPackageExploded = function () {
+                return _resourceFetcher.isExploded();
+            };
+
+            this.resolveURI = function (epubResourceURI) {
+                return _resourceFetcher.resolveURI(epubResourceURI);
+            };
+
+            this.relativeToPackageFetchFileContents = function (relativePath, fetchMode, fetchCallback, onrror) {
+                return _resourceFetcher.relativeToPackageFetchFileContents(relativePath, fetchMode, fetchCallback, onrror);
+            };
+
+            this.getPackageContentType = function () {
+                return _packageContentType;
+            };
+
+            this.getPackageDom = function (callback) {
+                return _resourceFetcher.getPackageDom(callback);
+            };
+
+            this.resolveInternalPackageResources = function (contentDocumentURI, contentDocumentType, contentDocumentText, resolvedDocumentCallback, onerror) {
+                return _resourceResolver.resolveInternalPackageResources(contentDocumentURI, contentDocumentType, contentDocumentText, resolvedDocumentCallback, onerror);
+            };
+
+            return self;
+        };
 
         return PackageFetcher;
     });

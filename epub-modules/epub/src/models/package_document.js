@@ -35,7 +35,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs/URI', '.
 
             var that = this;
             var spinePackageData = [];
-            var packageDocumentURL = this.get("epubFetch").get("packageDocumentURL");
+            var packageDocumentURL = this.get("epubFetch").getPackageDocumentURL();
             var packageDocRoot = packageDocumentURL.substr(0, packageDocumentURL.lastIndexOf("/"));
 
             this.spine.each(function (spineItem) {

@@ -1,25 +1,19 @@
 define(['require', 'module', 'jquery', 'URIjs/URI', './fetch_base'], function (require, module, $, URI, EpubFetchBase) {
     console.log('plain_fetcher module id: ' + module.id);
 
-    var PlainExplodedFetcher = EpubFetchBase.extend({
+    var PlainExplodedFetcher = function(baseUrl){
 
-        initialize: function (attributes) {
-        },
+        var _fetchBase = new EpubFetchBase();
 
-        // Plain exploded EPUB packages are exploded by definition:
-        isExploded: function () {
-            return true;
-        },
-
-        resolveURI: function (epubResourceURI) {
+        this.resolveURI = function (epubResourceURI) {
             // Make absolute to the package document path
             var epubResourceRelURI = new URI(epubResourceURI);
-            var epubResourceAbsURI = epubResourceRelURI.absoluteTo(this.get('baseUrl'));
+            var epubResourceAbsURI = epubResourceRelURI.absoluteTo(baseUrl);
             return epubResourceAbsURI.toString();
-        },
+        };
 
-        fetchFileContentsText: function (fileUrl, fetchCallback, onerror) {
-            var thisFetcher = this;
+        function fetchFileContentsText (fileUrl, fetchCallback, onerror) {
+
             if (typeof fileUrl === 'undefined') {
                 throw 'Fetched file URL is undefined!';
             }
@@ -30,32 +24,37 @@ define(['require', 'module', 'jquery', 'URIjs/URI', './fetch_base'], function (r
                     fetchCallback(result);
                 },
                 error: function (xhr, status, errorThrown) {
-                    console.log('Error when AJAX fetching ' + fullUrl);
+                    console.log('Error when AJAX fetching ' + fileUrl);
                     console.log(status);
                     console.log(errorThrown);
                     onerror(errorThrown);
                 }
             });
-        },
+        }
 
-        relativeToPackageFetchFileContents: function (relativeToPackagePath, fetchMode, fetchCallback, onerror) {
+        this.isExploded = function () {
+            return true;
+        };
+
+        this.relativeToPackageFetchFileContents = function (relativeToPackagePath, fetchMode, fetchCallback, onerror) {
             // Not translating relativeToPackagePath, as with exploded EPUB all the URLs are relative
             // to the current page context and are good to go verbatim for fetching:
-            this.fetchFileContentsText(relativeToPackagePath, fetchCallback, onerror);
-        },
+            fetchFileContentsText(relativeToPackagePath, fetchCallback, onerror);
+        };
 
-        getPackageDom: function (callback) {
+        this.getPackageDom = function (callback) {
             console.log('getting package DOM');
 
-            var thisFetcher = this;
-            var baseUrl = thisFetcher.get('baseUrl');
             console.log('baseUrl: ' + baseUrl);
 
-            thisFetcher.fetchFileContentsText(baseUrl, function (packageXml) {
-                var packageDom = thisFetcher.parseXml(packageXml);
+            fetchFileContentsText(baseUrl, function (packageXml) {
+
+                var packageDom = _fetchBase.parseXml(packageXml);
                 callback(packageDom);
-            }, this._handleError);
-        }
-    });
+
+            }, _fetchBase.handleError);
+        };
+    };
+
     return PlainExplodedFetcher;
 });

@@ -1,44 +1,47 @@
-define(['require', 'module', 'jquery', 'underscore', 'backbone', './models/package_fetcher' ],
-    function (require, module, $, _, Backbone, PackageFetcher) {
+define(['require', 'module', 'jquery', 'underscore', './models/package_fetcher' ],
+    function (require, module, $, _, PackageFetcher) {
 
 
         console.log('epub_fetch_module module id: ' + module.id);
-        console.log(module.id + 'Backbone:' + Backbone);
+        console.log(module.id);
 
-        var EpubFetchModule = Backbone.Model.extend({
-            initialize: function (attributes) {
-                this.set('packageFetcher', new PackageFetcher({
-                    packageDocumentURL: this.get('packageDocumentURL'),
-                    libDir: this.get('libDir')
-                }));
-            },
+        var EpubFetchModule = function(packageDocumentURL, libDir) {
+
+            var _packageFetcher = new PackageFetcher(packageDocumentURL, libDir);
 
             // Description: The public interface
-            getPackageContentType: function () {
-                return this.get('packageFetcher').getPackageContentType();
-            },
-            getPackageDom: function (callback) {
-                this.get('packageFetcher').getPackageDom(callback);
-            },
-            getPackageDocumentURL: function (callback) {
-                return this.get('packageDocumentURL');
-            },
-            isPackageExploded: function () {
-                return this.get('packageFetcher').isPackageExploded();
-            },
-            resolveURI: function (epubResourceURI) {
-                return this.get('packageFetcher').resolveURI(epubResourceURI);
-            },
-            relativeToPackageFetchFileContents: function (relativePath, fetchMode, fetchCallback, onerror) {
-                this.get('packageFetcher').relativeToPackageFetchFileContents(relativePath, fetchMode, fetchCallback,
+            this.getPackageContentType = function () {
+                return _packageFetcher.getPackageContentType();
+            };
+
+            this.getPackageDom = function (callback) {
+                return _packageFetcher.getPackageDom(callback);
+            };
+
+            this.getPackageDocumentURL = function () {
+                return _packageFetcher.getPackageDocumentURL();
+            };
+
+            this.isPackageExploded = function () {
+                return _packageFetcher.isPackageExploded();
+            };
+
+            this.resolveURI = function (epubResourceURI) {
+                return _packageFetcher.resolveURI(epubResourceURI);
+            };
+
+            this.relativeToPackageFetchFileContents = function (relativePath, fetchMode, fetchCallback, onerror) {
+                return _packageFetcher.relativeToPackageFetchFileContents(relativePath, fetchMode, fetchCallback,
                     onerror);
-            },
-            resolveInternalPackageResources: function (contentDocumentURI, contentDocumentType, contentDocumentText,
+            };
+
+            this.resolveInternalPackageResources = function (contentDocumentURI, contentDocumentType, contentDocumentText,
                                                        resolvedDocumentCallback, onerror) {
-                this.get('packageFetcher').resolveInternalPackageResources(contentDocumentURI, contentDocumentType,
+                return _packageFetcher.resolveInternalPackageResources(contentDocumentURI, contentDocumentType,
                     contentDocumentText, resolvedDocumentCallback, onerror);
             }
 
-        });
+        };
+
         return EpubFetchModule;
     });

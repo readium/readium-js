@@ -1,14 +1,13 @@
 define(['require', 'module', 'jquery', 'URIjs/URI', './fetch_base'], function (require, module, $, URI, EpubFetchBase) {
     console.log('resource_resolver module id: ' + module.id);
 
-    var ResourceResolver = EpubFetchBase.extend({
-        initialize: function (attributes) {
-        },
+    var ResourceResolver = function(resourceFetcher) {
 
-        _resolveResourceElements: function (elemName, refAttr, contentDocumentDom, contentDocumentURI,
-                                            resolutionDeferreds, onerror) {
-            var thisResolver = this;
-            var fetcher = thisResolver.get('_resourceFetcher');
+
+        var _baseFetcher = new EpubFetchBase();
+
+        function resolveResourceElements (elemName, refAttr, contentDocumentDom, contentDocumentURI, resolutionDeferreds, onerror) {
+
             var resolvedElems = $(elemName + '[' + refAttr + ']', contentDocumentDom);
 
             resolvedElems.each(function (index, resolvedElem) {
@@ -22,25 +21,28 @@ define(['require', 'module', 'jquery', 'URIjs/URI', './fetch_base'], function (r
                     resolutionDeferreds.push(resolutionDeferred);
                     var uriRelativeToZipRoot = refAttrUri.absoluteTo(contentDocumentURI).toString();
 
-                    fetcher.relativeToPackageFetchFileContents(uriRelativeToZipRoot, 'blob', function (resourceData) {
+                    resourceFetcher.relativeToPackageFetchFileContents(uriRelativeToZipRoot, 'blob', function (resourceData) {
                         $(resolvedElem).attr(refAttr, window.URL.createObjectURL(resourceData));
                         resolutionDeferred.resolve();
                     }, onerror);
                 }
             });
-        },
+        }
 
-        resolveInternalPackageResources: function (contentDocumentURI, contentDocumentType, contentDocumentText,
+        this.isExploded = function () {
+            return resourceFetcher.isExploded();
+        };
+
+        this.resolveInternalPackageResources = function (contentDocumentURI, contentDocumentType, contentDocumentText,
                                                    resolvedDocumentCallback, onerror) {
-            var thisResolver = this;
 
-            var contentDocumentDom = this.parseMarkup(contentDocumentText, contentDocumentType);
+            var contentDocumentDom = _baseFetcher.parseMarkup(contentDocumentText, contentDocumentType);
 
             var resolutionDeferreds = [];
 
-            thisResolver._resolveResourceElements('img', 'src', contentDocumentDom, contentDocumentURI,
+            resolveResourceElements('img', 'src', contentDocumentDom, contentDocumentURI,
                 resolutionDeferreds, onerror);
-            thisResolver._resolveResourceElements('link', 'href', contentDocumentDom, contentDocumentURI,
+            resolveResourceElements('link', 'href', contentDocumentDom, contentDocumentURI,
                 resolutionDeferreds, onerror);
 
             $.when.apply($, resolutionDeferreds).done(function () {
@@ -49,7 +51,7 @@ define(['require', 'module', 'jquery', 'URIjs/URI', './fetch_base'], function (r
 
 
         }
-    });
+    };
 
     return ResourceResolver;
 });

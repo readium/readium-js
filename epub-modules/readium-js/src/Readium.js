@@ -14,10 +14,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub_renderer/
         var Readium = function (elementToBindReaderTo, packageDocumentURL, jsLibDir, definitionCallback) {
 
             // -------------- Initialization of viewer ------------------ //
-            var epubFetch = new EpubFetchModule({
-                packageDocumentURL: packageDocumentURL,
-                libDir: jsLibDir
-            });
+            var epubFetch = new EpubFetchModule(packageDocumentURL, jsLibDir);
 
             var epub = new EpubModule(epubFetch, function () {
 

@@ -1,19 +1,23 @@
-define(['backbone'], function (Backbone) {
+define(
+    function () {
 
-    var EpubFetchBase = Backbone.Model.extend({
-        _handleError: function (err) {
-            console.log(err);
-            console.trace();
-        },
-        parseXml: function (xmlString) {
-            return this.parseMarkup(xmlString, 'text/xml');
-        },
-        parseMarkup: function (markupString, contentType) {
-            var parser = new window.DOMParser;
-            var parsedDom = parser.parseFromString(markupString, contentType);
-            return parsedDom;
-        }
-    });
+        var EpubFetchBase = function (){
 
-    return EpubFetchBase;
+            this.handleError == function (err) {
+                console.log(err);
+                console.trace();
+            };
+
+            this.parseXml = function(xmlString) {
+                return this.parseMarkup(xmlString, 'text/xml');
+            };
+
+            this.parseMarkup = function(markupString, contentType) {
+                var parser = new window.DOMParser;
+                return parser.parseFromString(markupString, contentType);
+            };
+
+        };
+
+        return EpubFetchBase;
 });
