@@ -17,8 +17,8 @@ define(['require', 'module', './fetch_base', './discover_content_type', './plain
             var _contentTypeDiscovery = new ContentTypeDiscovery(packageDocumentURL);
             var _packageContentType = _contentTypeDiscovery.identifyContentType();
             var _packageReadStrategy = getPackageReadStrategy(_packageContentType);
-            var _resourceFetcher = createResourceFetcher(packageDocumentURL, libDir, _packageReadStrategy, _packageContentType);
-            var _resourceResolver = new ResourceResolver({'_resourceFetcher': _resourceFetcher });
+            var _resourceFetcher = createResourceFetcher(packageDocumentURL, libDir, _packageReadStrategy, _contentTypeDiscovery);
+            var _resourceResolver = new ResourceResolver(_resourceFetcher);
             var self = this;
 
             function getPackageReadStrategy(packageContentType) {
@@ -39,11 +39,7 @@ define(['require', 'module', './fetch_base', './discover_content_type', './plain
 
                 } else if (packageReadStrategy === 'zipped') {
                     console.log('using new ZipFetcher');
-                    return new ZipFetcher({
-                        'baseUrl': packageDocumentURL,
-                        '_contentTypeDiscovery': contentTypeDiscovery,
-                        'libDir': libDir
-                    });
+                    return new ZipFetcher(packageDocumentURL, contentTypeDiscovery, libDir);
                 } else {
                     throw new Error('Unsupported package read strategy: ' + packageReadStrategy);
                 }
