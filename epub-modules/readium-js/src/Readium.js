@@ -1,6 +1,7 @@
-define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub_fetch_module',
-    'epub_module', 'epub_reading_system', 'epub_renderer_module'],
-    function (require, module, $, _, Backbone, EpubFetchModule, EpubModule, EpubReadingSystem, EpubRendererModule) {
+
+define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub_renderer/epub_renderer_module', 'epub_fetch/epub_fetch_module',
+    'epub/epub_module'],
+    function (require, module, $, _, Backbone, EpubRendererModule, EpubFetchModule, EpubModule) {
         /**
          * Creates an instance of the Readium.js object.
          *
@@ -10,15 +11,14 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub_fetch_mod
          * @param jsLibDir The path (relative to the current document) in which dependant zip.js libraries can be found.
          * @param definitionCallback The callback function that asynchronously receives the object's public interface once it has been initialized (document has been parsed).
          */
-        "use strict";
         var Readium = function (elementToBindReaderTo, packageDocumentURL, jsLibDir, definitionCallback) {
-                    
+
             // -------------- Initialization of viewer ------------------ //
             var epubFetch = new EpubFetchModule({
                 packageDocumentURL: packageDocumentURL,
                 libDir: jsLibDir
             });
-            
+
             var epub = new EpubModule(epubFetch, function () {
 
                 var renderer = new EpubRendererModule(epubFetch, elementToBindReaderTo, epub.getPackageData());
@@ -58,6 +58,6 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub_fetch_mod
         // window.onload callback function (from within an (X)HTML5 EPUB3 content document's Javascript code)
         // To address this issue, the recommended code is:
         // -----
-        // console.log(navigator.epubReadingSystem);
+        console.log(navigator.epubReadingSystem);
         return Readium;
     });
