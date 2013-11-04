@@ -1,4 +1,4 @@
-define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs/URI', './manifest', './spine', './metadata',
+define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './manifest', './spine', './metadata',
     './page_spread_property', './package_document_parser'],
     function (require, module, $, _, Backbone, URI, Manifest, Spine, Metadata, PageSpreadProperty, PackageDocumentParser) {
     console.log('package_document module id: ' + module.id);
