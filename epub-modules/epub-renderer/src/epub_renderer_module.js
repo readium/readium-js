@@ -84,7 +84,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'readerView', '
 
                 addSelectionHighlight: function(id, type) {
                     var annotationsLibrary = new EpubAnnotationsModule(reader.getDom().get(0).contentWindow.document);
-                    annotationsLibrary.addSelectionHighlight(id,type);
+                    return annotationsLibrary.addSelectionHighlight(id,type);
                 }
 
             };
