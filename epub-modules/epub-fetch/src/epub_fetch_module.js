@@ -1,6 +1,7 @@
 define(['require', 'module', 'jquery', 'underscore', 'backbone', './models/package_fetcher' ],
     function (require, module, $, _, Backbone, PackageFetcher) {
 
+
         console.log('epub_fetch_module module id: ' + module.id);
         console.log(module.id + 'Backbone:' + Backbone);
 
