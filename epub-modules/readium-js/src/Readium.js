@@ -49,7 +49,12 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub_renderer/
                     },
                     bookmarkCurrentPage : function () {
                         return renderer.bookmarkCurrentPage();
+                    },
+                    addSelectionHighlight: function(id, type) {
+                        return renderer.addSelectionHighlight(id,type);
                     }
+
+
                 });    
             });
         };

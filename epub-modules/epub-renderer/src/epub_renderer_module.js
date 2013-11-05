@@ -1,6 +1,6 @@
-define(['require', 'module', 'jquery', 'underscore', 'backbone', 'readerView'],
+define(['require', 'module', 'jquery', 'underscore', 'backbone', 'readerView', 'annotations_module'],
 
-    function (require, module, $, _, Backbone, ReadiumSDK) {
+    function (require, module, $, _, Backbone, ReadiumSDK, annotations_module) {
 
         var ReadiumSDK = window.ReadiumSDK;
 
@@ -78,8 +78,15 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'readerView'],
                     return reader.updateSettings(settingsData);
                 },
                 bookmarkCurrentPage : function () {
+                    debugger;
                     return reader.bookmarkCurrentPage();
+                }, 
+
+                addSelectionHighlight: function(id, type) {
+                    var annotationsLibrary = new EpubAnnotationsModule(reader.getDom().get(0).contentWindow.document);
+                    annotationsLibrary.addSelectionHighlight(id,type);
                 }
+
             };
         };
 

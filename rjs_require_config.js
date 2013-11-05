@@ -47,7 +47,7 @@ var requirejs = {
         mediaOverlayElementHighlighter: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/media_overlay_element_highlighter',
         audioPlayer: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/audio_player',
         mediaOverlayPlayer: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/media_overlay_player',
-
+        annotations_module: 'epub-modules/epub-renderer/src/readium-shared-js/lib/annotations_module',
         Readium: 'epub-modules/readium-js/src/Readium'
 
     },
@@ -197,7 +197,14 @@ shim: {
             deps: [ 'backbone','readiumSDK', 'helpers', 'viewerSettings', 'styleCollection', 'package',
                 'mediaOverlayPlayer', 'pageOpenRequest', 'fixedView', 'reflowableView'],
             exports:'readerView'
-        }
+        },
+
+        annotations_module: {
+            deps: ['epubCfi'],
+            exports:'annotations_module'
+        },
+
+
 
     },
 
