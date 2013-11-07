@@ -1,4 +1,4 @@
-define(['require', 'module', 'jquery', 'URIjs/URI', './fetch_base'], function (require, module, $, URI, EpubFetchBase) {
+define(['require', 'module', 'jquery', 'URIjs', './fetch_base'], function (require, module, $, URI, EpubFetchBase) {
     console.log('resource_resolver module id: ' + module.id);
 
     var ResourceResolver = function(resourceFetcher) {

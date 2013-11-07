@@ -1,61 +1,60 @@
-define(['require', 'module', 'jquery', 'URIjs/URI', './fetch_base'], function (require, module, $, URI, EpubFetchBase) {
+define(['require', 'module', 'jquery', 'URIjs', './fetch_base'], function (require, module, $, URI, EpubFetchBase) {
     console.log('zip_fetcher module id: ' + module.id);
 
-    var ZipFetcher = function(baseUrl, contentTypeDiscovery, libDir) {
+    var ZipFetcher = EpubFetchBase.extend({
 
-        var self = this;
-        var _checkCrc32 = false;
-        var _zipFs;
-        var _packageFullPath;
-        var _packageDom;
-        var _packageDomInitializationSubscription;
-        var _baseFetcher = new EpubFetchBase();
+        defaults: {
+            'checkCrc32': false
+        },
+
+        initialize: function (attributes) {
+        },
 
         // Description: perform a function with an initialized zip filesystem, making sure that such filesystem is initialized.
         // Note that due to a race condition, more than one zip filesystem may be instantiated.
         // However, the last one to be set on the model object will prevail and others would be garbage collected later.
-        function withZipFsPerform(callback, onerror) {
-
-            if (_zipFs) {
-
-                callback(_zipFs);
+        _withZipFsPerform: function (callback, onerror) {
+            var thisFetcher = this;
+            if (thisFetcher.has('_zipFs')) {
+                var zipFs = thisFetcher.get('_zipFs');
+                callback(zipFs);
 
             } else {
-
+                var zipUrl = thisFetcher.get('baseUrl');
+                var libDir = thisFetcher.get('libDir');
                 console.log('zip.workerScriptsPath = ' + libDir);
                 zip.workerScriptsPath = libDir;
-                _zipFs = new zip.fs.FS();
-                _zipFs.importHttpContent(baseUrl, true, function () {
-
-                    callback(_zipFs);
+                var zipFs = new zip.fs.FS();
+                zipFs.importHttpContent(zipUrl, true, function () {
+                    thisFetcher.set('_zipFs', zipFs);
+                    callback(zipFs);
 
                 }, onerror)
             }
-        }
+        },
 
-        function identifyContentTypeFromFileName(fileUri) {
-            return contentTypeDiscovery.identifyContentTypeFromFileName(fileUri);
-        }
+        _identifyContentTypeFromFileName: function (fileUri) {
+            return this.get('_contentTypeDiscovery').identifyContentTypeFromFileName(fileUri);
+        },
 
         // Zipped EPUB packages are not exploded by definition:
-        this.isExploded = function () {
+        isExploded: function () {
             return false;
-        };
+        },
 
-        this.resolveURI = function (epubResourceURI) {
+        resolveURI: function (epubResourceURI) {
             return epubResourceURI;
-        };
+        },
 
-        function fetchFileContents (relativePath, readCallback, onerror) {
-
+        fetchFileContents: function (relativePath, readCallback, onerror) {
+            var thisFetcher = this;
             if (typeof relativePath === 'undefined') {
                 throw 'Fetched file relative path is undefined!';
             }
-
-            withZipFsPerform(function (zipFs) {
+            this._withZipFsPerform(function (zipFs) {
                 var entry = zipFs.find(relativePath);
                 if (typeof entry === 'undefined' || entry === null) {
-                    onerror(new Error('Entry ' + relativePath + ' not found in zip ' + baseUrl));
+                    onerror(new Error('Entry ' + relativePath + ' not found in zip ' + thisFetcher.get('baseUrl')));
                 } else {
                     if (entry.directory) {
                         onerror(new Error('Entry ' + relativePath + ' is a directory while a file has been expected'));
@@ -63,105 +62,112 @@ define(['require', 'module', 'jquery', 'URIjs/URI', './fetch_base'], function (r
                         readCallback(entry);
                     }
                 }
-            }, self.handleError);
-        }
+            }, thisFetcher._handleError);
+        },
 
-        function fetchFileContentsText(relativePath, fetchCallback, onerror) {
-
-            fetchFileContents(relativePath, function (entry) {
-                entry.getText(fetchCallback, undefined, _checkCrc32);
+        fetchFileContentsText: function (relativePath, fetchCallback, onerror) {
+            var thisFetcher = this;
+            thisFetcher.fetchFileContents(relativePath, function (entry) {
+                entry.getText(fetchCallback, undefined, thisFetcher.get('checkCrc32'));
             }, onerror)
-        }
+        },
 
-        function fetchFileContentsData64Uri(relativePath, fetchCallback, onerror) {
-            fetchFileContents(relativePath, function (entry) {
-                entry.getData64URI(identifyContentTypeFromFileName(relativePath), fetchCallback, undefined,  _checkCrc32);
+        fetchFileContentsData64Uri: function (relativePath, fetchCallback, onerror) {
+            var thisFetcher = this;
+            thisFetcher.fetchFileContents(relativePath, function (entry) {
+                entry.getData64URI(thisFetcher._identifyContentTypeFromFileName(relativePath), fetchCallback, undefined,
+                    thisFetcher.get('checkCrc32'));
             }, onerror)
-        }
+        },
 
-        function fetchFileContentsBlob(relativePath, fetchCallback, onerror) {
-            fetchFileContents(relativePath, function (entry) {
-                entry.getBlob(identifyContentTypeFromFileName(relativePath), fetchCallback, undefined,  _checkCrc32);
+        fetchFileContentsBlob: function (relativePath, fetchCallback, onerror) {
+            var thisFetcher = this;
+            thisFetcher.fetchFileContents(relativePath, function (entry) {
+                entry.getBlob(thisFetcher._identifyContentTypeFromFileName(relativePath), fetchCallback, undefined,
+                    thisFetcher.get('checkCrc32'));
             }, onerror)
-        }
+        },
 
-        this.relativeToPackageFetchFileContents = function(relativeToPackagePath, fetchMode, fetchCallback, onerror) {
-
-            console.log('Have got _packageFullPath ' + _packageFullPath);
-            console.log('packageFullPath: ' + _packageFullPath);
+        relativeToPackageFetchFileContents: function (relativeToPackagePath, fetchMode, fetchCallback, onerror) {
+            var thisFetcher = this;
+            var packageFullPath = thisFetcher.get('_packageFullPath');
+            console.log('Have got _packageFullPath ' + packageFullPath);
+            console.log('packageFullPath: ' + packageFullPath);
             console.log('relativePath: ' + relativeToPackagePath);
-            var pathRelativeToPackage = decodeURIComponent(new URI(relativeToPackagePath).absoluteTo(_packageFullPath).toString());
+            var pathRelativeToPackage = decodeURIComponent(new URI(relativeToPackagePath).absoluteTo(packageFullPath).toString());
             console.log('pathRelativeToPackage: ' + pathRelativeToPackage);
-            var fetchFunction = fetchFileContentsText;
+            var fetchFunction = thisFetcher.fetchFileContentsText;
             if (fetchMode === 'blob') {
-                fetchFunction = fetchFileContentsBlob;
+                fetchFunction = thisFetcher.fetchFileContentsBlob;
             } else if (fetchMode === 'data64uri') {
-                fetchFunction = fetchFileContentsData64Uri;
+                fetchFunction = thisFetcher.fetchFileContentsData64Uri;
             }
-            fetchFunction.call(self, pathRelativeToPackage, fetchCallback, onerror);
-        };
+            fetchFunction.call(thisFetcher, pathRelativeToPackage, fetchCallback, onerror);
+        },
 
-        function getFileContentsFromPackage(fileRelativePath, callback) {
-
-            fetchFileContentsText(fileRelativePath, function (fileContents) {
+        getFileContentsFromPackage: function (fileRelativePath, callback) {
+            var thisFetcher = this;
+            thisFetcher.fetchFileContentsText(fileRelativePath, function (fileContents) {
                 callback(fileContents);
-            }, _baseFetcher.handleError);
-        }
+            }, thisFetcher._handleError);
+        },
 
-//        function getContainerXml(callback) {
-//            var fileRelativePath = 'META-INF/container.xml';
-//            getFileContentsFromPackage(fileRelativePath, callback);
-//        }
+        getContainerXml: function (callback) {
+            var fileRelativePath = 'META-INF/container.xml';
+            this.getFileContentsFromPackage(fileRelativePath, callback);
+        },
 
-        function getXmlFileDom (xmlFileRelativePath, callback) {
-
-            getFileContentsFromPackage(xmlFileRelativePath, function (xmlFileContents) {
-                var fileDom = _baseFetcher.parseXml(xmlFileContents);
+        getXmlFileDom: function (xmlFileRelativePath, callback) {
+            var thisFetcher = this;
+            thisFetcher.getFileContentsFromPackage(xmlFileRelativePath, function (xmlFileContents) {
+                var fileDom = thisFetcher.parseXml(xmlFileContents);
                 callback(fileDom);
             });
-        }
+        },
 
-        function getPackageFullPath(callback) {
-
-            getXmlFileDom('META-INF/container.xml', function (containerXmlDom) {
-                getRootFile(containerXmlDom, callback);
+        getPackageFullPath: function (callback) {
+            var thisFetcher = this;
+            thisFetcher.getXmlFileDom('META-INF/container.xml', function (containerXmlDom) {
+                thisFetcher.getRootFile(containerXmlDom, callback);
             });
-        }
+        },
 
-        function getRootFile (containerXmlDom, callback) {
+        getRootFile: function (containerXmlDom, callback) {
             var rootFile = $('rootfile', containerXmlDom);
             var packageFullPath = rootFile.attr('full-path');
             console.log('packageFullPath: ' + packageFullPath);
             callback(packageFullPath);
-        }
+        },
 
-        this.getPackageDom = function(callback) {
-
-            if (_packageDom) {
-                callback(_packageDom);
+        getPackageDom: function (callback) {
+            var thisFetcher = this;
+            if (thisFetcher.has('_packageDom')) {
+                callback(thisFetcher.get('_packageDom'));
             } else {
                 // TODO: use jQuery's Deferred
                 // Register all callbacks interested in initialized packageDom, launch its instantiation only once
                 // and broadcast to all callbacks registered during the initialization once it's done:
-                if (_packageDomInitializationSubscription) {
-                    _packageDomInitializationSubscription.push(callback);
+                if (thisFetcher.has('_packageDomInitializationSubscription')) {
+                    thisFetcher.get('_packageDomInitializationSubscription').push(callback);
                 } else {
-                    _packageDomInitializationSubscription = [callback];
-                    getPackageFullPath(function (packageFullPath) {
-                        _packageFullPath = packageFullPath;
+                    thisFetcher.set('_packageDomInitializationSubscription', [callback]);
+                    thisFetcher.getPackageFullPath(function (packageFullPath) {
+                        thisFetcher.set('_packageFullPath', packageFullPath);
                         console.log('Have set _packageFullPath' + packageFullPath);
-                        getXmlFileDom(packageFullPath, function (packageDom) {
-                            _packageDom = packageDom;
-                            _packageDomInitializationSubscription.forEach(function (subscriberCallback) {
+                        thisFetcher.getXmlFileDom(packageFullPath, function (packageDom) {
+                            thisFetcher.set('_packageDom', packageDom);
+                            var initializationSubscriptions = thisFetcher.get('_packageDomInitializationSubscription');
+                            thisFetcher.unset('_packageDomInitializationSubscription');
+                            initializationSubscriptions.forEach(function (subscriberCallback) {
                                 subscriberCallback(packageDom);
                             });
-                            _packageDomInitializationSubscription = undefined;
                         })
                     });
                 }
             }
         }
-    };
+
+    });
 
     return ZipFetcher;
 });
