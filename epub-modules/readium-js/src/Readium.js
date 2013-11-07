@@ -52,7 +52,19 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub_renderer/
                     },
                     addSelectionHighlight: function(id, type) {
                         return renderer.addSelectionHighlight(id,type);
+                    },
+                    addSelectionImageAnnotation: function(id) {
+                        return renderer.addSelectionImageAnnotation(id);
+                    },
+
+                    addSelectionBookmark: function(id, type) {
+                        return renderer.addSelectionBookmark(id,type);
+                    },
+ 
+                    showPageByCFI : function (CFI, callback, callbackContext) {
+                        return renderer.showPageByCFI(CFI, callback, callbackContext);
                     }
+
 
 
                 });    
