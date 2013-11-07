@@ -20,12 +20,16 @@ module.exports = function(grunt) {
                 options: {
                     mainConfigFile: "rjs_require_config.js",
                     name: "Readium",
-                    optimize: grunt.option('minify')?undefined:"none",
+                    optimize: grunt.option('minify')?"uglify":"none",
                     out: "out/Readium" +
                         (grunt.option('syncload')?".syncload":"") +
                         (grunt.option('minify')?".min":"") + ".js",
-                    include: grunt.option('syncload')?"define-sync":undefined,
-                    almond: grunt.option('minify')
+                    include: grunt.option('syncload')?"epub-modules/readium-js/src/define-sync":undefined,
+                    almond: grunt.option('minify'),
+                    wrap: grunt.option('syncload')?{
+                      start: "(function (root, ReadiumModuleFactory) {\nroot.Readium = ReadiumModuleFactory();\n}(this, function () {",
+                      end: "var Readium = require('Readium');\nreturn Readium;\n}));",
+                    }:undefined
                 }
             }
         }
