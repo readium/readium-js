@@ -6,7 +6,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
     // Description: This model provides an interface for navigating an EPUB's package document
     var PackageDocument = Backbone.Model.extend({
 
-        initialize : function (attributes, options) {
+        initialize : function () {
 
             var that = this;
             // Initialize package document parser 
