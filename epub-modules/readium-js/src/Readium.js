@@ -60,13 +60,18 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub_renderer/
                     addSelectionBookmark: function(id, type) {
                         return renderer.addSelectionBookmark(id,type);
                     },
- 
+                    addHighlight : function (CFI, id, type) { 
+                        return renderer.addHighlight(CFI, id, type); 
+                    },
+                    addBookmark : function (CFI, id, type) { 
+                        return renderer.addBookmark(CFI, id, type);
+                    },
+                    addImageAnnotation : function (CFI, id) { 
+                        return renderer.addImageAnnotation(CFI, id); 
+                    },
                     showPageByCFI : function (CFI, callback, callbackContext) {
                         return renderer.showPageByCFI(CFI, callback, callbackContext);
-                    }
-
-
-
+                    },
                 });    
             });
         };

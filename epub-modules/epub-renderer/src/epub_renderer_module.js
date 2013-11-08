@@ -53,6 +53,10 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'readerView', '
                 el: elementToBindReaderTo
             });
 
+            // TODODM show boris
+            ReadiumSDK.reader = reader;
+
+
             //TODODM this is questionable. There should be a better way. Ask Boris.
             var packageDom;
             epubFetch.getPackageDom(function (dom) {
@@ -116,9 +120,18 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'readerView', '
                     annotation.CFI = createFullyQualifiedCfi(annotation.CFI);
                     return annotation;
                 },
-
-
-
+                addHighlight : function (CFI, id, type) { 
+                    var annotationsManager = reader.getAnnotaitonsManagerForCurrentSpineItem();
+                    return annotationsManager.addHighlight(CFI, id, type); 
+                },
+                addBookmark : function (CFI, id, type) { 
+                    var annotationsManager = reader.getAnnotaitonsManagerForCurrentSpineItem();
+                    return annotationsManager.addBookmark(CFI, id, type);
+                },
+                addImageAnnotation : function (CFI, id) { 
+                    var annotationsManager = reader.getAnnotaitonsManagerForCurrentSpineItem();
+                    return annotationsManager.addImageAnnotation(CFI, id); 
+                },
                 showPageByCFI : function (CFI, callback, callbackContext) {
                     var contentDocHref = EPUBcfi.getContentDocHref(CFI, packageDom);
                     var spine = reader.spine.getItemByHref(contentDocHref);
