@@ -53,12 +53,19 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'readerView', '
                 el: elementToBindReaderTo
             });
 
+            //TODODM this is questionable. There should be a better way. Ask Boris.
             var packageDom;
             epubFetch.getPackageDom(function (dom) {
                 packageDom = dom;
                 console.log("packageDom: " + packageDom);
             });
 
+            var createFullyQualifiedCfi = function(cfi) {
+                var spineIndex = reader.currentView.currentSpineItem.index
+                var packageDocCFIComponent = EPUBcfi.generatePackageDocumentCFIComponentWithSpineIndex(spineIndex, packageDom);
+                var completeCFI = EPUBcfi.generateCompleteCFI(packageDocCFIComponent, cfi);
+                return completeCFI;
+            };
 
             // Description: The public interface
             return {
@@ -89,31 +96,28 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'readerView', '
                 }, 
 
                 addSelectionHighlight: function(id, type) {
-                    annotations = new EpubAnnotationsModule(reader.getDom().get(0).contentWindow.document);
-                    $(window).on("resize.ReadiumSDK.reflowableView", _.bind(_.debounce(function() {
-                        console.log("Resize");
-                        annotations.redraw();
-                    }, 150), this));
-
-                    var annotation = annotations.addSelectionHighlight(id,type);
-                    var spineIndex = reader.currentView.currentSpineItem.index
-                    packageDocCFIComponent = EPUBcfi.generatePackageDocumentCFIComponentWithSpineIndex(spineIndex, packageDom);
-                    completeCFI = EPUBcfi.generateCompleteCFI(packageDocCFIComponent, annotation.CFI);
-                    annotation.CFI = completeCFI;
-
-                    // 
-                    //
-                    var contentDocHref = EPUBcfi.getContentDocHref(completeCFI, packageDom);
-                    console.log("Content doc: " + contentDocHref);
-                    //
-
-
+                    debugger;
+                    var annotationsManager = reader.getAnnotaitonsManagerForCurrentSpineItem();
+                    var annotation = annotationsManager.addSelectionHighlight(id,type);
+                    annotation.CFI = createFullyQualifiedCfi(annotation.CFI);
                     return annotation; 
                 },
+
                 addSelectionImageAnnotation: function(id, type) {
-                    annotations = new EpubAnnotationsModule(reader.getDom().get(0).contentWindow.document);
-                    return annotations.addSelectionImageAnnotation(id,type);
+                    var annotationsManager = reader.getAnnotaitonsManagerForCurrentSpineItem();
+                    var annotation = annotationsManager.addSelectionImageAnnotation(id,type);
+                    annotation.CFI = createFullyQualifiedCfi(annotation.CFI);
+                    return annotation;
                 },
+
+                addSelectionBookmark: function(id, type) {
+                    var annotationsManager = reader.getAnnotaitonsManagerForCurrentSpineItem();
+                    var annotation = annotationsManager.addSelectionBookmark(id,type);
+                    annotation.CFI = createFullyQualifiedCfi(annotation.CFI);
+                    return annotation;
+                },
+
+
 
                 showPageByCFI : function (CFI, callback, callbackContext) {
                     var contentDocHref = EPUBcfi.getContentDocHref(CFI, packageDom);
@@ -134,29 +138,6 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'readerView', '
                     console.log("idref: " + idref + " nakedCfi=" + nakedCfi);
                     return reader.openSpineItemElementCfi(idref, nakedCfi);
                 }, 
-
-                addSelectionBookmark: function(id, type) {
-                    annotations = new EpubAnnotationsModule(reader.getDom().get(0).contentWindow.document);
-                    $(window).on("resize.ReadiumSDK.reflowableView", _.bind(_.debounce(function() {
-                        console.log("Resize");
-                        annotations.redraw();
-                    }, 150), this));
-
-                    var annotation = annotations.addSelectionBookmark(id,type);
-                    var spineIndex = reader.currentView.currentSpineItem.index
-                    packageDocCFIComponent = EPUBcfi.generatePackageDocumentCFIComponentWithSpineIndex(spineIndex, packageDom);
-                    completeCFI = EPUBcfi.generateCompleteCFI(packageDocCFIComponent, annotation.CFI);
-                    annotation.CFI = completeCFI;
-
-                    // 
-                    //
-                    var contentDocHref = EPUBcfi.getContentDocHref(completeCFI, packageDom);
-                    console.log("Content doc: " + contentDocHref);
-                    //
-
-
-                    return annotation; 
-                },
 
 
             };
