@@ -96,7 +96,8 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'readerView', '
                     return reader.updateSettings(settingsData);
                 },
                 bookmarkCurrentPage : function () {
-                    return reader.bookmarkCurrentPage();
+                    var bookmarkObject = JSON.parse(reader.bookmarkCurrentPage());
+                    return createFullyQualifiedCfi(bookmarkObject.contentCFI);
                 }, 
 
                 addSelectionHighlight: function(id, type) {
