@@ -1,12 +1,7 @@
 define(
     function () {
 
-        var EpubFetchBase = function (){
-
-            this.handleError == function (err) {
-                console.log(err);
-                console.trace();
-            };
+        var MarkupParser = function (){
 
             this.parseXml = function(xmlString) {
                 return this.parseMarkup(xmlString, 'text/xml');
@@ -19,5 +14,5 @@ define(
 
         };
 
-        return EpubFetchBase;
+        return MarkupParser;
 });

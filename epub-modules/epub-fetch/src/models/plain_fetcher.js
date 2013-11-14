@@ -1,9 +1,9 @@
-define(['require', 'module', 'jquery', 'URIjs', './fetch_base'], function (require, module, $, URI, EpubFetchBase) {
+define(['require', 'module', 'jquery', 'URIjs', './markup_parser'], function (require, module, $, URI, MarkupParser) {
     console.log('plain_fetcher module id: ' + module.id);
 
     var PlainExplodedFetcher = function(baseUrl){
 
-        var _fetchBase = new EpubFetchBase();
+        var _fetchBase = new MarkupParser();
 
         this.resolveURI = function (epubResourceURI) {
             // Make absolute to the package document path

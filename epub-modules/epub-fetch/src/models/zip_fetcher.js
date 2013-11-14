@@ -1,7 +1,7 @@
-define(['require', 'module', 'jquery', 'URIjs', './fetch_base'], function (require, module, $, URI, EpubFetchBase) {
+define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_content_type'], function (require, module, $, URI, MarkupParser, ContentTypeDiscovery) {
     console.log('zip_fetcher module id: ' + module.id);
 
-    var ZipFetcher = function(baseUrl, contentTypeDiscovery, libDir) {
+    var ZipFetcher = function(baseUrl, libDir) {
 
         var self = this;
         var _checkCrc32 = false;
@@ -9,7 +9,7 @@ define(['require', 'module', 'jquery', 'URIjs', './fetch_base'], function (requi
         var _packageFullPath;
         var _packageDom;
         var _packageDomInitializationSubscription;
-        var _baseFetcher = new EpubFetchBase();
+        var _markupParser = new MarkupParser();
 
         // Description: perform a function with an initialized zip filesystem, making sure that such filesystem is initialized.
         // Note that due to a race condition, more than one zip filesystem may be instantiated.
@@ -31,10 +31,6 @@ define(['require', 'module', 'jquery', 'URIjs', './fetch_base'], function (requi
 
                 }, onerror)
             }
-        }
-
-        function identifyContentTypeFromFileName(fileUri) {
-            return contentTypeDiscovery.identifyContentTypeFromFileName(fileUri);
         }
 
         // Zipped EPUB packages are not exploded by definition:
@@ -75,13 +71,13 @@ define(['require', 'module', 'jquery', 'URIjs', './fetch_base'], function (requi
 
         function fetchFileContentsData64Uri(relativePath, fetchCallback, onerror) {
             fetchFileContents(relativePath, function (entry) {
-                entry.getData64URI(identifyContentTypeFromFileName(relativePath), fetchCallback, undefined,  _checkCrc32);
+                entry.getData64URI(ContentTypeDiscovery.identifyContentTypeFromFileName(relativePath), fetchCallback, undefined,  _checkCrc32);
             }, onerror)
         }
 
         function fetchFileContentsBlob(relativePath, fetchCallback, onerror) {
             fetchFileContents(relativePath, function (entry) {
-                entry.getBlob(identifyContentTypeFromFileName(relativePath), fetchCallback, undefined,  _checkCrc32);
+                entry.getBlob(ContentTypeDiscovery.identifyContentTypeFromFileName(relativePath), fetchCallback, undefined,  _checkCrc32);
             }, onerror)
         }
 
@@ -105,7 +101,7 @@ define(['require', 'module', 'jquery', 'URIjs', './fetch_base'], function (requi
 
             fetchFileContentsText(fileRelativePath, function (fileContents) {
                 callback(fileContents);
-            }, _baseFetcher.handleError);
+            }, _markupParser.handleError);
         }
 
 //        function getContainerXml(callback) {
@@ -116,7 +112,7 @@ define(['require', 'module', 'jquery', 'URIjs', './fetch_base'], function (requi
         function getXmlFileDom (xmlFileRelativePath, callback) {
 
             getFileContentsFromPackage(xmlFileRelativePath, function (xmlFileContents) {
-                var fileDom = _baseFetcher.parseXml(xmlFileContents);
+                var fileDom = _markupParser.parseXml(xmlFileContents);
                 callback(fileDom);
             });
         }

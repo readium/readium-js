@@ -20,6 +20,9 @@ var requirejs = {
         epub: 'epub-modules/epub/src',
         epub_ers: 'epub-modules/epub-ers/src',
         epub_renderer: 'epub-modules/epub-renderer/src',
+        package_fetcher: 'epub-modules/epub-fetch/src/models/package_fetcher',
+        package_parser: 'epub-modules/epub/src/models/package_document_parser',
+        package_document: 'epub-modules/epub/src/models/package_document',
 
         jquerySizes: 'epub-modules/epub-renderer/src/readium-shared-js/lib/jquery.sizes',
         readiumSDK: 'epub-modules/epub-renderer/src/readium-shared-js/js/readium_sdk',

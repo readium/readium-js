@@ -1,10 +1,10 @@
-define(['require', 'module', 'jquery', 'URIjs', './fetch_base'], function (require, module, $, URI, EpubFetchBase) {
+define(['require', 'module', 'jquery', 'URIjs', './markup_parser'], function (require, module, $, URI, MarkupParser) {
     console.log('resource_resolver module id: ' + module.id);
 
     var ResourceResolver = function(resourceFetcher) {
 
 
-        var _baseFetcher = new EpubFetchBase();
+        var _markupParser = new MarkupParser();
 
         function resolveResourceElements (elemName, refAttr, contentDocumentDom, contentDocumentURI, resolutionDeferreds, onerror) {
 
@@ -36,7 +36,7 @@ define(['require', 'module', 'jquery', 'URIjs', './fetch_base'], function (requi
         this.resolveInternalPackageResources = function (contentDocumentURI, contentDocumentType, contentDocumentText,
                                                    resolvedDocumentCallback, onerror) {
 
-            var contentDocumentDom = _baseFetcher.parseMarkup(contentDocumentText, contentDocumentType);
+            var contentDocumentDom = _markupParser.parseMarkup(contentDocumentText, contentDocumentType);
 
             var resolutionDeferreds = [];
 

@@ -9,10 +9,6 @@ define(['require', 'module', 'jquery', 'underscore', './models/package_fetcher' 
 
             var _packageFetcher = new PackageFetcher(packageDocumentURL, libDir);
 
-            // Description: The public interface
-            this.getPackageContentType = function () {
-                return _packageFetcher.getPackageContentType();
-            };
 
             this.getPackageDom = function (callback) {
                 return _packageFetcher.getPackageDom(callback);

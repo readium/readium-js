@@ -1,6 +1,6 @@
-define(['require', 'module', './fetch_base', './discover_content_type', './plain_fetcher', './zip_fetcher',
+define(['require', 'module', './markup_parser', './discover_content_type', './plain_fetcher', './zip_fetcher',
     './resource_resolver'],
-    function (require, module, EpubFetchBase, ContentTypeDiscovery, PlainExplodedFetcher, ZipFetcher,
+    function (require, module, MarkupParser, ContentTypeDiscovery, PlainExplodedFetcher, ZipFetcher,
               ResourceResolver) {
         console.log('package_fetcher module id: ' + module.id);
 
@@ -13,35 +13,30 @@ define(['require', 'module', './fetch_base', './discover_content_type', './plain
                     'application/zip': 'zipped'
             };
 
-
-            var _contentTypeDiscovery = new ContentTypeDiscovery(packageDocumentURL);
-            var _packageContentType = _contentTypeDiscovery.identifyContentType();
-            var _packageReadStrategy = getPackageReadStrategy(_packageContentType);
-            var _resourceFetcher = createResourceFetcher(packageDocumentURL, libDir, _packageReadStrategy, _contentTypeDiscovery);
+            var _resourceFetcher = createResourceFetcher(packageDocumentURL, libDir);
             var _resourceResolver = new ResourceResolver(_resourceFetcher);
             var self = this;
 
-            function getPackageReadStrategy(packageContentType) {
+            function createResourceFetcher(packageDocumentURL, libDir) {
+
                 var readStrategy = 'exploded';
+
+                var packageContentType = ContentTypeDiscovery.identifyContentType(packageDocumentURL);
 
                 if (packageContentType in PackageFetcher.contentTypePackageReadStrategyMap) {
                     readStrategy = PackageFetcher.contentTypePackageReadStrategyMap[packageContentType]
                 }
-                return readStrategy;
-            }
 
-            function createResourceFetcher(packageDocumentURL, libDir, packageReadStrategy, contentTypeDiscovery) {
-
-                if (packageReadStrategy === 'exploded') {
+                if (readStrategy === 'exploded') {
 
                     console.log('using new PlainExplodedFetcher');
                     return new PlainExplodedFetcher(packageDocumentURL);
 
-                } else if (packageReadStrategy === 'zipped') {
+                } else if (readStrategy === 'zipped') {
                     console.log('using new ZipFetcher');
-                    return new ZipFetcher(packageDocumentURL, contentTypeDiscovery, libDir);
+                    return new ZipFetcher(packageDocumentURL, libDir);
                 } else {
-                    throw new Error('Unsupported package read strategy: ' + packageReadStrategy);
+                    throw new Error('Unsupported package read strategy: ' + readStrategy);
                 }
             }
 
@@ -59,10 +54,6 @@ define(['require', 'module', './fetch_base', './discover_content_type', './plain
 
             this.relativeToPackageFetchFileContents = function (relativePath, fetchMode, fetchCallback, onrror) {
                 return _resourceFetcher.relativeToPackageFetchFileContents(relativePath, fetchMode, fetchCallback, onrror);
-            };
-
-            this.getPackageContentType = function () {
-                return _packageContentType;
             };
 
             this.getPackageDom = function (callback) {
