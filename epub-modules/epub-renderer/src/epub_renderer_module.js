@@ -101,7 +101,6 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'readerView', '
                 }, 
 
                 addSelectionHighlight: function(id, type) {
-                    debugger;
                     var annotationsManager = reader.getAnnotaitonsManagerForCurrentSpineItem();
                     var annotation = annotationsManager.addSelectionHighlight(id,type);
                     annotation.CFI = createFullyQualifiedCfi(annotation.CFI);
