@@ -3,7 +3,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser'], function (re
 
     var PlainExplodedFetcher = function(baseUrl){
 
-        var _fetchBase = new MarkupParser();
+        var _parser = new MarkupParser();
 
         this.resolveURI = function (epubResourceURI) {
             // Make absolute to the package document path
@@ -32,27 +32,23 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser'], function (re
             });
         }
 
-        this.isExploded = function () {
-            return true;
-        };
-
         this.relativeToPackageFetchFileContents = function (relativeToPackagePath, fetchMode, fetchCallback, onerror) {
             // Not translating relativeToPackagePath, as with exploded EPUB all the URLs are relative
             // to the current page context and are good to go verbatim for fetching:
             fetchFileContentsText(relativeToPackagePath, fetchCallback, onerror);
         };
 
-        this.getPackageDom = function (callback) {
+        this.getPackageDom = function (callback, onerror) {
             console.log('getting package DOM');
 
             console.log('baseUrl: ' + baseUrl);
 
             fetchFileContentsText(baseUrl, function (packageXml) {
 
-                var packageDom = _fetchBase.parseXml(packageXml);
+                var packageDom = _parser.parseXml(packageXml);
                 callback(packageDom);
 
-            }, _fetchBase.handleError);
+            }, onerror);
         };
     };
 

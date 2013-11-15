@@ -3,8 +3,10 @@ define(
 
         var MarkupParser = function (){
 
+            var self = this;
+
             this.parseXml = function(xmlString) {
-                return this.parseMarkup(xmlString, 'text/xml');
+                return self.parseMarkup(xmlString, 'text/xml');
             };
 
             this.parseMarkup = function(markupString, contentType) {

@@ -33,11 +33,6 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
             }
         }
 
-        // Zipped EPUB packages are not exploded by definition:
-        this.isExploded = function () {
-            return false;
-        };
-
         this.resolveURI = function (epubResourceURI) {
             return epubResourceURI;
         };
@@ -131,7 +126,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
             callback(packageFullPath);
         }
 
-        this.getPackageDom = function(callback) {
+        this.getPackageDom = function(callback, onerror) {
 
             if (_packageDom) {
                 callback(_packageDom);

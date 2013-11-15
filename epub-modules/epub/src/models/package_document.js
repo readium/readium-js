@@ -4,7 +4,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
     console.log('package_document module id: ' + module.id);
 
     // Description: This model provides an interface for navigating an EPUB's package document
-    var PackageDocument = function(packageDocumentURL, jsonData) {
+    var PackageDocument = function(packageDocumentURL, jsonData, resourceFetcher) {
 
         var _spine = new Spine(jsonData.spine);
         var _manifest = new Manifest(jsonData.manifest);
@@ -44,7 +44,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
 
         function getManifestItemById(id) {
 
-            var foundManifestItem = this.manifest.find(
+            var foundManifestItem = _manifest.find(
                 function (manifestItem) {
                     if (manifestItem.get("id") === id) {
                         return manifestItem;
@@ -134,7 +134,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
         function getPrevLinearSpinePosition(currSpineIndex) {
 
             if (currSpineIndex === undefined || currSpineIndex > spineLength() - 1) {
-                currSpineIndex = this.spineLength() - 1;
+                currSpineIndex = spineLength() - 1;
 
                 if (_spine.at(currSpineIndex).get("linear") !== "no") {
                     return currSpineIndex;
@@ -157,7 +157,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             if (currSpineIndex >= 0 &&
                 currSpineIndex <= spineLength() - 1) {
 
-                return this.getNextLinearSpinePosition(currSpineIndex) > -1;
+                return getNextLinearSpinePosition(currSpineIndex) > -1;
             }
             else {
                 return false;
@@ -169,7 +169,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             if (currSpineIndex >= 0 &&
                 currSpineIndex <= spineLength() - 1) {
 
-                return this.getPrevLinearSpinePosition(currSpineIndex) > -1;
+                return getPrevLinearSpinePosition(currSpineIndex) > -1;
             }
             else {
                 return false;
@@ -223,8 +223,8 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             var pageSpread;
 
             // Get fixed layout properties
-            if (spineItem.isFixedLayout() || this.isFixedLayout()) {
-                isFixedLayout = true;
+            if (spineItem.isFixedLayout() || isFixedLayout()) {
+
                 fixedLayoutProperty = "pre-paginated";
                 // if (manifestItem.isSvg()) {
                 //     fixedLayoutType = "svg";
@@ -248,10 +248,10 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             pageSpread = spineItem.get("page_spread");
             // Set first page is offset parameter
             // if (!isFixedLayout) {
-            //     if (this.pageProgressionDirection() === "ltr" && pageSpread === "right") {
+            //     if (pageProgressionDirection() === "ltr" && pageSpread === "right") {
             //         firstPageIsOffset = true;
             //     }
-            //     else if (this.pageProgressionDirection() === "rtl" && pageSpread === "left") {
+            //     else if (pageProgressionDirection() === "rtl" && pageSpread === "left") {
             //         firstPageIsOffset = true;
             //     }
             //     else {
@@ -295,10 +295,10 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             var tocUrl = getToc();
             console.log('tocUrl: [' + tocUrl + ']');
 
-            this.get('epubFetch').relativeToPackageFetchFileContents(tocUrl, 'text', function (tocDocumentText) {
+            resourceFetcher.relativeToPackageFetchFileContents(tocUrl, 'text', function (tocDocumentText) {
                 callback(tocDocumentText)
             }, function (err) {
-                console.error('ERROR fetching TOC from [' + this.getToc() + ']:');
+                console.error('ERROR fetching TOC from [' + getToc() + ']:');
                 console.error(err);
                 callback(undefined);
             });
@@ -344,7 +344,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
 
         function tocIsNcx() {
 
-            var tocItem = this.getTocItem();
+            var tocItem = getTocItem();
             var contentDocURI = tocItem.get("contentDocumentURI");
             var fileExtension = contentDocURI.substr(contentDocURI.lastIndexOf('.') + 1);
 
@@ -396,7 +396,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             var resourceName = resourceURI.filename();
             var foundSpineModel;
 
-            this.manifest.each(function (manifestItem) {
+            _manifest.each(function (manifestItem) {
 
                 var manifestItemURI = new URI(manifestItem.get("href"));
                 var manifestItemName = manifestItemURI.filename();
@@ -412,7 +412,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
 
         function getSpineModelByIdref(idref) {
 
-            var foundSpineItem = this.spine.find(
+            var foundSpineItem = _spine.find(
                 function (spineItem) {
                     if (spineItem.get("idref") === idref) {
                         return spineItem;
@@ -424,7 +424,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
 
         function getManifestModelByIdref(idref) {
 
-            var foundManifestItem = this.manifest.find(
+            var foundManifestItem = _manifest.find(
                 function (manifestItem) {
                     if (manifestItem.get("id") === idref) {
                         return manifestItem;
@@ -436,7 +436,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
 
         function getSpineIndex(spineItem) {
 
-            return this.spine.indexOf(spineItem);
+            return _spine.indexOf(spineItem);
         }
 
         // Description: When rendering fixed layout pages we need to determine whether the page
@@ -452,10 +452,10 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             var numSpineItems;
 
             // If the epub is apple fixed layout
-            if (this.metadata.get("apple_fixed")) {
+            if (_metadata.get("apple_fixed")) {
 
-                numSpineItems = this.spine.length;
-                this.spine.each(function (spineItem, spineIndex) {
+                numSpineItems = _spine.length;
+                _spine.each(function (spineItem, spineIndex) {
 
                     pageSpreadClass = _pageSpreadProperty.inferiBooksPageSpread(spineIndex, numSpineItems);
                     spineItem.set({ pageSpreadClass : pageSpreadClass });
@@ -463,7 +463,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             }
             else {
                 // For each spine item
-                this.spine.each(function (spineItem, spineIndex) {
+                _spine.each(function (spineItem, spineIndex) {
 
                     if (spineItem.get("page_spread")) {
 
@@ -481,9 +481,8 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
 
         function getTocItem(){
 
-            var manifest = this.manifest;
-            var metadata = this.metadata;
-            var spine_id = this.metadata.get("ncx");
+            var manifest = _manifest;
+            var spine_id = _metadata.get("ncx");
 
             var item = manifest.find(function(item){
 

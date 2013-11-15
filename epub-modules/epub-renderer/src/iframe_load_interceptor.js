@@ -1,14 +1,12 @@
-define(['require', 'module', 'jquery', 'underscore', 'backbone', 'readerView', 'URIjs'],
+define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs'],
 
-    function (require, module, $, _, Backbone, ReadiumSDK, URI) {
+    function (require, module, $, _, Backbone, URI) {
 
-        var ReadiumSDK = window.ReadiumSDK;
+        var self = this;
 
-        var origLoadIframeFunction = ReadiumSDK.Helpers.LoadIframe;
-
-        var loadIframeFunctionGenerator = function(epubFetch, reader) {
+        var loadIframeFunctionGenerator = function(reader, getCurrentResourceFetcher, origLoadIframeFunction) {
             return  function(iframe, src, origCallback, context) {
-                var callback = function(success) {
+                var callback = function (success) {
                     var epubContentDocument = this.$iframe[0].contentDocument;
                     $('a', epubContentDocument).click(function (clickEvent) {
                         // Check for both href and xlink:href attribute and get value
@@ -33,7 +31,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'readerView', '
                                 var idref = openedSpineItemUri.pathname();
                                 var hashFrag = openedSpineItemUri.fragment();
                                 var spineItem = context.spine.getItemByHref(idref);
-                                var pageData = new ReadiumSDK.Models.PageOpenRequest(spineItem);
+                                var pageData = new ReadiumSDK.Models.PageOpenRequest(spineItem, self);
                                 if (hashFrag) {
                                     pageData.setElementId(hashFrag);
                                 }
@@ -52,17 +50,18 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'readerView', '
                         }
                     });
                     origCallback.call(this, success);
-                }
-                if (epubFetch.isPackageExploded()) {
+                };
+
+                if (getCurrentResourceFetcher().isPackageExploded()) {
                     return origLoadIframeFunction(iframe, src, callback, context);
                 } else {
                     var onLoadWrapperFunction = function(success) {
                         var context = this;
                         var itemHref = context.currentSpineItem.href;
-                        epubFetch.relativeToPackageFetchFileContents(itemHref, 'text', function(contentDocumentText) {
+                        getCurrentResourceFetcher().relativeToPackageFetchFileContents(itemHref, 'text', function(contentDocumentText) {
                             var srcMediaType = context.currentSpineItem.media_type;
 
-                            epubFetch.resolveInternalPackageResources(itemHref, srcMediaType, contentDocumentText,
+                            getCurrentResourceFetcher().resolveInternalPackageResources(itemHref, srcMediaType, contentDocumentText,
                                 function (resolvedContentDocumentDom) {
                                     var contentDocument = iframe.contentDocument;
                                     contentDocument.replaceChild(resolvedContentDocumentDom.documentElement,
@@ -72,7 +71,8 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'readerView', '
                         }, function(err) {
                             if (err.message) {
                                 console.error(err.message);
-                            };
+                            }
+
                             console.error(err);
                             callback.call(context, success);
                         });
@@ -87,17 +87,18 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'readerView', '
             };
         };
 
-        var EpubRendererModule = function (reader, epubFetch) {
+        return function (ReadiumSDK, reader, getCurrentResourceFetcher) {
 
 
             /*
              * Patch the ReadiumSDK.Helpers.LoadIframe global function to support zipped EPUB packages:
              */
-            ReadiumSDK.Helpers.LoadIframe = loadIframeFunctionGenerator(epubFetch, reader);
+
+            var origLoadIframeFunction = ReadiumSDK.Helpers.LoadIframe;
+
+            ReadiumSDK.Helpers.LoadIframe = loadIframeFunctionGenerator(reader, getCurrentResourceFetcher, origLoadIframeFunction);
 
         };
-
-        return EpubRendererModule;
 
     });
 

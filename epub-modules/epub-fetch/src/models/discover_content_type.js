@@ -51,11 +51,10 @@ define(['require', 'module', 'jquery', 'backbone', 'URIjs'], function (require, 
 
     };
 
-    return function instance(){
-        if(!_instance) {
-            _instance = new ContentTypeDiscovery();
-        }
-
-        return _instance;
+    if(!_instance) {
+        _instance = new ContentTypeDiscovery();
     }
+
+    return _instance;
+
 });

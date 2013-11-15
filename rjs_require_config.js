@@ -10,19 +10,13 @@ var requirejs = {
         backbone: 'lib/backbone-0.9.10',
         bootstrap: 'lib/bootstrap.min',
 
-        URIjs: 'lib/URIjs/URI',
-        punycode: 'lib/URIjs/punycode',
-        SecondLevelDomains: 'lib/URIjs/SecondLevelDomains',
-        IPv6: 'lib/URIjs/IPv6',
+//        URIjs: 'lib/URIjs/URI',
+//        punycode: 'lib/URIjs/punycode',
+//        SecondLevelDomains: 'lib/URIjs/SecondLevelDomains',
+//        IPv6: 'lib/URIjs/IPv6',
 
-        readium_js: 'readium-js/src',
-        epub_fetch: 'epub-modules/epub-fetch/src',
-        epub: 'epub-modules/epub/src',
         epub_ers: 'epub-modules/epub-ers/src',
-        epub_renderer: 'epub-modules/epub-renderer/src',
-        package_fetcher: 'epub-modules/epub-fetch/src/models/package_fetcher',
-        package_parser: 'epub-modules/epub/src/models/package_document_parser',
-        package_document: 'epub-modules/epub/src/models/package_document',
+        iframe_load_interceptor: 'epub-modules/epub-renderer/src/iframe_load_interceptor',
 
         jquerySizes: 'epub-modules/epub-renderer/src/readium-shared-js/lib/jquery.sizes',
         readiumSDK: 'epub-modules/epub-renderer/src/readium-shared-js/js/readium_sdk',
@@ -51,13 +45,29 @@ var requirejs = {
         audioPlayer: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/audio_player',
         mediaOverlayPlayer: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/media_overlay_player',
 
-        Readium: 'epub-modules/readium-js/src/Readium'
-
     },
 
+    packages: [
+        {
+            name: 'epub-fetch',
+            location: 'epub-modules/epub-fetch/src/models',
+            main: 'resource_fetcher'
+        },
+
+        {
+            name: 'emub-model',
+            location: 'epub-modules/epub/src/models'
+        },
+
+        {
+            name: 'URIjs',
+            location: 'lib/URIjs',
+            main: 'URI'
+        }
+    ],
 
 
-shim: {
+    shim: {
         underscore: {
             exports: '_'
         },
