@@ -18,5 +18,6 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone'], function (requ
                 return false;
             }
         });
+
         return ManifestItem;
     });

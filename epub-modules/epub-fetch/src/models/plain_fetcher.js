@@ -1,25 +1,19 @@
-define(['require', 'module', 'jquery', 'URIjs', './fetch_base'], function (require, module, $, URI, EpubFetchBase) {
+define(['require', 'module', 'jquery', 'URIjs', './markup_parser'], function (require, module, $, URI, MarkupParser) {
     console.log('plain_fetcher module id: ' + module.id);
 
-    var PlainExplodedFetcher = EpubFetchBase.extend({
+    var PlainExplodedFetcher = function(baseUrl){
 
-        initialize: function (attributes) {
-        },
+        var _parser = new MarkupParser();
 
-        // Plain exploded EPUB packages are exploded by definition:
-        isExploded: function () {
-            return true;
-        },
-
-        resolveURI: function (epubResourceURI) {
+        this.resolveURI = function (epubResourceURI) {
             // Make absolute to the package document path
             var epubResourceRelURI = new URI(epubResourceURI);
-            var epubResourceAbsURI = epubResourceRelURI.absoluteTo(this.get('baseUrl'));
+            var epubResourceAbsURI = epubResourceRelURI.absoluteTo(baseUrl);
             return epubResourceAbsURI.toString();
-        },
+        };
 
-        fetchFileContentsText: function (fileUrl, fetchCallback, onerror) {
-            var thisFetcher = this;
+        function fetchFileContentsText (fileUrl, fetchCallback, onerror) {
+
             if (typeof fileUrl === 'undefined') {
                 throw 'Fetched file URL is undefined!';
             }
@@ -30,32 +24,33 @@ define(['require', 'module', 'jquery', 'URIjs', './fetch_base'], function (requi
                     fetchCallback(result);
                 },
                 error: function (xhr, status, errorThrown) {
-                    console.log('Error when AJAX fetching ' + fullUrl);
+                    console.log('Error when AJAX fetching ' + fileUrl);
                     console.log(status);
                     console.log(errorThrown);
                     onerror(errorThrown);
                 }
             });
-        },
+        }
 
-        relativeToPackageFetchFileContents: function (relativeToPackagePath, fetchMode, fetchCallback, onerror) {
+        this.relativeToPackageFetchFileContents = function (relativeToPackagePath, fetchMode, fetchCallback, onerror) {
             // Not translating relativeToPackagePath, as with exploded EPUB all the URLs are relative
             // to the current page context and are good to go verbatim for fetching:
-            this.fetchFileContentsText(relativeToPackagePath, fetchCallback, onerror);
-        },
+            fetchFileContentsText(relativeToPackagePath, fetchCallback, onerror);
+        };
 
-        getPackageDom: function (callback) {
+        this.getPackageDom = function (callback, onerror) {
             console.log('getting package DOM');
 
-            var thisFetcher = this;
-            var baseUrl = thisFetcher.get('baseUrl');
             console.log('baseUrl: ' + baseUrl);
 
-            thisFetcher.fetchFileContentsText(baseUrl, function (packageXml) {
-                var packageDom = thisFetcher.parseXml(packageXml);
+            fetchFileContentsText(baseUrl, function (packageXml) {
+
+                var packageDom = _parser.parseXml(packageXml);
                 callback(packageDom);
-            }, this._handleError);
-        }
-    });
+
+            }, onerror);
+        };
+    };
+
     return PlainExplodedFetcher;
 });
