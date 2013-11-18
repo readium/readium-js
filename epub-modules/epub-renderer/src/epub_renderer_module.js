@@ -152,6 +152,12 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'readerView', '
                     return reader.openSpineItemElementCfi(idref, nakedCfi);
                 }, 
 
+                getCurrentSelectionCFI: function() {
+                    var annotationsManager = reader.getAnnotaitonsManagerForCurrentSpineItem();
+                    var CFI = annotationsManager.getCurrentSelectionCFI();
+                    return createFullyQualifiedCfi(CFI);
+                }
+
 
             };
         };

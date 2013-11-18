@@ -72,6 +72,9 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub_renderer/
                     showPageByCFI : function (CFI, callback, callbackContext) {
                         return renderer.showPageByCFI(CFI, callback, callbackContext);
                     },
+                    getCurrentSelectionCFI:function() {
+                        return renderer.getCurrentSelectionCFI();
+                    }
                 });    
             });
         };
