@@ -1,1 +1,1 @@
-rvm gemset use readiumweb --create
+rvm use ruby-2.0.0-p247@readiumweb --create
