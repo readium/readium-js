@@ -7129,6 +7129,9 @@ define('Readium',['require', 'module', 'jquery', 'underscore', 'backbone', 'epub
                     },
                     bookmarkCurrentPage : function () {
                         return renderer.bookmarkCurrentPage();
+                    },
+                    epub : function () {
+                        return epub;
                     }
                 });    
             });
