@@ -36,6 +36,8 @@ var requirejs = {
         mediaOverlayElementHighlighter: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/media_overlay_element_highlighter',
         audioPlayer: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/audio_player',
         mediaOverlayPlayer: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/media_overlay_player',
+        mediaOvelayDataInjector: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/media_overlay_data_injector',
+        internalLinksSupport: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/internal_links_support',
 
         Readium: 'epub-modules/Readium'
     },
@@ -206,9 +208,19 @@ var requirejs = {
             exports: 'fixedView'
         },
 
+        mediaOvelayDataInjector: {
+          deps: ['readiumSDK', 'mediaOverlay', 'mediaOverlayPlayer', 'smilModel', 'spineItem'],
+          exports: 'mediaOvelayDataInjector'
+        },
+
+        internalLinksSupport: {
+            deps:['readiumSDK'],
+            exports: 'internalLinksSupport'
+        },
+
         readerView : {
             deps: [ 'backbone','readiumSDK', 'helpers', 'viewerSettings', 'styleCollection', 'package',
-                'mediaOverlayPlayer', 'pageOpenRequest', 'fixedView', 'reflowableView'],
+                'mediaOverlayPlayer', 'pageOpenRequest', 'fixedView', 'reflowableView', 'mediaOvelayDataInjector', 'internalLinksSupport'],
             exports:'readerView'
         }
 
