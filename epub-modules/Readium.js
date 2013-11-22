@@ -1,5 +1,5 @@
 
-define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch', 'emub-model/package_document_parser', 'emub-model/package_document', 'epub-renderer'],
+define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch', 'epub-model/package_document_parser', 'epub-model/package_document', 'epub-renderer', 'annotations_module'],
     function (require, module, $, _, readerView, ResourceFetcher, PackageParser, PackageDocument, IFrameLoadInterceptor) {
 
     console.log('Readium module id: ' + module.id);
@@ -15,20 +15,38 @@ define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch',
 
         var _currentResourceFetcher;
 
-       this.openPackageDocument = function(packageDocumentURL)  {
+        this.openPackageDocument = function(packageDocumentURL)  {
 
-           _currentResourceFetcher = new ResourceFetcher(packageDocumentURL, jsLibRoot);
-           var _packageParser = new PackageParser(_currentResourceFetcher);
+            _currentResourceFetcher = new ResourceFetcher(packageDocumentURL, jsLibRoot);
+            var _packageParser = new PackageParser(_currentResourceFetcher);
 
-           _packageParser.parse(function(docJson){
+            _packageParser.parse(function(docJson){
 
-               var packageDocument = new PackageDocument(packageDocumentURL, docJson);
-               self.reader.openBook(packageDocument.getPackageData())
+                var packageDocument = new PackageDocument(packageDocumentURL, docJson);
+                self.reader.openBook(packageDocument.getPackageData())
 
-           });
-       }
+            });
+        }
+
+
+        this.addSelectionHighlight = function(id, type) {
+            return self.reader.getAnnotaitonsManagerForCurrentSpineItem().addSelectionHighlight(id, type);
+        },
+
+        this.addHighlight = function(CFI, id, type) {
+            return self.reader.getAnnotaitonsManagerForCurrentSpineItem().addHighlight(CFI, id, type);
+        },
+
+        this.getCurrentSelectionCFI = function() {
+            return self.reader.getAnnotaitonsManagerForCurrentSpineItem().getCurrentSelectionCFI();
+        }
+
+
+
 
     };
+
+
 
 
     return Readium;

@@ -234,10 +234,4 @@ var requirejs = {
     },
 
     exclude: ['jquery', 'underscore', 'backbone', 'URIjs']
-
-<<<<<<< HEAD
-//});
-}
-=======
 };
->>>>>>> feature/internal_links
