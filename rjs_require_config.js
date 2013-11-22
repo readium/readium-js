@@ -60,13 +60,8 @@ var requirejs = {
             name: 'URIjs',
             location: 'lib/URIjs',
             main: 'URI'
-        },
+        }
 
-//        {
-//            name: 'epub-renderer',
-//            location: 'epub-modules/epub-renderer/src',
-//            main: 'iframe_load_interceptor'
-//        }
     ],
 
 
