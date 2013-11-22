@@ -156,7 +156,15 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'readerView', '
                     var annotationsManager = reader.getAnnotaitonsManagerForCurrentSpineItem();
                     var CFI = annotationsManager.getCurrentSelectionCFI();
                     return createFullyQualifiedCfi(CFI);
+                },
+
+                getCurrentSelectionOffsetCFI: function() {
+                    var annotationsManager = reader.getAnnotaitonsManagerForCurrentSpineItem();
+                    var CFI = annotationsManager.getCurrentSelectionOffsetCFI();
+                    return createFullyQualifiedCfi(CFI);
                 }
+
+
 
 
             };

@@ -74,7 +74,12 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub_renderer/
                     },
                     getCurrentSelectionCFI:function() {
                         return renderer.getCurrentSelectionCFI();
+                    },
+                    getCurrentSelectionOffsetCFI:function() {
+                        debugger;
+                        return renderer.getCurrentSelectionOffsetCFI();
                     }
+ 
                 });    
             });
         };
