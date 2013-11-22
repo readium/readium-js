@@ -1,75 +1,56 @@
 define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './manifest', './spine', './metadata',
-    './page_spread_property', './package_document_parser'],
-    function (require, module, $, _, Backbone, URI, Manifest, Spine, Metadata, PageSpreadProperty, PackageDocumentParser) {
+    './page_spread_property'],
+    function (require, module, $, _, Backbone, URI, Manifest, Spine, Metadata, PageSpreadProperty) {
     console.log('package_document module id: ' + module.id);
 
     // Description: This model provides an interface for navigating an EPUB's package document
-    var PackageDocument = Backbone.Model.extend({
+    var PackageDocument = function(packageDocumentURL, jsonData, resourceFetcher) {
 
-        initialize : function (attributes, options) {
+        var _spine = new Spine(jsonData.spine);
+        var _manifest = new Manifest(jsonData.manifest);
+        var _metadata = new Metadata(jsonData.metadata);
+        var _bindings = new Spine(jsonData.bindings);
+        var _pageSpreadProperty = new PageSpreadProperty();
 
-            var that = this;
-            // Initialize package document parser 
-            var packageDocParser = new PackageDocumentParser({
-                epubFetch : this.get("epubFetch")
-            });
+        // If this book is fixed layout, assign the page spread class
+        if (isFixedLayout()) {
+            assignPageSpreadClass();
+        }
 
-            packageDocParser.parse(function (packageDocument) {
+        this.getPackageData = function () {
 
-                that.manifest = new Manifest(packageDocument.manifest);
-                that.spine = new Spine(packageDocument.spine);
-                that.metadata = new Metadata(packageDocument.metadata);
-                that.bindings = new Spine(packageDocument.bindings);
-                that.pageSpreadProperty = new PageSpreadProperty();
-
-                // If this book is fixed layout, assign the page spread class
-                if (that.isFixedLayout()) {
-                    that.assignPageSpreadClass();
-                }
-
-                that.get("onParsedCallback")();
-            });
-        },
-
-        getPackageData : function () {
-
-            var that = this;
             var spinePackageData = [];
-            var packageDocumentURL = this.get("epubFetch").get("packageDocumentURL");
             var packageDocRoot = packageDocumentURL.substr(0, packageDocumentURL.lastIndexOf("/"));
 
-            this.spine.each(function (spineItem) {
-                spinePackageData.push(that.generatePackageData(spineItem));
+            _spine.each(function (spineItem) {
+                spinePackageData.push(generatePackageData(spineItem));
             });
             
             // This is where the package data format thing is generated
             return {
                 rootUrl : packageDocRoot,
-                rendition_layout : this.isFixedLayout(),
+                rendition_layout : isFixedLayout(),
                 spine : {
-                    direction : this.pageProgressionDirection(),
+                    direction : pageProgressionDirection(),
                     items : spinePackageData    
                 }
             };
-        },
+        };
 
-        isFixedLayout : function () {
+        function isFixedLayout() {
 
-            if (this.metadata.get("fixed_layout")) {
-                return true;
-            }
-            else {
-                return false;
-            }
-        },
+            return _metadata.get("fixed_layout");
+        }
 
-        getManifestItemById : function (id) {
+        function getManifestItemById(id) {
 
-            var foundManifestItem = this.manifest.find(
+            var foundManifestItem = _manifest.find(
                 function (manifestItem) {
                     if (manifestItem.get("id") === id) {
                         return manifestItem;
                     }
+
+                    return undefined;
                 });
 
             if (foundManifestItem) {
@@ -78,44 +59,44 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             else {
                 return undefined;
             }
-        },
+        }
 
-        getManifestItemByIdref : function (idref) {
+        function getManifestItemByIdref(idref) {
 
-            var foundManifestItem = this.getManifestItemById(idref);
+            var foundManifestItem = getManifestItemById(idref);
             if (foundManifestItem) {
                 return foundManifestItem;
             }
             else {
                 return undefined;
             }
-        },
+        }
 
-        getSpineItemByIdref : function (idref) {
+        function getSpineItemByIdref(idref) {
 
-            var foundSpineItem = this.getSpineModelByIdref(idref);
+            var foundSpineItem = getSpineModelByIdref(idref);
             if (foundSpineItem) {
                 return foundSpineItem.toJSON();
             }
             else {
                 return undefined;
             }
-        },
+        }
 
-        getSpineItem : function (spineIndex) {
+        function getSpineItem(spineIndex) {
 
-            var spineItem = this.spine.at(spineIndex);
+            var spineItem = _spine.at(spineIndex);
             if (spineItem) {
                 return spineItem.toJSON();
             }
             else {
                 return undefined;
             }
-        },
+        }
 
-        spineLength : function () {
-            return this.spine.length;
-        },
+        function spineLength() {
+            return _spine.length;
+        }
 
         // Description: gets the next position in the spine for which the
         // spineItem does not have `linear='no'`. The start
@@ -123,27 +104,26 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
         // from. If start is not supplied, the search will begin at
         // postion 0. If no linear position can be found, this
         // function returns undefined
-        getNextLinearSpinePosition : function (currSpineIndex) {
+        function getNextLinearSpinePosition(currSpineIndex) {
 
-            var spine = this.spine;
             if (currSpineIndex === undefined || currSpineIndex < 0) {
                 currSpineIndex = 0;
 
-                if (spine.at(currSpineIndex).get("linear") !== "no") {
+                if (_spine.at(currSpineIndex).get("linear") !== "no") {
                     return currSpineIndex;
                 }
             }
 
-            while (currSpineIndex < this.spineLength() - 1) {
+            while (currSpineIndex < spineLength() - 1) {
                 currSpineIndex += 1;
-                if (spine.at(currSpineIndex).get("linear") !== "no") {
+                if (_spine.at(currSpineIndex).get("linear") !== "no") {
                     return currSpineIndex;
                 }
             }
 
             // No next linear spine position.
             return undefined;
-        },
+        }
 
         // Description: gets the previous position in the spine for which the
         // spineItem does not have `linear='no'`. The start
@@ -151,74 +131,73 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
         // from. If start is not supplied, the search will begin at
         // the end of the spine. If no linear position can be found,
         // this function returns undefined
-        getPrevLinearSpinePosition : function(currSpineIndex) {
+        function getPrevLinearSpinePosition(currSpineIndex) {
 
-            var spine = this.spine;
-            if (currSpineIndex === undefined || currSpineIndex > this.spineLength() - 1) {
-                currSpineIndex = this.spineLength() - 1;
+            if (currSpineIndex === undefined || currSpineIndex > spineLength() - 1) {
+                currSpineIndex = spineLength() - 1;
 
-                if (spine.at(currSpineIndex).get("linear") !== "no") {
+                if (_spine.at(currSpineIndex).get("linear") !== "no") {
                     return currSpineIndex;
                 }
             }
 
             while (currSpineIndex > 0) {
                 currSpineIndex -= 1;
-                if (spine.at(currSpineIndex).get("linear") !== "no") {
+                if (_spine.at(currSpineIndex).get("linear") !== "no") {
                     return currSpineIndex;
                 }
             }
 
             // No previous linear spine position.
             return undefined;
-        },
+        }
 
-        hasNextSection: function(currSpineIndex) {
+        function hasNextSection(currSpineIndex) {
 
             if (currSpineIndex >= 0 &&
-                currSpineIndex <= this.spineLength() - 1) {
+                currSpineIndex <= spineLength() - 1) {
 
-                return this.getNextLinearSpinePosition(currSpineIndex) > -1;
+                return getNextLinearSpinePosition(currSpineIndex) > -1;
             }
             else {
                 return false;
             }
-        },
+        }
 
-        hasPrevSection: function(currSpineIndex) {
+        function hasPrevSection(currSpineIndex) {
 
             if (currSpineIndex >= 0 &&
-                currSpineIndex <= this.spineLength() - 1) {
+                currSpineIndex <= spineLength() - 1) {
 
-                return this.getPrevLinearSpinePosition(currSpineIndex) > -1;
+                return getPrevLinearSpinePosition(currSpineIndex) > -1;
             }
             else {
                 return false;
             }
-        },
+        }
 
-        pageProgressionDirection : function () {
+        function pageProgressionDirection() {
 
-            if (this.metadata.get("page_prog_dir") === "rtl") {
+            if (_metadata.get("page_prog_dir") === "rtl") {
                 return "rtl";
             }
-            else if (this.metadata.get("page_prog_dir") === "default") {
+            else if (_metadata.get("page_prog_dir") === "default") {
                 return "default";
             }
             else {
                 return "ltr";
             }
-        },
+        }
 
-        getSpineIndexByHref : function (manifestHref) {
+        function getSpineIndexByHref(manifestHref) {
 
-            var spineItem = this.getSpineModelFromHref(manifestHref);
-            return this.getSpineIndex(spineItem);
-        },
+            var spineItem = getSpineModelFromHref(manifestHref);
+            return getSpineIndex(spineItem);
+        }
 
-        getBindingByHandler : function (handler) {
+        function getBindingByHandler(handler) {
 
-            var binding = this.bindings.find(
+            var binding = _bindings.find(
                 function (binding) {
 
                     if (binding.get("handler") === handler) {
@@ -232,20 +211,20 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             else {
                 return undefined;
             }
-        },
+        }
 
-        generatePackageData : function (spineItem) {
+        function generatePackageData(spineItem) {
 
             var fixedLayoutProperty = "reflowable";
             // var fixedLayoutType = undefined;
-            var manifestItem = this.getManifestModelByIdref(spineItem.get("idref"));
+            var manifestItem = getManifestModelByIdref(spineItem.get("idref"));
             // var isLinear;
             // var firstPageIsOffset;
             var pageSpread;
 
             // Get fixed layout properties
-            if (spineItem.isFixedLayout() || this.isFixedLayout()) {
-                isFixedLayout = true;
+            if (spineItem.isFixedLayout() || isFixedLayout()) {
+
                 fixedLayoutProperty = "pre-paginated";
                 // if (manifestItem.isSvg()) {
                 //     fixedLayoutType = "svg";
@@ -269,10 +248,10 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             pageSpread = spineItem.get("page_spread");
             // Set first page is offset parameter
             // if (!isFixedLayout) {
-            //     if (this.pageProgressionDirection() === "ltr" && pageSpread === "right") {
+            //     if (pageProgressionDirection() === "ltr" && pageSpread === "right") {
             //         firstPageIsOffset = true;
             //     }
-            //     else if (this.pageProgressionDirection() === "rtl" && pageSpread === "left") {
+            //     else if (pageProgressionDirection() === "rtl" && pageSpread === "left") {
             //         firstPageIsOffset = true;
             //     }
             //     else {
@@ -300,38 +279,34 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             };
 
             return spineInfo;
-        },
+        }
 
-        // TODO apparently unused method, and in the incorrect module (should be in epub-parser?)
-        getPackageDocumentDOM : function (callback) {
-            this.get('epubFetch').getPackageDom(callback);
-        },
+        function getToc() {
 
-        getToc : function () {
-
-            var item = this.getTocItem();
+            var item = getTocItem();
             if (item) {
-                var href = item.get("contentDocumentURI");
-                return href;
+                return item.get("contentDocumentURI");
             }
             return null;
-        },
+        }
 
-        getTocText: function (callback) {
-            var tocUrl = this.getToc();
+        function getTocText(callback) {
+
+            var tocUrl = getToc();
             console.log('tocUrl: [' + tocUrl + ']');
 
-            this.get('epubFetch').relativeToPackageFetchFileContents(tocUrl, 'text', function (tocDocumentText) {
+            resourceFetcher.relativeToPackageFetchFileContents(tocUrl, 'text', function (tocDocumentText) {
                 callback(tocDocumentText)
             }, function (err) {
-                console.error('ERROR fetching TOC from [' + this.getToc() + ']:');
+                console.error('ERROR fetching TOC from [' + getToc() + ']:');
                 console.error(err);
                 callback(undefined);
             });
-        },
+        }
 
-        getTocDom: function (callback) {
-            this.getTocText(function (tocText) {
+        function getTocDom(callback) {
+
+            getTocText(function (tocText) {
                 if (typeof tocText === 'string') {
                     var tocDom = (new DOMParser()).parseFromString(tocText, "text/xml");
                     callback(tocDom);
@@ -339,22 +314,20 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
                     callback(undefined);
                 }
             });
-        },
+        }
 
-        // Description: This is a convenience method that will generate an html list structure from an ncx XML
-        //   document.
-        generateTocListDOM: function (callback) {
-            var that = this;
-            that.getTocDom(function (tocDom) {
+        function generateTocListDOM(callback) {
+
+            getTocDom(function (tocDom) {
                 if (tocDom) {
-                    if (that.tocIsNcx()) {
+                    if (tocIsNcx()) {
                         var $ncxOrderedList;
-                        $ncxOrderedList = that.getNcxOrderedList($("navMap", tocDom));
+                        $ncxOrderedList = getNcxOrderedList($("navMap", tocDom));
                         callback($ncxOrderedList[0]);
                     } else {
-                        var packageDocumentURL = that.get('epubFetch').getPackageDocumentURL();
+                        var packageDocumentURL = get('epubFetch').getPackageDocumentURL();
                         var packageDocumentAbsoluteURL = new URI(packageDocumentURL).absoluteTo(document.URL);
-                        var tocDocumentAbsoluteURL = new URI(that.getToc()).absoluteTo(document.URL);
+                        var tocDocumentAbsoluteURL = new URI(getToc()).absoluteTo(document.URL);
                         // add a BASE tag to change the TOC document's baseURI.
                         var oldBaseTag = $(tocDom).remove('base');
                         var newBaseTag = $('<base></base>');
@@ -367,39 +340,31 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
                     callback(undefined);
                 }
             });
-        },
+        }
 
-        tocIsNcx : function () {
+        function tocIsNcx() {
 
-            var tocItem = this.getTocItem();
+            var tocItem = getTocItem();
             var contentDocURI = tocItem.get("contentDocumentURI");
             var fileExtension = contentDocURI.substr(contentDocURI.lastIndexOf('.') + 1);
 
-            if (fileExtension.trim().toLowerCase() === "ncx") {
-                return true;
-            }
-            else {
-                return false;
-            }
-        },
+            return fileExtension.trim().toLowerCase() === "ncx";
+        }
 
         // ----------------------- PRIVATE HELPERS -------------------------------- //
 
-        getNcxOrderedList : function ($navMapDOM) {
+        function getNcxOrderedList($navMapDOM) {
 
-            var that = this;
             var $ol = $("<ol></ol>");
             $.each($navMapDOM.children("navPoint"), function (index, navPoint) {
-                that.addNavPointElements($(navPoint), $ol);
+                addNavPointElements($(navPoint), $ol);
             });
             return $ol;
-        },
+        }
 
         // Description: Constructs an html representation of NCX navPoints, based on an object of navPoint information
         // Rationale: This is a recursive method, as NCX navPoint elements can nest 0 or more of themselves as children
-        addNavPointElements : function ($navPointDOM, $ol) {
-
-            var that = this;
+        function addNavPointElements($navPointDOM, $ol) {
 
             // Add the current navPoint element to the TOC html
             var navText = $navPointDOM.children("navLabel").text().trim();
@@ -415,40 +380,39 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
                 var $newLi = $("<li></li>");
                 var $newOl = $("<ol></ol>");
                 $.each($navPointDOM.children("navPoint"), function (navIndex, navPoint) {
-                    $newOl.append(that.addNavPointElements($(navPoint), $newOl));
+                    $newOl.append(addNavPointElements($(navPoint), $newOl));
                 });
 
                 $newLi.append($newOl);
                 $ol.append($newLi);
             }
-        },
+        }
 
         // Refactoring candidate: This search will always iterate through entire manifest; this should be modified to
         //   return when the manifest item is found.
-        getSpineModelFromHref : function (manifestHref) {
+        function getSpineModelFromHref(manifestHref) {
 
-            var that = this;
             var resourceURI = new URI(manifestHref);
             var resourceName = resourceURI.filename();
             var foundSpineModel;
 
-            this.manifest.each(function (manifestItem) {
+            _manifest.each(function (manifestItem) {
 
                 var manifestItemURI = new URI(manifestItem.get("href"));
                 var manifestItemName = manifestItemURI.filename();
 
                 // Rationale: Return a spine model based on the manifest item id, which is the idref of the spine item
                 if (manifestItemName === resourceName) {
-                    foundSpineModel = that.getSpineModelByIdref(manifestItem.get("id"));
+                    foundSpineModel = getSpineModelByIdref(manifestItem.get("id"));
                 }
             });
 
             return foundSpineModel;
-        },
+        }
 
-        getSpineModelByIdref : function (idref) {
+        function getSpineModelByIdref(idref) {
 
-            var foundSpineItem = this.spine.find(
+            var foundSpineItem = _spine.find(
                 function (spineItem) {
                     if (spineItem.get("idref") === idref) {
                         return spineItem;
@@ -456,11 +420,11 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
                 });
 
             return foundSpineItem;
-        },
+        }
 
-        getManifestModelByIdref : function (idref) {
+        function getManifestModelByIdref(idref) {
 
-            var foundManifestItem = this.manifest.find(
+            var foundManifestItem = _manifest.find(
                 function (manifestItem) {
                     if (manifestItem.get("id") === idref) {
                         return manifestItem;
@@ -468,12 +432,12 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
                 });
 
             return foundManifestItem;
-        },
+        }
 
-        getSpineIndex : function (spineItem) {
+        function getSpineIndex(spineItem) {
 
-            return this.spine.indexOf(spineItem);
-        },
+            return _spine.indexOf(spineItem);
+        }
 
         // Description: When rendering fixed layout pages we need to determine whether the page
         //   should be on the left or the right in two up mode, options are:
@@ -482,45 +446,43 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
         //     center_page:    always center the page horizontally
         //   This property must be assigned when the package document is initialized
         // NOTE: Look into how spine items with the linear="no" property affect this algorithm
-        assignPageSpreadClass : function () {
+        function assignPageSpreadClass() {
 
-            var that = this;
             var pageSpreadClass;
             var numSpineItems;
 
             // If the epub is apple fixed layout
-            if (this.metadata.get("apple_fixed")) {
+            if (_metadata.get("apple_fixed")) {
 
-                numSpineItems = this.spine.length;
-                this.spine.each(function (spineItem, spineIndex) {
+                numSpineItems = _spine.length;
+                _spine.each(function (spineItem, spineIndex) {
 
-                    pageSpreadClass = that.pageSpreadProperty.inferiBooksPageSpread(spineIndex, numSpineItems);
+                    pageSpreadClass = _pageSpreadProperty.inferiBooksPageSpread(spineIndex, numSpineItems);
                     spineItem.set({ pageSpreadClass : pageSpreadClass });
                 });
             }
             else {
                 // For each spine item
-                this.spine.each(function (spineItem, spineIndex) {
+                _spine.each(function (spineItem, spineIndex) {
 
                     if (spineItem.get("page_spread")) {
 
-                        pageSpreadClass = that.pageSpreadProperty.getPageSpreadFromProperties(spineItem.get("page_spread"));
+                        pageSpreadClass = _pageSpreadProperty.getPageSpreadFromProperties(spineItem.get("page_spread"));
                         spineItem.set({ pageSpreadClass : pageSpreadClass });
                     }
                     else {
 
-                        pageSpreadClass = that.pageSpreadProperty.inferUnassignedPageSpread(spineIndex, that.spine, that.pageProgressionDirection());
+                        pageSpreadClass = _pageSpreadProperty.inferUnassignedPageSpread(spineIndex, _spine, pageProgressionDirection());
                         spineItem.set({ pageSpreadClass : pageSpreadClass });
                     }
                 });
             }
-        },
+        }
 
-        getTocItem : function() {
+        function getTocItem(){
 
-            var manifest = this.manifest;
-            var metadata = this.metadata;
-            var spine_id = this.metadata.get("ncx");
+            var manifest = _manifest;
+            var spine_id = _metadata.get("ncx");
 
             var item = manifest.find(function(item){
 
@@ -551,6 +513,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
         //     var map = this.get("mo_map");
         //     return map && map[idref];
         // },
-    });
+    };
+
     return PackageDocument;
 });

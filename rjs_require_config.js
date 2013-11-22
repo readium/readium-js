@@ -10,17 +10,6 @@ var requirejs = {
         backbone: 'lib/backbone-0.9.10',
         bootstrap: 'lib/bootstrap.min',
 
-        URIjs: 'lib/URIjs/URI',
-        punycode: 'lib/URIjs/punycode',
-        SecondLevelDomains: 'lib/URIjs/SecondLevelDomains',
-        IPv6: 'lib/URIjs/IPv6',
-
-        readium_js: 'readium-js/src',
-        epub_fetch: 'epub-modules/epub-fetch/src',
-        epub: 'epub-modules/epub/src',
-        epub_ers: 'epub-modules/epub-ers/src',
-        epub_renderer: 'epub-modules/epub-renderer/src',
-
         jquerySizes: 'epub-modules/epub-renderer/src/readium-shared-js/lib/jquery.sizes',
         readiumSDK: 'epub-modules/epub-renderer/src/readium-shared-js/js/readium_sdk',
         helpers: 'epub-modules/epub-renderer/src/readium-shared-js/js/helpers',
@@ -48,13 +37,39 @@ var requirejs = {
         audioPlayer: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/audio_player',
         mediaOverlayPlayer: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/media_overlay_player',
         annotations_module: 'epub-modules/epub-renderer/src/readium-shared-js/lib/annotations_module',
-        Readium: 'epub-modules/readium-js/src/Readium'
-
+        mediaOvelayDataInjector: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/media_overlay_data_injector',
+        internalLinksSupport: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/internal_links_support',
+        Readium: 'epub-modules/Readium'
     },
 
+    packages: [
+
+        {
+            name: 'epub-fetch',
+            location: 'epub-modules/epub-fetch/src/models',
+            main: 'resource_fetcher'
+        },
+
+        {
+            name: 'emub-model',
+            location: 'epub-modules/epub/src/models'
+        },
+
+        {
+            name: 'URIjs',
+            location: 'lib/URIjs',
+            main: 'URI'
+        },
+
+        {
+            name: 'epub-renderer',
+            location: 'epub-modules/epub-renderer/src',
+            main: 'iframe_load_interceptor'
+        }
+    ],
 
 
-shim: {
+    shim: {
         underscore: {
             exports: '_'
         },
@@ -193,9 +208,19 @@ shim: {
             exports: 'fixedView'
         },
 
+        mediaOvelayDataInjector: {
+          deps: ['readiumSDK', 'mediaOverlay', 'mediaOverlayPlayer', 'smilModel', 'spineItem'],
+          exports: 'mediaOvelayDataInjector'
+        },
+
+        internalLinksSupport: {
+            deps:['readiumSDK'],
+            exports: 'internalLinksSupport'
+        },
+
         readerView : {
             deps: [ 'backbone','readiumSDK', 'helpers', 'viewerSettings', 'styleCollection', 'package',
-                'mediaOverlayPlayer', 'pageOpenRequest', 'fixedView', 'reflowableView'],
+                'mediaOverlayPlayer', 'pageOpenRequest', 'fixedView', 'reflowableView', 'mediaOvelayDataInjector', 'internalLinksSupport'],
             exports:'readerView'
         },
 
@@ -210,5 +235,9 @@ shim: {
 
     exclude: ['jquery', 'underscore', 'backbone', 'URIjs']
 
+<<<<<<< HEAD
 //});
 }
+=======
+};
+>>>>>>> feature/internal_links

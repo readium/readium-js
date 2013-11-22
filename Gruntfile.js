@@ -6,11 +6,10 @@ module.exports = function(grunt) {
     //server: Start a testing server for the website.
     //watch: Automatically recompile part of the project when files are changed.
     //--minify: Compress the build. (Has no effect when server option in use.)
-    //--syncload: Generate syncload javascript. TODO: Insert short description of syncload here. (Has no effect when server option in use.)
+
     
     // Compile a list of paths and output files for our modules for requirejs to compile.
     // TODO: Translate the command-line code to this.
-    var configRequireJSCompilePaths = {};
 
 
 
@@ -21,12 +20,16 @@ module.exports = function(grunt) {
                 options: {
                     mainConfigFile: "rjs_require_config.js",
                     name: "Readium",
-                    optimize: grunt.option('minify')?undefined:"none",
+                    optimize: grunt.option('minify')?"uglify":"none",
                     out: "out/Readium" +
                         (grunt.option('syncload')?".syncload":"") +
                         (grunt.option('minify')?".min":"") + ".js",
-                    include: grunt.option('syncload')?"define-sync":undefined,
-                    almond: grunt.option('minify')
+                    include: grunt.option('syncload')?"epub-modules/readium-js/src/define-sync":undefined,
+                    almond: grunt.option('minify'),
+                    wrap: grunt.option('syncload')?{
+                      start: "(function (root, ReadiumModuleFactory) {\nroot.Readium = ReadiumModuleFactory();\n}(this, function () {",
+                      end: "var Readium = require('Readium');\nreturn Readium;\n}));",
+                    }:undefined
                 }
             }
         }
