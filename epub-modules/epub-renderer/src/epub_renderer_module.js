@@ -65,6 +65,8 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'readerView', '
             });
 
             var createFullyQualifiedCfi = function(cfi) {
+                if (cfi === undefined)
+                    return undefined;
                 var spineIndex = reader.currentView.currentSpineItem.index
                 var packageDocCFIComponent = EPUBcfi.generatePackageDocumentCFIComponentWithSpineIndex(spineIndex, packageDom);
                 var completeCFI = EPUBcfi.generateCompleteCFI(packageDocCFIComponent, cfi);
