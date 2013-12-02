@@ -22,8 +22,9 @@ define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch',
 
 
             _packageParser.parse(function(docJson){
-                var packageDocument = new PackageDocument(packageDocumentURL, docJson);
+                var packageDocument = new PackageDocument(packageDocumentURL, docJson, _currentResourceFetcher);
                 self.reader.openBook(packageDocument.getPackageData())
+                self.reader.packageDocument = packageDocument;
 
                 jQuery.ajax(packageDocumentURL, {
                     success: function(packageXml) {
