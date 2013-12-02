@@ -342,6 +342,14 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             });
         }
 
+        // 
+        this.getEpub3Toc = function(callback) {
+            this.generateTocListDOM(function(dom) {
+                var olTocList =  $($('nav#toc', dom)[0]).children()[0];
+                callback(olTocList);
+            });
+        };
+
         function tocIsNcx() {
 
             var tocItem = getTocItem();
