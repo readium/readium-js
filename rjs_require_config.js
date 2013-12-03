@@ -94,7 +94,7 @@ var requirejs = {
         },
 
         styleCollection: {
-            deps:['readiumSDK'],
+            deps:['readiumSDK', 'style'],
             exports: 'styleCollection'
         },
 
