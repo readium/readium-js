@@ -325,9 +325,8 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
                         $ncxOrderedList = getNcxOrderedList($("navMap", tocDom));
                         callback($ncxOrderedList[0]);
                     } else {
-                        var packageDocumentURL = get('epubFetch').getPackageDocumentURL();
                         var packageDocumentAbsoluteURL = new URI(packageDocumentURL).absoluteTo(document.URL);
-                        var tocDocumentAbsoluteURL = new URI(getToc()).absoluteTo(document.URL);
+                        var tocDocumentAbsoluteURL = new URI(getToc()).absoluteTo(packageDocumentAbsoluteURL);
                         // add a BASE tag to change the TOC document's baseURI.
                         var oldBaseTag = $(tocDom).remove('base');
                         var newBaseTag = $('<base></base>');
@@ -513,6 +512,8 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
         //     var map = this.get("mo_map");
         //     return map && map[idref];
         // },
+
+        this.generateTocListDOM = generateTocListDOM;
     };
 
     return PackageDocument;

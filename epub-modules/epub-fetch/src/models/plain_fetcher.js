@@ -33,9 +33,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser'], function (re
         }
 
         this.relativeToPackageFetchFileContents = function (relativeToPackagePath, fetchMode, fetchCallback, onerror) {
-            // Not translating relativeToPackagePath, as with exploded EPUB all the URLs are relative
-            // to the current page context and are good to go verbatim for fetching:
-            fetchFileContentsText(relativeToPackagePath, fetchCallback, onerror);
+            fetchFileContentsText(this.resolveURI(relativeToPackagePath), fetchCallback, onerror);
         };
 
         this.getPackageDom = function (callback, onerror) {

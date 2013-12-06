@@ -16,17 +16,22 @@ define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch',
         ReadiumSDK.trigger(ReadiumSDK.Events.READER_INITIALIZED);
 
 
-       this.openPackageDocument = function(packageDocumentURL)  {
+        this.openPackageDocument = function(packageDocumentURL, callback)  {
 
-           _currentResourceFetcher = new ResourceFetcher(packageDocumentURL, jsLibRoot);
-           var _packageParser = new PackageParser(_currentResourceFetcher);
+            _currentResourceFetcher = new ResourceFetcher(packageDocumentURL, jsLibRoot);
+            var _packageParser = new PackageParser(_currentResourceFetcher);
 
-           _packageParser.parse(function(docJson){
+            _packageParser.parse(function(docJson){
 
-               var packageDocument = new PackageDocument(packageDocumentURL, docJson);
-               self.reader.openBook(packageDocument.getPackageData())
+                var packageDocument = new PackageDocument(packageDocumentURL, docJson, _currentResourceFetcher);
+                self.reader.openBook(packageDocument.getPackageData())
 
-           });
+                if (callback){
+                    // gives caller access to document metadata like the table of contents
+                    callback(packageDocument);
+                }
+
+            });
        }
 
     };
