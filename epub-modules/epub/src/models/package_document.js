@@ -281,7 +281,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             return spineInfo;
         }
 
-        function getToc() {
+        this.getToc = function() {
 
             var item = getTocItem();
             if (item) {
