@@ -13,26 +13,13 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
 
         var _markupParser = new MarkupParser();
 
-        var _isExploded = findPackageType();
+        var _isExploded = isExploded();
         var _dataFetcher = createResourceFetcher(_isExploded);
 
-        function findPackageType() {
+        function isExploded() {
 
-                var readStrategy = 'exploded';
-
-                var packageContentType = ContentTypeDiscovery.identifyContentType(packageDocumentURL);
-
-                if (packageContentType in ResourceFetcher.contentTypePackageReadStrategyMap) {
-                    readStrategy = ResourceFetcher.contentTypePackageReadStrategyMap[packageContentType]
-                }
-
-                if (readStrategy === 'exploded') {
-                    return true;
-                } else if (readStrategy === 'zipped') {
-                    return false;
-                } else {
-                    throw new Error('Unsupported package read strategy: ' + readStrategy);
-                }
+            var ext = ".epub";
+            return packageDocumentURL.indexOf(ext, this.length - ext.length) === -1;
         }
 
         function createResourceFetcher(isExploded) {

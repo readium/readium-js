@@ -5,14 +5,44 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser'], function (re
 
         var _parser = new MarkupParser();
 
+        var _packageUrl = getPackagePath();
+
         this.resolveURI = function (epubResourceURI) {
             // Make absolute to the package document path
             var epubResourceRelURI = new URI(epubResourceURI);
-            var epubResourceAbsURI = epubResourceRelURI.absoluteTo(baseUrl);
+            var epubResourceAbsURI = epubResourceRelURI.absoluteTo(_packageUrl);
             return epubResourceAbsURI.toString();
         };
 
-        function fetchFileContentsText (fileUrl, fetchCallback, onerror) {
+        function getPackagePath() {
+
+            var containerPath = new URI('META-INF/container.xml').absoluteTo(baseUrl);
+
+            getXmlFileDom(containerPath, function (containerDom) {
+                return getRootFile(containerDom);
+            }, function(error) {
+                console.error("unable to find package document: " + error);
+                return baseUrl;
+            });
+
+        }
+
+        function getRootFile (containerDom) {
+            var rootFile = $('rootfile', containerDom);
+            var packageFullPath = rootFile.attr('full-path');
+            console.log('packageFullPath: ' + packageFullPath);
+            return packageFullPath;
+        }
+
+        function getXmlFileDom (filePath, callback, errorCallback) {
+
+            fetchFileContentsText(filePath, function (xmlFileContents) {
+                var fileDom = _parser.parseXml(xmlFileContents);
+                callback(fileDom);
+            }, errorCallback, false);
+        }
+
+        function fetchFileContentsText (fileUrl, fetchCallback, onerror, async) {
 
             if (typeof fileUrl === 'undefined') {
                 throw 'Fetched file URL is undefined!';
@@ -20,6 +50,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser'], function (re
             $.ajax({
                 url: fileUrl,
                 dataType: 'text',
+                async: async,
                 success: function (result) {
                     fetchCallback(result);
                 },
@@ -33,20 +64,20 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser'], function (re
         }
 
         this.relativeToPackageFetchFileContents = function (relativeToPackagePath, fetchMode, fetchCallback, onerror) {
-            fetchFileContentsText(this.resolveURI(relativeToPackagePath), fetchCallback, onerror);
+            fetchFileContentsText(this.resolveURI(relativeToPackagePath), fetchCallback, onerror, true);
         };
 
         this.getPackageDom = function (callback, onerror) {
             console.log('getting package DOM');
 
-            console.log('baseUrl: ' + baseUrl);
+            console.log('baseUrl: ' + _packageUrl);
 
-            fetchFileContentsText(baseUrl, function (packageXml) {
+            fetchFileContentsText(_packageUrl, function (packageXml) {
 
                 var packageDom = _parser.parseXml(packageXml);
                 callback(packageDom);
 
-            }, onerror);
+            }, onerror, true);
         };
     };
 
