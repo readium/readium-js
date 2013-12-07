@@ -5,7 +5,9 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser'], function (re
 
         var _parser = new MarkupParser();
 
-        var _packageUrl = getPackagePath();
+        var _packageUrl;
+
+        getPackagePath();
 
         this.resolveURI = function (epubResourceURI) {
             // Make absolute to the package document path
@@ -14,15 +16,20 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser'], function (re
             return epubResourceAbsURI.toString();
         };
 
+
+        this.getPackageUrl = function() {
+            return _packageUrl;
+        };
+
         function getPackagePath() {
 
-            var containerPath = new URI('META-INF/container.xml').absoluteTo(baseUrl);
+            var containerPath = new URI(baseUrl + '/META-INF/container.xml');
 
-            getXmlFileDom(containerPath, function (containerDom) {
-                return getRootFile(containerDom);
+            getXmlFileDom(containerPath.path(), function (containerDom) {
+                _packageUrl = baseUrl + "/" + getRootFile(containerDom);
             }, function(error) {
                 console.error("unable to find package document: " + error);
-                return baseUrl;
+                _packageUrl = baseUrl;
             });
 
         }

@@ -3,7 +3,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
     console.log('resource_resolver module id: ' + module.id);
 
 
-    var ResourceFetcher = function(packageDocumentURL, libDir) {
+    var ResourceFetcher = function(rootUrl, libDir) {
 
         ResourceFetcher.contentTypePackageReadStrategyMap = {
             'application/oebps-package+xml': 'exploded',
@@ -19,18 +19,18 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
         function isExploded() {
 
             var ext = ".epub";
-            return packageDocumentURL.indexOf(ext, this.length - ext.length) === -1;
+            return rootUrl.indexOf(ext, this.length - ext.length) === -1;
         }
 
         function createResourceFetcher(isExploded) {
 
             if(isExploded) {
                 console.log('using new PlainExplodedFetcher');
-                return new PlainExplodedFetcher(packageDocumentURL);
+                return new PlainExplodedFetcher(rootUrl);
             }
 
             console.log('using new ZipFetcher');
-            return new ZipFetcher(packageDocumentURL, libDir);
+            return new ZipFetcher(rootUrl, libDir);
 
         }
 
@@ -65,6 +65,11 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
         this.isPackageExploded = function (){
             return _isExploded;
         };
+
+        this.getPackageUrl = function() {
+            return _dataFetcher.getPackageUrl();
+        };
+
 
         this.resolveInternalPackageResources = function(contentDocumentURI, contentDocumentType, contentDocumentText,
                                                          resolvedDocumentCallback, onerror) {

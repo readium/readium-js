@@ -33,6 +33,11 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
             }
         }
 
+        this.getPackageUrl = function() {
+            return baseUrl;
+        };
+
+
         this.resolveURI = function (epubResourceURI) {
             return epubResourceURI;
         };
