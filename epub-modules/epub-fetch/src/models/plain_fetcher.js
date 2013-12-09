@@ -4,6 +4,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser'], function (re
     var PlainExplodedFetcher = function(baseUrl){
 
         var _parser = new MarkupParser();
+        var _jsonMetadata;
 
         this.resolveURI = function (epubResourceURI) {
             // Make absolute to the package document path
@@ -36,6 +37,12 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser'], function (re
             fetchFileContentsText(this.resolveURI(relativeToPackagePath), fetchCallback, onerror);
         };
 
+        this.getEncryptionDom = function (callback, onerror) {
+            // TODO: need a reliable method of finding META-INF/encryption.xml.
+            // This is a challenge since we begin with a path directly to the package document and don't go through META-INF/container.xml.
+            onerror(new Error('Getting encryption descriptor not yet implemented!'));
+        }
+
         this.getPackageDom = function (callback, onerror) {
             console.log('getting package DOM');
 
@@ -47,6 +54,11 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser'], function (re
                 callback(packageDom);
 
             }, onerror);
+        };
+
+        // Currently needed for deobfuscating fonts
+        this.setPackageJson = function(jsonMetadata) {
+            _jsonMetadata = jsonMetadata;
         };
     };
 
