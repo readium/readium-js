@@ -12,6 +12,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
         var _bindings = new Spine(jsonData.bindings);
         var _pageSpreadProperty = new PageSpreadProperty();
 
+
         // If this book is fixed layout, assign the page spread class
         if (isFixedLayout()) {
             assignPageSpreadClass();
@@ -26,8 +27,6 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
                 spinePackageData.push(generatePackageData(spineItem));
             });
 
-            var ibookData = readIBookProperties();
-            
             // This is where the package data format thing is generated
             return {
                 rootUrl : packageDocRoot,
@@ -316,14 +315,6 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
                     callback(undefined);
                 }
             });
-        }
-
-        function readIBookProperties() {
-
-            var packageDocumentAbsoluteURL = new URI(packageDocumentURL).absoluteTo(document.URL);
-            var tocDocumentAbsoluteURL = new URI("META-INF/com.apple.ibooks.display-options.xml", "." );
-
-            return tocDocumentAbsoluteURL;
         }
 
         function generateTocListDOM(callback) {

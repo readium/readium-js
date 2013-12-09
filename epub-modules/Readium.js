@@ -16,10 +16,10 @@ define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch',
         ReadiumSDK.trigger(ReadiumSDK.Events.READER_INITIALIZED);
 
 
-        this.openPackageDocument = function(packageDocumentURL, callback)  {
+        this.openPackageDocument = function(bookRoot, callback)  {
 
-            _currentResourceFetcher = new ResourceFetcher(packageDocumentURL, jsLibRoot);
-            var _packageParser = new PackageParser(_currentResourceFetcher);
+            _currentResourceFetcher = new ResourceFetcher(bookRoot, jsLibRoot);
+            var _packageParser = new PackageParser(bookRoot, _currentResourceFetcher);
 
             _packageParser.parse(function(docJson){
 

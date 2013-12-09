@@ -1,10 +1,10 @@
-define(['require', 'module', 'jquery', 'underscore', 'backbone'], function (require, module, $, _, Backbone) {
+define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/markup_parser'], function (require, module, $, _, Backbone, MarkupParser) {
     console.log('package_document_parser module id: ' + module.id);
 
     // `PackageDocumentParser` is used to parse the xml of an epub package
     // document and build a javascript object. The constructor accepts an
     // instance of `URI` that is used to resolve paths during the process
-    var PackageDocumentParser = function(packageFetcher) {
+    var PackageDocumentParser = function(bookRoot, packageFetcher) {
 
         var _deferredXmlDom = $.Deferred();
         var _xmlDom;
@@ -35,21 +35,66 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone'], function (requ
                 if (cover) {
                     json.metadata.cover_href = cover;
                 }
-                if (json.metadata.layout === "pre-paginated") {
-                    json.metadata.fixed_layout = true;
-                }
 
-                // THIS SHOULD BE LEFT IN (BUT COMMENTED OUT), AS MO SUPPORT IS TEMPORARILY DISABLED
-                // create a map of all the media overlay objects
-                // json.mo_map = this.resolveMediaOverlays(json.manifest);
+                $.when(updateMetadataWithIBookProperties(json.metadata)).then(function() {
 
-                // parse the spine into a proper collection
-                json.spine = parseSpineProperties(json.spine);
+                    if (json.metadata.layout === "pre-paginated") {
+                        json.metadata.fixed_layout = true;
+                    }
 
-                // return the parse result
-                callback(json);
+                    // THIS SHOULD BE LEFT IN (BUT COMMENTED OUT), AS MO SUPPORT IS TEMPORARILY DISABLED
+                    // create a map of all the media overlay objects
+                    // json.mo_map = this.resolveMediaOverlays(json.manifest);
+
+                    // parse the spine into a proper collection
+                    json.spine = parseSpineProperties(json.spine);
+
+                    // return the parse result
+                    callback(json);
+                });
+
             });
         };
+
+        function updateMetadataWithIBookProperties(metadata) {
+
+            var dff = $.Deferred();
+
+            //if layout not set
+            if(!metadata.layout)
+            {
+                var absoluteRoot = new URI(bookRoot + "/META-INF/com.apple.ibooks.display-options.xml").absoluteTo(document.URL);
+
+                packageFetcher.relativeToPackageFetchFileContents(absoluteRoot, 'text', function (ibookPropText) {
+
+                    if(ibookPropText) {
+                        var parser = new MarkupParser();
+                        var propModel = parser.parseXml(ibookPropText);
+                        var fixLayoutProp = $("option[name=fixed-layout]", propModel)[0];
+                        if(fixLayoutProp) {
+                            var fixLayoutVal = $(fixLayoutProp).text();
+                            if(fixLayoutVal === "true") {
+                                metadata.layout = "pre-paginated";
+                                console.log("using com.apple.ibooks.display-options.xml fixed-layout property");
+                            }
+                        }
+                    }
+
+                    dff.resolve();
+
+                }, function (err) {
+
+                    console.log("com.apple.ibooks.display-options.xml not found");
+                    dff.resolve();
+                });
+            }
+            else {
+                dff.resolve();
+            }
+
+            return dff.promise();
+        }
+
 
         function getJsonSpine(xmlDom) {
 
