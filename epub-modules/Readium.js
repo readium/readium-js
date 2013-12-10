@@ -1,4 +1,3 @@
-
 define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch', 'emub-model/package_document_parser', 'emub-model/package_document', 'epub-fetch/iframe_zip_loader',  'annotations_module'],
     function (require, module, $, _, readerView, ResourceFetcher, PackageParser, PackageDocument, IframeZipLoader) {
 
@@ -33,11 +32,7 @@ define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch',
 
             });
        }
-
-
-            });
-        }
-    };
+   };
 
 
 
