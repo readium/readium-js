@@ -12,6 +12,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
         var _bindings = new Spine(jsonData.bindings);
         var _pageSpreadProperty = new PageSpreadProperty();
 
+
         // If this book is fixed layout, assign the page spread class
         if (isFixedLayout()) {
             assignPageSpreadClass();
@@ -25,7 +26,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             _spine.each(function (spineItem) {
                 spinePackageData.push(generatePackageData(spineItem));
             });
-            
+
             // This is where the package data format thing is generated
             return {
                 rootUrl : packageDocRoot,
@@ -325,9 +326,8 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
                         $ncxOrderedList = getNcxOrderedList($("navMap", tocDom));
                         callback($ncxOrderedList[0]);
                     } else {
-                        var packageDocumentURL = packageDocumentURL;
                         var packageDocumentAbsoluteURL = new URI(packageDocumentURL).absoluteTo(document.URL);
-                        var tocDocumentAbsoluteURL = new URI(getToc()).absoluteTo(document.URL);
+                        var tocDocumentAbsoluteURL = new URI(getToc()).absoluteTo(packageDocumentAbsoluteURL);
                         // add a BASE tag to change the TOC document's baseURI.
                         var oldBaseTag = $(tocDom).remove('base');
                         var newBaseTag = $('<base></base>');
@@ -521,6 +521,8 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
         //     var map = this.get("mo_map");
         //     return map && map[idref];
         // },
+
+        this.generateTocListDOM = generateTocListDOM;
     };
 
     return PackageDocument;
