@@ -522,7 +522,6 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
         //     return map && map[idref];
         // },
 
-        this.generateTocListDOM = generateTocListDOM;
     };
 
     return PackageDocument;
