@@ -12,6 +12,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
         var _bindings = new Spine(jsonData.bindings);
         var _pageSpreadProperty = new PageSpreadProperty();
 
+
         // If this book is fixed layout, assign the page spread class
         if (isFixedLayout()) {
             assignPageSpreadClass();
@@ -25,7 +26,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             _spine.each(function (spineItem) {
                 spinePackageData.push(generatePackageData(spineItem));
             });
-            
+
             // This is where the package data format thing is generated
             return {
                 rootUrl : packageDocRoot,
