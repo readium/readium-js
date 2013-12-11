@@ -6,13 +6,25 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
     // instance of `URI` that is used to resolve paths during the process
     var PackageDocumentParser = function(bookRoot, packageFetcher) {
 
+        var _packageFetcher = packageFetcher;
         var _deferredXmlDom = $.Deferred();
         var _xmlDom;
+
+        function onError(error) {
+            if (error) {
+                if (error.message) {
+                    console.error(error.message);
+                }
+                if (error.stack) {
+                    console.error(error.stack);
+                }
+            }
+        }
 
         packageFetcher.getPackageDom(function(packageDom){
             _xmlDom = packageDom;
             _deferredXmlDom.resolve(packageDom);
-        });
+        }, onError);
 
 
         // Parse an XML package document into a javascript object
@@ -49,6 +61,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
                     // parse the spine into a proper collection
                     json.spine = parseSpineProperties(json.spine);
 
+                    _packageFetcher.setPackageJson(json);
                     // return the parse result
                     callback(json);
                 });
