@@ -20,6 +20,15 @@ define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch',
             _currentResourceFetcher = new ResourceFetcher(bookRoot, jsLibRoot);
             var _packageParser = new PackageParser(bookRoot, _currentResourceFetcher);
 
+
+            debugger;
+            jQuery.ajax(_currentResourceFetcher.getPackageUrl(), {
+                success: function(packageXml) {
+                    self.reader.setPackageDocument(packageXml);
+                },
+                error: function(x) {throw new Error(x);},
+            });
+
             _packageParser.parse(function(docJson){
 
                 var packageDocument = new PackageDocument(_currentResourceFetcher.getPackageUrl(), docJson, _currentResourceFetcher);
