@@ -30,7 +30,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             // This is where the package data format thing is generated
             return {
                 rootUrl : packageDocRoot,
-                rendition_layout : isFixedLayout(),
+                rendition_layout : _metadata.get("layout"),
                 spine : {
                     direction : pageProgressionDirection(),
                     items : spinePackageData    
