@@ -515,6 +515,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
         // },
 
         this.generateTocListDOM = generateTocListDOM;
+        this.getTocURL = getToc;
     };
 
     return PackageDocument;
