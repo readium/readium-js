@@ -8,7 +8,22 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser'], function (re
 
         var _packageUrl;
 
-        getPackagePath();
+        this.initialize = function(callback) {
+
+            var containerPath = new URI(baseUrl + '/META-INF/container.xml');
+
+            getXmlFileDom(containerPath.path(), function (containerDom) {
+                _packageUrl = baseUrl + "/" + getRootFile(containerDom);
+
+                callback();
+
+            }, function(error) {
+                console.error("unable to find package document: " + error);
+                _packageUrl = baseUrl;
+
+                callback();
+            });
+        };
 
         this.resolveURI = function (epubResourceURI) {
             // Make absolute to the package document path
@@ -22,18 +37,6 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser'], function (re
             return _packageUrl;
         };
 
-        function getPackagePath() {
-
-            var containerPath = new URI(baseUrl + '/META-INF/container.xml');
-
-            getXmlFileDom(containerPath.path(), function (containerDom) {
-                _packageUrl = baseUrl + "/" + getRootFile(containerDom);
-            }, function(error) {
-                console.error("unable to find package document: " + error);
-                _packageUrl = baseUrl;
-            });
-
-        }
 
         function getRootFile (containerDom) {
             var rootFile = $('rootfile', containerDom);
@@ -47,10 +50,10 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser'], function (re
             fetchFileContentsText(filePath, function (xmlFileContents) {
                 var fileDom = _parser.parseXml(xmlFileContents);
                 callback(fileDom);
-            }, errorCallback, false);
+            }, errorCallback);
         }
 
-        function fetchFileContentsText (fileUrl, fetchCallback, onerror, async) {
+        function fetchFileContentsText (fileUrl, fetchCallback, onerror) {
 
             if (typeof fileUrl === 'undefined') {
                 throw 'Fetched file URL is undefined!';
@@ -58,7 +61,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser'], function (re
             $.ajax({
                 url: fileUrl,
                 dataType: 'text',
-                async: async,
+                async: true,
                 success: function (result) {
                     fetchCallback(result);
                 },
@@ -72,7 +75,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser'], function (re
         }
 
         this.relativeToPackageFetchFileContents = function (relativeToPackagePath, fetchMode, fetchCallback, onerror) {
-            fetchFileContentsText(this.resolveURI(relativeToPackagePath), fetchCallback, onerror, true);
+            fetchFileContentsText(this.resolveURI(relativeToPackagePath), fetchCallback, onerror);
         };
 
         this.getEncryptionDom = function (callback, onerror) {
@@ -91,7 +94,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser'], function (re
                 var packageDom = _parser.parseXml(packageXml);
                 callback(packageDom);
 
-            }, onerror, true);
+            }, onerror);
         };
 
         // Currently needed for deobfuscating fonts

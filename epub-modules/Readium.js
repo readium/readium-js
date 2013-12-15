@@ -19,21 +19,24 @@ define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch',
         this.openPackageDocument = function(bookRoot, callback)  {
 
             _currentResourceFetcher = new ResourceFetcher(bookRoot, jsLibRoot);
-            var _packageParser = new PackageParser(bookRoot, _currentResourceFetcher);
 
-            _packageParser.parse(function(docJson){
+            _currentResourceFetcher.initialize(function() {
 
-                var packageDocument = new PackageDocument(_currentResourceFetcher.getPackageUrl(), docJson, _currentResourceFetcher);
-                self.reader.openBook(packageDocument.getPackageData())
+                var _packageParser = new PackageParser(bookRoot, _currentResourceFetcher);
 
-                if (callback){
-                    // gives caller access to document metadata like the table of contents
-                    callback(packageDocument);
-                }
+                _packageParser.parse(function(docJson){
 
+                    var packageDocument = new PackageDocument(_currentResourceFetcher.getPackageUrl(), docJson, _currentResourceFetcher);
+                    self.reader.openBook(packageDocument.getPackageData())
+
+                    if (callback){
+                        // gives caller access to document metadata like the table of contents
+                        callback(packageDocument);
+                    }
+
+                });
             });
        }
-
     };
 
 

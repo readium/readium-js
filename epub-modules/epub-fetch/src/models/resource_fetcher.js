@@ -13,10 +13,24 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
             'application/zip': 'zipped'
         };
 
-        var _markupParser = new MarkupParser();
+        var _isExploded;
+        var _dataFetcher;
+        
+        this.initialize =  function(callback) {
 
-        var _isExploded = isExploded();
-        var _dataFetcher = createResourceFetcher(_isExploded);
+            _isExploded = isExploded();
+
+            createDataFetcher(_isExploded, function(datafetcher){
+
+                _dataFetcher = datafetcher;
+                callback();
+
+            });
+        };
+
+        
+
+        
 
         // INTERNAL FUNCTIONS
 
@@ -26,16 +40,19 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
             return rootUrl.indexOf(ext, this.length - ext.length) === -1;
         }
 
-        function createResourceFetcher(isExploded) {
+        function createDataFetcher(isExploded, callback) {
 
             if(isExploded) {
                 console.log('using new PlainExplodedFetcher');
-                return new PlainExplodedFetcher(rootUrl);
+                var plainFetcher =  new PlainExplodedFetcher(rootUrl);
+                plainFetcher.initialize(function(){
+
+                    callback(plainFetcher);
+                });
             }
 
             console.log('using new ZipFetcher');
-            return new ZipFetcher(rootUrl, libDir);
-
+            callback(new ZipFetcher(rootUrl, libDir));
         }
 
         function fetchResourceForElement(resolvedElem, refAttrOrigVal, refAttr, contentDocumentURI, fetchMode, resolutionDeferreds, onerror, resourceDataPreprocessing) {
