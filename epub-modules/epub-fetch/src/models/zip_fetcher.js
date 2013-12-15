@@ -15,7 +15,8 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
         var _markupParser = new MarkupParser();
 
         var ENCRYPTION_METHODS = {
-            'http://www.idpf.org/2008/embedding': embeddedFontDeobfuscateIdpf
+            'http://www.idpf.org/2008/embedding': embeddedFontDeobfuscateIdpf,
+            'http://ns.adobe.com/pdf/enc#RC': embeddedFontDeobfuscateAdobe
         }
 
         function _handleError(err) {
@@ -100,15 +101,18 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
                 console.log('== decryption required for ' + relativePath);
                 var decryptionFunction = ENCRYPTION_METHODS[encryptionMethod];
                 var origFetchCallback = fetchCallback;
-                fetchCallback = function (unencryptedBlob) {
-                    decryptionFunction(unencryptedBlob, function (decryptedBlob) {
-                        origFetchCallback(decryptedBlob);
-                    });
-                };
+                if (decryptionFunction) {
+                    fetchCallback = function (unencryptedBlob) {
+                        decryptionFunction(unencryptedBlob, function (decryptedBlob) {
+                            origFetchCallback(decryptedBlob);
+                        });
+                    };
+                }
             }
             // TODO: implement deobfuscation based on _encryptionDom configuration
             fetchFileContents(relativePath, function (entry) {
-                entry.getBlob(ContentTypeDiscovery.identifyContentTypeFromFileName(relativePath), fetchCallback, undefined,  _checkCrc32);
+                entry.getBlob(ContentTypeDiscovery.identifyContentTypeFromFileName(relativePath), fetchCallback,
+                    undefined, _checkCrc32);
             }, onerror)
         }
 
@@ -172,28 +176,60 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
         }
 
         // TODO: move to the epub module into a new "encryption" submodule?
+        function xorObfuscatedBlob(obfuscatedResourceBlob, prefixLength, xorKey, callback) {
+            var obfuscatedPrefixBlob = obfuscatedResourceBlob.slice(0, prefixLength);
+            blob2BinArray(obfuscatedPrefixBlob, function (bytes) {
+                var masklen = xorKey.length;
+                for (var i = 0; i < prefixLength; i++) {
+                    bytes[i] = bytes[i] ^ (xorKey[i % masklen]);
+                }
+                var deobfuscatedPrefixBlob = new Blob([bytes], { type: obfuscatedResourceBlob.type });
+                var remainderBlob = obfuscatedResourceBlob.slice(prefixLength);
+                var deobfuscatedBlob = new Blob([deobfuscatedPrefixBlob, remainderBlob],
+                    { type: obfuscatedResourceBlob.type });
+
+                callback(deobfuscatedBlob);
+            });
+        }
+
+        // TODO: move to the epub module into a new "encryption" submodule?
         function embeddedFontDeobfuscateIdpf(obfuscatedResourceBlob, callback) {
-            // TODO: use implementation from Readium Chrome Extension
             var uid = _packageJson.metadata.id;
             var hashedUid = window.Crypto.SHA1(unescape(encodeURIComponent(uid.trim())), { asBytes: true });
+            var prefixLength = 1040;
             // Shamelessly copied from
             // https://github.com/readium/readium-chrome-extension/blob/26d4b0cafd254cfa93bf7f6225887b83052642e0/scripts/models/path_resolver.js#L102 :
             //            if ((resourceBlob.indexOf("OTTO") == 0) || (resourceBlob.indexOf("wOFF") == 0)) {
             //                callback(resourceBlob);
             //            }
             //            else {
-            var obfuscatedPrefixBlob = obfuscatedResourceBlob.slice(0, 1040);
-            blob2BinArray(obfuscatedPrefixBlob, function(bytes) {
-                var masklen = hashedUid.length;
-                for (var i = 0; i < 1040; i++) {
-                    bytes[i] = bytes[i] ^ (hashedUid[i % masklen]);
-                }
-                var deobfuscatedPrefixBlob = new Blob([bytes], { type: obfuscatedResourceBlob.type });
-                var remainderBlob = obfuscatedResourceBlob.slice(1040);
-                var deobfuscatedBlob = new Blob([deobfuscatedPrefixBlob, remainderBlob], { type: obfuscatedResourceBlob.type });
+            xorObfuscatedBlob(obfuscatedResourceBlob, prefixLength, hashedUid, callback);
+        }
 
-                callback(deobfuscatedBlob);
-            });
+        // TODO: move to the epub module into a new "encryption" submodule?
+        function urnUuidToByteArray(id) {
+            var uuidRegexp = /(urn:uuid:)?([0-9a-f]{8})-([0-9a-f]{4})-([0-9a-f]{4})-([0-9a-f]{4})-([0-9a-f]{12})/i;
+            var matchResults = uuidRegexp.exec(id);
+            var rawUuid =  matchResults[2]+matchResults[3]+matchResults[4]+matchResults[5]+matchResults[6];
+            if (! rawUuid || rawUuid.length != 32) {
+                console.error('Bad UUID format for ID :' + id);
+            }
+            var byteArray = [];
+            for (var i = 0; i < 16; i++) {
+                var byteHex =  rawUuid.substr(i*2, 2);
+                var byteNumber = parseInt(byteHex, 16);
+                byteArray.push(byteNumber);
+            }
+            return byteArray;
+        }
+
+        // TODO: move to the epub module into a new "encryption" submodule?
+        function embeddedFontDeobfuscateAdobe(obfuscatedResourceBlob, callback) {
+            var uid = _packageJson.metadata.id;
+            // TODO: extract the UUID and convert to big-endian binary form (16 bytes):
+            var uidWordArray = urnUuidToByteArray(uid);
+            var prefixLength = 1024;
+            xorObfuscatedBlob(obfuscatedResourceBlob, prefixLength, uidWordArray, callback)
         }
 
         // TODO: move to the epub module as a new "encryption_config" submodule?
@@ -203,10 +239,17 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
                 if (!_encryptionHash) {
                     _encryptionHash = {};
                 }
-                $('EncryptedData', encryptionDom).each(function (index, encryptedData) {
+
+                var encryptedData = $('EncryptedData', encryptionDom);
+                encryptedData.each(function (index, encryptedData) {
                     var encryptionAlgorithm = $('EncryptionMethod', encryptedData).first().attr('Algorithm');
-                    $('CipherData>CipherReference', encryptedData).each(function (index, CipherReference) {
+
+                    // For some reason, jQuery selector "" against XML DOM sometimes doesn't match properly
+                    var cipherReference = $('CipherReference', encryptedData);
+                    cipherReference.each(function (index, CipherReference) {
                         var cipherReferenceURI = $(CipherReference).attr('URI');
+                        console.log('Encryption/obfuscation algorithm ' + encryptionAlgorithm + ' specified for ' +
+                            cipherReferenceURI);
                         _encryptionHash[cipherReferenceURI] = encryptionAlgorithm;
                     });
                 });
