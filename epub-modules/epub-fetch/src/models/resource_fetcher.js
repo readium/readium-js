@@ -46,9 +46,9 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
                 console.log('using new PlainExplodedFetcher');
                 var plainFetcher =  new PlainExplodedFetcher(rootUrl);
                 plainFetcher.initialize(function(){
-
                     callback(plainFetcher);
                 });
+                return;
             }
 
             console.log('using new ZipFetcher');
@@ -361,6 +361,10 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
 
         this.relativeToPackageFetchFileContents = function (relativePath, fetchMode, fetchCallback, onerror) {
             _dataFetcher.relativeToPackageFetchFileContents(relativePath, fetchMode, fetchCallback, onerror)
+        };
+
+        this.getRelativeXmlFileDom = function (filePath, callback, errorCallback) {
+            _dataFetcher.getRelativeXmlFileDom(filePath, callback, errorCallback);
         };
 
         this.getPackageDom = function (callback, onerror) {

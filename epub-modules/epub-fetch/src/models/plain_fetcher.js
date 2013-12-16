@@ -74,6 +74,10 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser'], function (re
             });
         }
 
+        this.getRelativeXmlFileDom = function(relativeToPackagePath, callback, errorCallback) {
+            getXmlFileDom (this.resolveURI(relativeToPackagePath), callback, errorCallback);
+        };
+        
         this.relativeToPackageFetchFileContents = function (relativeToPackagePath, fetchMode, fetchCallback, onerror) {
             fetchFileContentsText(this.resolveURI(relativeToPackagePath), fetchCallback, onerror);
         };

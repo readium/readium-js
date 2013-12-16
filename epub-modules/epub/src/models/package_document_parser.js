@@ -154,7 +154,25 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
             jsonMetadata.rights = $("rights").text();
             jsonMetadata.spread = $("meta[property='rendition:spread']", $metadata).text();
             jsonMetadata.title = $("title", $metadata).text();
+            
+            
+            // Media part
+            jsonMetadata.mediaItems = [];
 
+            var $overlays = $("meta[property='media:duration'][refines]", $metadata);
+
+            $.each($overlays, function(elementIndex, $currItem) {
+               jsonMetadata.mediaItems.push({
+                  refines: $currItem.getAttribute("refines"),
+                  duration: $($currItem).text()
+               });
+            });
+               
+            jsonMetadata.mediaDuration =  $("meta[property='media:duration']:not([refines])", $metadata).text();
+            jsonMetadata.mediaNarrator =  $("meta[property='media:narrator']", $metadata).text();
+            jsonMetadata.mediaActiveClass =   $("meta[property='active-class']", $metadata).text();
+            jsonMetadata.mediaPlaybackActiveClass =   $("meta[property='playback-active-class']", $metadata).text();
+            
             return jsonMetadata;
         }
 

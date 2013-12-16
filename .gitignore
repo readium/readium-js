@@ -21,3 +21,7 @@ out
 *.ipr
 *.iws
 .idea/
+
+/.project
+/build.bat
+/.externalToolBuilders

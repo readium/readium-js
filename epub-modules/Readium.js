@@ -1,6 +1,6 @@
 
-define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch', 'emub-model/package_document_parser', 'emub-model/package_document', 'epub-fetch/iframe_zip_loader'],
-    function (require, module, $, _, readerView, ResourceFetcher, PackageParser, PackageDocument, IframeZipLoader) {
+define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch', 'emub-model/package_document_parser', 'emub-model/package_document', 'epub-fetch/iframe_zip_loader', 'emub-model/smil_document_parser', 'URIjs'],
+    function (require, module, $, _, readerView, ResourceFetcher, PackageParser, PackageDocument, IframeZipLoader, SmilParser, URI) {
 
     console.log('Readium module id: ' + module.id);
 
@@ -25,15 +25,14 @@ define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch',
                 var _packageParser = new PackageParser(bookRoot, _currentResourceFetcher);
 
                 _packageParser.parse(function(docJson){
-
-                    var packageDocument = new PackageDocument(_currentResourceFetcher.getPackageUrl(), docJson, _currentResourceFetcher);
-                    self.reader.openBook(packageDocument.getPackageData())
-
-                    if (callback){
-                        // gives caller access to document metadata like the table of contents
-                        callback(packageDocument);
-                    }
-
+                    SmilParser.fillSmilData(docJson, bookRoot, jsLibRoot, _currentResourceFetcher, function() {
+                        var packageDocument = new PackageDocument(_currentResourceFetcher.getPackageUrl(), docJson, _currentResourceFetcher);
+                        self.reader.openBook(packageDocument.getPackageData())
+                        if (callback){
+                            // gives caller access to document metadata like the table of contents
+                            callback(packageDocument);
+                        }
+                    })
                 });
             });
        }

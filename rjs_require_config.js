@@ -222,7 +222,7 @@ var requirejs = {
         readerView : {
             deps: [ 'backbone','readiumSDK', 'helpers', 'viewerSettings', 'styleCollection', 'package',
                 'mediaOverlayPlayer', 'pageOpenRequest', 'fixedView', 'reflowableView', 'mediaOvelayDataInjector',
-                'internalLinksSupport', 'iframeLoader'],
+                'internalLinksSupport', 'iframeLoader', 'smilIterator', 'style'],
             exports:'readerView'
         }
 
