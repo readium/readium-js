@@ -13,6 +13,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
             'application/zip': 'zipped'
         };
 
+        var _markupParser = new MarkupParser();
         var _isExploded;
         var _dataFetcher;
         
