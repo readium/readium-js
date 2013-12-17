@@ -51,9 +51,10 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
                     callback(plainFetcher);
                 });
             }
-
-            console.log('using new ZipFetcher');
-            callback(new ZipFetcher(rootUrl, libDir));
+            else {
+                console.log('using new ZipFetcher');
+                callback(new ZipFetcher(rootUrl, libDir));
+            }
         }
 
         function fetchResourceForElement(resolvedElem, refAttrOrigVal, refAttr, contentDocumentURI, fetchMode, resolutionDeferreds, onerror, resourceDataPreprocessing) {
