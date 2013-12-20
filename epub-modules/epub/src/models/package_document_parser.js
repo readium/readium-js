@@ -1,65 +1,118 @@
-define(['require', 'module', 'jquery', 'underscore', 'backbone'], function (require, module, $, _, Backbone) {
+define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/markup_parser', 'URIjs'], function (require, module, $, _, Backbone, MarkupParser, URI) {
     console.log('package_document_parser module id: ' + module.id);
 
     // `PackageDocumentParser` is used to parse the xml of an epub package
     // document and build a javascript object. The constructor accepts an
     // instance of `URI` that is used to resolve paths during the process
-    var PackageDocumentParser = Backbone.Model.extend({
+    var PackageDocumentParser = function(bookRoot, packageFetcher) {
 
-        initialize: function (attributes, options) {
-            var thisParser = this;
-            var epubFetch = thisParser.get('epubFetch');
-            var deferredXmlDom = $.Deferred();
-            thisParser.set('deferredXmlDom', deferredXmlDom);
-            epubFetch.getPackageDom(function (packageDom) {
-                thisParser.set('xmlDom', packageDom);
-                deferredXmlDom.resolve(packageDom);
-            });
-        },
+        var _packageFetcher = packageFetcher;
+        var _deferredXmlDom = $.Deferred();
+        var _xmlDom;
+
+        function onError(error) {
+            if (error) {
+                if (error.message) {
+                    console.error(error.message);
+                }
+                if (error.stack) {
+                    console.error(error.stack);
+                }
+            }
+        }
+
+        packageFetcher.getPackageDom(function(packageDom){
+            _xmlDom = packageDom;
+            _deferredXmlDom.resolve(packageDom);
+        }, onError);
+
 
         // Parse an XML package document into a javascript object
-        parse: function (callback) {
-            var thisParser = this;
-            var deferredXmlDom = thisParser.get('deferredXmlDom');
-            deferredXmlDom.done(function (xmlDom) {
-                var json, manifest, cover;
+        this.parse = function(callback) {
+
+            _deferredXmlDom.done(function (xmlDom) {
+                var json, cover;
 
                 json = {};
-                json.metadata = thisParser.getJsonMetadata(xmlDom);
-                json.bindings = thisParser.getJsonBindings(xmlDom);
-                json.spine = thisParser.getJsonSpine(xmlDom);
-                json.manifest = thisParser.getJsonManifest(xmlDom);
+                json.metadata = getJsonMetadata(xmlDom);
+                json.bindings = getJsonBindings(xmlDom);
+                json.spine = getJsonSpine(xmlDom);
+                json.manifest = getJsonManifest(xmlDom);
 
                 // parse the page-progression-direction if it is present
-                json.paginate_backwards = thisParser.paginateBackwards(xmlDom);
+                json.paginate_backwards = paginateBackwards(xmlDom);
 
                 // try to find a cover image
-                cover = thisParser.getCoverHref(xmlDom);
+                cover = getCoverHref(xmlDom);
                 if (cover) {
                     json.metadata.cover_href = cover;
                 }
-                if (json.metadata.layout === "pre-paginated") {
-                    json.metadata.fixed_layout = true;
-                }
 
-                // THIS SHOULD BE LEFT IN (BUT COMMENTED OUT), AS MO SUPPORT IS TEMPORARILY DISABLED
-                // create a map of all the media overlay objects
-                // json.mo_map = this.resolveMediaOverlays(json.manifest);
+                $.when(updateMetadataWithIBookProperties(json.metadata)).then(function() {
 
-                // parse the spine into a proper collection
-                json.spine = thisParser.parseSpineProperties(json.spine);
+                    if (json.metadata.layout === "pre-paginated") {
+                        json.metadata.fixed_layout = true;
+                    }
 
-                // return the parse result
-                callback(json);
+                    // THIS SHOULD BE LEFT IN (BUT COMMENTED OUT), AS MO SUPPORT IS TEMPORARILY DISABLED
+                    // create a map of all the media overlay objects
+                    // json.mo_map = this.resolveMediaOverlays(json.manifest);
+
+                    // parse the spine into a proper collection
+                    json.spine = parseSpineProperties(json.spine);
+
+                    _packageFetcher.setPackageJson(json);
+                    // return the parse result
+                    callback(json);
+                });
+
             });
-        },
+        };
 
-        getJsonSpine: function () {
-            var thisParser = this;
+        function updateMetadataWithIBookProperties(metadata) {
+
+            var dff = $.Deferred();
+
+            //if layout not set
+            if(!metadata.layout)
+            {
+                var absoluteRoot = new URI(bookRoot + "/META-INF/com.apple.ibooks.display-options.xml").absoluteTo(document.URL);
+
+                packageFetcher.relativeToPackageFetchFileContents(absoluteRoot, 'text', function (ibookPropText) {
+
+                    if(ibookPropText) {
+                        var parser = new MarkupParser();
+                        var propModel = parser.parseXml(ibookPropText);
+                        var fixLayoutProp = $("option[name=fixed-layout]", propModel)[0];
+                        if(fixLayoutProp) {
+                            var fixLayoutVal = $(fixLayoutProp).text();
+                            if(fixLayoutVal === "true") {
+                                metadata.layout = "pre-paginated";
+                                console.log("using com.apple.ibooks.display-options.xml fixed-layout property");
+                            }
+                        }
+                    }
+
+                    dff.resolve();
+
+                }, function (err) {
+
+                    console.log("com.apple.ibooks.display-options.xml not found");
+                    dff.resolve();
+                });
+            }
+            else {
+                dff.resolve();
+            }
+
+            return dff.promise();
+        }
+
+
+        function getJsonSpine(xmlDom) {
 
             var $spineElements;
             var jsonSpine = [];
-            var xmlDom = thisParser.get("xmlDom");
 
             $spineElements = $("spine", xmlDom).children();
             $.each($spineElements, function (spineElementIndex, currSpineElement) {
@@ -76,12 +129,10 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone'], function (requ
             });
 
             return jsonSpine;
-        },
+        }
 
-        getJsonMetadata: function () {
-            var thisParser = this;
+        function getJsonMetadata(xmlDom) {
 
-            var xmlDom = thisParser.get("xmlDom");
             var $metadata = $("metadata", xmlDom);
             var jsonMetadata = {};
 
@@ -105,13 +156,10 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone'], function (requ
             jsonMetadata.title = $("title", $metadata).text();
 
             return jsonMetadata;
-        },
+        }
 
-        getJsonManifest: function () {
+        function getJsonManifest(xmlDom) {
 
-            var thisParser = this;
-            var epubFetch = thisParser.get('epubFetch');
-            var xmlDom = thisParser.get("xmlDom");
             var $manifestItems = $("manifest", xmlDom).children();
             var jsonManifest = [];
 
@@ -130,19 +178,18 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone'], function (requ
                     media_type: $currManifestElement.attr("media-type") ? $currManifestElement.attr("media-type") : "",
                     properties: $currManifestElement.attr("properties") ? $currManifestElement.attr("properties") : ""
                 };
-                console.log('pushing manifest item to JSON manifest. currManifestElementHref: [' + currManifestElementHref
-                    + '], manifestItem.contentDocumentURI: [' + manifestItem.contentDocumentURI
-                    + '], manifestItem.media_type: [' + manifestItem.media_type + '], manifestItem:');
-                console.log(manifestItem);
+                // console.log('pushing manifest item to JSON manifest. currManifestElementHref: [' + currManifestElementHref + 
+                //     '], manifestItem.contentDocumentURI: [' + manifestItem.contentDocumentURI + 
+                //     '], manifestItem:');
+                // console.log(manifestItem);
                 jsonManifest.push(manifestItem);
             });
 
             return jsonManifest;
-        },
+        }
 
-        getJsonBindings: function () {
+        function getJsonBindings(xmlDom) {
 
-            var xmlDom = this.get("xmlDom");
             var $bindings = $("bindings", xmlDom).children();
             var jsonBindings = [];
 
@@ -159,14 +206,13 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone'], function (requ
             });
 
             return jsonBindings;
-        },
+        }
 
-        getCoverHref: function () {
+        function getCoverHref(xmlDom) {
 
-            var dom = this.get("xmlDom");
             var manifest;
             var $imageNode;
-            manifest = dom.getElementsByTagName('manifest')[0];
+            manifest = xmlDom.getElementsByTagName('manifest')[0];
 
             // epub3 spec for a cover image is like this:
             /*<item properties="cover-image" id="ci" href="cover.svg" media-type="image/svg+xml" />*/
@@ -177,7 +223,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone'], function (requ
 
             // some epub2's cover image is like this:
             /*<meta name="cover" content="cover-image-item-id" />*/
-            var metaNode = $('meta[name="cover"]', dom);
+            var metaNode = $('meta[name="cover"]', xmlDom);
             var contentAttr = metaNode.attr("content");
             if (metaNode.length === 1 && contentAttr) {
                 $imageNode = $('item[id="' + contentAttr + '"]', manifest);
@@ -194,11 +240,11 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone'], function (requ
 
             // seems like there isn't one, thats ok...
             return null;
-        },
+        }
 
-        parseSpineProperties: function (spine) {
+        function parseSpineProperties(spine) {
 
-            var parseProperiesString = function (str) {
+            var parsePropertiesString = function (str) {
                 var properties = {};
                 var allPropStrs = str.split(" "); // split it on white space
                 for (var i = 0; i < allPropStrs.length; i++) {
@@ -218,15 +264,15 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone'], function (requ
                 }
                 return properties;
 
-            }
+            };
 
             for (var i = 0; i < spine.length; i++) {
-                var props = parseProperiesString(spine[i].properties);
+                var props = parsePropertiesString(spine[i].properties);
                 // add all the properties to the spine item
                 _.extend(spine[i], props);
             }
             return spine;
-        },
+        }
 
         // resolve the url of smils on any manifest items that have a MO
         // attribute
@@ -251,11 +297,11 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone'], function (requ
         // },
 
         // parse the EPUB3 `page-progression-direction` attribute
-        paginateBackwards: function () {
+        function paginateBackwards (xmlDom) {
 
-            var xmlDom = this.get("xmlDom");
             return $('spine', xmlDom).attr('page-progression-direction') === "rtl";
         }
-    });
+    };
+
     return PackageDocumentParser;
 });

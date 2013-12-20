@@ -1,40 +1,13 @@
-define(['require', 'module', 'jquery', 'backbone', 'URIjs/URI'], function (require, module, $, Backbone, URI) {
+define(['require', 'module', 'jquery', 'backbone', 'URIjs'], function (require, module, $, Backbone, URI) {
     console.log('discover_content_type module id: ' + module.id);
 
-    var ContentTypeDiscovery = Backbone.Model.extend({
+    var _instance = undefined;
 
-        initialize: function (attributes) {
-        },
+    var ContentTypeDiscovery = function() {
 
-        identifyContentTypeFromFileName: function (contentUrl) {
-            var contentUrlSuffix = URI(contentUrl).suffix();
-            var contentType = 'application/octet-stream';
-            if (typeof this.constructor.suffixContentTypeMap[contentUrlSuffix] !== 'undefined') {
-                contentType = this.constructor.suffixContentTypeMap[contentUrlSuffix];
-            }
-            return contentType;
-        },
+        var self = this;
 
-        identifyContentType: function () {
-            // TODO: Make the call asynchronous (which would require a callback and would probably make sense
-            // when calling functions are also remodelled for async).
-            var contentUrl = this.get('contentUrl');
-            var contentType = $.ajax({
-                type: "HEAD",
-                url: contentUrl,
-                async: false
-            }).getResponseHeader('Content-Type');
-            if (contentType === null) {
-                contentType = this.identifyContentTypeFromFileName(contentUrl);
-                console.log('guessed contentType [' + contentType + '] from URI [' + contentUrl +
-                    ']. Configuring the web server to provide the content type is recommended.');
-
-            }
-            return contentType;
-        }
-
-    }, {
-        suffixContentTypeMap: {
+        ContentTypeDiscovery.suffixContentTypeMap = {
             css: 'text/css',
             epub: 'application/epub+zip',
             gif: 'image/gif',
@@ -46,8 +19,42 @@ define(['require', 'module', 'jquery', 'backbone', 'URIjs/URI'], function (requi
             png: 'image/png',
             svg: 'image/svg+xml',
             xhtml: 'application/xhtml+xml'
-        }
-    });
+        };
 
-    return ContentTypeDiscovery;
+        this.identifyContentTypeFromFileName = function(contentUrl) {
+            var contentUrlSuffix = URI(contentUrl).suffix();
+            var contentType = 'application/octet-stream';
+            if (typeof ContentTypeDiscovery.suffixContentTypeMap[contentUrlSuffix] !== 'undefined') {
+                contentType = ContentTypeDiscovery.suffixContentTypeMap[contentUrlSuffix];
+            }
+            return contentType;
+        };
+
+        this.identifyContentType = function (contentUrl) {
+            // TODO: Make the call asynchronous (which would require a callback and would probably make sense
+            // when calling functions are also remodelled for async).
+
+            var contentType = $.ajax({
+                type: "HEAD",
+                url: contentUrl,
+                async: false
+            }).getResponseHeader('Content-Type');
+            if (contentType === null) {
+                contentType = self.identifyContentTypeFromFileName(contentUrl);
+                console.log('guessed contentType [' + contentType + '] from URI [' + contentUrl +
+                    ']. Configuring the web server to provide the content type is recommended.');
+
+            }
+
+            return contentType;
+        }
+
+    };
+
+    if(!_instance) {
+        _instance = new ContentTypeDiscovery();
+    }
+
+    return _instance;
+
 });
