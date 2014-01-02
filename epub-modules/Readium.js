@@ -1,4 +1,5 @@
-define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch', 'emub-model/package_document_parser', 'emub-model/package_document', 'epub-fetch/iframe_zip_loader',  'annotations_module'],
+
+define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch', 'emub-model/package_document_parser', 'emub-model/package_document', 'epub-fetch/iframe_zip_loader'],
     function (require, module, $, _, readerView, ResourceFetcher, PackageParser, PackageDocument, IframeZipLoader) {
 
     console.log('Readium module id: ' + module.id);
@@ -18,32 +19,25 @@ define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch',
         this.openPackageDocument = function(bookRoot, callback)  {
 
             _currentResourceFetcher = new ResourceFetcher(bookRoot, jsLibRoot);
-            var _packageParser = new PackageParser(bookRoot, _currentResourceFetcher);
 
+            _currentResourceFetcher.initialize(function() {
 
-            debugger;
-            jQuery.ajax(_currentResourceFetcher.getPackageUrl(), {
-                success: function(packageXml) {
-                    self.reader.setPackageDocument(packageXml);
-                },
-                error: function(x) {throw new Error(x);},
-            });
+                var _packageParser = new PackageParser(bookRoot, _currentResourceFetcher);
 
-            _packageParser.parse(function(docJson){
+                _packageParser.parse(function(docJson){
 
-                var packageDocument = new PackageDocument(_currentResourceFetcher.getPackageUrl(), docJson, _currentResourceFetcher);
-                self.reader.openBook(packageDocument.getPackageData())
+                    var packageDocument = new PackageDocument(_currentResourceFetcher.getPackageUrl(), docJson, _currentResourceFetcher);
+                    self.reader.openBook(packageDocument.getPackageData())
 
-                if (callback){
-                    // gives caller access to document metadata like the table of contents
-                    callback(packageDocument);
-                }
+                    if (callback){
+                        // gives caller access to document metadata like the table of contents
+                        callback(packageDocument);
+                    }
 
+                });
             });
        }
-   };
-
-
+    };
 
 
     return Readium;
