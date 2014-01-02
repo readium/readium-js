@@ -1,8 +1,6 @@
 
 var requirejs = {
 
-    baseUrl: './lib/',
-
     paths: {
 
         jquery: 'lib/jquery-1.9.1',
