@@ -1,8 +1,6 @@
 
 var requirejs = {
 
-    baseUrl: '.',
-
     paths: {
 
         jquery: 'lib/jquery-1.9.1',
@@ -36,6 +34,8 @@ var requirejs = {
         mediaOverlayElementHighlighter: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/media_overlay_element_highlighter',
         audioPlayer: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/audio_player',
         mediaOverlayPlayer: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/media_overlay_player',
+        annotations_module: 'epub-modules/epub-renderer/src/readium-shared-js/lib/annotations_module',
+        annotationsManager: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/annotations_manager',
         mediaOvelayDataInjector: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/media_overlay_data_injector',
         internalLinksSupport: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/internal_links_support',
         iframeLoader: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/iframe_loader',
@@ -222,12 +222,25 @@ var requirejs = {
         readerView : {
             deps: [ 'backbone','readiumSDK', 'helpers', 'viewerSettings', 'styleCollection', 'package',
                 'mediaOverlayPlayer', 'pageOpenRequest', 'fixedView', 'reflowableView', 'mediaOvelayDataInjector',
-                'internalLinksSupport', 'iframeLoader'],
+                'internalLinksSupport', 'iframeLoader', 'annotationsManager'],
             exports:'readerView'
-        }
+        },
+
+        annotations_module: {
+            deps: ['epubCfi'],
+            exports:'annotations_module'
+        },
+
+        annotationsManager: {
+            deps: ['epubCfi', 'annotations_module'],
+            exports:'annotationsManager'
+        },
+
+
+
+
 
     },
 
     exclude: ['jquery', 'underscore', 'backbone', 'URIjs']
-
 };

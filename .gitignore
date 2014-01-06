@@ -21,3 +21,10 @@ out
 *.ipr
 *.iws
 .idea/
+
+### vim ###
+.*.s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+*~

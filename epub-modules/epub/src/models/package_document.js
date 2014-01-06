@@ -282,7 +282,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             return spineInfo;
         }
 
-        function getToc() {
+        this.getToc = function() {
 
             var item = getTocItem();
             if (item) {
@@ -292,11 +292,12 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
         }
 
         function getTocText(callback) {
+            var packageDocumentAbsoluteURL = new URI(packageDocumentURL).absoluteTo(document.URL);
+            var tocDocumentAbsoluteURL = new URI(getToc()).absoluteTo(packageDocumentAbsoluteURL);
 
-            var tocUrl = getToc();
-            console.log('tocUrl: [' + tocUrl + ']');
+            console.log('tocUrl: [' + tocDocumentAbsoluteURL + ']');
 
-            resourceFetcher.relativeToPackageFetchFileContents(tocUrl, 'text', function (tocDocumentText) {
+            resourceFetcher.relativeToPackageFetchFileContents(tocDocumentAbsoluteURL, 'text', function (tocDocumentText) {
                 callback(tocDocumentText)
             }, function (err) {
                 console.error('ERROR fetching TOC from [' + getToc() + ']:');
@@ -317,8 +318,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             });
         }
 
-        function generateTocListDOM(callback) {
-
+        this.generateTocListDOM = function(callback) {
             getTocDom(function (tocDom) {
                 if (tocDom) {
                     if (tocIsNcx()) {
@@ -341,6 +341,14 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
                 }
             });
         }
+
+        // 
+        this.getEpub3Toc = function(callback) {
+            this.generateTocListDOM(function(dom) {
+                var olTocList =  $($('nav#toc', dom)[0]).children()[0];
+                callback(olTocList);
+            });
+        };
 
         function tocIsNcx() {
 
@@ -514,8 +522,6 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
         //     return map && map[idref];
         // },
 
-        this.generateTocListDOM = generateTocListDOM;
-        this.getTocURL = getToc;
     };
 
     return PackageDocument;
