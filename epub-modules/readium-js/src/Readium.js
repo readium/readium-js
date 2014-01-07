@@ -47,9 +47,6 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub_fetch_mod
                     },
                     bookmarkCurrentPage : function () {
                         return renderer.bookmarkCurrentPage();
-                    },
-                    epub : function () {
-                        return epub;
                     }
                 });    
             });

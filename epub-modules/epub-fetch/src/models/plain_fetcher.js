@@ -1,61 +1,107 @@
-define(['require', 'module', 'jquery', 'URIjs/URI', './fetch_base'], function (require, module, $, URI, EpubFetchBase) {
+define(['require', 'module', 'jquery', 'URIjs', './markup_parser'], function (require, module, $, URI, MarkupParser) {
     console.log('plain_fetcher module id: ' + module.id);
 
-    var PlainExplodedFetcher = EpubFetchBase.extend({
+    var PlainExplodedFetcher = function(baseUrl){
 
-        initialize: function (attributes) {
-        },
+        var _parser = new MarkupParser();
+        var _jsonMetadata;
 
-        // Plain exploded EPUB packages are exploded by definition:
-        isExploded: function () {
-            return true;
-        },
+        var _packageUrl;
 
-        resolveURI: function (epubResourceURI) {
+        this.initialize = function(callback) {
+
+            var containerPath = new URI(baseUrl + '/META-INF/container.xml');
+
+            getXmlFileDom(containerPath.path(), function (containerDom) {
+                _packageUrl = baseUrl + "/" + getRootFile(containerDom);
+
+                callback();
+
+            }, function(error) {
+                console.error("unable to find package document: " + error);
+                _packageUrl = baseUrl;
+
+                callback();
+            });
+        };
+
+        this.resolveURI = function (epubResourceURI) {
             // Make absolute to the package document path
             var epubResourceRelURI = new URI(epubResourceURI);
-            var epubResourceAbsURI = epubResourceRelURI.absoluteTo(this.get('baseUrl'));
+            var epubResourceAbsURI = epubResourceRelURI.absoluteTo(_packageUrl);
             return epubResourceAbsURI.toString();
-        },
+        };
 
-        fetchFileContentsText: function (fileUrl, fetchCallback, onerror) {
-            var thisFetcher = this;
+
+        this.getPackageUrl = function() {
+            return _packageUrl;
+        };
+
+
+        function getRootFile (containerDom) {
+            var rootFile = $('rootfile', containerDom);
+            var packageFullPath = rootFile.attr('full-path');
+            console.log('packageFullPath: ' + packageFullPath);
+            return packageFullPath;
+        }
+
+        function getXmlFileDom (filePath, callback, errorCallback) {
+
+            fetchFileContentsText(filePath, function (xmlFileContents) {
+                var fileDom = _parser.parseXml(xmlFileContents);
+                callback(fileDom);
+            }, errorCallback);
+        }
+
+        function fetchFileContentsText (fileUrl, fetchCallback, onerror) {
+
             if (typeof fileUrl === 'undefined') {
                 throw 'Fetched file URL is undefined!';
             }
             $.ajax({
                 url: fileUrl,
                 dataType: 'text',
+                async: true,
                 success: function (result) {
                     fetchCallback(result);
                 },
                 error: function (xhr, status, errorThrown) {
-                    console.log('Error when AJAX fetching ' + fullUrl);
+                    console.log('Error when AJAX fetching ' + fileUrl);
                     console.log(status);
                     console.log(errorThrown);
                     onerror(errorThrown);
                 }
             });
-        },
+        }
 
-        relativeToPackageFetchFileContents: function (relativeToPackagePath, fetchMode, fetchCallback, onerror) {
-            // Not translating relativeToPackagePath, as with exploded EPUB all the URLs are relative
-            // to the current page context and are good to go verbatim for fetching:
-            this.fetchFileContentsText(relativeToPackagePath, fetchCallback, onerror);
-        },
+        this.relativeToPackageFetchFileContents = function (relativeToPackagePath, fetchMode, fetchCallback, onerror) {
+            fetchFileContentsText(this.resolveURI(relativeToPackagePath), fetchCallback, onerror);
+        };
 
-        getPackageDom: function (callback) {
+        this.getEncryptionDom = function (callback, onerror) {
+            // TODO: need a reliable method of finding META-INF/encryption.xml.
+            // This is a challenge since we begin with a path directly to the package document and don't go through META-INF/container.xml.
+            onerror(new Error('Getting encryption descriptor not yet implemented!'));
+        }
+
+        this.getPackageDom = function (callback, onerror) {
             console.log('getting package DOM');
 
-            var thisFetcher = this;
-            var baseUrl = thisFetcher.get('baseUrl');
-            console.log('baseUrl: ' + baseUrl);
+            console.log('baseUrl: ' + _packageUrl);
 
-            thisFetcher.fetchFileContentsText(baseUrl, function (packageXml) {
-                var packageDom = thisFetcher.parseXml(packageXml);
+            fetchFileContentsText(_packageUrl, function (packageXml) {
+
+                var packageDom = _parser.parseXml(packageXml);
                 callback(packageDom);
-            }, this._handleError);
-        }
-    });
+
+            }, onerror);
+        };
+
+        // Currently needed for deobfuscating fonts
+        this.setPackageJson = function(jsonMetadata) {
+            _jsonMetadata = jsonMetadata;
+        };
+    };
+
     return PlainExplodedFetcher;
 });
