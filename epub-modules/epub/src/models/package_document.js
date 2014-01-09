@@ -283,32 +283,28 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
         }
 
         this.getToc = function() {
-
             var item = getTocItem();
             if (item) {
                 return item.get("contentDocumentURI");
             }
             return null;
-        }
+        };
 
-        function getTocText(callback) {
-            var packageDocumentAbsoluteURL = new URI(packageDocumentURL).absoluteTo(document.URL);
-            var tocDocumentAbsoluteURL = new URI(getToc()).absoluteTo(packageDocumentAbsoluteURL);
+        this.getTocText = function(callback) {
+            var toc = this.getToc();
 
-            console.log('tocUrl: [' + tocDocumentAbsoluteURL + ']');
-
-            resourceFetcher.relativeToPackageFetchFileContents(tocDocumentAbsoluteURL, 'text', function (tocDocumentText) {
+            resourceFetcher.relativeToPackageFetchFileContents(toc, 'text', function (tocDocumentText) {
                 callback(tocDocumentText)
             }, function (err) {
-                console.error('ERROR fetching TOC from [' + getToc() + ']:');
+                console.error('ERROR fetching TOC from [' + toc + ']:');
                 console.error(err);
                 callback(undefined);
             });
-        }
+        };
 
-        function getTocDom(callback) {
+        this.getTocDom = function(callback) {
 
-            getTocText(function (tocText) {
+            this.getTocText(function (tocText) {
                 if (typeof tocText === 'string') {
                     var tocDom = (new DOMParser()).parseFromString(tocText, "text/xml");
                     callback(tocDom);
@@ -316,10 +312,11 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
                     callback(undefined);
                 }
             });
-        }
+        };
 
         this.generateTocListDOM = function(callback) {
-            getTocDom(function (tocDom) {
+            var that = this;
+            this.getTocDom(function (tocDom) {
                 if (tocDom) {
                     if (tocIsNcx()) {
                         var $ncxOrderedList;
@@ -327,7 +324,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
                         callback($ncxOrderedList[0]);
                     } else {
                         var packageDocumentAbsoluteURL = new URI(packageDocumentURL).absoluteTo(document.URL);
-                        var tocDocumentAbsoluteURL = new URI(getToc()).absoluteTo(packageDocumentAbsoluteURL);
+                        var tocDocumentAbsoluteURL = new URI(that.getToc()).absoluteTo(packageDocumentAbsoluteURL);
                         // add a BASE tag to change the TOC document's baseURI.
                         var oldBaseTag = $(tocDom).remove('base');
                         var newBaseTag = $('<base></base>');
@@ -340,7 +337,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
                     callback(undefined);
                 }
             });
-        }
+        };
 
         // 
         this.getEpub3Toc = function(callback) {
