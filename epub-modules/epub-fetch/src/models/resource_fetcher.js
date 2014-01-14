@@ -38,7 +38,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
         function isExploded() {
 
             var ext = ".epub";
-            return rootUrl.indexOf(ext, this.length - ext.length) === -1;
+            return rootUrl.indexOf(ext, rootUrl.length - ext.length) === -1;
         }
 
         function createDataFetcher(isExploded, callback) {
