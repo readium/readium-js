@@ -36,7 +36,7 @@ define(['jquery','jquery_hammer','hammer'], function($,jqueryHammer,Hammer){
                     'touchmove',
                     function(e) {
                         //hack: check if we are not dealing with a scrollview
-                        if(iframe.height()<iframe.parent().height()){
+                        if(iframe.height()<=iframe.parent().height()){
                             e.preventDefault();
                         }
                     }
