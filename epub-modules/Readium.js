@@ -1,6 +1,6 @@
 
-define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch', 'emub-model/package_document_parser', 'emub-model/package_document', 'epub-fetch/iframe_zip_loader'],
-    function (require, module, $, _, readerView, ResourceFetcher, PackageParser, PackageDocument, IframeZipLoader) {
+define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch', 'emub-model/package_document_parser', 'emub-model/package_document', 'epub-fetch/iframe_zip_loader','epub-ui/gestures'],
+    function (require, module, $, _, readerView, ResourceFetcher, PackageParser, PackageDocument, IframeZipLoader,GesturesHandler) {
 
     console.log('Readium module id: ' + module.id);
 
@@ -15,6 +15,8 @@ define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch',
         this.reader = new ReadiumSDK.Views.ReaderView( {el:renderingViewport, iframeLoader: _iframeZipLoader} );
         ReadiumSDK.trigger(ReadiumSDK.Events.READER_INITIALIZED, this.reader);
 
+        var _gesturesHandler = new GesturesHandler(this.reader,renderingViewport);
+        _gesturesHandler.initialize();
 
         this.openPackageDocument = function(bookRoot, callback)  {
 
