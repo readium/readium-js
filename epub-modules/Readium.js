@@ -15,7 +15,7 @@ define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch',
         this.reader = new ReadiumSDK.Views.ReaderView( {el:renderingViewport, iframeLoader: _iframeZipLoader} );
         ReadiumSDK.trigger(ReadiumSDK.Events.READER_INITIALIZED, this.reader);
 
-        var _gesturesHandler = new GesturesHandler(this.reader);
+        var _gesturesHandler = new GesturesHandler(this.reader,renderingViewport);
         _gesturesHandler.initialize();
 
         this.openPackageDocument = function(bookRoot, callback)  {
