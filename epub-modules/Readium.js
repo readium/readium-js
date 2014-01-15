@@ -4,7 +4,7 @@ define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch',
 
     console.log('Readium module id: ' + module.id);
 
-    var Readium = function(renderingViewport, jsLibRoot){
+    var Readium = function(readiumOptions, readerOptions){
 
         var self = this;
 
@@ -12,7 +12,13 @@ define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch',
 
         var _iframeZipLoader = new IframeZipLoader(ReadiumSDK, function() { return _currentResourceFetcher; });
 
-        this.reader = new ReadiumSDK.Views.ReaderView( {el:renderingViewport, iframeLoader: _iframeZipLoader} );
+        var jsLibRoot = readiumOptions.jsLibRoot;
+        var renderingViewport = readerOptions.el;
+
+        readerOptions.iframeLoader = _iframeZipLoader;
+
+        this.reader = new ReadiumSDK.Views.ReaderView(readerOptions);
+
         ReadiumSDK.trigger(ReadiumSDK.Events.READER_INITIALIZED, this.reader);
 
         var _gesturesHandler = new GesturesHandler(this.reader,renderingViewport);
