@@ -13,7 +13,7 @@ define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch',
         var _iframeZipLoader = new IframeZipLoader(ReadiumSDK, function() { return _currentResourceFetcher; });
 
         this.reader = new ReadiumSDK.Views.ReaderView( {el:renderingViewport, iframeLoader: _iframeZipLoader} );
-        ReadiumSDK.trigger(ReadiumSDK.Events.READER_INITIALIZED);
+        ReadiumSDK.trigger(ReadiumSDK.Events.READER_INITIALIZED, this.reader);
 
 
         this.openPackageDocument = function(bookRoot, callback)  {

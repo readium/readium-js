@@ -13,6 +13,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
             'application/zip': 'zipped'
         };
 
+        var _markupParser = new MarkupParser();
         var _isExploded;
         var _dataFetcher;
         
@@ -50,9 +51,10 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
                 });
                 return;
             }
-
-            console.log('using new ZipFetcher');
-            callback(new ZipFetcher(rootUrl, libDir));
+            else {
+                console.log('using new ZipFetcher');
+                callback(new ZipFetcher(rootUrl, libDir));
+            }
         }
 
         function fetchResourceForElement(resolvedElem, refAttrOrigVal, refAttr, contentDocumentURI, fetchMode, resolutionDeferreds, onerror, resourceDataPreprocessing) {
