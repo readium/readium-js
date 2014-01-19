@@ -7,33 +7,51 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
 
     var ResourceFetcher = function(rootUrl, libDir) {
 
+        var self = this;
+
         ResourceFetcher.contentTypePackageReadStrategyMap = {
             'application/oebps-package+xml': 'exploded',
             'application/epub+zip': 'zipped',
             'application/zip': 'zipped'
         };
 
-        var _markupParser = new MarkupParser();
+        var ENCRYPTION_METHODS = {
+            'http://www.idpf.org/2008/embedding': embeddedFontDeobfuscateIdpf,
+            'http://ns.adobe.com/pdf/enc#RC': embeddedFontDeobfuscateAdobe
+        };
         var _isExploded;
         var _dataFetcher;
-        
+        var _packageFullPath;
+        var _packageDom;
+        var _packageDomInitializationSubscription;
+        var _encryptionDom;
+        var _encryptionHash;
+        var _packageJson;
+
+        this.markupParser = new MarkupParser();
+
         this.initialize =  function(callback) {
 
             _isExploded = isExploded();
 
-            createDataFetcher(_isExploded, function(datafetcher){
-
-                _dataFetcher = datafetcher;
-                callback();
-
-            });
+            createDataFetcher(_isExploded, callback);
         };
 
-        
 
-        
 
         // INTERNAL FUNCTIONS
+
+        function _handleError(err) {
+            if (err) {
+                if (err.message) {
+                    console.error(err.message);
+                }
+                if (err.stack) {
+                    console.error(err.stack);
+                }
+            }
+            console.error(err);
+        }
 
         function isExploded() {
 
@@ -42,18 +60,17 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
         }
 
         function createDataFetcher(isExploded, callback) {
-
-            if(isExploded) {
+            if (isExploded) {
                 console.log('using new PlainExplodedFetcher');
-                var plainFetcher =  new PlainExplodedFetcher(rootUrl);
-                plainFetcher.initialize(function(){
-                    callback(plainFetcher);
+                _dataFetcher = new PlainExplodedFetcher(self, rootUrl);
+                _dataFetcher.initialize(function () {
+                    callback(_dataFetcher);
                 });
                 return;
-            }
-            else {
+            } else {
                 console.log('using new ZipFetcher');
-                callback(new ZipFetcher(rootUrl, libDir));
+                _dataFetcher = new ZipFetcher(self, rootUrl, libDir);
+                callback(_dataFetcher);
             }
         }
 
@@ -62,7 +79,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
             var resolutionDeferred = $.Deferred();
             resolutionDeferreds.push(resolutionDeferred);
 
-            _dataFetcher.relativeToPackageFetchFileContents(uriRelativeToPackageDocument, fetchMode, function (resourceData) {
+            self.relativeToPackageFetchFileContents(uriRelativeToPackageDocument, fetchMode, function (resourceData) {
 
                 // Generate a function to replace element's resource URL with URL of fetched data.
                 // The function will either be called directly, immediately (if no preprocessing of resourceData is in effect)
@@ -77,6 +94,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
                         }
                         finalResourceData = new Blob([finalResourceData], {type: textResourceContentType});
                     }
+                    //noinspection JSUnresolvedVariable,JSUnresolvedFunction
                     var resourceObjectURL = window.URL.createObjectURL(finalResourceData);
                     // TODO: take care of releasing object URLs when no longer needed
                     $(resolvedElem).attr(refAttr, resourceObjectURL);
@@ -116,8 +134,9 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
                 var cssUrlFetchDeferred = $.Deferred();
                 cssResourceDownloadDeferreds.push(cssUrlFetchDeferred);
 
-                _dataFetcher.relativeToPackageFetchFileContents(resourceUriRelativeToPackageDocument, 'blob',
+                self.relativeToPackageFetchFileContents(resourceUriRelativeToPackageDocument, 'blob',
                     function (resourceDataBlob) {
+                        //noinspection JSUnresolvedVariable,JSUnresolvedFunction
                         var resourceObjectURL = window.URL.createObjectURL(resourceDataBlob);
                         stylesheetCssResourceUrlsMap[origMatchedUrlString] = resourceObjectURL;
                         globalCssResourcesCache.putResourceURL(resourceUriRelativeToPackageDocument, resourceObjectURL);
@@ -157,6 +176,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
                 $.when.apply($, cssResourceDownloadDeferreds).done(function () {
                     for (var origMatchedUrlString in stylesheetCssResourceUrlsMap) {
                         var resourceObjectURL = stylesheetCssResourceUrlsMap[origMatchedUrlString];
+                        //noinspection JSCheckFunctionSignatures
                         styleSheetResourceData =
                             styleSheetResourceData.replace(origMatchedUrlString, "url('" + resourceObjectURL + "')",
                                 'g');
@@ -242,6 +262,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
          * programmatically fetched from zipped EPUB, which substitutes href with a blob object URL)
          */
         function getOrigHrefFromStyleSheet(styleSheet) {
+            //noinspection JSUnresolvedVariable
             return $(styleSheet.ownerNode).data('epubZipOrigHref');
         }
 
@@ -257,6 +278,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
             var contentDocumentDom = styleSheetLoadEvent.currentTarget.ownerDocument;
             var alreadyImportedStylesheetHrefsRegistry = obtainImportedCssHrefsRegistry(contentDocumentDom);
             var allRelativeCssImportRulesHash = {};
+            //noinspection JSUnresolvedVariable
             var styleSheet = styleSheetLoadEvent.currentTarget.sheet;
             // Any processed stylesheet element should be loaded by the resolution mechanism so we have to
             // prevent any duplicate attempts to load it if referenced in an @import rule. We add stylesheet's URLs
@@ -269,7 +291,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
             }
 
             var cssRules = styleSheet.cssRules;
-            var relativeCssImportRules = $.each(cssRules, function (cssRuleIdx, cssRule) {
+            $.each(cssRules, function (cssRuleIdx, cssRule) {
                 // Cannot compare by references, as CSSImportRule symbol in the global execution context
                 // refers to a different prototype instance than the cssRule prototype
                 // because of different origin (renderer's iframe.contentWindow vs global window?)
@@ -299,6 +321,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
             var alreadyImportedStylesheetHrefsRegistry;
             unfetchedCssImportRules.forEach(function (unfetchedCssImportRule) {
                 var parentStyleSheet = unfetchedCssImportRule.parentStyleSheet;
+                //noinspection JSUnresolvedVariable
                 var contentDocumentDom = parentStyleSheet.ownerNode.ownerDocument;
                 if (!alreadyImportedStylesheetHrefsRegistry) {
                     alreadyImportedStylesheetHrefsRegistry = obtainImportedCssHrefsRegistry(contentDocumentDom);
@@ -333,6 +356,69 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
             });
         }
 
+        function blob2BinArray(blob, callback) {
+            var fileReader = new FileReader();
+            fileReader.onload = function(){
+                var arrayBuffer = this.result;
+                callback(new Uint8Array(arrayBuffer));
+            };
+            fileReader.readAsArrayBuffer(blob);
+        }
+
+        // TODO: move to the epub module into a new "encryption" submodule?
+        function xorObfuscatedBlob(obfuscatedResourceBlob, prefixLength, xorKey, callback) {
+            var obfuscatedPrefixBlob = obfuscatedResourceBlob.slice(0, prefixLength);
+            blob2BinArray(obfuscatedPrefixBlob, function (bytes) {
+                var masklen = xorKey.length;
+                for (var i = 0; i < prefixLength; i++) {
+                    bytes[i] = bytes[i] ^ (xorKey[i % masklen]);
+                }
+                var deobfuscatedPrefixBlob = new Blob([bytes], { type: obfuscatedResourceBlob.type });
+                var remainderBlob = obfuscatedResourceBlob.slice(prefixLength);
+                var deobfuscatedBlob = new Blob([deobfuscatedPrefixBlob, remainderBlob],
+                    { type: obfuscatedResourceBlob.type });
+
+                callback(deobfuscatedBlob);
+            });
+        }
+
+        // TODO: move to the epub module into a new "encryption" submodule?
+        function embeddedFontDeobfuscateIdpf(obfuscatedResourceBlob, callback) {
+            var uid = _packageJson.metadata.id;
+            var hashedUid = window.Crypto.SHA1(unescape(encodeURIComponent(uid.trim())), { asBytes: true });
+            var prefixLength = 1040;
+            // Shamelessly copied from
+            // https://github.com/readium/readium-chrome-extension/blob/26d4b0cafd254cfa93bf7f6225887b83052642e0/scripts/models/path_resolver.js#L102 :
+            xorObfuscatedBlob(obfuscatedResourceBlob, prefixLength, hashedUid, callback);
+        }
+
+        // TODO: move to the epub module into a new "encryption" submodule?
+        function urnUuidToByteArray(id) {
+            var uuidRegexp = /(urn:uuid:)?([0-9a-f]{8})-([0-9a-f]{4})-([0-9a-f]{4})-([0-9a-f]{4})-([0-9a-f]{12})/i;
+            var matchResults = uuidRegexp.exec(id);
+            var rawUuid =  matchResults[2]+matchResults[3]+matchResults[4]+matchResults[5]+matchResults[6];
+            if (! rawUuid || rawUuid.length != 32) {
+                console.error('Bad UUID format for ID :' + id);
+            }
+            var byteArray = [];
+            for (var i = 0; i < 16; i++) {
+                var byteHex =  rawUuid.substr(i*2, 2);
+                var byteNumber = parseInt(byteHex, 16);
+                byteArray.push(byteNumber);
+            }
+            return byteArray;
+        }
+
+        // TODO: move to the epub module into a new "encryption" submodule?
+        function embeddedFontDeobfuscateAdobe(obfuscatedResourceBlob, callback) {
+            var uid = _packageJson.metadata.id;
+            // TODO: extract the UUID and convert to big-endian binary form (16 bytes):
+            var uidWordArray = urnUuidToByteArray(uid);
+            var prefixLength = 1024;
+            xorObfuscatedBlob(obfuscatedResourceBlob, prefixLength, uidWordArray, callback)
+        }
+
+
         // PUBLIC API
 
         this.isPackageExploded = function (){
@@ -343,11 +429,146 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
             return _dataFetcher.getPackageUrl();
         };
 
+        this.getFileContentsFromPackage = function(fileRelativePath, callback, onerror) {
+
+            _dataFetcher.fetchFileContentsText(fileRelativePath, function (fileContents) {
+                callback(fileContents);
+            }, onerror);
+        };
+
+
+
+        this.getXmlFileDom = function (xmlFileRelativePath, callback, onerror) {
+
+            self.getFileContentsFromPackage(xmlFileRelativePath, function (xmlFileContents) {
+                var fileDom = self.markupParser.parseXml(xmlFileContents);
+                callback(fileDom);
+            }, onerror);
+        };
+
+        this.getPackageFullPath = function(callback, onerror) {
+            self.getXmlFileDom('META-INF/container.xml', function (containerXmlDom) {
+                var packageFullPath = self.getRootFile(containerXmlDom);
+                callback(packageFullPath);
+            }, onerror);
+        };
+
+        this.getRootFile = function(containerXmlDom) {
+            var rootFile = $('rootfile', containerXmlDom);
+            var packageFullPath = rootFile.attr('full-path');
+            console.log('packageFullPath: ' + packageFullPath);
+            return packageFullPath;
+        };
+
+        this.getEncryptionDom = function (callback, onerror) {
+            if (_encryptionDom) {
+                callback(_encryptionDom);
+            } else {
+                self.getXmlFileDom('META-INF/encryption.xml', function (encryptionDom) {
+                    _encryptionDom = encryptionDom;
+                    callback(_encryptionDom);
+                }, onerror);
+            }
+        };
+
+        // TODO: move to the epub module as a new "encryption_config" submodule?
+        this._initializeEncryptionHash = function () {
+            self.getEncryptionDom(function (encryptionDom) {
+                // TODO: build the hash
+                if (!_encryptionHash) {
+                    _encryptionHash = {};
+                }
+
+                var encryptedData = $('EncryptedData', encryptionDom);
+                encryptedData.each(function (index, encryptedData) {
+                    var encryptionAlgorithm = $('EncryptionMethod', encryptedData).first().attr('Algorithm');
+
+                    // For some reason, jQuery selector "" against XML DOM sometimes doesn't match properly
+                    var cipherReference = $('CipherReference', encryptedData);
+                    cipherReference.each(function (index, CipherReference) {
+                        var cipherReferenceURI = $(CipherReference).attr('URI');
+                        console.log('Encryption/obfuscation algorithm ' + encryptionAlgorithm + ' specified for ' +
+                            cipherReferenceURI);
+                        _encryptionHash[cipherReferenceURI] = encryptionAlgorithm;
+                    });
+                });
+                console.log('_encryptionHash:');
+                console.log(_encryptionHash);
+            }, function (error) {
+                console.log('Found no META-INF/encryption.xml:');
+                console.log(error.message);
+                console.log("Document doesn't make use of encryption.");
+            });
+        };
+
+        // TODO: move to the epub module as a new "encryption_config" submodule?
+        this.getEncryptionMethodForRelativePath = function(pathRelativeToRoot) {
+            if (_encryptionHash){
+                return _encryptionHash[pathRelativeToRoot];
+            }   else {
+                return undefined;
+            }
+        };
+
+        this.getDecryptionFunctionForRelativePath = function (pathRelativeToRoot) {
+            var encryptionMethod = self.getEncryptionMethodForRelativePath(pathRelativeToRoot);
+            if (ENCRYPTION_METHODS[encryptionMethod]) {
+                return ENCRYPTION_METHODS[encryptionMethod];
+            } else {
+                return undefined;
+            }
+        };
+
+        this.getPackageDom = function (callback, onerror) {
+            if (_packageDom) {
+                callback(_packageDom);
+            } else {
+                // TODO: use jQuery's Deferred
+                // Register all callbacks interested in initialized packageDom, launch its instantiation only once
+                // and broadcast to all callbacks registered during the initialization once it's done:
+                if (_packageDomInitializationSubscription) {
+                    _packageDomInitializationSubscription.push(callback);
+                } else {
+                    _packageDomInitializationSubscription = [callback];
+                    self.getPackageFullPath(function (packageFullPath) {
+                        _packageFullPath = packageFullPath;
+                        console.log('Have set _packageFullPath' + packageFullPath);
+                        self.getXmlFileDom(packageFullPath, function (packageDom) {
+                            _packageDom = packageDom;
+                            _packageDomInitializationSubscription.forEach(function (subscriberCallback) {
+                                subscriberCallback(packageDom);
+                            });
+                            _packageDomInitializationSubscription = undefined;
+                        })
+                    }, onerror);
+                }
+            }
+        };
+
+        this.convertPathRelativeToPackageToRelativeToBase = function (relativeToPackagePath) {
+            return new URI(relativeToPackagePath).absoluteTo(_packageFullPath).toString();
+        };
+
+        this.relativeToPackageFetchFileContents = function(relativeToPackagePath, fetchMode, fetchCallback, onerror) {
+
+            if (! onerror) {
+                onerror = _handleError;
+            }
+
+            var pathRelativeToZipRoot = decodeURIComponent(self.convertPathRelativeToPackageToRelativeToBase(relativeToPackagePath));
+            var fetchFunction = _dataFetcher.fetchFileContentsText;
+            if (fetchMode === 'blob') {
+                fetchFunction = _dataFetcher.fetchFileContentsBlob;
+            } else if (fetchMode === 'data64uri') {
+                fetchFunction = _dataFetcher.fetchFileContentsData64Uri;
+            }
+            fetchFunction.call(_dataFetcher, pathRelativeToZipRoot, fetchCallback, onerror);
+        };
 
         this.resolveInternalPackageResources = function(contentDocumentURI, contentDocumentType, contentDocumentText,
                                                          resolvedDocumentCallback, onerror) {
 
-            var contentDocumentDom = _markupParser.parseMarkup(contentDocumentText, contentDocumentType);
+            var contentDocumentDom = self.markupParser.parseMarkup(contentDocumentText, contentDocumentType);
 
             var resolutionDeferreds = [];
 
@@ -361,20 +582,17 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
 
         };
 
-        this.relativeToPackageFetchFileContents = function (relativePath, fetchMode, fetchCallback, onerror) {
-            _dataFetcher.relativeToPackageFetchFileContents(relativePath, fetchMode, fetchCallback, onerror)
-        };
-
         this.getRelativeXmlFileDom = function (filePath, callback, errorCallback) {
-            _dataFetcher.getRelativeXmlFileDom(filePath, callback, errorCallback);
+            self.getXmlFileDom(self.convertPathRelativeToPackageToRelativeToBase(filePath), callback, errorCallback);
         };
+//        this.getPackageDom = function (callback, onerror) {
+//            return _dataFetcher.getPackageDom(callback, onerror);
+//        };
 
-        this.getPackageDom = function (callback, onerror) {
-            return _dataFetcher.getPackageDom(callback, onerror);
-        };
-
-        this.setPackageJson = function(jsonMetadata) {
-            _dataFetcher.setPackageJson(jsonMetadata);
+        // Currently needed for deobfuscating fonts
+        this.setPackageJson = function(packageJson) {
+            _packageJson = packageJson;
+            this._initializeEncryptionHash();
         };
 
     };
