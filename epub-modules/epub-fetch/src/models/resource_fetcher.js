@@ -472,12 +472,14 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
         };
 
         // TODO: move to the epub module as a new "encryption_config" submodule?
-        this._initializeEncryptionHash = function () {
+        this._initializeEncryptionHash = function (encryptionInitializedCallback) {
             self.getEncryptionDom(function (encryptionDom) {
                 // TODO: build the hash
                 if (!_encryptionHash) {
                     _encryptionHash = {};
                 }
+
+                var isEncryptionSpecified = false;
 
                 var encryptedData = $('EncryptedData', encryptionDom);
                 encryptedData.each(function (index, encryptedData) {
@@ -489,15 +491,21 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
                         var cipherReferenceURI = $(CipherReference).attr('URI');
                         console.log('Encryption/obfuscation algorithm ' + encryptionAlgorithm + ' specified for ' +
                             cipherReferenceURI);
+                        isEncryptionSpecified = true;
                         _encryptionHash[cipherReferenceURI] = encryptionAlgorithm;
                     });
                 });
                 console.log('_encryptionHash:');
                 console.log(_encryptionHash);
+                if (_isExploded && isEncryptionSpecified) {
+                    _isExploded = false;
+                }
+                encryptionInitializedCallback();
             }, function (error) {
                 console.log('Found no META-INF/encryption.xml:');
                 console.log(error.message);
                 console.log("Document doesn't make use of encryption.");
+                encryptionInitializedCallback();
             });
         };
 
@@ -590,9 +598,9 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
 //        };
 
         // Currently needed for deobfuscating fonts
-        this.setPackageJson = function(packageJson) {
+        this.setPackageJson = function(packageJson, settingFinishedCallback) {
             _packageJson = packageJson;
-            this._initializeEncryptionHash();
+            this._initializeEncryptionHash(settingFinishedCallback);
         };
 
     };

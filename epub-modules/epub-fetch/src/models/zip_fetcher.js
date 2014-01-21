@@ -6,6 +6,7 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
         var _checkCrc32 = false;
         var _zipFs;
 
+        // INTERNAL FUNCTIONS
 
         // Description: perform a function with an initialized zip filesystem, making sure that such filesystem is initialized.
         // Note that due to a race condition, more than one zip filesystem may be instantiated.
@@ -29,11 +30,6 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
             }
         }
 
-        this.getPackageUrl = function() {
-            return baseUrl;
-        };
-
-
         function fetchFileContents (relativePath, readCallback, onerror) {
 
             if (typeof relativePath === 'undefined') {
@@ -53,6 +49,13 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
                 }
             }, onerror);
         }
+
+
+        // PUBLIC API
+
+        this.getPackageUrl = function() {
+            return baseUrl;
+        };
 
         this.fetchFileContentsText = function(relativePath, fetchCallback, onerror) {
 

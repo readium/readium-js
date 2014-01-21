@@ -1,4 +1,4 @@
-define(['require', 'module', 'jquery', 'URIjs'], function (require, module, $, URI) {
+define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], function (require, module, $, URI, ContentTypeDiscovery) {
     console.log('plain_fetcher module id: ' + module.id);
 
     var PlainExplodedFetcher = function(parentFetcher, baseUrl){
@@ -6,6 +6,32 @@ define(['require', 'module', 'jquery', 'URIjs'], function (require, module, $, U
         var self = this;
         var _packageAbsoluteUrl;
         var _packageRelativePath;
+
+        // INTERNAL FUNCTIONS
+
+        function fetchFileContents(fileRelativePath, readCallback, onerror) {
+            console.log('binary fetching ' + fileRelativePath);
+            var fileUrl = self.resolveURI(fileRelativePath);
+            console.log(fileRelativePath + ' resolves to ' + fileUrl);
+
+            if (typeof fileRelativePath === 'undefined') {
+                throw 'Fetched file relative path is undefined!';
+            }
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', fileUrl, true);
+            xhr.responseType = 'arraybuffer';
+            xhr.onerror = onerror;
+
+            xhr.onload = function (loadEvent) {
+                readCallback(xhr.response);
+            };
+
+            xhr.send();
+        }
+
+
+        // PUBLIC API
 
         this.initialize = function(callback) {
             console.log('baseUrl: ' + baseUrl);
@@ -42,7 +68,7 @@ define(['require', 'module', 'jquery', 'URIjs'], function (require, module, $, U
                 var fileDom = parentFetcher.markupParser.parseXml(xmlFileContents);
                 callback(fileDom);
             }, errorCallback);
-        }
+        };
 
         this.fetchFileContentsText = function(fileRelativePath, fetchCallback, onerror) {
             console.log('plain fetching ' + fileRelativePath);
@@ -66,7 +92,27 @@ define(['require', 'module', 'jquery', 'URIjs'], function (require, module, $, U
                     onerror(errorThrown);
                 }
             });
-        }
+        };
+
+        this.fetchFileContentsBlob = function(relativePath, fetchCallback, onerror) {
+
+            var decryptionFunction = parentFetcher.getDecryptionFunctionForRelativePath(relativePath);
+            if (decryptionFunction) {
+                console.log('== decryption required for ' + relativePath);
+                var origFetchCallback = fetchCallback;
+                fetchCallback = function (unencryptedBlob) {
+                    decryptionFunction(unencryptedBlob, function (decryptedBlob) {
+                        origFetchCallback(decryptedBlob);
+                    });
+                };
+            }
+            fetchFileContents(relativePath, function (contentsArrayBuffer) {
+                var blob = new Blob([contentsArrayBuffer], {
+                    type: ContentTypeDiscovery.identifyContentTypeFromFileName(relativePath)
+                });
+                fetchCallback(blob);
+            }, onerror);
+        };
 
         this.getRelativeXmlFileDom = function(relativeToPackagePath, callback, errorCallback) {
             getXmlFileDom (this.resolveURI(relativeToPackagePath), callback, errorCallback);
