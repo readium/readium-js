@@ -116,6 +116,11 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
             }, onerror)
         }
 
+        this.getRelativeXmlFileDom = function(relativeToPackagePath, callback, errorCallback) {
+            var pathRelativeToZipRoot = decodeURIComponent(new URI(relativeToPackagePath).absoluteTo(_packageFullPath).toString());
+            getXmlFileDom(pathRelativeToZipRoot, callback, errorCallback);
+        };
+
         this.relativeToPackageFetchFileContents = function(relativeToPackagePath, fetchMode, fetchCallback, onerror) {
 
             if (! onerror) {

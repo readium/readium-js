@@ -11,7 +11,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
         var _metadata = new Metadata(jsonData.metadata);
         var _bindings = new Spine(jsonData.bindings);
         var _pageSpreadProperty = new PageSpreadProperty();
-
+        var _moMap = jsonData.mo_map;
 
         // If this book is fixed layout, assign the page spread class
         if (isFixedLayout()) {
@@ -26,11 +26,12 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             _spine.each(function (spineItem) {
                 spinePackageData.push(generatePackageData(spineItem));
             });
-
+            
             // This is where the package data format thing is generated
             return {
                 rootUrl : packageDocRoot,
                 rendition_layout : _metadata.get("layout"),
+                media_overlay : getMediaOverlay(),
                 spine : {
                     direction : pageProgressionDirection(),
                     items : spinePackageData    
@@ -38,6 +39,21 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             };
         };
 
+        function getMediaOverlay(){
+           var result = {
+                 duration : _metadata.get('mediaDuration'),
+                 narrator : _metadata.get('mediaNarrator'),
+                 activeClass : _metadata.get('mediaActiveClass'),
+                 playbackActiveClass : _metadata.get('mediaPlaybackActiveClass'),
+                 smil_models : _moMap,
+                 
+//               NOTE: Not implemented yet
+                 skippables: [],
+                 escapables: []
+           };
+           return result;
+        }
+        
         function isFixedLayout() {
 
             return _metadata.get("fixed_layout");
@@ -273,7 +289,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             var spineInfo = {
                 href : manifestItem.get('contentDocumentURI'),
                 media_type : manifestItem.get('media_type'),
-                media_overlay : manifestItem.get('media_overlay'),
+                media_overlay_id : manifestItem.get('media_overlay'),
                 idref : spineItem.get("idref"),
                 page_spread : pageSpread,
                 rendition_layout : fixedLayoutProperty

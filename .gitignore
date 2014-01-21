@@ -22,6 +22,10 @@ out
 *.iws
 .idea/
 
+/.project
+/build.bat
+/.externalToolBuilders
+
 ### vim ###
 .*.s[a-w][a-z]
 *.un~
