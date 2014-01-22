@@ -74,112 +74,185 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
             }
         }
 
-        function fetchResourceForElement(resolvedElem, refAttrOrigVal, refAttr, contentDocumentURI, fetchMode, resolutionDeferreds, onerror, resourceDataPreprocessing) {
-            var uriRelativeToPackageDocument = (new URI(refAttrOrigVal)).absoluteTo(contentDocumentURI).toString();
-            var resolutionDeferred = $.Deferred();
-            resolutionDeferreds.push(resolutionDeferred);
+        function fetchResourceForElement(resolvedElem, refAttrOrigVal, refAttr, contentDocumentURI, fetchMode,
+                                         resolutionDeferreds, onerror, resourceDataPreprocessing) {
+            var resourceUriRelativeToPackageDocument = (new URI(refAttrOrigVal)).absoluteTo(contentDocumentURI).toString();
 
-            self.relativeToPackageFetchFileContents(uriRelativeToPackageDocument, fetchMode, function (resourceData) {
+            var ownerDocument;
+            if (resolvedElem.ownerDocument) {
+                ownerDocument = resolvedElem.ownerDocument;
+            }
+            if (resolvedElem[0] && resolvedElem[0].ownerDocument) {
+                ownerDocument = resolvedElem[0].ownerDocument;
+            }
 
-                // Generate a function to replace element's resource URL with URL of fetched data.
-                // The function will either be called directly, immediately (if no preprocessing of resourceData is in effect)
-                // or indirectly, later after resourceData preprocessing finishes:
-                var replaceResourceURL = function (finalResourceData) {
-                    // Creating an object URL requires a Blob object, so resource data fetched in text mode needs to be wrapped in a Blob:
-                    if (fetchMode === 'text') {
-                        var textResourceContentType = ContentTypeDiscovery.identifyContentTypeFromFileName(uriRelativeToPackageDocument);
-                        var declaredType = $(resolvedElem).attr('type');
-                        if (declaredType) {
-                            textResourceContentType = declaredType;
+            var documentResourcesCache = obtainDocumentResourcesCache(ownerDocument);
+            var cachedResourceUrl = documentResourcesCache.getResourceURL(resourceUriRelativeToPackageDocument);
+            function replaceRefAttrInElem(newResourceUrl) {
+                // Store original refAttrVal in a special attribute to provide access to the original href:
+                $(resolvedElem).data('epubZipOrigHref', refAttrOrigVal);
+                $(resolvedElem).attr(refAttr, newResourceUrl);
+            }
+            if (cachedResourceUrl) {
+                console.log('Using a cached version of [' + resourceUriRelativeToPackageDocument +
+                    '] with object URL [' + cachedResourceUrl + ']');
+                replaceRefAttrInElem(cachedResourceUrl);
+            } else {
+                var resolutionDeferred = $.Deferred();
+                resolutionDeferreds.push(resolutionDeferred);
+
+                self.relativeToPackageFetchFileContents(resourceUriRelativeToPackageDocument, fetchMode, function (resourceData) {
+
+                    // Generate a function to replace element's resource URL with URL of fetched data.
+                    // The function will either be called directly, immediately (if no preprocessing of resourceData is in effect)
+                    // or indirectly, later after resourceData preprocessing finishes:
+                    var replaceResourceURL = function (finalResourceData) {
+                        // Creating an object URL requires a Blob object, so resource data fetched in text mode needs to be wrapped in a Blob:
+                        if (fetchMode === 'text') {
+                            var textResourceContentType = ContentTypeDiscovery.identifyContentTypeFromFileName(resourceUriRelativeToPackageDocument);
+                            var declaredType = $(resolvedElem).attr('type');
+                            if (declaredType) {
+                                textResourceContentType = declaredType;
+                            }
+                            finalResourceData = new Blob([finalResourceData], {type: textResourceContentType});
                         }
-                        finalResourceData = new Blob([finalResourceData], {type: textResourceContentType});
-                    }
-                    //noinspection JSUnresolvedVariable,JSUnresolvedFunction
-                    var resourceObjectURL = window.URL.createObjectURL(finalResourceData);
-                    // TODO: take care of releasing object URLs when no longer needed
-                    $(resolvedElem).attr(refAttr, resourceObjectURL);
-                    // Store original refAttrVal in a special attribute to provide access to the original href:
-                    $(resolvedElem).data('epubZipOrigHref', refAttrOrigVal);
-                    resolutionDeferred.resolve();
-                };
+                        //noinspection JSUnresolvedVariable,JSUnresolvedFunction
+                        var resourceObjectURL = window.URL.createObjectURL(finalResourceData);
+                        documentResourcesCache.putResourceURL(resourceUriRelativeToPackageDocument, resourceObjectURL);
+                        // TODO: take care of releasing object URLs when no longer needed
+                        replaceRefAttrInElem(resourceObjectURL);
+                        resolutionDeferred.resolve();
+                    };
 
-                if (resourceDataPreprocessing) {
-                    var ownerDocument;
-                    if (resolvedElem.ownerDocument) {
-                        ownerDocument = resolvedElem.ownerDocument;
+                    if (resourceDataPreprocessing) {
+                        resourceDataPreprocessing(resourceData, resourceUriRelativeToPackageDocument, ownerDocument,
+                            replaceResourceURL);
+                    } else {
+                        replaceResourceURL(resourceData);
                     }
-                    if (resolvedElem[0] && resolvedElem[0].ownerDocument) {
-                        ownerDocument = resolvedElem[0].ownerDocument;
-                    }
-                    resourceDataPreprocessing(resourceData, uriRelativeToPackageDocument, ownerDocument,
-                        replaceResourceURL);
-                } else {
-                    replaceResourceURL(resourceData);
-                }
-            }, onerror);
+                }, onerror);
+            }
         }
 
         // FIXME: function has side effects on globalCssResourcesHash, localStyleSheetCssResourcesHash
         function fetchResourceForCssUrlMatch(cssUrlMatch, cssResourceDownloadDeferreds,
-                                             styleSheetUriRelativeToPackageDocument, globalCssResourcesCache,
-                                             stylesheetCssResourceUrlsMap) {
+                                             styleSheetUriRelativeToPackageDocument, stylesheetCssResourceUrlsMap,
+                                             contextDocument, isStyleSheetResource) {
             var origMatchedUrlString = cssUrlMatch[0];
             var extractedUrl = cssUrlMatch[2];
+            var extractedUri = new URI(extractedUrl);
+            var isCssUrlRelative = extractedUri.scheme() === '';
+            if (!isCssUrlRelative) {
+                // Absolute URLs don't need programmatic fetching
+                return;
+            }
             var resourceUriRelativeToPackageDocument = (new URI(extractedUrl)).absoluteTo(styleSheetUriRelativeToPackageDocument).toString();
 
-            var cachedResource = globalCssResourcesCache.getResourceURL(resourceUriRelativeToPackageDocument);
-            if (cachedResource) {
-                stylesheetCssResourceUrlsMap[origMatchedUrlString] = cachedResource;
+            var documentResourcesCache = obtainDocumentResourcesCache(contextDocument);
+            var cachedResourceURL = documentResourcesCache.getResourceURL(resourceUriRelativeToPackageDocument);
+
+
+            if (cachedResourceURL) {
+                console.log('Using a cached version of [' + resourceUriRelativeToPackageDocument +
+                    '] with object URL [' + cachedResourceURL + ']');
+                stylesheetCssResourceUrlsMap[origMatchedUrlString] = {
+                    isStyleSheetResource: isStyleSheetResource,
+                    resourceObjectURL:  cachedResourceURL
+                };
             } else {
                 var cssUrlFetchDeferred = $.Deferred();
                 cssResourceDownloadDeferreds.push(cssUrlFetchDeferred);
 
-                self.relativeToPackageFetchFileContents(resourceUriRelativeToPackageDocument, 'blob',
-                    function (resourceDataBlob) {
-                        //noinspection JSUnresolvedVariable,JSUnresolvedFunction
-                        var resourceObjectURL = window.URL.createObjectURL(resourceDataBlob);
-                        stylesheetCssResourceUrlsMap[origMatchedUrlString] = resourceObjectURL;
-                        globalCssResourcesCache.putResourceURL(resourceUriRelativeToPackageDocument, resourceObjectURL);
-                        cssUrlFetchDeferred.resolve();
-                    },
-                    function (error) {
-                        if (error) {
-                            if (error.message) {
-                                console.error(error.message);
-                            }
-                            if (error.stack) {
-                                console.error(error.stack);
-                            }
-                        }
-                        cssUrlFetchDeferred.resolve();
+                var processedBlobCallback = function (resourceDataBlob) {
+                    //noinspection JSUnresolvedVariable,JSUnresolvedFunction
+                    var resourceObjectURL = window.URL.createObjectURL(resourceDataBlob);
+                    stylesheetCssResourceUrlsMap[origMatchedUrlString] = {
+                        isStyleSheetResource: isStyleSheetResource,
+                        resourceObjectURL: resourceObjectURL
+                    };
+                    documentResourcesCache.putResourceURL(resourceUriRelativeToPackageDocument, resourceObjectURL);
+                    console.log('origMatchedUrlString: [' + origMatchedUrlString + '], extractedUrl: [' + extractedUrl +
+                        '], resourceObjectURL: [' + resourceObjectURL + ']');
+                    cssUrlFetchDeferred.resolve();
+                };
+                var fetchErrorCallback = function (error) {
+                    _handleError(error);
+                    cssUrlFetchDeferred.resolve();
+                };
+
+                var fetchMode;
+                var fetchCallback;
+                if (isStyleSheetResource) {
+                    fetchMode = 'text';
+                    fetchCallback = function(styleSheetResourceData) {
+                        preprocessCssStyleSheetData(styleSheetResourceData, resourceUriRelativeToPackageDocument,
+                            contextDocument, function(preprocessedStyleSheetData) {
+                                var resourceDataBlob = new Blob([preprocessedStyleSheetData], {type: 'text/css'});
+                                processedBlobCallback(resourceDataBlob);
+                            })
                     }
-                );
+                } else {
+                    fetchMode = 'blob';
+                    fetchCallback = processedBlobCallback;
+                }
+
+                self.relativeToPackageFetchFileContents(resourceUriRelativeToPackageDocument, fetchMode,  fetchCallback, fetchErrorCallback);
             }
         }
 
         function preprocessCssStyleSheetData(styleSheetResourceData, styleSheetUriRelativeToPackageDocument,
                                              contextDocument, callback) {
+            // TODO: regexp probably invalid for url('someUrl"ContainingQuote'):
             var cssUrlRegexp = /[Uu][Rr][Ll]\(\s*(['"]?)([^']+)\1\s*\)/g;
-            var documentCssResourcesCache = obtainCssResourcesCache(contextDocument);
+            var nonUrlCssImportRegexp = /@[Ii][Mm][Pp][Oo][Rr][Tt]\s*(['"])([^"']+)\1/g;
             var stylesheetCssResourceUrlsMap = {};
             var cssResourceDownloadDeferreds = [];
+            console.log('========');
+            console.log('preprocessing Css StyleSheet Data for stylesheet [' + styleSheetUriRelativeToPackageDocument +
+                ']:');
+            console.log('--------');
+            console.log(styleSheetResourceData);
+            console.log('========');
+            // Go through the stylesheet text using all regexps and process according to those regexp matches, if any:
+            [nonUrlCssImportRegexp, cssUrlRegexp].forEach(function(processingRegexp) {
+                // extract all URL references in the CSS sheet,
+                var cssUrlMatch = processingRegexp.exec(styleSheetResourceData);
+                while (cssUrlMatch != null) {
+                    console.log('CSS match using regexp ' + processingRegexp + ':');
+                    console.log(cssUrlMatch);
+                    // then fetch and replace them with corresponding object URLs:
+                    var isStyleSheetResource = false;
+                    // Special handling of @import-ed stylesheet files - recursive preprocessing:
+                    // TODO: will not properly handle @import url(...):
+                    if (processingRegexp == nonUrlCssImportRegexp) {
+                        // This resource URL points to an @import-ed CSS stylesheet file. Need to preprocess its text
+                        // after fetching but before making an object URL of it:
+                        isStyleSheetResource = true;
+                    }
+                    fetchResourceForCssUrlMatch(cssUrlMatch, cssResourceDownloadDeferreds,
+                        styleSheetUriRelativeToPackageDocument, stylesheetCssResourceUrlsMap,
+                        contextDocument, isStyleSheetResource);
+                    cssUrlMatch = processingRegexp.exec(styleSheetResourceData);
+                }
 
-            var cssUrlMatch = cssUrlRegexp.exec(styleSheetResourceData);
-            // TODO: extract all "src:url()", fetch and replace with object URLs
-            while (cssUrlMatch != null) {
-                fetchResourceForCssUrlMatch(cssUrlMatch, cssResourceDownloadDeferreds,
-                    styleSheetUriRelativeToPackageDocument, documentCssResourcesCache, stylesheetCssResourceUrlsMap);
-                cssUrlMatch = cssUrlRegexp.exec(styleSheetResourceData);
-            }
+            });
 
             if (cssResourceDownloadDeferreds.length > 0) {
                 $.when.apply($, cssResourceDownloadDeferreds).done(function () {
                     for (var origMatchedUrlString in stylesheetCssResourceUrlsMap) {
-                        var resourceObjectURL = stylesheetCssResourceUrlsMap[origMatchedUrlString];
+                        var processedResourceDescriptor = stylesheetCssResourceUrlsMap[origMatchedUrlString];
+
+
+                        var processedUrlString;
+                        if (processedResourceDescriptor.isStyleSheetResource) {
+                            processedUrlString = '@import "' + processedResourceDescriptor.resourceObjectURL + '"';
+                        } else {
+                            processedUrlString = "url('" + processedResourceDescriptor.resourceObjectURL + "')";
+                        }
+                        console.log('Replacing in stylesheet text: [' + origMatchedUrlString + '] => [' + processedUrlString + ']');
                         //noinspection JSCheckFunctionSignatures
                         styleSheetResourceData =
-                            styleSheetResourceData.replace(origMatchedUrlString, "url('" + resourceObjectURL + "')",
-                                'g');
+                            styleSheetResourceData.replace(origMatchedUrlString, processedUrlString, 'g');
                     }
                     callback(styleSheetResourceData);
                 });
@@ -235,23 +308,23 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
         }
 
         /**
-         * Obtain the reference to the ResourceCache object that caches already fetched resources from CSS urls - used so that
-         * the given resource referenced by URL from a CSS rule is fetched only once. The cache is attached to the content document body.
+         * Obtain the reference to the ResourceCache object that caches already fetched resources - used so that
+         * the given resource referenced by relative path is fetched only once. The cache is attached to the content document body.
          * // TODO: use it on global EPUB book level to share caching of resources referenced multiple times within the book.
          *
          * @param {Object} contentDocumentDom The content document whose body element has/will have the cache attached to.
          * @return {Object} The cache with hrefs relative to the package document (.opf) as keys
          * and browser object URL as values for fetched resources.
          */
-        function obtainCssResourcesCache(contentDocumentDom) {
+        function obtainDocumentResourcesCache(contentDocumentDom) {
             // The hash of already loaded/imported stylesheet hrefs is being tracked globally on the content document level:
-            var cssResourcesCache = $(contentDocumentDom.body).data('epubCssResourcesCache');
-            if (typeof cssResourcesCache === 'undefined') {
+            var documentResourcesCache = $(contentDocumentDom.body).data('epubResourcesCache');
+            if (typeof documentResourcesCache === 'undefined') {
                 // first use, initialize:
-                cssResourcesCache = new ResourceCache;
-                $(contentDocumentDom.body).data('epubCssResourcesCache', cssResourcesCache);
+                documentResourcesCache = new ResourceCache;
+                $(contentDocumentDom.body).data('epubResourcesCache', documentResourcesCache);
             }
-            return cssResourcesCache;
+            return documentResourcesCache;
         }
 
         /**
@@ -266,13 +339,17 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
             return $(styleSheet.ownerNode).data('epubZipOrigHref');
         }
 
-        function installStylesheetLoadHandlers(contentDocumentDom, contentDocumentURI, resolutionDeferreds, onerror) {
-            var styleSheetLinkElems = $("link[rel~='stylesheet']", contentDocumentDom);
-            styleSheetLinkElems.load(function (stylesheetLoadEvent) {
-                findRelativeUnfetchedCssImportRules(stylesheetLoadEvent, contentDocumentURI, resolutionDeferreds,
-                    onerror)
-            });
-        }
+//        function installStylesheetLoadHandlers(contentDocumentDom, contentDocumentURI, resolutionDeferreds, onerror) {
+//            // TODO: instead of installing event handlers, process immediately.
+//            var styleSheetLinkElems = $("link[rel~='stylesheet']", contentDocumentDom);
+//            styleSheetLinkElems.each(function(index, styleSheetLinkElem) {
+//                var styleSheetHref = $(styleSheetLinkElem).attr('href');
+//            });
+//            styleSheetLinkElems.load(function (stylesheetLoadEvent) {
+//                findRelativeUnfetchedCssImportRules(stylesheetLoadEvent, contentDocumentURI, resolutionDeferreds,
+//                    onerror)
+//            });
+//        }
 
         function findRelativeUnfetchedCssImportRules(styleSheetLoadEvent, contentDocumentURI, resolutionDeferreds, onerror) {
             var contentDocumentDom = styleSheetLoadEvent.currentTarget.ownerDocument;
@@ -365,7 +442,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
             fileReader.readAsArrayBuffer(blob);
         }
 
-        // TODO: move to the epub module into a new "encryption" submodule?
+        // TODO: move out to the epub module, as a new "encryption" submodule?
         function xorObfuscatedBlob(obfuscatedResourceBlob, prefixLength, xorKey, callback) {
             var obfuscatedPrefixBlob = obfuscatedResourceBlob.slice(0, prefixLength);
             blob2BinArray(obfuscatedPrefixBlob, function (bytes) {
@@ -382,7 +459,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
             });
         }
 
-        // TODO: move to the epub module into a new "encryption" submodule?
+        // TODO: move out to the epub module, as a new "encryption" submodule?
         function embeddedFontDeobfuscateIdpf(obfuscatedResourceBlob, callback) {
             var uid = _packageJson.metadata.id;
             var hashedUid = window.Crypto.SHA1(unescape(encodeURIComponent(uid.trim())), { asBytes: true });
@@ -392,7 +469,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
             xorObfuscatedBlob(obfuscatedResourceBlob, prefixLength, hashedUid, callback);
         }
 
-        // TODO: move to the epub module into a new "encryption" submodule?
+        // TODO: move out to the epub module, as a new "encryption" submodule?
         function urnUuidToByteArray(id) {
             var uuidRegexp = /(urn:uuid:)?([0-9a-f]{8})-([0-9a-f]{4})-([0-9a-f]{4})-([0-9a-f]{4})-([0-9a-f]{12})/i;
             var matchResults = uuidRegexp.exec(id);
@@ -409,7 +486,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
             return byteArray;
         }
 
-        // TODO: move to the epub module into a new "encryption" submodule?
+        // TODO: move out to the epub module, as a new "encryption" submodule?
         function embeddedFontDeobfuscateAdobe(obfuscatedResourceBlob, callback) {
             var uid = _packageJson.metadata.id;
             // TODO: extract the UUID and convert to big-endian binary form (16 bytes):
@@ -421,7 +498,16 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
 
         // PUBLIC API
 
-        this.isPackageExploded = function (){
+        /**
+         * Determine whether the documents fetched using this fetcher require special programmatic handling.
+         * (resolving of internal resource references).
+         * @returns {*} true if documents fetched using this fetcher require special programmatic handling
+         * (resolving of internal resource references). Typically needed for zipped EPUBs or exploded EPUBs that contain
+         * encrypted resources specified in META-INF/encryption.xml.
+         *
+         * false if documents can be fed directly into a window or iframe by src URL without using special fetching logic.
+         */
+        this.shouldFetchProgrammatically = function (){
             return _isExploded;
         };
 
@@ -429,18 +515,17 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
             return _dataFetcher.getPackageUrl();
         };
 
-        this.getFileContentsFromPackage = function(fileRelativePath, callback, onerror) {
+        this.getFileContentsFromPackage = function(filePathRelativeToPackageRoot, callback, onerror) {
 
-            _dataFetcher.fetchFileContentsText(fileRelativePath, function (fileContents) {
+            _dataFetcher.fetchFileContentsText(filePathRelativeToPackageRoot, function (fileContents) {
                 callback(fileContents);
             }, onerror);
         };
 
 
 
-        this.getXmlFileDom = function (xmlFileRelativePath, callback, onerror) {
-
-            self.getFileContentsFromPackage(xmlFileRelativePath, function (xmlFileContents) {
+        this.getXmlFileDom = function (xmlFilePathRelativeToPackageRoot, callback, onerror) {
+            self.getFileContentsFromPackage(xmlFilePathRelativeToPackageRoot, function (xmlFileContents) {
                 var fileDom = self.markupParser.parseXml(xmlFileContents);
                 callback(fileDom);
             }, onerror);
@@ -471,7 +556,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
             }
         };
 
-        // TODO: move to the epub module as a new "encryption_config" submodule?
+        // TODO: move out to the epub module, as a new "encryption" submodule?
         this._initializeEncryptionHash = function (encryptionInitializedCallback) {
             self.getEncryptionDom(function (encryptionDom) {
                 // TODO: build the hash
@@ -509,7 +594,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
             });
         };
 
-        // TODO: move to the epub module as a new "encryption_config" submodule?
+        // TODO: move out to the epub module, as a new "encryption" submodule?
         this.getEncryptionMethodForRelativePath = function(pathRelativeToRoot) {
             if (_encryptionHash){
                 return _encryptionHash[pathRelativeToRoot];
@@ -582,7 +667,8 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
 
             resolveDocumentImages(contentDocumentDom, contentDocumentURI, resolutionDeferreds, onerror);
             resolveDocumentLinkStylesheets(contentDocumentDom, contentDocumentURI, resolutionDeferreds, onerror);
-            installStylesheetLoadHandlers(contentDocumentDom, contentDocumentURI, resolutionDeferreds, onerror);
+            // TODO: instead if installing stylesheet load handlers, provide a postProcessing function to resolveDocumentLinkStylesheets().
+            //  installStylesheetLoadHandlers(contentDocumentDom, contentDocumentURI, resolutionDeferreds, onerror);
 
             $.when.apply($, resolutionDeferreds).done(function () {
                 resolvedDocumentCallback(contentDocumentDom);

@@ -30,19 +30,19 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
             }
         }
 
-        function fetchFileContents (relativePath, readCallback, onerror) {
+        function fetchFileContents (relativePathRelativeToPackageRoot, readCallback, onerror) {
 
-            if (typeof relativePath === 'undefined') {
+            if (typeof relativePathRelativeToPackageRoot === 'undefined') {
                 throw 'Fetched file relative path is undefined!';
             }
 
             withZipFsPerform(function (zipFs, onerror) {
-                var entry = zipFs.find(relativePath);
+                var entry = zipFs.find(relativePathRelativeToPackageRoot);
                 if (typeof entry === 'undefined' || entry === null) {
-                    onerror(new Error('Entry ' + relativePath + ' not found in zip ' + baseUrl));
+                    onerror(new Error('Entry ' + relativePathRelativeToPackageRoot + ' not found in zip ' + baseUrl));
                 } else {
                     if (entry.directory) {
-                        onerror(new Error('Entry ' + relativePath + ' is a directory while a file has been expected'));
+                        onerror(new Error('Entry ' + relativePathRelativeToPackageRoot + ' is a directory while a file has been expected'));
                     } else {
                         readCallback(entry);
                     }
@@ -57,23 +57,24 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
             return baseUrl;
         };
 
-        this.fetchFileContentsText = function(relativePath, fetchCallback, onerror) {
+        this.fetchFileContentsText = function(relativePathRelativeToPackageRoot, fetchCallback, onerror) {
 
-            fetchFileContents(relativePath, function (entry) {
+            fetchFileContents(relativePathRelativeToPackageRoot, function (entry) {
                 entry.getText(fetchCallback, undefined, _checkCrc32);
             }, onerror)
         };
 
-        this.fetchFileContentsData64Uri = function(relativePath, fetchCallback, onerror) {
-            fetchFileContents(relativePath, function (entry) {
-                entry.getData64URI(ContentTypeDiscovery.identifyContentTypeFromFileName(relativePath), fetchCallback, undefined,  _checkCrc32);
+        this.fetchFileContentsData64Uri = function(relativePathRelativeToPackageRoot, fetchCallback, onerror) {
+            fetchFileContents(relativePathRelativeToPackageRoot, function (entry) {
+                entry.getData64URI(ContentTypeDiscovery.identifyContentTypeFromFileName(relativePathRelativeToPackageRoot),
+                    fetchCallback, undefined, _checkCrc32);
             }, onerror)
         };
 
-        this.fetchFileContentsBlob = function(relativePath, fetchCallback, onerror) {
-            var decryptionFunction = parentFetcher.getDecryptionFunctionForRelativePath(relativePath);
+        this.fetchFileContentsBlob = function(relativePathRelativeToPackageRoot, fetchCallback, onerror) {
+            var decryptionFunction = parentFetcher.getDecryptionFunctionForRelativePath(relativePathRelativeToPackageRoot);
             if (decryptionFunction) {
-                console.log('== decryption required for ' + relativePath);
+                console.log('== decryption required for ' + relativePathRelativeToPackageRoot);
                 var origFetchCallback = fetchCallback;
                 fetchCallback = function (unencryptedBlob) {
                     decryptionFunction(unencryptedBlob, function (decryptedBlob) {
@@ -81,8 +82,8 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
                     });
                 };
             }
-            fetchFileContents(relativePath, function (entry) {
-                entry.getBlob(ContentTypeDiscovery.identifyContentTypeFromFileName(relativePath), fetchCallback,
+            fetchFileContents(relativePathRelativeToPackageRoot, function (entry) {
+                entry.getBlob(ContentTypeDiscovery.identifyContentTypeFromFileName(relativePathRelativeToPackageRoot), fetchCallback,
                     undefined, _checkCrc32);
             }, onerror)
         };

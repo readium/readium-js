@@ -6,10 +6,16 @@ define(function () {
             var _resourcesHash = {};
 
             this.getResourceURL = function (resourceAbsoluteHref) {
-                return _resourcesHash[resourceAbsoluteHref];
+                console.log('ResourceCache: looking for [' + resourceAbsoluteHref + ']');
+                var resourceObjectUrl = _resourcesHash[resourceAbsoluteHref];
+                if (resourceObjectUrl) {
+                    console.log('ResourceCache: found [' + resourceAbsoluteHref + '] => [' + resourceObjectUrl + ']');
+                }
+                return resourceObjectUrl;
             };
 
             this.putResourceURL = function (resourceAbsoluteHref, resourceObjectUrl) {
+                console.log('ResourceCache: putting [' + resourceAbsoluteHref + '] => [' + resourceObjectUrl + ']');
                 _resourcesHash[resourceAbsoluteHref] = resourceObjectUrl;
             };
             // TODO: methods to evict resource, destroy cache and release object URLs using window.URL.revokeObjectURL(), automatic
