@@ -24,6 +24,7 @@ define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch',
         var _gesturesHandler = new GesturesHandler(this.reader,renderingViewport);
         _gesturesHandler.initialize();
 
+
         this.openPackageDocument = function(bookRoot, callback)  {
 
             _currentResourceFetcher = new ResourceFetcher(bookRoot, jsLibRoot);
