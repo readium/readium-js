@@ -215,7 +215,7 @@ var requirejs = {
         },
 
         mediaOvelayDataInjector: {
-          deps: ['readiumSDK', 'mediaOverlay', 'mediaOverlayPlayer', 'smilModel', 'spineItem'],
+          deps: ['readiumSDK', 'mediaOverlay', 'mediaOverlayPlayer', 'smilModel', 'spineItem', 'smilIterator'],
           exports: 'mediaOvelayDataInjector'
         },
 
