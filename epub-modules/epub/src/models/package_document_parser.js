@@ -200,7 +200,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
             $.each($overlays, function(elementIndex, $currItem) {
                jsonMetadata.mediaItems.push({
                   refines: $currItem.getAttribute("refines"),
-                  duration: $($currItem).text()
+                  duration: resolveClockValue($($currItem).text())
                });
             });
                

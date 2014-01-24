@@ -160,6 +160,29 @@ define([ 'require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch' ]
                     smilJson.href = currentManifestItem.href;
                     smilJson.id = currentManifestItem.id;
                     smilJson.spineItemId = getSpineIdByOverlayId(currentManifestItem.id);
+
+                    if (docJson.metadata.mediaItems) {
+                        for (var idx = 0; idx < docJson.metadata.mediaItems.length; idx++) {
+                            var item = docJson.metadata.mediaItems[idx];
+
+                            if (!item.refines) continue;
+                            var id = item.refines;
+                            var hash = id.indexOf('#');
+
+                            if (hash >= 0) {
+                                var start = hash+1;
+                                var end = id.length-1;
+                                id = id.substr(start, end);
+                            }
+                            id = id.trim();
+
+                            if (id === smilJson.id) {
+                                smilJson.duration = item.duration; //resolveClockValue already done.
+                                break;
+                            }
+                        }
+                    }
+
                     docJson.mo_map.push(smilJson);
                     setTimeout(fetchNextSmildata);
                 });
