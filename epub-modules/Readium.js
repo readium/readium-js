@@ -37,9 +37,12 @@ define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch',
                     SmilParser.fillSmilData(docJson, bookRoot, jsLibRoot, _currentResourceFetcher, function() {
                         var packageDocument = new PackageDocument(_currentResourceFetcher.getPackageUrl(), docJson, _currentResourceFetcher);
                         self.reader.openBook(packageDocument.getPackageData())
+
+                        var options = { packageDocumentUrl : _currentResourceFetcher.getPackageUrl()};
+                        callback(packageDocument, options);
                         if (callback){
                             // gives caller access to document metadata like the table of contents
-                            callback(packageDocument);
+                            callback(packageDocument, options);
                         }
                     })
                 });
