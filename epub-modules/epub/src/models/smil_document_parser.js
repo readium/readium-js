@@ -38,10 +38,13 @@ define([ 'require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch' ]
 
         };
 
+// TODO: duplicate in package_document_parser.js
         // parse the timestamp and return the value in seconds
         // supports this syntax:
         // http://idpf.org/epub/30/spec/epub30-mediaoverlays.html#app-clock-examples
         function resolveClockValue(value) {
+            if (!value) return 0;
+            
             var hours = 0;
             var mins = 0;
             var secs = 0;
@@ -111,7 +114,7 @@ define([ 'require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch' ]
                 safeCopyProperty("src", $element, item, true);
                 var srcParts = item.src.split('#');
                 item.srcFile = srcParts[0];
-                item.srcFragmentId = (srcParts.length === 2) ? srcParts[1] : undefined;
+                item.srcFragmentId = (srcParts.length === 2) ? srcParts[1] : "";
                 safeCopyProperty("id", $element, item);
                 // safeCopyProperty("epub:textref", $element, item);
 
