@@ -289,6 +289,21 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
                 onerror, preprocessCssStyleSheetData);
         }
 
+        function resolveDocumentEmbeddedStylesheets(contentDocumentDom, contentDocumentURI, resolutionDeferreds, onerror) {
+            var resolvedElems = $('style', contentDocumentDom);
+            resolvedElems.each(function (index, resolvedElem) {
+                var resolutionDeferred = $.Deferred();
+                resolutionDeferreds.push(resolutionDeferred);
+                var styleSheetData = $(resolvedElem).text();
+                var styleSheetUriRelativeToPackageDocument = contentDocumentURI;
+                preprocessCssStyleSheetData(styleSheetData, styleSheetUriRelativeToPackageDocument,
+                    contentDocumentDom, function(resolvedStylesheetData) {
+                        $(resolvedElem).text(resolvedStylesheetData);
+                        resolutionDeferred.resolve();
+                    });
+            });
+        }
+
         /**
          * Obtain the reference to the ResourceCache object that caches already fetched resources - used so that
          * the given resource referenced by relative path is fetched only once. The cache is attached to the content document body.
@@ -542,8 +557,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
 
             resolveDocumentImages(contentDocumentDom, contentDocumentURI, resolutionDeferreds, onerror);
             resolveDocumentLinkStylesheets(contentDocumentDom, contentDocumentURI, resolutionDeferreds, onerror);
-            // TODO: instead if installing stylesheet load handlers, provide a postProcessing function to resolveDocumentLinkStylesheets().
-            //  installStylesheetLoadHandlers(contentDocumentDom, contentDocumentURI, resolutionDeferreds, onerror);
+            resolveDocumentEmbeddedStylesheets(contentDocumentDom, contentDocumentURI, resolutionDeferreds, onerror);
 
             $.when.apply($, resolutionDeferreds).done(function () {
                 resolvedDocumentCallback(contentDocumentDom);
