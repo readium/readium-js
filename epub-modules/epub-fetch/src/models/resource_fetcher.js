@@ -1,7 +1,7 @@
 define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_content_type', './plain_fetcher',
-    './zip_fetcher', './processed_items_registry', './resource_cache'],
+    './zip_fetcher', './resource_cache'],
     function (require, module, $, URI, MarkupParser, ContentTypeDiscovery, PlainExplodedFetcher, ZipFetcher,
-              ProcessedItemsRegistry, ResourceCache) {
+              ResourceCache) {
         console.log('resource_resolver module id: ' + module.id);
 
 
@@ -134,7 +134,6 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
             }
         }
 
-        // FIXME: function has side effects on globalCssResourcesHash, localStyleSheetCssResourcesHash
         function fetchResourceForCssUrlMatch(cssUrlMatch, cssResourceDownloadDeferreds,
                                              styleSheetUriRelativeToPackageDocument, stylesheetCssResourceUrlsMap,
                                              contextDocument, isStyleSheetResource) {
@@ -183,6 +182,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
                 var fetchMode;
                 var fetchCallback;
                 if (isStyleSheetResource) {
+                    // TODO: test whether recursion works for nested @import rules with arbitrary indirection depth.
                     fetchMode = 'text';
                     fetchCallback = function(styleSheetResourceData) {
                         preprocessCssStyleSheetData(styleSheetResourceData, resourceUriRelativeToPackageDocument,
@@ -290,24 +290,6 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
         }
 
         /**
-         * Obtain the reference to the registry that holds hrefs of already imported stylesheets - needed for keeping track
-         * of which stylesheets have been loaded already. The registry is attached to the content document body.
-         *
-         * @param {Object} contentDocumentDom The content document whose body element has/will have the hashmap attached to.
-         * @return {Object} The registry with hrefs as keys and an isProcessed() method returning true for stylesheets that have been loaded.
-         */
-        function obtainImportedCssHrefsRegistry(contentDocumentDom) {
-            // The hash of already loaded/imported stylesheet hrefs is being tracked globally on the content document level:
-            var alreadyImportedStylesheetHrefsRegistry = $(contentDocumentDom.body).data('epubImportedCssHrefsReg');
-            if (typeof alreadyImportedStylesheetHrefsRegistry === 'undefined') {
-                // first use, initialize:
-                alreadyImportedStylesheetHrefsRegistry = new ProcessedItemsRegistry();
-                $(contentDocumentDom.body).data('epubImportedCssHrefsReg', alreadyImportedStylesheetHrefsRegistry);
-            }
-            return alreadyImportedStylesheetHrefsRegistry;
-        }
-
-        /**
          * Obtain the reference to the ResourceCache object that caches already fetched resources - used so that
          * the given resource referenced by relative path is fetched only once. The cache is attached to the content document body.
          * // TODO: use it on global EPUB book level to share caching of resources referenced multiple times within the book.
@@ -325,112 +307,6 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
                 $(contentDocumentDom.body).data('epubResourcesCache', documentResourcesCache);
             }
             return documentResourcesCache;
-        }
-
-        /**
-         * Get stored original href (if present) from a stylesheet that has possibly been programmatically fetched from zipped EPUB
-         *
-         * @param {Object} styleSheet The stylesheet DOM object that can possibly have its original href stored in the special data property
-         * @return {String} Either null or the original stored href of the stylesheet as present in the document's source (before being
-         * programmatically fetched from zipped EPUB, which substitutes href with a blob object URL)
-         */
-        function getOrigHrefFromStyleSheet(styleSheet) {
-            //noinspection JSUnresolvedVariable
-            return $(styleSheet.ownerNode).data('epubZipOrigHref');
-        }
-
-//        function installStylesheetLoadHandlers(contentDocumentDom, contentDocumentURI, resolutionDeferreds, onerror) {
-//            // TODO: instead of installing event handlers, process immediately.
-//            var styleSheetLinkElems = $("link[rel~='stylesheet']", contentDocumentDom);
-//            styleSheetLinkElems.each(function(index, styleSheetLinkElem) {
-//                var styleSheetHref = $(styleSheetLinkElem).attr('href');
-//            });
-//            styleSheetLinkElems.load(function (stylesheetLoadEvent) {
-//                findRelativeUnfetchedCssImportRules(stylesheetLoadEvent, contentDocumentURI, resolutionDeferreds,
-//                    onerror)
-//            });
-//        }
-
-        function findRelativeUnfetchedCssImportRules(styleSheetLoadEvent, contentDocumentURI, resolutionDeferreds, onerror) {
-            var contentDocumentDom = styleSheetLoadEvent.currentTarget.ownerDocument;
-            var alreadyImportedStylesheetHrefsRegistry = obtainImportedCssHrefsRegistry(contentDocumentDom);
-            var allRelativeCssImportRulesHash = {};
-            //noinspection JSUnresolvedVariable
-            var styleSheet = styleSheetLoadEvent.currentTarget.sheet;
-            // Any processed stylesheet element should be loaded by the resolution mechanism so we have to
-            // prevent any duplicate attempts to load it if referenced in an @import rule. We add stylesheet's URLs
-            // (both current and pre-resolution) to the already fetched hash so they don't get queued for fetching again:
-            alreadyImportedStylesheetHrefsRegistry.markProcessed(styleSheet.href);
-            var styleSheetOwnerNodeOrigHref = getOrigHrefFromStyleSheet(styleSheet);
-            // TODO: test the behaviour on stylesheets with non-relative href (residing outside the zipped EPUB)
-            if (styleSheetOwnerNodeOrigHref) {
-                alreadyImportedStylesheetHrefsRegistry.markProcessed(styleSheetOwnerNodeOrigHref);
-            }
-
-            var cssRules = styleSheet.cssRules;
-            $.each(cssRules, function (cssRuleIdx, cssRule) {
-                // Cannot compare by references, as CSSImportRule symbol in the global execution context
-                // refers to a different prototype instance than the cssRule prototype
-                // because of different origin (renderer's iframe.contentWindow vs global window?)
-                if (cssRule.constructor.name === 'CSSImportRule') {
-                    var ruleHrefUri = new URI(cssRule.href);
-                    var isRuleHrefUriRelative = ruleHrefUri.scheme() === '';
-                    if (isRuleHrefUriRelative) {
-                        var isRuleAlreadyImported = alreadyImportedStylesheetHrefsRegistry.isProcessed(cssRule.href);
-                        if (!isRuleAlreadyImported) {
-                            // Queue this rule for import:
-                            allRelativeCssImportRulesHash[cssRule.href] = cssRule;
-                        }
-                    }
-                }
-            });
-
-            var allRelativeCssImportRules = [];
-            var hashKeys = Object.keys(allRelativeCssImportRulesHash);
-            hashKeys.forEach(function (key) {
-                allRelativeCssImportRules.push(allRelativeCssImportRulesHash[key]);
-            });
-
-            fetchCssImportRules(allRelativeCssImportRules, contentDocumentURI, resolutionDeferreds, onerror);
-        }
-
-        function fetchCssImportRules(unfetchedCssImportRules, contentDocumentURI, resolutionDeferreds, onerror) {
-            var alreadyImportedStylesheetHrefsRegistry;
-            unfetchedCssImportRules.forEach(function (unfetchedCssImportRule) {
-                var parentStyleSheet = unfetchedCssImportRule.parentStyleSheet;
-                //noinspection JSUnresolvedVariable
-                var contentDocumentDom = parentStyleSheet.ownerNode.ownerDocument;
-                if (!alreadyImportedStylesheetHrefsRegistry) {
-                    alreadyImportedStylesheetHrefsRegistry = obtainImportedCssHrefsRegistry(contentDocumentDom);
-                }
-                var ruleHref = unfetchedCssImportRule.href;
-                var isRuleAlreadyImported = alreadyImportedStylesheetHrefsRegistry.isProcessed(ruleHref);
-                if (!isRuleAlreadyImported) {
-                    var baseStyleSheetHref = getOrigHrefFromStyleSheet(parentStyleSheet);
-                    if (!baseStyleSheetHref) {
-                        baseStyleSheetHref = parentStyleSheet.href;
-                    }
-
-                    var cssFetchHref = (new URI(ruleHref)).absoluteTo(baseStyleSheetHref).toString();
-                    var appendedStyleSheetLink = $('<link />', contentDocumentDom);
-                    appendedStyleSheetLink.attr({
-                        type: "text/css",
-                        rel: "stylesheet",
-                        href: cssFetchHref
-                    });
-                    appendedStyleSheetLink.load(function (stylesheetLoadEvent) {
-                        // TODO: test whether recursion works for nested @import rules with arbitrary indirection depth.
-                        findRelativeUnfetchedCssImportRules(stylesheetLoadEvent, contentDocumentURI,
-                            resolutionDeferreds, onerror);
-                    });
-
-                    fetchResourceForElement(appendedStyleSheetLink, appendedStyleSheetLink.attr('href'), 'href',
-                        contentDocumentURI, 'text', resolutionDeferreds, onerror, preprocessCssStyleSheetData);
-
-                    var contentDocumentHeadElement = $('head', contentDocumentDom);
-                    contentDocumentHeadElement.append(appendedStyleSheetLink);
-                }
-            });
         }
 
         function blob2BinArray(blob, callback) {
@@ -489,7 +365,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
         // TODO: move out to the epub module, as a new "encryption" submodule?
         function embeddedFontDeobfuscateAdobe(obfuscatedResourceBlob, callback) {
             var uid = _packageJson.metadata.id;
-            // TODO: extract the UUID and convert to big-endian binary form (16 bytes):
+            // extract the UUID and convert to big-endian binary form (16 bytes):
             var uidWordArray = urnUuidToByteArray(uid);
             var prefixLength = 1024;
             xorObfuscatedBlob(obfuscatedResourceBlob, prefixLength, uidWordArray, callback)
@@ -559,7 +435,6 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
         // TODO: move out to the epub module, as a new "encryption" submodule?
         this._initializeEncryptionHash = function (encryptionInitializedCallback) {
             self.getEncryptionDom(function (encryptionDom) {
-                // TODO: build the hash
                 if (!_encryptionHash) {
                     _encryptionHash = {};
                 }
