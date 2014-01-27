@@ -2,8 +2,6 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
     './zip_fetcher', './resource_cache'],
     function (require, module, $, URI, MarkupParser, ContentTypeDiscovery, PlainExplodedFetcher, ZipFetcher,
               ResourceCache) {
-        console.log('resource_resolver module id: ' + module.id);
-
 
     var ResourceFetcher = function(rootUrl, libDir) {
 
@@ -94,8 +92,6 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
                 $(resolvedElem).attr(refAttr, newResourceUrl);
             }
             if (cachedResourceUrl) {
-                console.log('Using a cached version of [' + resourceUriRelativeToPackageDocument +
-                    '] with object URL [' + cachedResourceUrl + ']');
                 replaceRefAttrInElem(cachedResourceUrl);
             } else {
                 var resolutionDeferred = $.Deferred();
@@ -152,8 +148,6 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
 
 
             if (cachedResourceURL) {
-                console.log('Using a cached version of [' + resourceUriRelativeToPackageDocument +
-                    '] with object URL [' + cachedResourceURL + ']');
                 stylesheetCssResourceUrlsMap[origMatchedUrlString] = {
                     isStyleSheetResource: isStyleSheetResource,
                     resourceObjectURL:  cachedResourceURL
@@ -170,8 +164,6 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
                         resourceObjectURL: resourceObjectURL
                     };
                     documentResourcesCache.putResourceURL(resourceUriRelativeToPackageDocument, resourceObjectURL);
-                    console.log('origMatchedUrlString: [' + origMatchedUrlString + '], extractedUrl: [' + extractedUrl +
-                        '], resourceObjectURL: [' + resourceObjectURL + ']');
                     cssUrlFetchDeferred.resolve();
                 };
                 var fetchErrorCallback = function (error) {
@@ -207,19 +199,11 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
             var nonUrlCssImportRegexp = /@[Ii][Mm][Pp][Oo][Rr][Tt]\s*(['"])([^"']+)\1/g;
             var stylesheetCssResourceUrlsMap = {};
             var cssResourceDownloadDeferreds = [];
-            console.log('========');
-            console.log('preprocessing Css StyleSheet Data for stylesheet [' + styleSheetUriRelativeToPackageDocument +
-                ']:');
-            console.log('--------');
-            console.log(styleSheetResourceData);
-            console.log('========');
             // Go through the stylesheet text using all regexps and process according to those regexp matches, if any:
             [nonUrlCssImportRegexp, cssUrlRegexp].forEach(function(processingRegexp) {
                 // extract all URL references in the CSS sheet,
                 var cssUrlMatch = processingRegexp.exec(styleSheetResourceData);
                 while (cssUrlMatch != null) {
-                    console.log('CSS match using regexp ' + processingRegexp + ':');
-                    console.log(cssUrlMatch);
                     // then fetch and replace them with corresponding object URLs:
                     var isStyleSheetResource = false;
                     // Special handling of @import-ed stylesheet files - recursive preprocessing:
@@ -249,7 +233,6 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
                         } else {
                             processedUrlString = "url('" + processedResourceDescriptor.resourceObjectURL + "')";
                         }
-                        console.log('Replacing in stylesheet text: [' + origMatchedUrlString + '] => [' + processedUrlString + ']');
                         //noinspection JSCheckFunctionSignatures
                         styleSheetResourceData =
                             styleSheetResourceData.replace(origMatchedUrlString, processedUrlString, 'g');
@@ -432,7 +415,6 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
         this.getRootFile = function(containerXmlDom) {
             var rootFile = $('rootfile', containerXmlDom);
             var packageFullPath = rootFile.attr('full-path');
-            console.log('packageFullPath: ' + packageFullPath);
             return packageFullPath;
         };
 
@@ -470,14 +452,11 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
                         _encryptionHash[cipherReferenceURI] = encryptionAlgorithm;
                     });
                 });
-                console.log('_encryptionHash:');
-                console.log(_encryptionHash);
                 if (_isExploded && isEncryptionSpecified) {
                     _isExploded = false;
                 }
                 encryptionInitializedCallback();
             }, function (error) {
-                console.log('Found no META-INF/encryption.xml:');
                 console.log(error.message);
                 console.log("Document doesn't make use of encryption.");
                 encryptionInitializedCallback();
@@ -515,7 +494,6 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
                     _packageDomInitializationSubscription = [callback];
                     self.getPackageFullPath(function (packageFullPath) {
                         _packageFullPath = packageFullPath;
-                        console.log('Have set _packageFullPath' + packageFullPath);
                         self.getXmlFileDom(packageFullPath, function (packageDom) {
                             _packageDom = packageDom;
                             _packageDomInitializationSubscription.forEach(function (subscriberCallback) {

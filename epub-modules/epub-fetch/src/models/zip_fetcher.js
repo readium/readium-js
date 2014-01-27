@@ -1,5 +1,4 @@
 define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], function (require, module, $, URI, ContentTypeDiscovery) {
-    console.log('zip_fetcher module id: ' + module.id);
 
     var ZipFetcher = function(parentFetcher, baseUrl, libDir) {
 
@@ -19,7 +18,6 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
 
             } else {
 
-                console.log('zip.workerScriptsPath = ' + libDir);
                 zip.workerScriptsPath = libDir;
                 _zipFs = new zip.fs.FS();
                 _zipFs.importHttpContent(baseUrl, true, function () {
@@ -74,7 +72,6 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
         this.fetchFileContentsBlob = function(relativePathRelativeToPackageRoot, fetchCallback, onerror) {
             var decryptionFunction = parentFetcher.getDecryptionFunctionForRelativePath(relativePathRelativeToPackageRoot);
             if (decryptionFunction) {
-                console.log('== decryption required for ' + relativePathRelativeToPackageRoot);
                 var origFetchCallback = fetchCallback;
                 fetchCallback = function (unencryptedBlob) {
                     decryptionFunction(unencryptedBlob, function (decryptedBlob) {

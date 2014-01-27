@@ -1,5 +1,4 @@
 define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], function (require, module, $, URI, ContentTypeDiscovery) {
-    console.log('plain_fetcher module id: ' + module.id);
 
     var PlainExplodedFetcher = function(parentFetcher, baseUrl){
 
@@ -10,9 +9,7 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
         // INTERNAL FUNCTIONS
 
         function fetchFileContents(pathRelativeToPackageRoot, readCallback, onerror) {
-            console.log('binary fetching ' + pathRelativeToPackageRoot);
             var fileUrl = self.resolveURI(pathRelativeToPackageRoot);
-            console.log(pathRelativeToPackageRoot + ' resolves to ' + fileUrl);
 
             if (typeof pathRelativeToPackageRoot === 'undefined') {
                 throw 'Fetched file relative path is undefined!';
@@ -34,7 +31,6 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
         // PUBLIC API
 
         this.initialize = function(callback) {
-            console.log('baseUrl: ' + baseUrl);
 
             parentFetcher.getXmlFileDom('META-INF/container.xml', function (containerXmlDom) {
                 _packageDocumentRelativePath = parentFetcher.getRootFile(containerXmlDom);
@@ -60,9 +56,7 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
         };
 
         this.fetchFileContentsText = function(pathRelativeToPackageRoot, fetchCallback, onerror) {
-            console.log('plain fetching ' + pathRelativeToPackageRoot);
             var fileUrl = self.resolveURI(pathRelativeToPackageRoot);
-            console.log(pathRelativeToPackageRoot + ' resolves to ' + fileUrl);
 
             if (typeof fileUrl === 'undefined') {
                 throw 'Fetched file URL is undefined!';
@@ -75,9 +69,9 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
                     fetchCallback(result);
                 },
                 error: function (xhr, status, errorThrown) {
-                    console.log('Error when AJAX fetching ' + fileUrl);
-                    console.log(status);
-                    console.log(errorThrown);
+                    console.error('Error when AJAX fetching ' + fileUrl);
+                    console.error(status);
+                    console.error(errorThrown);
                     onerror(errorThrown);
                 }
             });
@@ -87,7 +81,6 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
 
             var decryptionFunction = parentFetcher.getDecryptionFunctionForRelativePath(pathRelativeToPackageRoot);
             if (decryptionFunction) {
-                console.log('== decryption required for ' + pathRelativeToPackageRoot);
                 var origFetchCallback = fetchCallback;
                 fetchCallback = function (unencryptedBlob) {
                     decryptionFunction(unencryptedBlob, function (decryptedBlob) {
@@ -109,9 +102,6 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
         };
 
         this.getPackageDom = function (callback, onerror) {
-            console.log('getting package DOM');
-            console.log('_packageDocumentRelativePath: ' + _packageDocumentRelativePath);
-
             self.fetchFileContentsText(_packageDocumentRelativePath, function (packageXml) {
                 var packageDom = parentFetcher.markupParser.parseXml(packageXml);
                 callback(packageDom);
