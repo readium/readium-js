@@ -4,23 +4,23 @@ define([], function(){
 
         var basicIframeLoader = new ReadiumSDK.Views.IFrameLoader();
 
-        this.loadIframe = function(iframe, src, callback, context) {
+        this.loadIframe = function(iframe, src, callback, caller, attachedData) {
 
             if (getCurrentResourceFetcher().isPackageExploded()) {
-                basicIframeLoader.loadIframe(iframe, src, callback, context);
+                basicIframeLoader.loadIframe(iframe, src, callback, caller, attachedData);
             } else {
                 var basicLoadCallback = function(success) {
-                    var context = this;
-                    var itemHref = context.currentSpineItem.href;
+
+                    var itemHref = attachedData.spineItem.href;
                     getCurrentResourceFetcher().relativeToPackageFetchFileContents(itemHref, 'text', function(contentDocumentText) {
-                        var srcMediaType = context.currentSpineItem.media_type;
+                        var srcMediaType = attachedData.spineItem.media_type;
 
                         getCurrentResourceFetcher().resolveInternalPackageResources(itemHref, srcMediaType, contentDocumentText,
                             function (resolvedContentDocumentDom) {
                                 var contentDocument = iframe.contentDocument;
                                 contentDocument.replaceChild(resolvedContentDocumentDom.documentElement,
                                     contentDocument.documentElement);
-                                callback.call(context, success);
+                                callback.call(caller, success, attachedData);
                             });
                     }, function(err) {
                         if (err.message) {
@@ -28,7 +28,7 @@ define([], function(){
                         }
 
                         console.error(err);
-                        callback.call(context, success);
+                        callback.call(caller, success, attachedData);
                     });
                 };
                 // Feed an artificial empty HTML document to the IFRAME, then let the wrapper onload function
@@ -37,7 +37,7 @@ define([], function(){
                     new Blob(['<html><body></body></html>'], {'type': 'text/html'})
                 );
 
-                basicIframeLoader.loadIframe(iframe, emptyDocumentDataUri, basicLoadCallback, context);
+                basicIframeLoader.loadIframe(iframe, emptyDocumentDataUri, basicLoadCallback, caller, attachedData);
             }
         };
     };
