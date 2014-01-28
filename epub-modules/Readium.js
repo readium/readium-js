@@ -39,7 +39,7 @@ define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch',
                         self.reader.openBook(packageDocument.getPackageData())
 
                         var options = { packageDocumentUrl : _currentResourceFetcher.getPackageUrl()};
-                        callback(packageDocument, options);
+
                         if (callback){
                             // gives caller access to document metadata like the table of contents
                             callback(packageDocument, options);
