@@ -36,10 +36,14 @@ define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch',
                 _packageParser.parse(function(docJson){
                     SmilParser.fillSmilData(docJson, bookRoot, jsLibRoot, _currentResourceFetcher, function() {
                         var packageDocument = new PackageDocument(_currentResourceFetcher.getPackageUrl(), docJson, _currentResourceFetcher);
-                        self.reader.openBook(packageDocument.getPackageData())
+                        var openBookOptions = readiumOptions.openBookOptions || {};
+                        var openBookData = $.extend(packageDocument.getPackageData(), openBookOptions);
+                        self.reader.openBook(openBookData);
 
-                        var options = { packageDocumentUrl : _currentResourceFetcher.getPackageUrl()};
-                        callback(packageDocument, options);
+                        var options = { 
+                            packageDocumentUrl : _currentResourceFetcher.getPackageUrl(),
+                            metadata: docJson.metadata
+                        };
                         if (callback){
                             // gives caller access to document metadata like the table of contents
                             callback(packageDocument, options);
