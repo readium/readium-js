@@ -44,6 +44,7 @@ define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch',
                             packageDocumentUrl : _currentResourceFetcher.getPackageUrl(),
                             metadata: docJson.metadata
                         };
+
                         if (callback){
                             // gives caller access to document metadata like the table of contents
                             callback(packageDocument, options);

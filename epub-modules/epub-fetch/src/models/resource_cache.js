@@ -6,7 +6,8 @@ define(function () {
             var _resourcesHash = {};
 
             this.getResourceURL = function (resourceAbsoluteHref) {
-                return _resourcesHash[resourceAbsoluteHref];
+                var resourceObjectUrl = _resourcesHash[resourceAbsoluteHref];
+                return resourceObjectUrl;
             };
 
             this.putResourceURL = function (resourceAbsoluteHref, resourceObjectUrl) {

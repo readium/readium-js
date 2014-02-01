@@ -97,9 +97,10 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
                     // parse the spine into a proper collection
                     json.spine = parseSpineProperties(json.spine);
 
-                    _packageFetcher.setPackageJson(json);
-                    // return the parse result
-                    callback(json);
+                    _packageFetcher.setPackageJson(json, function () {
+                        // return the parse result
+                        callback(json)
+                    });
                 });
 
             });

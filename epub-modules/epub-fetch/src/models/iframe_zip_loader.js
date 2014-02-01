@@ -6,7 +6,7 @@ define([], function(){
 
         this.loadIframe = function(iframe, src, callback, caller, attachedData) {
 
-            if (getCurrentResourceFetcher().isPackageExploded()) {
+            if (getCurrentResourceFetcher().shouldFetchProgrammatically()) {
                 basicIframeLoader.loadIframe(iframe, src, callback, caller, attachedData);
             } else {
                 var basicLoadCallback = function(success) {
