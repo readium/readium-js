@@ -23,10 +23,51 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             var spinePackageData = [];
             var packageDocRoot = packageDocumentURL.substr(0, packageDocumentURL.lastIndexOf("/"));
 
-            _spine.each(function (spineItem) {
-                spinePackageData.push(generatePackageData(spineItem));
-            });
+            // TODO: how about moving this into SmilModel package?
+            var createFakeSmilObject = function(idref, textref) { 
+                return {
+                    id: '',
+                    href: '',
+                    children: [{
+                        nodeType: 'seq',
+                        textref: textref,
+                        children: [{
+                            nodeType: 'par',
+                            children: [{
+                                nodeType: 'text',
+                                src: textref,
+                                srcFile: textref
+                            }]
+                        }]
+                    }],
+                    spineItemId: idref
+                };
+            };
             
+            var mappedSpineItemsHash = {};
+            _.each(_moMap, function(item) {
+                mappedSpineItemsHash[item.spineItemId] = item;
+            });
+
+            var adjustedMoMap = [];
+            _spine.each(function (spineItem) {
+                var spineItemPackageData = generatePackageData(spineItem);
+                if (_moMap.length) { 
+                    // if at least one media object is present, 
+                    // fake smils are attached to medialess spine items
+                    var idref = spineItemPackageData.idref;
+                    if (idref in mappedSpineItemsHash) {
+                        adjustedMoMap.push(mappedSpineItemsHash[idref]);
+                    }
+                    else {
+                        adjustedMoMap.push(createFakeSmilObject(
+                                idref, spineItemPackageData.href));
+                    }
+                }
+                spinePackageData.push(spineItemPackageData);
+            });
+            _moMap = adjustedMoMap;
+
             // This is where the package data format thing is generated
             return {
                 rootUrl : packageDocRoot,
