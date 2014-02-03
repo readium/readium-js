@@ -217,7 +217,7 @@ define([ 'require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch' ]
                     allFakeSmil = false;
                     docJson.mo_map.push(smilJson);
                     
-                    processSpineItem(ii+1);
+                    setTimeout(function(){ processSpineItem(ii+1); }, 0);
                     return;
                 });
             }
@@ -241,7 +241,7 @@ define([ 'require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch' ]
                     }]
                 });
                 
-                processSpineItem(ii+1);
+                setTimeout(function(){ processSpineItem(ii+1); }, 0);
                 return;
             }
         };
