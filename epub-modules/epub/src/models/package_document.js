@@ -51,6 +51,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
                  skippables: [],
                  escapables: []
            };
+
            return result;
         }
         

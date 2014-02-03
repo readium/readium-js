@@ -173,7 +173,6 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
             var $metadata = $("metadata", xmlDom);
             var jsonMetadata = {};
 
-            jsonMetadata.active_class = $("meta[property='media:active-class']", $metadata).text();
             jsonMetadata.author = $("creator", $metadata).text();
             jsonMetadata.description = $("description", $metadata).text();
             jsonMetadata.epub_version =
@@ -207,8 +206,8 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
                
             jsonMetadata.mediaDuration =  resolveClockValue($("meta[property='media:duration']:not([refines])", $metadata).text());
             jsonMetadata.mediaNarrator =  $("meta[property='media:narrator']", $metadata).text();
-            jsonMetadata.mediaActiveClass =   $("meta[property='active-class']", $metadata).text();
-            jsonMetadata.mediaPlaybackActiveClass =   $("meta[property='playback-active-class']", $metadata).text();
+            jsonMetadata.mediaActiveClass =   $("meta[property='media:active-class']", $metadata).text();
+            jsonMetadata.mediaPlaybackActiveClass =   $("meta[property='media:playback-active-class']", $metadata).text();
             
             return jsonMetadata;
         }
