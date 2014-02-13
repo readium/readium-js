@@ -26,6 +26,10 @@ define([ 'require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch' ]
             var propParse = property.split(':');
             var destProperty = propParse[propParse.length - 1];
 
+            if (destProperty === "type") {
+                destProperty = "epubtype";
+            }
+            
             if ($fromNode.getAttribute(property) != undefined) {
                 toItem[destProperty] = $fromNode.getAttribute(property);
             } else if (isRequired) {
@@ -35,7 +39,6 @@ define([ 'require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch' ]
                     console.error("Required property " + property + " not found in smil node " + $fromNode.nodeName);
                 }
             }
-
         };
 
 // TODO: duplicate in package_document_parser.js
@@ -105,7 +108,7 @@ define([ 'require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch' ]
             } else if (item.nodeType === "par") {
 
                 safeCopyProperty("id", $element, item);
-                safeCopyProperty("epub:epubtype", $element, item);
+                safeCopyProperty("epub:type", $element, item);
 
                 item.children = getChildren($element);
 
