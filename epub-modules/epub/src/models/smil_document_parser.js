@@ -13,10 +13,11 @@ define([ 'require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch' ]
 
                 json = {};
 
-                json.smilVersion = $("smil", xmlDom)[0].getAttribute('version');
+                var smil = $("smil", xmlDom)[0];
+                json.smilVersion = smil.getAttribute('version');
 
-                var $body = $("body", xmlDom)[0];
-                json.children = getChildren($body);
+                //var body = $("body", xmlDom)[0];
+                json.children = getChildren(smil);
 
                 callback(json);
             })
@@ -77,55 +78,63 @@ define([ 'require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch' ]
             return total;
         }
 
-        function getChildren($element) {
+        function getChildren(element) {
             var children = [];
 
-            var $smilElements = $element.childNodes;
+            $.each(element.childNodes, function(elementIndex, currElement) {
 
-            $.each($smilElements, function(elementIndex, currElement) {
-                var $currElement = $(currElement)[0];
-                if ($currElement.nodeType === 1){
-                    var item = createItemFromElement($currElement);
-                    children.push(item);
+                if (currElement.nodeType === 1) { // ELEMENT
+                    var item = createItemFromElement(currElement);
+                    if (item) {
+                        children.push(item);
+                    }
                 }
             });
 
             return children;
         }
 
-        function createItemFromElement($element) {
+        function createItemFromElement(element) {
             var item = {};
-            item.nodeType = $element.nodeName;
+            item.nodeType = element.nodeName;
+            if (item.nodeType === "body")
+            {
+                item.nodeType = "seq";
+            }
 
             if (item.nodeType === "seq") {
 
-                safeCopyProperty("epub:textref", $element, item, true);
-                safeCopyProperty("id", $element, item);
-                safeCopyProperty("epub:type", $element, item);
+                safeCopyProperty("epub:textref", element, item, true);
+                safeCopyProperty("id", element, item);
+                safeCopyProperty("epub:type", element, item);
 
-                item.children = getChildren($element);
+                item.children = getChildren(element);
 
             } else if (item.nodeType === "par") {
 
-                safeCopyProperty("id", $element, item);
-                safeCopyProperty("epub:type", $element, item);
+                safeCopyProperty("id", element, item);
+                safeCopyProperty("epub:type", element, item);
 
-                item.children = getChildren($element);
+                item.children = getChildren(element);
 
             } else if (item.nodeType === "text") {
 
-                safeCopyProperty("src", $element, item, true);
+                safeCopyProperty("src", element, item, true);
                 var srcParts = item.src.split('#');
                 item.srcFile = srcParts[0];
                 item.srcFragmentId = (srcParts.length === 2) ? srcParts[1] : "";
-                safeCopyProperty("id", $element, item);
-                // safeCopyProperty("epub:textref", $element, item);
+                safeCopyProperty("id", element, item);
+                // safeCopyProperty("epub:textref", element, item);
 
             } else if (item.nodeType === "audio") {
-                safeCopyProperty("src", $element, item, true);
-                safeCopyProperty("id", $element, item);
-                item.clipBegin = resolveClockValue($element.getAttribute("clipBegin"));
-                item.clipEnd = resolveClockValue($element.getAttribute("clipEnd"));
+                safeCopyProperty("src", element, item, true);
+                safeCopyProperty("id", element, item);
+                item.clipBegin = resolveClockValue(element.getAttribute("clipBegin"));
+                item.clipEnd = resolveClockValue(element.getAttribute("clipEnd"));
+            }
+            else
+            {
+                return undefined;
             }
 
             return item;
