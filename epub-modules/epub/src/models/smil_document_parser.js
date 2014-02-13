@@ -23,7 +23,7 @@ define([ 'require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch' ]
             })
         };
 
-        var safeCopyProperty = function(property, $fromNode, toItem, isRequired, defaultValue) {
+        var safeCopyProperty = function(property, fromNode, toItem, isRequired, defaultValue) {
             var propParse = property.split(':');
             var destProperty = propParse[propParse.length - 1];
 
@@ -31,13 +31,13 @@ define([ 'require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch' ]
                 destProperty = "epubtype";
             }
             
-            if ($fromNode.getAttribute(property) != undefined) {
-                toItem[destProperty] = $fromNode.getAttribute(property);
+            if (fromNode.getAttribute(property) != undefined) {
+                toItem[destProperty] = fromNode.getAttribute(property);
             } else if (isRequired) {
                 if (defaultValue !== undefined) {
                     toItem[destProperty] = defaultValue;
                 } else {
-                    console.error("Required property " + property + " not found in smil node " + $fromNode.nodeName);
+                    console.log("Required property " + property + " not found in smil node " + fromNode.nodeName);
                 }
             }
         };
