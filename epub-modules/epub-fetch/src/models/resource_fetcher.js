@@ -233,9 +233,12 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
                         } else {
                             processedUrlString = "url('" + processedResourceDescriptor.resourceObjectURL + "')";
                         }
+                        var origMatchedUrlStringEscaped = origMatchedUrlString.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+                        var origMatchedUrlStringRegExp = new RegExp(origMatchedUrlStringEscaped, 'g');
                         //noinspection JSCheckFunctionSignatures
                         styleSheetResourceData =
-                            styleSheetResourceData.replace(origMatchedUrlString, processedUrlString, 'g');
+                            styleSheetResourceData.replace(origMatchedUrlStringRegExp, processedUrlString, 'g');
+
                     }
                     callback(styleSheetResourceData);
                 });
