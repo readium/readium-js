@@ -3,7 +3,8 @@ var requirejs = {
 
     paths: {
 
-        jquery: 'lib/jquery-1.9.1',
+        console_shim: 'lib/console_shim',
+        jquery: 'lib/jquery-1.11.0',
         underscore: 'lib/underscore-1.4.4',
         backbone: 'lib/backbone-0.9.10',
         bootstrap: 'lib/bootstrap.min',
@@ -71,6 +72,10 @@ var requirejs = {
 
 
     shim: {
+        console_shim: {
+            exports: 'console_shim'
+        },
+
         underscore: {
             exports: '_'
         },
