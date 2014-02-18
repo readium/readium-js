@@ -3,7 +3,8 @@ var requirejs = {
 
     paths: {
 
-        jquery: 'lib/jquery-1.9.1',
+        console_shim: 'lib/console_shim',
+        jquery: 'lib/jquery-1.11.0',
         underscore: 'lib/underscore-1.4.4',
         backbone: 'lib/backbone-0.9.10',
         bootstrap: 'lib/bootstrap.min',
@@ -28,6 +29,7 @@ var requirejs = {
         smilIterator: 'epub-modules/epub-renderer/src/readium-shared-js/js/models/smil_iterator',
         epubCfi: 'epub-modules/epub-renderer/src/readium-shared-js/lib/epub_cfi',
         cfiNavigationLogic: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/cfi_navigation_logic',
+        cfiNavigationLogicReflowable: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/cfi_navigation_logic_reflowable_view',
         reflowableView: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/reflowable_view',
         scrollView: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/scroll_view',
         onePageView: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/one_page_view',
@@ -71,6 +73,10 @@ var requirejs = {
 
 
     shim: {
+        console_shim: {
+            exports: 'console_shim'
+        },
+
         underscore: {
             exports: '_'
         },
@@ -159,6 +165,11 @@ var requirejs = {
             exports:'cfiNavigationLogic'
         },
 
+        cfiNavigationLogicReflowable: {
+            deps: ['readiumSDK', 'epubCfi'],
+            exports:'cfiNavigationLogicReflowable'
+        },
+
         epubCFI: {
             deps: ['jquery'],
             exports: ['epubCFI']
@@ -200,7 +211,7 @@ var requirejs = {
         },
 
         reflowableView: {
-            deps: ['readiumSDK', 'cfiNavigationLogic', 'bookmarkData', 'triggers'],
+            deps: ['readiumSDK', 'cfiNavigationLogicReflowable', 'bookmarkData', 'triggers'],
             exports: 'reflowableView'
         },
 

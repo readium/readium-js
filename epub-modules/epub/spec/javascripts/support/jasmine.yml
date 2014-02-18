@@ -12,7 +12,7 @@
 #
 src_files:
     - spec/javascripts/test_namespace.js
-    - lib/jquery-1.9.1.js
+    - lib/jquery-1.11.0.js
     - lib/json2.js # Not entirely sure this is a dependency
     - lib/underscore-1.4.4.js # This is a backbone dependency
     - lib/backbone-0.9.10.js
