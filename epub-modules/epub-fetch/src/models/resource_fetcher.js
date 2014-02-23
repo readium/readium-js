@@ -21,7 +21,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
         var _dataFetcher;
         var _packageFullPath;
         var _packageDom;
-        var _packageDomInitializationSubscription;
+        var _packageDomInitializationDeferred;
         var _encryptionDom;
         var _encryptionHash;
         var _packageJson;
@@ -491,18 +491,17 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
                 // TODO: use jQuery's Deferred
                 // Register all callbacks interested in initialized packageDom, launch its instantiation only once
                 // and broadcast to all callbacks registered during the initialization once it's done:
-                if (_packageDomInitializationSubscription) {
-                    _packageDomInitializationSubscription.push(callback);
+                if (_packageDomInitializationDeferred) {
+                    _packageDomInitializationDeferred.done(callback);
                 } else {
-                    _packageDomInitializationSubscription = [callback];
+                    _packageDomInitializationDeferred = $.Deferred();
+                    _packageDomInitializationDeferred.done(callback);
                     self.getPackageFullPath(function (packageFullPath) {
                         _packageFullPath = packageFullPath;
                         self.getXmlFileDom(packageFullPath, function (packageDom) {
                             _packageDom = packageDom;
-                            _packageDomInitializationSubscription.forEach(function (subscriberCallback) {
-                                subscriberCallback(packageDom);
-                            });
-                            _packageDomInitializationSubscription = undefined;
+                            _packageDomInitializationDeferred.resolve(packageDom);
+                            _packageDomInitializationDeferred = undefined;
                         })
                     }, onerror);
                 }
