@@ -14,24 +14,10 @@ define([], function(){
                 basicIframeLoader.loadIframe(iframe, src, callback, caller, attachedData);
             } else {
                 var basicLoadCallback = function(success) {
-
-                    var itemHref = attachedData.spineItem.href;
-                    getCurrentResourceFetcher().relativeToPackageFetchFileContents(itemHref, 'text', function(contentDocumentText) {
-                        var srcMediaType = attachedData.spineItem.media_type;
-
-                        getCurrentResourceFetcher().resolveInternalPackageResources(itemHref, srcMediaType, contentDocumentText,
-                            function (resolvedContentDocumentDom) {
-                                var contentDocument = iframe.contentDocument;
-                                contentDocument.replaceChild(resolvedContentDocumentDom.documentElement,
-                                    contentDocument.documentElement);
-                                callback.call(caller, success, attachedData);
-                            });
-                    }, function(err) {
-                        if (err.message) {
-                            console.error(err.message);
-                        }
-
-                        console.error(err);
+                    getCurrentResourceFetcher().fetchContentDocument(attachedData, function(resolvedContentDocumentDom){
+                        var contentDocument = iframe.contentDocument;
+                        contentDocument.replaceChild(resolvedContentDocumentDom.documentElement,
+                            contentDocument.documentElement);
                         callback.call(caller, success, attachedData);
                     });
                 };

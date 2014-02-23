@@ -392,6 +392,22 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
             return _dataFetcher.getPackageUrl();
         };
 
+        this.fetchContentDocument = function (attachedData, contentDocumentResolvedCallback) {
+            var itemHref = attachedData.spineItem.href;
+            self.relativeToPackageFetchFileContents(itemHref, 'text',
+                function (contentDocumentText) {
+                    var srcMediaType = attachedData.spineItem.media_type;
+
+                    self.resolveInternalPackageResources(itemHref, srcMediaType, contentDocumentText,
+                        function (resolvedContentDocumentDom) {
+                            contentDocumentResolvedCallback(resolvedContentDocumentDom);
+                        });
+                }, function (err) {
+                    _handleError(err);
+                    callback.call(caller, success, attachedData);
+                });
+        };
+
         this.getFileContentsFromPackage = function(filePathRelativeToPackageRoot, callback, onerror) {
 
             _dataFetcher.fetchFileContentsText(filePathRelativeToPackageRoot, function (fileContents) {
