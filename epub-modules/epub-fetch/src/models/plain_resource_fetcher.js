@@ -96,11 +96,6 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
             }, onerror);
         };
 
-        this.relativeToPackageFetchFileContents = function (pathRelativeToPackageRoot, fetchMode, fetchCallback, onerror) {
-            // TODO: implement other (binary) fetch modes
-            self.fetchFileContentsText(pathRelativeToPackageRoot, fetchCallback, onerror);
-        };
-
         this.getPackageDom = function (callback, onerror) {
             self.fetchFileContentsText(_packageDocumentRelativePath, function (packageXml) {
                 var packageDom = parentFetcher.markupParser.parseXml(packageXml);
