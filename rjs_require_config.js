@@ -50,7 +50,7 @@ var requirejs = {
         {
             name: 'epub-fetch',
             location: 'epub-modules/epub-fetch/src/models',
-            main: 'resource_fetcher'
+            main: 'publication_fetcher'
         },
 
         {
