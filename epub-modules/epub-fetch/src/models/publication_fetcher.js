@@ -1,6 +1,6 @@
-define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_content_type', './plain_fetcher',
-    './zip_fetcher', './resource_cache'],
-    function (require, module, $, URI, MarkupParser, ContentTypeDiscovery, PlainExplodedFetcher, ZipFetcher,
+define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_content_type', './plain_resource_fetcher',
+    './zip_resource_fetcher', './resource_cache'],
+    function (require, module, $, URI, MarkupParser, ContentTypeDiscovery, PlainResourceFetcher, ZipResourceFetcher,
               ResourceCache) {
 
     var ResourceFetcher = function(rootUrl, libDir) {
@@ -21,7 +21,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
         var _dataFetcher;
         var _packageFullPath;
         var _packageDom;
-        var _packageDomInitializationSubscription;
+        var _packageDomInitializationDeferred;
         var _encryptionDom;
         var _encryptionHash;
         var _packageJson;
@@ -59,15 +59,15 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
 
         function createDataFetcher(isExploded, callback) {
             if (isExploded) {
-                console.log('using new PlainExplodedFetcher');
-                _dataFetcher = new PlainExplodedFetcher(self, rootUrl);
+                console.log('using new PlainResourceFetcher');
+                _dataFetcher = new PlainResourceFetcher(self, rootUrl);
                 _dataFetcher.initialize(function () {
                     callback(_dataFetcher);
                 });
                 return;
             } else {
-                console.log('using new ZipFetcher');
-                _dataFetcher = new ZipFetcher(self, rootUrl, libDir);
+                console.log('using new ZipResourceFetcher');
+                _dataFetcher = new ZipResourceFetcher(self, rootUrl, libDir);
                 callback(_dataFetcher);
             }
         }
@@ -491,18 +491,17 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './discover_c
                 // TODO: use jQuery's Deferred
                 // Register all callbacks interested in initialized packageDom, launch its instantiation only once
                 // and broadcast to all callbacks registered during the initialization once it's done:
-                if (_packageDomInitializationSubscription) {
-                    _packageDomInitializationSubscription.push(callback);
+                if (_packageDomInitializationDeferred) {
+                    _packageDomInitializationDeferred.done(callback);
                 } else {
-                    _packageDomInitializationSubscription = [callback];
+                    _packageDomInitializationDeferred = $.Deferred();
+                    _packageDomInitializationDeferred.done(callback);
                     self.getPackageFullPath(function (packageFullPath) {
                         _packageFullPath = packageFullPath;
                         self.getXmlFileDom(packageFullPath, function (packageDom) {
                             _packageDom = packageDom;
-                            _packageDomInitializationSubscription.forEach(function (subscriberCallback) {
-                                subscriberCallback(packageDom);
-                            });
-                            _packageDomInitializationSubscription = undefined;
+                            _packageDomInitializationDeferred.resolve(packageDom);
+                            _packageDomInitializationDeferred = undefined;
                         })
                     }, onerror);
                 }
