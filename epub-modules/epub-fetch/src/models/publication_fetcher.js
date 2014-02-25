@@ -14,7 +14,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
         };
 
         var _shouldFetchProgrammatically;
-        var _dataFetcher;
+        var _resourceFetcher;
         var _encryptionHandler;
         var _packageFullPath;
         var _packageDom;
@@ -28,7 +28,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
 
             // Non exploded EPUBs (i.e. zipped .epub documents) should be fetched in a programmatical manner:
             _shouldFetchProgrammatically = !isEpubExploded;
-            createDataFetcher(isEpubExploded, callback);
+            createResourceFetcher(isEpubExploded, callback);
         };
 
 
@@ -53,18 +53,18 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
             return rootUrl.indexOf(ext, rootUrl.length - ext.length) === -1;
         }
 
-        function createDataFetcher(isExploded, callback) {
+        function createResourceFetcher(isExploded, callback) {
             if (isExploded) {
                 console.log('using new PlainResourceFetcher');
-                _dataFetcher = new PlainResourceFetcher(self, rootUrl);
-                _dataFetcher.initialize(function () {
-                    callback(_dataFetcher);
+                _resourceFetcher = new PlainResourceFetcher(self, rootUrl);
+                _resourceFetcher.initialize(function () {
+                    callback(_resourceFetcher);
                 });
                 return;
             } else {
                 console.log('using new ZipResourceFetcher');
-                _dataFetcher = new ZipResourceFetcher(self, rootUrl, libDir);
-                callback(_dataFetcher);
+                _resourceFetcher = new ZipResourceFetcher(self, rootUrl, libDir);
+                callback(_resourceFetcher);
             }
         }
 
@@ -84,7 +84,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
         };
 
         this.getPackageUrl = function() {
-            return _dataFetcher.getPackageUrl();
+            return _resourceFetcher.getPackageUrl();
         };
 
         this.fetchContentDocument = function (attachedData, contentDocumentResolvedCallback, errorCallback) {
@@ -98,7 +98,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
 
         this.getFileContentsFromPackage = function(filePathRelativeToPackageRoot, callback, onerror) {
 
-            _dataFetcher.fetchFileContentsText(filePathRelativeToPackageRoot, function (fileContents) {
+            _resourceFetcher.fetchFileContentsText(filePathRelativeToPackageRoot, function (fileContents) {
                 callback(fileContents);
             }, onerror);
         };
@@ -160,13 +160,13 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
             }
 
             var pathRelativeToZipRoot = decodeURIComponent(self.convertPathRelativeToPackageToRelativeToBase(relativeToPackagePath));
-            var fetchFunction = _dataFetcher.fetchFileContentsText;
+            var fetchFunction = _resourceFetcher.fetchFileContentsText;
             if (fetchMode === 'blob') {
-                fetchFunction = _dataFetcher.fetchFileContentsBlob;
+                fetchFunction = _resourceFetcher.fetchFileContentsBlob;
             } else if (fetchMode === 'data64uri') {
-                fetchFunction = _dataFetcher.fetchFileContentsData64Uri;
+                fetchFunction = _resourceFetcher.fetchFileContentsData64Uri;
             }
-            fetchFunction.call(_dataFetcher, pathRelativeToZipRoot, fetchCallback, onerror);
+            fetchFunction.call(_resourceFetcher, pathRelativeToZipRoot, fetchCallback, onerror);
         };
 
 
@@ -175,7 +175,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
             self.getXmlFileDom(self.convertPathRelativeToPackageToRelativeToBase(filePath), callback, errorCallback);
         };
 //        this.getPackageDom = function (callback, onerror) {
-//            return _dataFetcher.getPackageDom(callback, onerror);
+//            return _resourceFetcher.getPackageDom(callback, onerror);
 //        };
 
         // Currently needed for deobfuscating fonts
