@@ -113,10 +113,9 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
             //if layout not set
             if(!metadata.layout)
             {
-                var absoluteRoot = new URI(bookRoot + "/META-INF/com.apple.ibooks.display-options.xml").absoluteTo(document.URL);
+                var pathToIBooksSpecificXml = new URI("/META-INF/com.apple.ibooks.display-options.xml");
 
-                packageFetcher.relativeToPackageFetchFileContents(absoluteRoot, 'text', function (ibookPropText) {
-
+                packageFetcher.relativeToPackageFetchFileContents(pathToIBooksSpecificXml, 'text', function (ibookPropText) {
                     if(ibookPropText) {
                         var parser = new MarkupParser();
                         var propModel = parser.parseXml(ibookPropText);

@@ -50,7 +50,7 @@ var requirejs = {
         {
             name: 'epub-fetch',
             location: 'epub-modules/epub-fetch/src/models',
-            main: 'resource_fetcher'
+            main: 'publication_fetcher'
         },
 
         {
@@ -232,7 +232,7 @@ var requirejs = {
         readerView : {
             deps: [ 'backbone','readiumSDK', 'helpers', 'viewerSettings', 'styleCollection', 'package',
                 'mediaOverlayPlayer', 'pageOpenRequest', 'fixedView', 'reflowableView', 'mediaOvelayDataInjector',
-                'internalLinksSupport', 'iframeLoader', 'annotationsManager', 'scrollView'],
+                'internalLinksSupport', 'iframeLoader', 'annotationsManager', 'scrollView', 'URIjs'],
             exports:'readerView'
         },
 

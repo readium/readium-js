@@ -4,6 +4,9 @@ define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch',
 
     console.log('Readium module id: ' + module.id);
 
+    //hack to make URI object global for readers consumption.
+    window.URI = URI;
+
     var Readium = function(readiumOptions, readerOptions){
 
         var self = this;
@@ -18,8 +21,6 @@ define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch',
         readerOptions.iframeLoader = _iframeZipLoader;
 
         this.reader = new ReadiumSDK.Views.ReaderView(readerOptions);
-
-        ReadiumSDK.trigger(ReadiumSDK.Events.READER_INITIALIZED, this.reader);
 
         var _gesturesHandler = new GesturesHandler(this.reader,renderingViewport);
         _gesturesHandler.initialize();
@@ -52,7 +53,9 @@ define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch',
                     })
                 });
             });
-       }
+        }
+
+        ReadiumSDK.trigger(ReadiumSDK.Events.READER_INITIALIZED, this.reader);
     };
 
 

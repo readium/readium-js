@@ -1,6 +1,6 @@
 define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], function (require, module, $, URI, ContentTypeDiscovery) {
 
-    var PlainExplodedFetcher = function(parentFetcher, baseUrl){
+    var PlainResourceFetcher = function(parentFetcher, baseUrl){
 
         var self = this;
         var _packageDocumentAbsoluteUrl;
@@ -110,5 +110,5 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
 
     };
 
-    return PlainExplodedFetcher;
+    return PlainResourceFetcher;
 });
