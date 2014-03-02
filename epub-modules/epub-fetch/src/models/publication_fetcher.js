@@ -1,7 +1,7 @@
 define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip_resource_fetcher',
-    './content_document_fetcher', './encryption_handler'],
+    './content_document_fetcher', './resource_cache', './encryption_handler'],
     function (require, module, $, URI, MarkupParser, PlainResourceFetcher, ZipResourceFetcher, ContentDocumentFetcher,
-              EncryptionHandler) {
+              ResourceCache, EncryptionHandler) {
 
     var PublicationFetcher = function(rootUrl, libDir) {
 
@@ -19,6 +19,8 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
         var _packageFullPath;
         var _packageDom;
         var _packageDomInitializationDeferred;
+        var _publicationResourcesCache = new ResourceCache;
+
 
         this.markupParser = new MarkupParser();
 
@@ -89,7 +91,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
 
         this.fetchContentDocument = function (attachedData, contentDocumentResolvedCallback, errorCallback) {
 
-            var contentDocumentFetcher = new ContentDocumentFetcher(attachedData.spineItem, self);
+            var contentDocumentFetcher = new ContentDocumentFetcher(self, attachedData.spineItem, _publicationResourcesCache);
             contentDocumentFetcher.fetchContentDocumentAndResolveDom(contentDocumentResolvedCallback, function (err) {
                 _handleError(err);
                 errorCallback(err);
@@ -174,9 +176,6 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
         this.getRelativeXmlFileDom = function (filePath, callback, errorCallback) {
             self.getXmlFileDom(self.convertPathRelativeToPackageToRelativeToBase(filePath), callback, errorCallback);
         };
-//        this.getPackageDom = function (callback, onerror) {
-//            return _resourceFetcher.getPackageDom(callback, onerror);
-//        };
 
         // Currently needed for deobfuscating fonts
         this.setPackageJson = function(packageJson, settingFinishedCallback) {

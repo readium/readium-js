@@ -1,9 +1,9 @@
 define(
-    ['require', 'module', 'jquery', 'URIjs', './discover_content_type', './resource_cache'],
-    function (require, module, $, URI, ContentTypeDiscovery, ResourceCache) {
+    ['require', 'module', 'jquery', 'URIjs', './discover_content_type'],
+    function (require, module, $, URI, ContentTypeDiscovery) {
 
 
-        var ContentDocumentFetcher = function (spineItem, publicationFetcher) {
+        var ContentDocumentFetcher = function (publicationFetcher, spineItem, publicationResourcesCache) {
 
             var self = this;
 
@@ -12,7 +12,7 @@ define(
             var _contentDocumentText;
             var _srcMediaType = spineItem.media_type;
             var _contentDocumentDom;
-            var _documentResourcesCache = new ResourceCache;
+            var _publicationResourcesCache = publicationResourcesCache;
 
             // PUBLIC API
 
@@ -59,7 +59,7 @@ define(
                                              onerror, resourceDataPreprocessing) {
                 var resourceUriRelativeToPackageDocument = (new URI(refAttrOrigVal)).absoluteTo(_contentDocumentPathRelativeToPackage).toString();
 
-                var cachedResourceUrl = _documentResourcesCache.getResourceURL(resourceUriRelativeToPackageDocument);
+                var cachedResourceUrl = _publicationResourcesCache.getResourceURL(resourceUriRelativeToPackageDocument);
 
                 function replaceRefAttrInElem(newResourceUrl) {
                     // Store original refAttrVal in a special attribute to provide access to the original href:
@@ -92,7 +92,7 @@ define(
                                 }
                                 //noinspection JSUnresolvedVariable,JSUnresolvedFunction
                                 var resourceObjectURL = window.URL.createObjectURL(finalResourceData);
-                                _documentResourcesCache.putResourceURL(resourceUriRelativeToPackageDocument,
+                                _publicationResourcesCache.putResourceURL(resourceUriRelativeToPackageDocument,
                                     resourceObjectURL);
                                 // TODO: take care of releasing object URLs when no longer needed
                                 replaceRefAttrInElem(resourceObjectURL);
@@ -122,7 +122,7 @@ define(
                 }
                 var resourceUriRelativeToPackageDocument = (new URI(extractedUrl)).absoluteTo(styleSheetUriRelativeToPackageDocument).toString();
 
-                var cachedResourceURL = _documentResourcesCache.getResourceURL(resourceUriRelativeToPackageDocument);
+                var cachedResourceURL = _publicationResourcesCache.getResourceURL(resourceUriRelativeToPackageDocument);
 
 
                 if (cachedResourceURL) {
@@ -141,7 +141,7 @@ define(
                             isStyleSheetResource: isStyleSheetResource,
                             resourceObjectURL: resourceObjectURL
                         };
-                        _documentResourcesCache.putResourceURL(resourceUriRelativeToPackageDocument, resourceObjectURL);
+                        _publicationResourcesCache.putResourceURL(resourceUriRelativeToPackageDocument, resourceObjectURL);
                         cssUrlFetchDeferred.resolve();
                     };
                     var fetchErrorCallback = function (error) {
