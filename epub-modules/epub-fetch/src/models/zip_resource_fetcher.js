@@ -1,6 +1,6 @@
 define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], function (require, module, $, URI, ContentTypeDiscovery) {
 
-    var ZipFetcher = function(parentFetcher, baseUrl, libDir) {
+    var ZipResourceFetcher = function(parentFetcher, baseUrl, libDir) {
 
         var _checkCrc32 = false;
         var _zipFs;
@@ -87,5 +87,5 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
 
     };
 
-    return ZipFetcher;
+    return ZipResourceFetcher;
 });

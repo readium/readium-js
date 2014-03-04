@@ -1,6 +1,6 @@
 define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], function (require, module, $, URI, ContentTypeDiscovery) {
 
-    var PlainExplodedFetcher = function(parentFetcher, baseUrl){
+    var PlainResourceFetcher = function(parentFetcher, baseUrl){
 
         var self = this;
         var _packageDocumentAbsoluteUrl;
@@ -96,11 +96,6 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
             }, onerror);
         };
 
-        this.relativeToPackageFetchFileContents = function (pathRelativeToPackageRoot, fetchMode, fetchCallback, onerror) {
-            // TODO: implement other (binary) fetch modes
-            self.fetchFileContentsText(pathRelativeToPackageRoot, fetchCallback, onerror);
-        };
-
         this.getPackageDom = function (callback, onerror) {
             self.fetchFileContentsText(_packageDocumentRelativePath, function (packageXml) {
                 var packageDom = parentFetcher.markupParser.parseXml(packageXml);
@@ -110,5 +105,5 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
 
     };
 
-    return PlainExplodedFetcher;
+    return PlainResourceFetcher;
 });
