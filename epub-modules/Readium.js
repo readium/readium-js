@@ -26,7 +26,7 @@ define(['require', 'module', 'console_shim', 'jquery', 'underscore', 'readerView
         _gesturesHandler.initialize();
 
 
-        this.openPackageDocument = function(bookRoot, callback)  {
+        this.openPackageDocument = function(bookRoot, callback, openPageRequest)  {
 
             _currentResourceFetcher = new ResourceFetcher(bookRoot, jsLibRoot);
 
@@ -39,6 +39,9 @@ define(['require', 'module', 'console_shim', 'jquery', 'underscore', 'readerView
                         var packageDocument = new PackageDocument(_currentResourceFetcher.getPackageUrl(), docJson, _currentResourceFetcher);
                         var openBookOptions = readiumOptions.openBookOptions || {};
                         var openBookData = $.extend(packageDocument.getPackageData(), openBookOptions);
+                        if (openPageRequest) {
+                            openBookData.openPageRequest = openPageRequest;
+                        }
                         self.reader.openBook(openBookData);
 
                         var options = { 
