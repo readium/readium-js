@@ -1,6 +1,6 @@
 
-define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch', 'emub-model/package_document_parser', 'emub-model/package_document', 'epub-fetch/iframe_zip_loader', 'emub-model/smil_document_parser', 'URIjs', 'epub-ui/gestures'],
-    function (require, module, $, _, readerView, ResourceFetcher, PackageParser, PackageDocument, IframeZipLoader, SmilParser, URI, GesturesHandler) {
+define(['require', 'module', 'console_shim', 'jquery', 'underscore', 'readerView', 'epub-fetch', 'emub-model/package_document_parser', 'emub-model/package_document', 'epub-fetch/iframe_zip_loader', 'emub-model/smil_document_parser', 'URIjs', 'epub-ui/gestures'],
+    function (require, module, console_shim, $, _, readerView, ResourceFetcher, PackageParser, PackageDocument, IframeZipLoader, SmilParser, URI, GesturesHandler) {
 
     console.log('Readium module id: ' + module.id);
 
