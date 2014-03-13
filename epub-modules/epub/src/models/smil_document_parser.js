@@ -97,14 +97,17 @@ define([ 'require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch' ]
         function createItemFromElement(element) {
             var item = {};
             item.nodeType = element.nodeName;
+            
+            var isBody = false;
             if (item.nodeType === "body")
             {
+                isBody = true;
                 item.nodeType = "seq";
             }
 
             if (item.nodeType === "seq") {
 
-                safeCopyProperty("epub:textref", element, item, true);
+                safeCopyProperty("epub:textref", element, item, !isBody);
                 safeCopyProperty("id", element, item);
                 safeCopyProperty("epub:type", element, item);
 
