@@ -16,6 +16,7 @@ var requirejs = {
         style: 'epub-modules/epub-renderer/src/readium-shared-js/js/models/style',
         styleCollection: 'epub-modules/epub-renderer/src/readium-shared-js/js/models/style_collection',
         triggers: 'epub-modules/epub-renderer/src/readium-shared-js/js/models/trigger',
+        switches: 'epub-modules/epub-renderer/src/readium-shared-js/js/models/switches',
         smilModel: 'epub-modules/epub-renderer/src/readium-shared-js/js/models/smil_model',
         mediaOverlay: 'epub-modules/epub-renderer/src/readium-shared-js/js/models/media_overlay',
         viewerSettings: 'epub-modules/epub-renderer/src/readium-shared-js/js/models/viewer_settings',
@@ -184,6 +185,11 @@ var requirejs = {
             exports: 'triggers'
         },
 
+        switches: {
+            deps: ['readiumSDK'],
+            exports: 'switches'
+        },
+
         bookmarkData: {
             deps: ['readiumSDK'],
             exports: 'bookmarkData'
@@ -205,7 +211,7 @@ var requirejs = {
         },
 
         reflowableView: {
-            deps: ['readiumSDK', 'cfiNavigationLogic', 'bookmarkData', 'triggers'],
+            deps: ['readiumSDK', 'cfiNavigationLogic', 'bookmarkData'],
             exports: 'reflowableView'
         },
 
@@ -215,7 +221,7 @@ var requirejs = {
         },
 
         fixedView: {
-            deps: ['readiumSDK', 'onePageView', 'currentPagesInfo', 'fixedPageSpread', 'bookmarkData', 'triggers'],
+            deps: ['readiumSDK', 'onePageView', 'currentPagesInfo', 'fixedPageSpread', 'bookmarkData'],
             exports: 'fixedView'
         },
 
@@ -237,7 +243,7 @@ var requirejs = {
         readerView : {
             deps: [ 'backbone','readiumSDK', 'helpers', 'viewerSettings', 'styleCollection', 'package',
                 'mediaOverlayPlayer', 'pageOpenRequest', 'fixedView', 'reflowableView', 'mediaOvelayDataInjector',
-                'internalLinksSupport', 'iframeLoader', 'annotationsManager', 'scrollView', 'URIjs'],
+                'internalLinksSupport', 'iframeLoader', 'annotationsManager', 'scrollView', 'URIjs', 'triggers', 'switches'],
             exports:'readerView'
         },
 
