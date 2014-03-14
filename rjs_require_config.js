@@ -42,7 +42,17 @@ var requirejs = {
         mediaOvelayDataInjector: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/media_overlay_data_injector',
         internalLinksSupport: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/internal_links_support',
         iframeLoader: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/iframe_loader',
+        
 
+        domReady : 'lib/domReady',
+        
+        rangy : 'epub-modules/epub-renderer/src/readium-shared-js/lib/rangy/rangy',
+        "rangy-core" : 'epub-modules/epub-renderer/src/readium-shared-js/lib/rangy/rangy-core',
+        "rangy-textrange" : 'epub-modules/epub-renderer/src/readium-shared-js/lib/rangy/rangy-textrange',
+        "rangy-highlighter" : 'epub-modules/epub-renderer/src/readium-shared-js/lib/rangy/rangy-highlighter',
+        "rangy-cssclassapplier" : 'epub-modules/epub-renderer/src/readium-shared-js/lib/rangy/rangy-cssclassapplier',
+        "rangy-position" : 'epub-modules/epub-renderer/src/readium-shared-js/lib/rangy/rangy-position',
+        
         Readium: 'epub-modules/Readium'
     },
 
@@ -55,7 +65,7 @@ var requirejs = {
         },
 
         {
-            name: 'emub-model',
+            name: 'epub-model',
             location: 'epub-modules/epub/src/models'
         },
         {
@@ -72,6 +82,45 @@ var requirejs = {
 
 
     shim: {
+
+        'rangy-core': {
+             deps: ["domReady"],
+             exports: "rangy", // global.rangy
+             init: function(domReady) {
+            domReady(function(){
+                this.rangy.init();
+            });
+            return this.rangy;
+        }
+       },
+       'rangy-textrange': {
+         deps: ["rangy-core"],
+         exports: "rangy.modules.TextRange"
+       },
+       'rangy-highlighter': {
+         deps: ["rangy-core"],
+         exports: "rangy.modules.Highlighter"
+       },
+       'rangy-cssclassapplier': {
+         deps: ["rangy-core"],
+         exports: "rangy.modules.ClassApplier"
+       },
+       'rangy-position': {
+         deps: ["rangy-core"],
+         exports: "rangy.modules.Position"
+       },
+        
+       /*
+       'rangy/rangy-serializer': {
+         deps: ["rangy/rangy-core"],
+         exports: "rangy.modules.Serializer"
+       },
+       'rangy/rangy-selectionsaverestore': {
+         deps: ["rangy/rangy-core"],
+         exports: "rangy.modules.SaveRestore"
+       },
+       */
+        
         console_shim: {
             exports: 'console_shim'
         },
@@ -124,7 +173,7 @@ var requirejs = {
         },
 
         mediaOverlayPlayer: {
-            deps:['readiumSDK', 'mediaOverlay', 'audioPlayer', 'mediaOverlayElementHighlighter'],
+            deps:['readiumSDK', 'mediaOverlay', 'audioPlayer', 'mediaOverlayElementHighlighter', 'rangy'],
             exports:'mediaOverlayPlayer'
         },
 
@@ -144,7 +193,7 @@ var requirejs = {
         },
 
         mediaOverlayElementHighlighter: {
-            deps:['readiumSDK'],
+            deps:['readiumSDK', 'rangy'],
             exports: 'mediaOverlayElementHighlighter'
         },
 
@@ -220,12 +269,12 @@ var requirejs = {
         },
 
         mediaOvelayDataInjector: {
-          deps: ['readiumSDK', 'mediaOverlay', 'mediaOverlayPlayer', 'smilModel', 'spineItem', 'smilIterator'],
+          deps: ['readiumSDK', 'mediaOverlay', 'mediaOverlayPlayer', 'smilModel', 'spineItem', 'smilIterator', 'rangy'],
           exports: 'mediaOvelayDataInjector'
         },
 
         internalLinksSupport: {
-            deps:['readiumSDK'],
+            deps:['readiumSDK', 'URIjs'],
             exports: 'internalLinksSupport'
         },
 
