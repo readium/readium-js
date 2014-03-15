@@ -88,8 +88,9 @@ var requirejs = {
              deps: ["domReady"],
              exports: "rangy", // global.rangy
              init: function(domReady) {
+                 var rangi = this.rangy;
             domReady(function(){
-                this.rangy.init();
+                rangi.init();
             });
             return this.rangy;
         }
