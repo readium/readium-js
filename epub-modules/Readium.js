@@ -7,6 +7,15 @@ define(['require', 'module', 'console_shim', 'jquery', 'underscore', 'readerView
     //hack to make URI object global for readers consumption.
     window.URI = URI;
 
+    //polyfill to support Safari 6
+    if ('URL' in window === false) {
+        if ('webkitURL' in window === false) {
+            throw Error('Browser does not support window.URL');
+        }
+
+        window.URL = window.webkitURL;
+    }
+
     var Readium = function(readiumOptions, readerOptions){
 
         var self = this;
