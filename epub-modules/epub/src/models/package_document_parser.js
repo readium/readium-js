@@ -167,28 +167,43 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
             return jsonSpine;
         }
 
+        function findXmlElemByLocalNameAnyNS(rootElement, localName) {
+            return rootElement.getElementsByTagNameNS("*", localName)[0];
+        }
+
+        function getElemText(rootElement, localName) {
+            var foundElement = findXmlElemByLocalNameAnyNS(rootElement, localName);
+            if (foundElement) {
+                return foundElement.textContent;
+            } else {
+                return '';
+            }
+        }
+
         function getJsonMetadata(xmlDom) {
 
             var $metadata = $("metadata", xmlDom);
+            var metadataElem = xmlDom.getElementsByTagNameNS("*", "metadata")[0];
             var jsonMetadata = {};
 
-            jsonMetadata.author = $("creator", $metadata).text();
-            jsonMetadata.description = $("description", $metadata).text();
+            jsonMetadata.author = getElemText(metadataElem, "creator");
+            jsonMetadata.description = getElemText(metadataElem, "description");
+            // TODO: Convert all jQuery queries (that get confused by XML namespaces on Firefox) to getElementsByTagNameNS().
             jsonMetadata.epub_version =
                 $("package", xmlDom).attr("version") ? $("package", xmlDom).attr("version") : "";
-            jsonMetadata.id = $("identifier", $metadata).text();
-            jsonMetadata.language = $("language", $metadata).text();
+            jsonMetadata.id = getElemText(metadataElem,"identifier");
+            jsonMetadata.language = getElemText(metadataElem, "language");
             jsonMetadata.layout = $("meta[property='rendition:layout']", $metadata).text();
             jsonMetadata.modified_date = $("meta[property='dcterms:modified']", $metadata).text();
             jsonMetadata.ncx = $("spine", xmlDom).attr("toc") ? $("spine", xmlDom).attr("toc") : "";
             jsonMetadata.orientation = $("meta[property='rendition:orientation']", $metadata).text();
             jsonMetadata.page_prog_dir = $("spine", xmlDom).attr("page-progression-direction") ?
                 $("spine", xmlDom).attr("page-progression-direction") : "";
-            jsonMetadata.pubdate = $("date", $metadata).text();
-            jsonMetadata.publisher = $("publisher", $metadata).text();
-            jsonMetadata.rights = $("rights").text();
+            jsonMetadata.pubdate = getElemText(metadataElem, "date");
+            jsonMetadata.publisher = getElemText(metadataElem, "publisher");
+            jsonMetadata.rights = getElemText(metadataElem, "rights");
             jsonMetadata.spread = $("meta[property='rendition:spread']", $metadata).text();
-            jsonMetadata.title = $("title", $metadata).text();
+            jsonMetadata.title = getElemText(metadataElem, "title");
             
             
             // Media part
