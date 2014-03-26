@@ -122,11 +122,11 @@ var requirejs = {
          exports: "rangy.modules.SaveRestore"
        },
        */
-        
+       /*
         console_shim: {
             exports: 'console_shim'
         },
-
+       */
         underscore: {
             exports: '_'
         },
