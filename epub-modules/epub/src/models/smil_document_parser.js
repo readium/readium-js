@@ -146,7 +146,7 @@ define([ 'require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch' ]
     };
 
     
-    function fillSmilData(docJson, bookRoot, jsLibRoot, currentResourceFetcher, callback) {
+    function fillSmilData(docJson, publicationFetcher, callback) {
 
         if (docJson.spine.length <= 0) {
             docJson.mo_map = [];
@@ -202,7 +202,7 @@ define([ 'require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch' ]
                 }
                 //ASSERT manifestItemSMIL.media_type === "application/smil+xml"
                 
-                var smilParser = new SmilDocumentParser(currentResourceFetcher, manifestItemSMIL.href);
+                var smilParser = new SmilDocumentParser(publicationFetcher, manifestItemSMIL.href);
                 smilParser.parse(function(smilJson) {
                     smilJson.href = manifestItemSMIL.href;
                     smilJson.id = manifestItemSMIL.id;

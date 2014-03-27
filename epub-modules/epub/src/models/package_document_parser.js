@@ -1,10 +1,11 @@
-define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/markup_parser', 'URIjs'], function (require, module, $, _, Backbone, MarkupParser, URI) {
+define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/markup_parser', 'URIjs', './package_document', './smil_document_parser'],
+    function (require, module, $, _, Backbone, MarkupParser, URI, PackageDocument, SmilParser) {
     console.log('package_document_parser module id: ' + module.id);
 
     // `PackageDocumentParser` is used to parse the xml of an epub package
     // document and build a javascript object. The constructor accepts an
     // instance of `URI` that is used to resolve paths during the process
-    var PackageDocumentParser = function(bookRoot, packageFetcher) {
+    var PackageDocumentParser = function(bookRoot, publicationFetcher) {
 
 // TODO: duplicate in smil_document_parser.js
         // parse the timestamp and return the value in seconds
@@ -42,7 +43,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
             return total;
         }
 
-        var _packageFetcher = packageFetcher;
+        var _packageFetcher = publicationFetcher;
         var _deferredXmlDom = $.Deferred();
         var _xmlDom;
 
@@ -57,37 +58,46 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
             }
         }
 
-        packageFetcher.getPackageDom(function(packageDom){
+        publicationFetcher.getPackageDom(function(packageDom){
             _xmlDom = packageDom;
             _deferredXmlDom.resolve(packageDom);
         }, onError);
 
+        function fillSmilData(packageDocJson, callback) {
+
+            SmilParser.fillSmilData(packageDocJson, publicationFetcher, function() {
+                var packageDocument = new PackageDocument(publicationFetcher.getPackageUrl(), packageDocJson, publicationFetcher);
+                // return the parse result
+                callback(packageDocJson, packageDocument);
+            });
+
+        }
 
         // Parse an XML package document into a javascript object
         this.parse = function(callback) {
 
             _deferredXmlDom.done(function (xmlDom) {
-                var json, cover;
+                var packageDocJson, cover;
 
-                json = {};
-                json.metadata = getJsonMetadata(xmlDom);
-                json.bindings = getJsonBindings(xmlDom);
-                json.spine = getJsonSpine(xmlDom);
-                json.manifest = getJsonManifest(xmlDom);
+                packageDocJson = {};
+                packageDocJson.metadata = getJsonMetadata(xmlDom);
+                packageDocJson.bindings = getJsonBindings(xmlDom);
+                packageDocJson.spine = getJsonSpine(xmlDom);
+                packageDocJson.manifest = getJsonManifest(xmlDom);
 
                 // parse the page-progression-direction if it is present
-                json.paginate_backwards = paginateBackwards(xmlDom);
+                packageDocJson.paginate_backwards = paginateBackwards(xmlDom);
 
                 // try to find a cover image
                 cover = getCoverHref(xmlDom);
                 if (cover) {
-                    json.metadata.cover_href = cover;
+                    packageDocJson.metadata.cover_href = cover;
                 }
 
-                $.when(updateMetadataWithIBookProperties(json.metadata)).then(function() {
+                $.when(updateMetadataWithIBookProperties(packageDocJson.metadata)).then(function() {
 
-                    if (json.metadata.layout === "pre-paginated") {
-                        json.metadata.fixed_layout = true;
+                    if (packageDocJson.metadata.layout === "pre-paginated") {
+                        packageDocJson.metadata.fixed_layout = true;
                     }
 
                     // THIS SHOULD BE LEFT IN (BUT COMMENTED OUT), AS MO SUPPORT IS TEMPORARILY DISABLED
@@ -95,11 +105,10 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
                     // json.mo_map = this.resolveMediaOverlays(json.manifest);
 
                     // parse the spine into a proper collection
-                    json.spine = parseSpineProperties(json.spine);
+                    packageDocJson.spine = parseSpineProperties(packageDocJson.spine);
 
-                    _packageFetcher.setPackageJson(json, function () {
-                        // return the parse result
-                        callback(json)
+                    _packageFetcher.setPackageJson(packageDocJson, function () {
+                        fillSmilData(packageDocJson, callback);
                     });
                 });
 
@@ -115,7 +124,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
             {
                 var pathToIBooksSpecificXml = new URI("/META-INF/com.apple.ibooks.display-options.xml");
 
-                packageFetcher.relativeToPackageFetchFileContents(pathToIBooksSpecificXml, 'text', function (ibookPropText) {
+                publicationFetcher.relativeToPackageFetchFileContents(pathToIBooksSpecificXml, 'text', function (ibookPropText) {
                     if(ibookPropText) {
                         var parser = new MarkupParser();
                         var propModel = parser.parseXml(ibookPropText);
