@@ -74,18 +74,18 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
                     console.error(status);
                     console.error(errorThrown);
 
-                    // isLocal = false with custom URI scheme / protocol results in false fail on Firefox (Chrome okay)
-                    if (status === "error" && (!errorThrown || !errorThrown.length) && xhr.responseText && xhr.responseText.length)
-                    {
-                        console.error(xhr);
-                        if (typeof xhr.getResponseHeader !== "undefined") console.error(xhr.getResponseHeader("Content-Type"));
-                        if (typeof xhr.getAllResponseHeaders !== "undefined") console.error(xhr.getAllResponseHeaders());
-                        if (typeof xhr.responseText !== "undefined") console.error(xhr.responseText);
-                        
-                        // success
-                        fetchCallback(xhr.responseText);
-                        return;
-                    }
+                    // // isLocal = false with custom URI scheme / protocol results in false fail on Firefox (Chrome okay)
+                    // if (status === "error" && (!errorThrown || !errorThrown.length) && xhr.responseText && xhr.responseText.length)
+                    // {
+                    //     console.error(xhr);
+                    //     if (typeof xhr.getResponseHeader !== "undefined") console.error(xhr.getResponseHeader("Content-Type"));
+                    //     if (typeof xhr.getAllResponseHeaders !== "undefined") console.error(xhr.getAllResponseHeaders());
+                    //     if (typeof xhr.responseText !== "undefined") console.error(xhr.responseText);
+                    //     
+                    //     // success
+                    //     fetchCallback(xhr.responseText);
+                    //     return;
+                    // }
                     
                     onerror(errorThrown);
                 }
