@@ -390,7 +390,9 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             // Add the current navPoint element to the TOC html
             var navText = $navPointDOM.children("navLabel").text().trim();
             var navHref = $navPointDOM.children("content").attr("src");
-            var $navPointLi = $("<li class='nav-elem'><a href='" + navHref + "'>'" + navText + "'</a></li>");
+            var $navPointLi = $('<li class="nav-elem"></li>').append(
+                $('<a></a>', { href: navHref, text: navText })
+            );
 
             // Append nav point info
             $ol.append($navPointLi);
