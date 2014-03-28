@@ -62,8 +62,9 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
                 throw 'Fetched file URL is undefined!';
             }
             $.ajax({
+                isLocal: fileUrl.indexOf("http") === 0 ? false : true,
                 url: fileUrl,
-                dataType: 'text',
+                dataType: 'text', //https://api.jquery.com/jQuery.ajax/
                 async: true,
                 success: function (result) {
                     fetchCallback(result);
@@ -72,6 +73,20 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
                     console.error('Error when AJAX fetching ' + fileUrl);
                     console.error(status);
                     console.error(errorThrown);
+
+                    // isLocal = false with custom URI scheme / protocol results in false fail on Firefox (Chrome okay)
+                    if (status === "error" && (!errorThrown || !errorThrown.length) && xhr.responseText && xhr.responseText.length)
+                    {
+                        console.error(xhr);
+                        if (typeof xhr.getResponseHeader !== "undefined") console.error(xhr.getResponseHeader("Content-Type"));
+                        if (typeof xhr.getAllResponseHeaders !== "undefined") console.error(xhr.getAllResponseHeaders());
+                        if (typeof xhr.responseText !== "undefined") console.error(xhr.responseText);
+                        
+                        // success
+                        fetchCallback(xhr.responseText);
+                        return;
+                    }
+                    
                     onerror(errorThrown);
                 }
             });
