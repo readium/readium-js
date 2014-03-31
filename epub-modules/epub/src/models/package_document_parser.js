@@ -100,10 +100,6 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
                         packageDocJson.metadata.fixed_layout = true;
                     }
 
-                    // THIS SHOULD BE LEFT IN (BUT COMMENTED OUT), AS MO SUPPORT IS TEMPORARILY DISABLED
-                    // create a map of all the media overlay objects
-                    // json.mo_map = this.resolveMediaOverlays(json.manifest);
-
                     // parse the spine into a proper collection
                     packageDocJson.spine = parseSpineProperties(packageDocJson.spine);
 
@@ -350,28 +346,6 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
             }
             return spine;
         }
-
-        // resolve the url of smils on any manifest items that have a MO
-        // attribute
-
-        // NOTE: Removed media overlay support for the module refactoring
-
-        // resolveMediaOverlays : function(manifest) {
-        //     var that = this;
-        //     var momap = {};
-
-        //     // create a bunch of media overlay objects
-        //     manifest.forEach( function(item) {
-        //         if(item.get("media_type") === "application/smil+xml") {
-        //             var url = that.resolveUri(item.get("href"));
-        //             var moObject = new EpubParser.MediaOverlay();
-        //             moObject.setUrl(url);
-        //             moObject.fetch();
-        //             momap[item.id] = moObject;
-        //         }
-        //     });
-        //     return momap;
-        // },
 
         // parse the EPUB3 `page-progression-direction` attribute
         function paginateBackwards (xmlDom) {
