@@ -62,6 +62,11 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
                 throw 'Fetched file URL is undefined!';
             }
             $.ajax({
+                // encoding: "UTF-8",
+                // mimeType: "text/plain; charset=UTF-8",
+                // beforeSend: function( xhr ) {
+                //     xhr.overrideMimeType("text/plain; charset=UTF-8");
+                // },
                 isLocal: fileUrl.indexOf("http") === 0 ? false : true,
                 url: fileUrl,
                 dataType: 'text', //https://api.jquery.com/jQuery.ajax/
