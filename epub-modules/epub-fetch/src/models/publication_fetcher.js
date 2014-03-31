@@ -3,7 +3,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
     function (require, module, $, URI, MarkupParser, PlainResourceFetcher, ZipResourceFetcher, ContentDocumentFetcher,
               ResourceCache, EncryptionHandler) {
 
-    var PublicationFetcher = function(rootUrl, libDir) {
+    var PublicationFetcher = function(bookRoot, jsLibRoot) {
 
         var self = this;
 
@@ -52,20 +52,20 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
         function isExploded() {
 
             var ext = ".epub";
-            return rootUrl.indexOf(ext, rootUrl.length - ext.length) === -1;
+            return bookRoot.indexOf(ext, bookRoot.length - ext.length) === -1;
         }
 
         function createResourceFetcher(isExploded, callback) {
             if (isExploded) {
                 console.log('using new PlainResourceFetcher');
-                _resourceFetcher = new PlainResourceFetcher(self, rootUrl);
+                _resourceFetcher = new PlainResourceFetcher(self, bookRoot);
                 _resourceFetcher.initialize(function () {
                     callback(_resourceFetcher);
                 });
                 return;
             } else {
                 console.log('using new ZipResourceFetcher');
-                _resourceFetcher = new ZipResourceFetcher(self, rootUrl, libDir);
+                _resourceFetcher = new ZipResourceFetcher(self, bookRoot, jsLibRoot);
                 callback(_resourceFetcher);
             }
         }
@@ -84,6 +84,14 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
         this.shouldFetchProgrammatically = function (){
             return _shouldFetchProgrammatically;
         };
+
+        this.getBookRoot = function() {
+            return bookRoot;
+        };
+
+        this.getJsLibRoot = function() {
+            return jsLibRoot;
+        }
 
         this.getPackageUrl = function() {
             return _resourceFetcher.getPackageUrl();
