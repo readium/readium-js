@@ -46,37 +46,6 @@ define([ 'require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch' ]
         // parse the timestamp and return the value in seconds
         // supports this syntax:
         // http://idpf.org/epub/30/spec/epub30-mediaoverlays.html#app-clock-examples
-        function resolveClockValue(value) {
-            if (!value) return 0;
-            
-            var hours = 0;
-            var mins = 0;
-            var secs = 0;
-
-            if (value.indexOf("min") != -1) {
-                mins = parseFloat(value.substr(0, value.indexOf("min")));
-            } else if (value.indexOf("ms") != -1) {
-                var ms = parseFloat(value.substr(0, value.indexOf("ms")));
-                secs = ms / 1000;
-            } else if (value.indexOf("s") != -1) {
-                secs = parseFloat(value.substr(0, value.indexOf("s")));
-            } else if (value.indexOf("h") != -1) {
-                hours = parseFloat(value.substr(0, value.indexOf("h")));
-            } else {
-                // parse as hh:mm:ss.fraction
-                // this also works for seconds-only, e.g. 12.345
-                arr = value.split(":");
-                secs = parseFloat(arr.pop());
-                if (arr.length > 0) {
-                    mins = parseFloat(arr.pop());
-                    if (arr.length > 0) {
-                        hours = parseFloat(arr.pop());
-                    }
-                }
-            }
-            var total = hours * 3600 + mins * 60 + secs;
-            return total;
-        }
 
         function getChildren(element) {
             var children = [];
@@ -263,10 +232,43 @@ define([ 'require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch' ]
         
         processSpineItem(0);
     }
+
+    function resolveClockValue(value) {
+        if (!value) return 0;
+
+        var hours = 0;
+        var mins = 0;
+        var secs = 0;
+
+        if (value.indexOf("min") != -1) {
+            mins = parseFloat(value.substr(0, value.indexOf("min")));
+        } else if (value.indexOf("ms") != -1) {
+            var ms = parseFloat(value.substr(0, value.indexOf("ms")));
+            secs = ms / 1000;
+        } else if (value.indexOf("s") != -1) {
+            secs = parseFloat(value.substr(0, value.indexOf("s")));
+        } else if (value.indexOf("h") != -1) {
+            hours = parseFloat(value.substr(0, value.indexOf("h")));
+        } else {
+            // parse as hh:mm:ss.fraction
+            // this also works for seconds-only, e.g. 12.345
+            var arr = value.split(":");
+            secs = parseFloat(arr.pop());
+            if (arr.length > 0) {
+                mins = parseFloat(arr.pop());
+                if (arr.length > 0) {
+                    hours = parseFloat(arr.pop());
+                }
+            }
+        }
+        var total = hours * 3600 + mins * 60 + secs;
+        return total;
+    }
     
     
     var SmilParser = {
         fillSmilData: fillSmilData,
+        resolveClockValue: resolveClockValue,
         Parser: SmilDocumentParser
     }
     

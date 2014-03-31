@@ -7,42 +7,6 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
     // instance of `URI` that is used to resolve paths during the process
     var PackageDocumentParser = function(bookRoot, publicationFetcher) {
 
-// TODO: duplicate in smil_document_parser.js
-        // parse the timestamp and return the value in seconds
-        // supports this syntax:
-        // http://idpf.org/epub/30/spec/epub30-mediaoverlays.html#app-clock-examples
-        function resolveClockValue(value) {
-            if (!value) return 0;
-            
-            var hours = 0;
-            var mins = 0;
-            var secs = 0;
-
-            if (value.indexOf("min") != -1) {
-                mins = parseFloat(value.substr(0, value.indexOf("min")));
-            } else if (value.indexOf("ms") != -1) {
-                var ms = parseFloat(value.substr(0, value.indexOf("ms")));
-                secs = ms / 1000;
-            } else if (value.indexOf("s") != -1) {
-                secs = parseFloat(value.substr(0, value.indexOf("s")));
-            } else if (value.indexOf("h") != -1) {
-                hours = parseFloat(value.substr(0, value.indexOf("h")));
-            } else {
-                // parse as hh:mm:ss.fraction
-                // this also works for seconds-only, e.g. 12.345
-                var arr = value.split(":");
-                secs = parseFloat(arr.pop());
-                if (arr.length > 0) {
-                    mins = parseFloat(arr.pop());
-                    if (arr.length > 0) {
-                        hours = parseFloat(arr.pop());
-                    }
-                }
-            }
-            var total = hours * 3600 + mins * 60 + secs;
-            return total;
-        }
-
         var _packageFetcher = publicationFetcher;
         var _deferredXmlDom = $.Deferred();
         var _xmlDom;
@@ -99,10 +63,6 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
                     if (packageDocJson.metadata.layout === "pre-paginated") {
                         packageDocJson.metadata.fixed_layout = true;
                     }
-
-                    // THIS SHOULD BE LEFT IN (BUT COMMENTED OUT), AS MO SUPPORT IS TEMPORARILY DISABLED
-                    // create a map of all the media overlay objects
-                    // json.mo_map = this.resolveMediaOverlays(json.manifest);
 
                     // parse the spine into a proper collection
                     packageDocJson.spine = parseSpineProperties(packageDocJson.spine);
@@ -223,11 +183,11 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
             $.each($overlays, function(elementIndex, $currItem) {
                jsonMetadata.mediaItems.push({
                   refines: $currItem.getAttribute("refines"),
-                  duration: resolveClockValue($($currItem).text())
+                  duration: SmilParser.resolveClockValue($($currItem).text())
                });
             });
                
-            jsonMetadata.mediaDuration =  resolveClockValue($("meta[property='media:duration']:not([refines])", $metadata).text());
+            jsonMetadata.mediaDuration =  SmilParser.resolveClockValue($("meta[property='media:duration']:not([refines])", $metadata).text());
             jsonMetadata.mediaNarrator =  $("meta[property='media:narrator']", $metadata).text();
             jsonMetadata.mediaActiveClass =   $("meta[property='media:active-class']", $metadata).text();
             jsonMetadata.mediaPlaybackActiveClass =   $("meta[property='media:playback-active-class']", $metadata).text();
@@ -350,28 +310,6 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
             }
             return spine;
         }
-
-        // resolve the url of smils on any manifest items that have a MO
-        // attribute
-
-        // NOTE: Removed media overlay support for the module refactoring
-
-        // resolveMediaOverlays : function(manifest) {
-        //     var that = this;
-        //     var momap = {};
-
-        //     // create a bunch of media overlay objects
-        //     manifest.forEach( function(item) {
-        //         if(item.get("media_type") === "application/smil+xml") {
-        //             var url = that.resolveUri(item.get("href"));
-        //             var moObject = new EpubParser.MediaOverlay();
-        //             moObject.setUrl(url);
-        //             moObject.fetch();
-        //             momap[item.id] = moObject;
-        //         }
-        //     });
-        //     return momap;
-        // },
 
         // parse the EPUB3 `page-progression-direction` attribute
         function paginateBackwards (xmlDom) {

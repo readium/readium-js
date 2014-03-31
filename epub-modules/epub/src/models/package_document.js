@@ -59,140 +59,6 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             return _metadata.get("fixed_layout");
         }
 
-        function getManifestItemById(id) {
-
-            var foundManifestItem = _manifest.find(
-                function (manifestItem) {
-                    if (manifestItem.get("id") === id) {
-                        return manifestItem;
-                    }
-
-                    return undefined;
-                });
-
-            if (foundManifestItem) {
-                return foundManifestItem.toJSON();
-            }
-            else {
-                return undefined;
-            }
-        }
-
-        function getManifestItemByIdref(idref) {
-
-            var foundManifestItem = getManifestItemById(idref);
-            if (foundManifestItem) {
-                return foundManifestItem;
-            }
-            else {
-                return undefined;
-            }
-        }
-
-        function getSpineItemByIdref(idref) {
-
-            var foundSpineItem = getSpineModelByIdref(idref);
-            if (foundSpineItem) {
-                return foundSpineItem.toJSON();
-            }
-            else {
-                return undefined;
-            }
-        }
-
-        function getSpineItem(spineIndex) {
-
-            var spineItem = _spine.at(spineIndex);
-            if (spineItem) {
-                return spineItem.toJSON();
-            }
-            else {
-                return undefined;
-            }
-        }
-
-        function spineLength() {
-            return _spine.length;
-        }
-
-        // Description: gets the next position in the spine for which the
-        // spineItem does not have `linear='no'`. The start
-        // param is the non-inclusive position to begin the search
-        // from. If start is not supplied, the search will begin at
-        // postion 0. If no linear position can be found, this
-        // function returns undefined
-        function getNextLinearSpinePosition(currSpineIndex) {
-
-            if (currSpineIndex === undefined || currSpineIndex < 0) {
-                currSpineIndex = 0;
-
-                if (_spine.at(currSpineIndex).get("linear") !== "no") {
-                    return currSpineIndex;
-                }
-            }
-
-            while (currSpineIndex < spineLength() - 1) {
-                currSpineIndex += 1;
-                if (_spine.at(currSpineIndex).get("linear") !== "no") {
-                    return currSpineIndex;
-                }
-            }
-
-            // No next linear spine position.
-            return undefined;
-        }
-
-        // Description: gets the previous position in the spine for which the
-        // spineItem does not have `linear='no'`. The start
-        // param is the non-inclusive position to begin the search
-        // from. If start is not supplied, the search will begin at
-        // the end of the spine. If no linear position can be found,
-        // this function returns undefined
-        function getPrevLinearSpinePosition(currSpineIndex) {
-
-            if (currSpineIndex === undefined || currSpineIndex > spineLength() - 1) {
-                currSpineIndex = spineLength() - 1;
-
-                if (_spine.at(currSpineIndex).get("linear") !== "no") {
-                    return currSpineIndex;
-                }
-            }
-
-            while (currSpineIndex > 0) {
-                currSpineIndex -= 1;
-                if (_spine.at(currSpineIndex).get("linear") !== "no") {
-                    return currSpineIndex;
-                }
-            }
-
-            // No previous linear spine position.
-            return undefined;
-        }
-
-        function hasNextSection(currSpineIndex) {
-
-            if (currSpineIndex >= 0 &&
-                currSpineIndex <= spineLength() - 1) {
-
-                return getNextLinearSpinePosition(currSpineIndex) > -1;
-            }
-            else {
-                return false;
-            }
-        }
-
-        function hasPrevSection(currSpineIndex) {
-
-            if (currSpineIndex >= 0 &&
-                currSpineIndex <= spineLength() - 1) {
-
-                return getPrevLinearSpinePosition(currSpineIndex) > -1;
-            }
-            else {
-                return false;
-            }
-        }
-
         function pageProgressionDirection() {
 
             if (_metadata.get("page_prog_dir") === "rtl") {
@@ -203,30 +69,6 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             }
             else {
                 return "ltr";
-            }
-        }
-
-        function getSpineIndexByHref(manifestHref) {
-
-            var spineItem = getSpineModelFromHref(manifestHref);
-            return getSpineIndex(spineItem);
-        }
-
-        function getBindingByHandler(handler) {
-
-            var binding = _bindings.find(
-                function (binding) {
-
-                    if (binding.get("handler") === handler) {
-                        return binding;
-                    }
-                });
-
-            if (binding) {
-                return binding.toJSON();
-            }
-            else {
-                return undefined;
             }
         }
 
@@ -330,6 +172,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             });
         };
 
+        // Unused?
         this.generateTocListDOM = function(callback) {
             var that = this;
             this.getTocDom(function (tocDom) {
@@ -355,7 +198,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             });
         };
 
-        // 
+        // Unused?
         this.getEpub3Toc = function(callback) {
             this.generateTocListDOM(function(dom) {
                 var olTocList =  $($('nav#toc', dom)[0]).children()[0];
@@ -411,40 +254,6 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             }
         }
 
-        // Refactoring candidate: This search will always iterate through entire manifest; this should be modified to
-        //   return when the manifest item is found.
-        function getSpineModelFromHref(manifestHref) {
-
-            var resourceURI = new URI(manifestHref);
-            var resourceName = resourceURI.filename();
-            var foundSpineModel;
-
-            _manifest.each(function (manifestItem) {
-
-                var manifestItemURI = new URI(manifestItem.get("href"));
-                var manifestItemName = manifestItemURI.filename();
-
-                // Rationale: Return a spine model based on the manifest item id, which is the idref of the spine item
-                if (manifestItemName === resourceName) {
-                    foundSpineModel = getSpineModelByIdref(manifestItem.get("id"));
-                }
-            });
-
-            return foundSpineModel;
-        }
-
-        function getSpineModelByIdref(idref) {
-
-            var foundSpineItem = _spine.find(
-                function (spineItem) {
-                    if (spineItem.get("idref") === idref) {
-                        return spineItem;
-                    }
-                });
-
-            return foundSpineItem;
-        }
-
         function getManifestModelByIdref(idref) {
 
             var foundManifestItem = _manifest.find(
@@ -455,11 +264,6 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
                 });
 
             return foundManifestItem;
-        }
-
-        function getSpineIndex(spineItem) {
-
-            return _spine.indexOf(spineItem);
         }
 
         // Description: When rendering fixed layout pages we need to determine whether the page
