@@ -65,7 +65,7 @@ define([ 'require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch' ]
             } else {
                 // parse as hh:mm:ss.fraction
                 // this also works for seconds-only, e.g. 12.345
-                arr = value.split(":");
+                var arr = value.split(":");
                 secs = parseFloat(arr.pop());
                 if (arr.length > 0) {
                     mins = parseFloat(arr.pop());
