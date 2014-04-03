@@ -129,7 +129,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
                     linear: $currSpineElement.attr("linear") ? $currSpineElement.attr("linear") : "",
                     properties: $currSpineElement.attr("properties") ? $currSpineElement.attr("properties") : ""
                 };
-
+                
                 jsonSpine.push(spineItem);
             });
 
@@ -162,17 +162,19 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
                 $("package", xmlDom).attr("version") ? $("package", xmlDom).attr("version") : "";
             jsonMetadata.id = getElemText(metadataElem,"identifier");
             jsonMetadata.language = getElemText(metadataElem, "language");
-            jsonMetadata.layout = $("meta[property='rendition:layout']", $metadata).text();
             jsonMetadata.modified_date = $("meta[property='dcterms:modified']", $metadata).text();
             jsonMetadata.ncx = $("spine", xmlDom).attr("toc") ? $("spine", xmlDom).attr("toc") : "";
-            jsonMetadata.orientation = $("meta[property='rendition:orientation']", $metadata).text();
             jsonMetadata.page_prog_dir = $("spine", xmlDom).attr("page-progression-direction") ?
                 $("spine", xmlDom).attr("page-progression-direction") : "";
             jsonMetadata.pubdate = getElemText(metadataElem, "date");
             jsonMetadata.publisher = getElemText(metadataElem, "publisher");
             jsonMetadata.rights = getElemText(metadataElem, "rights");
-            jsonMetadata.spread = $("meta[property='rendition:spread']", $metadata).text();
             jsonMetadata.title = getElemText(metadataElem, "title");
+            
+
+            jsonMetadata.orientation = $("meta[property='rendition:orientation']", $metadata).text();
+            jsonMetadata.layout = $("meta[property='rendition:layout']", $metadata).text();
+            jsonMetadata.spread = $("meta[property='rendition:spread']", $metadata).text();
             
             
             // Media part
@@ -285,29 +287,79 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
                 var properties = {};
                 var allPropStrs = str.split(" "); // split it on white space
                 for (var i = 0; i < allPropStrs.length; i++) {
-                    // brute force!!!
-                    //rendition:orientation landscape | portrait | auto
-                    //rendition:spread none | landscape | portrait | both | auto
 
-                    //rendition:page-spread-center
-                    //page-spread | left | right
-                    //rendition:layout reflowable | pre-paginated
-                    if (allPropStrs[i] === "rendition:page-spread-center") properties.page_spread = "center";
-                    if (allPropStrs[i] === "page-spread-left") properties.page_spread = "left";
-                    if (allPropStrs[i] === "page-spread-right") properties.page_spread = "right";
-                    if (allPropStrs[i] === "page-spread-right") properties.page_spread = "right";
-                    if (allPropStrs[i] === "rendition:layout-reflowable") properties.fixed_flow = false;
-                    if (allPropStrs[i] === "rendition:layout-pre-paginated") properties.fixed_flow = true;
+                    //ReadiumSDK.Models.SpineItem.RENDITION_ORIENTATION_LANDSCAPE
+                    if (allPropStrs[i] === "rendition:orientation-landscape") properties.rendition_orientation = "landscape";
+
+                    //ReadiumSDK.Models.SpineItem.RENDITION_ORIENTATION_PORTRAIT
+                    if (allPropStrs[i] === "rendition:orientation-portrait") properties.rendition_orientation = "portrait";
+
+                    //ReadiumSDK.Models.SpineItem.RENDITION_ORIENTATION_AUTO
+                    if (allPropStrs[i] === "rendition:orientation-auto") properties.rendition_orientation = "auto";
+                    
+                    
+                    //ReadiumSDK.Models.SpineItem.RENDITION_SPREAD_NONE
+                    if (allPropStrs[i] === "rendition:spread-none") properties.rendition_spread = "none";
+                    
+                    //ReadiumSDK.Models.SpineItem.RENDITION_SPREAD_LANDSCAPE
+                    if (allPropStrs[i] === "rendition:spread-landscape") properties.rendition_spread = "landscape";
+                    
+                    //ReadiumSDK.Models.SpineItem.RENDITION_SPREAD_PORTRAIT
+                    if (allPropStrs[i] === "rendition:spread-portrait") properties.rendition_spread = "portrait";
+                    
+                    //ReadiumSDK.Models.SpineItem.RENDITION_SPREAD_BOTH
+                    if (allPropStrs[i] === "rendition:spread-both") properties.rendition_spread = "both";
+                    
+                    //ReadiumSDK.Models.SpineItem.RENDITION_SPREAD_AUTO
+                    if (allPropStrs[i] === "rendition:spread-auto") properties.rendition_spread = "auto";
+    
+    
+                    //ReadiumSDK.Models.SpineItem.RENDITION_FLOW_PAGINATED
+                    if (allPropStrs[i] === "rendition:flow-paginated") properties.rendition_flow = "paginated";
+    
+                    //ReadiumSDK.Models.SpineItem.RENDITION_FLOW_SCROLLED_CONTINUOUS
+                    if (allPropStrs[i] === "rendition:flow-scrolled-continuous") properties.rendition_flow = "scrolled-continuous";
+    
+                    //ReadiumSDK.Models.SpineItem.RENDITION_FLOW_SCROLLED_DOC
+                    if (allPropStrs[i] === "rendition:flow-scrolled-doc") properties.rendition_flow = "scrolled-doc";
+    
+                    //ReadiumSDK.Models.SpineItem.RENDITION_FLOW_AUTO
+                    if (allPropStrs[i] === "rendition:flow-auto") properties.rendition_flow = "auto";
+                    
+                    
+    
+                    //ReadiumSDK.Models.SpineItem.SPREAD_CENTER
+                    if (allPropStrs[i] === "rendition:page-spread-center") properties.page_spread = "page-spread-center";
+                    
+                    //ReadiumSDK.Models.SpineItem.SPREAD_LEFT
+                    if (allPropStrs[i] === "page-spread-left") properties.page_spread = "page-spread-left";
+                    
+                    //ReadiumSDK.Models.SpineItem.SPREAD_RIGHT
+                    if (allPropStrs[i] === "page-spread-right") properties.page_spread = "page-spread-right";
+
+                    //ReadiumSDK.Models.SpineItem.RENDITION_LAYOUT_REFLOWABLE
+                    if (allPropStrs[i] === "rendition:layout-reflowable") {
+                        properties.fixed_flow = false; // TODO: only used in spec tests!
+                        properties.rendition_layout = "reflowable";
+                    }
+                    
+                    //ReadiumSDK.Models.SpineItem.RENDITION_LAYOUT_PREPAGINATED
+                    if (allPropStrs[i] === "rendition:layout-pre-paginated") {
+                        properties.fixed_flow = true; // TODO: only used in spec tests!
+                        properties.rendition_layout = "pre-paginated";
+                    }
                 }
                 return properties;
 
             };
 
             for (var i = 0; i < spine.length; i++) {
+
                 var props = parsePropertiesString(spine[i].properties);
                 // add all the properties to the spine item
                 _.extend(spine[i], props);
             }
+
             return spine;
         }
 
