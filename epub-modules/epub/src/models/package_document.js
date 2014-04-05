@@ -1,6 +1,5 @@
-define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './manifest', './spine', './metadata',
-    './page_spread_property'],
-    function (require, module, $, _, Backbone, URI, Manifest, Spine, Metadata, PageSpreadProperty) {
+define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './manifest', './spine', './page_spread_property'],
+    function (require, module, $, _, Backbone, URI, Manifest, Spine, PageSpreadProperty) {
     console.log('package_document module id: ' + module.id);
 
     // Description: This model provides an interface for navigating an EPUB's package document
@@ -8,7 +7,6 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
 
         var _spine = new Spine(jsonData.spine);
         var _manifest = new Manifest(jsonData.manifest);
-        var _metadata = new Metadata(jsonData.metadata);
         var _pageSpreadProperty = new PageSpreadProperty();
         var _moMap = jsonData.mo_map;
 
@@ -47,9 +45,9 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             var packageDocRoot = packageDocumentURL.substr(0, packageDocumentURL.lastIndexOf("/"));
             return {
                 rootUrl : packageDocRoot,
-                rendition_layout : _metadata.get("layout"),
-                rendition_orientation : _metadata.get("orientation"),
-                rendition_layout : _metadata.get("layout"),
+                rendition_layout : jsonData.metadata.layout,
+                rendition_orientation : jsonData.metadata.orientation,
+                rendition_layout : jsonData.metadata.layout,
                 media_overlay : getMediaOverlay(),
                 spine : {
                     direction : pageProgressionDirection(),
@@ -60,10 +58,10 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
 
         function getMediaOverlay(){
            var result = {
-                 duration : _metadata.get('mediaDuration'),
-                 narrator : _metadata.get('mediaNarrator'),
-                 activeClass : _metadata.get('mediaActiveClass'),
-                 playbackActiveClass : _metadata.get('mediaPlaybackActiveClass'),
+                 duration : jsonData.metadata.mediaDuration,
+                 narrator : jsonData.metadata.mediaNarrator,
+                 activeClass : jsonData.metadata.mediaActiveClass,
+                 playbackActiveClass : jsonData.metadata.mediaPlaybackActiveClass,
                  smil_models : _moMap,
                  
                  skippables: ["sidebar", "practice", "marginalia", "annotation", "help", "note", "footnote", "rearnote", "table", "table-row", "table-cell", "list", "list-item", "pagebreak"],
@@ -75,15 +73,15 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
         
         function isFixedLayout() {
 
-            return _metadata.get("fixed_layout");
+            return jsonData.metadata.fixed_layout;
         }
 
         function pageProgressionDirection() {
 
-            if (_metadata.get("page_prog_dir") === "rtl") {
+            if (jsonData.metadata.page_prog_dir === "rtl") {
                 return "rtl";
             }
-            else if (_metadata.get("page_prog_dir") === "default") {
+            else if (jsonData.metadata.page_prog_dir === "default") {
                 return "default";
             }
             else {
@@ -222,7 +220,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             var numSpineItems;
 
             // If the epub is apple fixed layout
-            if (_metadata.get("apple_fixed")) {
+            if (jsonData.metadata.apple_fixed) {
 
                 numSpineItems = _spine.length;
                 _spine.each(function (spineItem, spineIndex) {
@@ -252,7 +250,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
         function getTocItem(){
 
             var manifest = _manifest;
-            var spine_id = _metadata.get("ncx");
+            var spine_id = jsonData.metadata.ncx;
 
             var item = manifest.find(function(item){
 
