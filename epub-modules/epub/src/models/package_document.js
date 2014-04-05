@@ -3,12 +3,12 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
     console.log('package_document module id: ' + module.id);
 
     // Description: This model provides an interface for navigating an EPUB's package document
-    var PackageDocument = function(packageDocumentURL, jsonData, resourceFetcher) {
+    var PackageDocument = function(packageDocumentURL, packageDocJson, resourceFetcher) {
 
-        var _spine = new Spine(jsonData.spine);
-        var _manifest = new Manifest(jsonData.manifest);
+        var _spine = new Spine(packageDocJson.spine);
+        var _manifest = new Manifest(packageDocJson.manifest);
         var _pageSpreadProperty = new PageSpreadProperty();
-        var _moMap = jsonData.mo_map;
+        var _moMap = packageDocJson.mo_map;
 
         // If this book is fixed layout, assign the page spread class
         if (isFixedLayout()) {
@@ -21,9 +21,9 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             // _spine.each(function (spineItem) {
             //     spinePackageData.push(...);
             // });
-            for (var i = 0; i < jsonData.spine.length; i++)
+            for (var i = 0; i < packageDocJson.spine.length; i++)
             {
-                var spineItem = jsonData.spine[i];
+                var spineItem = packageDocJson.spine[i];
                 
                 var manifestItem = getManifestModelByIdref(spineItem.idref);
 
@@ -45,9 +45,9 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             var packageDocRoot = packageDocumentURL.substr(0, packageDocumentURL.lastIndexOf("/"));
             return {
                 rootUrl : packageDocRoot,
-                rendition_layout : jsonData.metadata.layout,
-                rendition_orientation : jsonData.metadata.orientation,
-                rendition_layout : jsonData.metadata.layout,
+                rendition_layout : packageDocJson.metadata.layout,
+                rendition_orientation : packageDocJson.metadata.orientation,
+                rendition_layout : packageDocJson.metadata.layout,
                 media_overlay : getMediaOverlay(),
                 spine : {
                     direction : pageProgressionDirection(),
@@ -58,10 +58,10 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
 
         function getMediaOverlay(){
            var result = {
-                 duration : jsonData.metadata.mediaDuration,
-                 narrator : jsonData.metadata.mediaNarrator,
-                 activeClass : jsonData.metadata.mediaActiveClass,
-                 playbackActiveClass : jsonData.metadata.mediaPlaybackActiveClass,
+                 duration : packageDocJson.metadata.mediaDuration,
+                 narrator : packageDocJson.metadata.mediaNarrator,
+                 activeClass : packageDocJson.metadata.mediaActiveClass,
+                 playbackActiveClass : packageDocJson.metadata.mediaPlaybackActiveClass,
                  smil_models : _moMap,
                  
                  skippables: ["sidebar", "practice", "marginalia", "annotation", "help", "note", "footnote", "rearnote", "table", "table-row", "table-cell", "list", "list-item", "pagebreak"],
@@ -73,15 +73,15 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
         
         function isFixedLayout() {
 
-            return jsonData.metadata.fixed_layout;
+            return packageDocJson.metadata.fixed_layout;
         }
 
         function pageProgressionDirection() {
 
-            if (jsonData.metadata.page_prog_dir === "rtl") {
+            if (packageDocJson.metadata.page_prog_dir === "rtl") {
                 return "rtl";
             }
-            else if (jsonData.metadata.page_prog_dir === "default") {
+            else if (packageDocJson.metadata.page_prog_dir === "default") {
                 return "default";
             }
             else {
@@ -220,7 +220,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             var numSpineItems;
 
             // If the epub is apple fixed layout
-            if (jsonData.metadata.apple_fixed) {
+            if (packageDocJson.metadata.apple_fixed) {
 
                 numSpineItems = _spine.length;
                 _spine.each(function (spineItem, spineIndex) {
@@ -250,7 +250,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
         function getTocItem(){
 
             var manifest = _manifest;
-            var spine_id = jsonData.metadata.ncx;
+            var spine_id = packageDocJson.metadata.ncx;
 
             var item = manifest.find(function(item){
 
