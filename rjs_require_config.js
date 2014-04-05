@@ -209,7 +209,6 @@ var requirejs = {
             exports:'onePageView'
         },
 
-
         cfiNavigationLogic: {
             deps: ['readiumSDK', 'epubCfi'],
             exports:'cfiNavigationLogic'

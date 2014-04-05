@@ -1,6 +1,6 @@
 define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './manifest', './spine', './metadata',
-    './page_spread_property'],
-    function (require, module, $, _, Backbone, URI, Manifest, Spine, Metadata, PageSpreadProperty) {
+    './page_spread_property', './binding'],
+    function (require, module, $, _, Backbone, URI, Manifest, Spine, Metadata, PageSpreadProperty, Binding) {
     console.log('package_document module id: ' + module.id);
 
     // Description: This model provides an interface for navigating an EPUB's package document
@@ -9,7 +9,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
         var _spine = new Spine(jsonData.spine);
         var _manifest = new Manifest(jsonData.manifest);
         var _metadata = new Metadata(jsonData.metadata);
-        var _bindings = new Spine(jsonData.bindings);
+        var _bindings = new Binding(jsonData.bindings);
         var _pageSpreadProperty = new PageSpreadProperty();
         var _moMap = jsonData.mo_map;
 
@@ -21,20 +21,40 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
         this.getPackageData = function () {
 
             var spinePackageData = [];
-            var packageDocRoot = packageDocumentURL.substr(0, packageDocumentURL.lastIndexOf("/"));
+            // _spine.each(function (spineItem) {
+            //     spinePackageData.push(...);
+            // });
+            for (var i = 0; i < jsonData.spine.length; i++)
+            {
+                var spineItem = jsonData.spine[i];
+                
+                var manifestItem = getManifestModelByIdref(spineItem.idref);
 
-            _spine.each(function (spineItem) {
-                spinePackageData.push(generatePackageData(spineItem));
-            });
-            
-            // This is where the package data format thing is generated
+                var spineInfo = {
+                    href : manifestItem.get('contentDocumentURI'),
+                    media_type : manifestItem.get('media_type'),
+                    media_overlay_id : manifestItem.get('media_overlay'),
+                    idref : spineItem.idref,
+                    page_spread : spineItem.page_spread,
+                    rendition_layout : spineItem.rendition_layout,
+                    rendition_orientation : spineItem.rendition_orientation,
+                    rendition_spread : spineItem.rendition_spread,
+                    rendition_flow : spineItem.rendition_flow,
+                    linear: spineItem.linear
+                };
+                spinePackageData.push(spineInfo);
+            }
+
+            var packageDocRoot = packageDocumentURL.substr(0, packageDocumentURL.lastIndexOf("/"));
             return {
                 rootUrl : packageDocRoot,
+                rendition_layout : _metadata.get("layout"),
+                rendition_orientation : _metadata.get("orientation"),
                 rendition_layout : _metadata.get("layout"),
                 media_overlay : getMediaOverlay(),
                 spine : {
                     direction : pageProgressionDirection(),
-                    items : spinePackageData    
+                    items : spinePackageData
                 }
             };
         };
@@ -70,74 +90,6 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             else {
                 return "ltr";
             }
-        }
-
-        function generatePackageData(spineItem) {
-
-            var fixedLayoutProperty = "reflowable";
-            // var fixedLayoutType = undefined;
-            var manifestItem = getManifestModelByIdref(spineItem.get("idref"));
-            // var isLinear;
-            // var firstPageIsOffset;
-            var pageSpread;
-
-            // Get fixed layout properties
-            if (spineItem.isFixedLayout() || isFixedLayout()) {
-
-                fixedLayoutProperty = "pre-paginated";
-                // if (manifestItem.isSvg()) {
-                //     fixedLayoutType = "svg";
-                // }
-                // else if (manifestItem.isImage()) {
-                //     fixedLayoutType = "image";
-                // }
-                // else {
-                //     fixedLayoutType = "xhtml";
-                // }
-            }
-
-            // Set primary reading order attribute
-            // if (spineItem.get("linear").trim() === "no") {
-            //     isLinear = false;
-            // }
-            // else {
-            //     isLinear = true;
-            // }
-
-            pageSpread = spineItem.get("page_spread");
-            // Set first page is offset parameter
-            // if (!isFixedLayout) {
-            //     if (pageProgressionDirection() === "ltr" && pageSpread === "right") {
-            //         firstPageIsOffset = true;
-            //     }
-            //     else if (pageProgressionDirection() === "rtl" && pageSpread === "left") {
-            //         firstPageIsOffset = true;
-            //     }
-            //     else {
-            //         firstPageIsOffset = false;
-            //     }
-            // }
-
-            if (pageSpread === "left") {
-                pageSpread = "page-spread-left";
-            }
-            else if (pageSpread === "right") {
-                pageSpread = "page-spread-right";
-            }
-            else if (pageSpread === "center") {
-                pageSpread = "page-spread-center";
-            }
-
-            var spineInfo = {
-                href : manifestItem.get('contentDocumentURI'),
-                media_type : manifestItem.get('media_type'),
-                media_overlay_id : manifestItem.get('media_overlay'),
-                idref : spineItem.get("idref"),
-                page_spread : pageSpread,
-                rendition_layout : fixedLayoutProperty
-            };
-
-            return spineInfo;
         }
 
         this.getToc = function() {
