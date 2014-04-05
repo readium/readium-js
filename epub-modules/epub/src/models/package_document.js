@@ -1,6 +1,6 @@
 define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './manifest', './spine', './metadata',
-    './page_spread_property', './binding'],
-    function (require, module, $, _, Backbone, URI, Manifest, Spine, Metadata, PageSpreadProperty, Binding) {
+    './page_spread_property'],
+    function (require, module, $, _, Backbone, URI, Manifest, Spine, Metadata, PageSpreadProperty) {
     console.log('package_document module id: ' + module.id);
 
     // Description: This model provides an interface for navigating an EPUB's package document
@@ -9,7 +9,6 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
         var _spine = new Spine(jsonData.spine);
         var _manifest = new Manifest(jsonData.manifest);
         var _metadata = new Metadata(jsonData.metadata);
-        var _bindings = new Binding(jsonData.bindings);
         var _pageSpreadProperty = new PageSpreadProperty();
         var _moMap = jsonData.mo_map;
 
