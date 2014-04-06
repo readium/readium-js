@@ -18,7 +18,6 @@ src_files:
     - lib/backbone-0.9.10.js
     - lib/URI.js
     - src/models/manifest_item.js # The manifest collection depends on this being loaded first
-    - src/models/spine_item.js # The spine collection depends on this being loaded first
     - src/**/*.js
     - lib/epub_module.js
 

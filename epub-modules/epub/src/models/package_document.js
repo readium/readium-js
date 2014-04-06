@@ -1,19 +1,12 @@
-define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './manifest', './spine', './page_spread_property'],
-    function (require, module, $, _, Backbone, URI, Manifest, Spine, PageSpreadProperty) {
+define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './manifest'],
+    function (require, module, $, _, Backbone, URI, Manifest) {
     console.log('package_document module id: ' + module.id);
 
     // Description: This model provides an interface for navigating an EPUB's package document
     var PackageDocument = function(packageDocumentURL, packageDocJson, resourceFetcher) {
 
-        var _spine = new Spine(packageDocJson.spine);
         var _manifest = new Manifest(packageDocJson.manifest);
-        var _pageSpreadProperty = new PageSpreadProperty();
         var _moMap = packageDocJson.mo_map;
-
-        // If this book is fixed layout, assign the page spread class
-        if (isFixedLayout()) {
-            assignPageSpreadClass();
-        }
 
         this.getPackageData = function () {
 
@@ -205,46 +198,6 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
                 });
 
             return foundManifestItem;
-        }
-
-        // Description: When rendering fixed layout pages we need to determine whether the page
-        //   should be on the left or the right in two up mode, options are:
-        //     left_page:      render on the left side
-        //     right_page:     render on the right side
-        //     center_page:    always center the page horizontally
-        //   This property must be assigned when the package document is initialized
-        // NOTE: Look into how spine items with the linear="no" property affect this algorithm
-        function assignPageSpreadClass() {
-
-            var pageSpreadClass;
-            var numSpineItems;
-
-            // If the epub is apple fixed layout
-            if (packageDocJson.metadata.apple_fixed) {
-
-                numSpineItems = _spine.length;
-                _spine.each(function (spineItem, spineIndex) {
-
-                    pageSpreadClass = _pageSpreadProperty.inferiBooksPageSpread(spineIndex, numSpineItems);
-                    spineItem.set({ pageSpreadClass : pageSpreadClass });
-                });
-            }
-            else {
-                // For each spine item
-                _spine.each(function (spineItem, spineIndex) {
-
-                    if (spineItem.get("page_spread")) {
-
-                        pageSpreadClass = _pageSpreadProperty.getPageSpreadFromProperties(spineItem.get("page_spread"));
-                        spineItem.set({ pageSpreadClass : pageSpreadClass });
-                    }
-                    else {
-
-                        pageSpreadClass = _pageSpreadProperty.inferUnassignedPageSpread(spineIndex, _spine, pageProgressionDirection());
-                        spineItem.set({ pageSpreadClass : pageSpreadClass });
-                    }
-                });
-            }
         }
 
         function getTocItem(){
