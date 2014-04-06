@@ -18,12 +18,12 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             {
                 var spineItem = packageDocJson.spine[i];
                 
-                var manifestItem = getManifestModelByIdref(spineItem.idref);
+                var manifestItem = _manifest.getManifestItemByIdref(spineItem.idref);
 
                 var spineInfo = {
-                    href : manifestItem.get('contentDocumentURI'),
-                    media_type : manifestItem.get('media_type'),
-                    media_overlay_id : manifestItem.get('media_overlay'),
+                    href : manifestItem.contentDocumentURI,
+                    media_type : manifestItem.media_type,
+                    media_overlay_id : manifestItem.media_overlay,
                     idref : spineItem.idref,
                     page_spread : spineItem.page_spread,
                     rendition_layout : spineItem.rendition_layout,
@@ -85,7 +85,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
         this.getToc = function() {
             var item = getTocItem();
             if (item) {
-                return item.get("contentDocumentURI");
+                return item.contentDocumentURI;
             }
             return null;
         };
@@ -143,7 +143,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
         function tocIsNcx() {
 
             var tocItem = getTocItem();
-            var contentDocURI = tocItem.get("contentDocumentURI");
+            var contentDocURI = tocItem.contentDocumentURI;
             var fileExtension = contentDocURI.substr(contentDocURI.lastIndexOf('.') + 1);
 
             return fileExtension.trim().toLowerCase() === "ncx";
@@ -188,52 +188,20 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             }
         }
 
-        function getManifestModelByIdref(idref) {
-
-            var foundManifestItem = _manifest.find(
-                function (manifestItem) {
-                    if (manifestItem.get("id") === idref) {
-                        return manifestItem;
-                    }
-                });
-
-            return foundManifestItem;
-        }
-
         function getTocItem(){
 
-            var manifest = _manifest;
-            var spine_id = packageDocJson.metadata.ncx;
-
-            var item = manifest.find(function(item){
-
-                if (item.get("properties").indexOf("nav") !== -1) {
-                    return true;
-                }
-                else {
-                    return false;
-                }
-            });
-
-            if( item ) {
+            var item = _manifest.getNavItem();
+            if (item) {
                 return item;
             }
 
-            if( spine_id && spine_id.length > 0 ) {
-                return manifest.find(function(item) {
-                    return item.get("id") === spine_id;
-                });
+            var spine_id = packageDocJson.metadata.ncx;
+            if (spine_id && spine_id.length > 0) {
+                return _manifest.getManifestItemByIdref(spine_id);
             }
 
             return null;
         }
-
-        // NOTE: Media overlays are temporarily disabled
-        // getMediaOverlayItem : function(idref) {
-        //     // just look up the object in the mo_map
-        //     var map = this.get("mo_map");
-        //     return map && map[idref];
-        // },
 
     };
 
