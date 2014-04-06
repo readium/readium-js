@@ -1,10 +1,28 @@
-define(['require', 'module', 'jquery', 'underscore', 'backbone', './manifest_item'],
-    function (require, module, $, _, Backbone, ManifestItem) {
+define(['require', 'module', 'jquery', 'underscore'],
+    function (require, module, $, _) {
         console.log('manifest module id: ' + module.id);
 
-        var Manifest = Backbone.Collection.extend({
+        var Manifest = function (manifestJson) {
 
-            model: ManifestItem
-        });
+            var manifestIndexById = {};
+            var navItem;
+
+            _.each(manifestJson, function (manifestItem) {
+                manifestIndexById[manifestItem.id] = manifestItem;
+
+                if (manifestItem.properties && manifestItem.properties.indexOf("nav") !== -1) {
+                    navItem = manifestItem;
+                }
+            });
+
+            this.getManifestItemByIdref = function (idref) {
+                return manifestIndexById[idref];
+            };
+
+            this.getNavItem = function () {
+                return navItem;
+            };
+
+        };
         return Manifest;
     });
