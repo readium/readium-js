@@ -22,10 +22,10 @@
 		"grunt-contrib-uglify": "~0.2.4"
 	},
 	
-	"homepage": "http://readium.org",
+	"homepage": "https://github.com/readium/readium-js",
 	"repository": {
 		"type": "git",
-		"url": "git@github.com:readium/Readium-Web-Components.git"
+		"url": "https://github.com/readium/readium-js.git"
 	},
 	"keywords": ["readium", "epub"]
 }

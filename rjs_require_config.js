@@ -3,7 +3,8 @@ var requirejs = {
 
     paths: {
 
-        jquery: 'lib/jquery-1.9.1',
+        console_shim: 'lib/console_shim',
+        jquery: 'lib/jquery-1.11.0',
         underscore: 'lib/underscore-1.4.4',
         backbone: 'lib/backbone-0.9.10',
         bootstrap: 'lib/bootstrap.min',
@@ -15,6 +16,7 @@ var requirejs = {
         style: 'epub-modules/epub-renderer/src/readium-shared-js/js/models/style',
         styleCollection: 'epub-modules/epub-renderer/src/readium-shared-js/js/models/style_collection',
         triggers: 'epub-modules/epub-renderer/src/readium-shared-js/js/models/trigger',
+        switches: 'epub-modules/epub-renderer/src/readium-shared-js/js/models/switches',
         smilModel: 'epub-modules/epub-renderer/src/readium-shared-js/js/models/smil_model',
         mediaOverlay: 'epub-modules/epub-renderer/src/readium-shared-js/js/models/media_overlay',
         viewerSettings: 'epub-modules/epub-renderer/src/readium-shared-js/js/models/viewer_settings',
@@ -41,7 +43,17 @@ var requirejs = {
         mediaOvelayDataInjector: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/media_overlay_data_injector',
         internalLinksSupport: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/internal_links_support',
         iframeLoader: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/iframe_loader',
+        
 
+        domReady : 'lib/domReady',
+        
+        rangy : 'epub-modules/epub-renderer/src/readium-shared-js/lib/rangy/rangy',
+        "rangy-core" : 'epub-modules/epub-renderer/src/readium-shared-js/lib/rangy/rangy-core',
+        "rangy-textrange" : 'epub-modules/epub-renderer/src/readium-shared-js/lib/rangy/rangy-textrange',
+        "rangy-highlighter" : 'epub-modules/epub-renderer/src/readium-shared-js/lib/rangy/rangy-highlighter',
+        "rangy-cssclassapplier" : 'epub-modules/epub-renderer/src/readium-shared-js/lib/rangy/rangy-cssclassapplier',
+        "rangy-position" : 'epub-modules/epub-renderer/src/readium-shared-js/lib/rangy/rangy-position',
+        
         Readium: 'epub-modules/Readium'
     },
 
@@ -54,7 +66,7 @@ var requirejs = {
         },
 
         {
-            name: 'emub-model',
+            name: 'epub-model',
             location: 'epub-modules/epub/src/models'
         },
         {
@@ -71,6 +83,50 @@ var requirejs = {
 
 
     shim: {
+
+        'rangy-core': {
+             deps: ["domReady"],
+             exports: "rangy", // global.rangy
+             init: function(domReady) {
+                 var rangi = this.rangy;
+            domReady(function(){
+                rangi.init();
+            });
+            return this.rangy;
+        }
+       },
+       'rangy-textrange': {
+         deps: ["rangy-core"],
+         exports: "rangy.modules.TextRange"
+       },
+       'rangy-highlighter': {
+         deps: ["rangy-core"],
+         exports: "rangy.modules.Highlighter"
+       },
+       'rangy-cssclassapplier': {
+         deps: ["rangy-core"],
+         exports: "rangy.modules.ClassApplier"
+       },
+       'rangy-position': {
+         deps: ["rangy-core"],
+         exports: "rangy.modules.Position"
+       },
+        
+       /*
+       'rangy/rangy-serializer': {
+         deps: ["rangy/rangy-core"],
+         exports: "rangy.modules.Serializer"
+       },
+       'rangy/rangy-selectionsaverestore': {
+         deps: ["rangy/rangy-core"],
+         exports: "rangy.modules.SaveRestore"
+       },
+       */
+       /*
+        console_shim: {
+            exports: 'console_shim'
+        },
+       */
         underscore: {
             exports: '_'
         },
@@ -119,7 +175,7 @@ var requirejs = {
         },
 
         mediaOverlayPlayer: {
-            deps:['readiumSDK', 'mediaOverlay', 'audioPlayer', 'mediaOverlayElementHighlighter'],
+            deps:['readiumSDK', 'mediaOverlay', 'audioPlayer', 'mediaOverlayElementHighlighter', 'rangy'],
             exports:'mediaOverlayPlayer'
         },
 
@@ -139,7 +195,7 @@ var requirejs = {
         },
 
         mediaOverlayElementHighlighter: {
-            deps:['readiumSDK'],
+            deps:['readiumSDK', 'rangy'],
             exports: 'mediaOverlayElementHighlighter'
         },
 
@@ -152,7 +208,6 @@ var requirejs = {
             deps:['readiumSDK', 'cfiNavigationLogic'],
             exports:'onePageView'
         },
-
 
         cfiNavigationLogic: {
             deps: ['readiumSDK', 'epubCfi'],
@@ -179,6 +234,11 @@ var requirejs = {
             exports: 'triggers'
         },
 
+        switches: {
+            deps: ['readiumSDK'],
+            exports: 'switches'
+        },
+
         bookmarkData: {
             deps: ['readiumSDK'],
             exports: 'bookmarkData'
@@ -200,7 +260,7 @@ var requirejs = {
         },
 
         reflowableView: {
-            deps: ['readiumSDK', 'cfiNavigationLogic', 'bookmarkData', 'triggers'],
+            deps: ['readiumSDK', 'cfiNavigationLogic', 'bookmarkData'],
             exports: 'reflowableView'
         },
 
@@ -210,17 +270,17 @@ var requirejs = {
         },
 
         fixedView: {
-            deps: ['readiumSDK', 'onePageView', 'currentPagesInfo', 'fixedPageSpread', 'bookmarkData', 'triggers'],
+            deps: ['readiumSDK', 'onePageView', 'currentPagesInfo', 'fixedPageSpread', 'bookmarkData'],
             exports: 'fixedView'
         },
 
         mediaOvelayDataInjector: {
-          deps: ['readiumSDK', 'mediaOverlay', 'mediaOverlayPlayer', 'smilModel', 'spineItem', 'smilIterator'],
+          deps: ['readiumSDK', 'mediaOverlay', 'mediaOverlayPlayer', 'smilModel', 'spineItem', 'smilIterator', 'rangy'],
           exports: 'mediaOvelayDataInjector'
         },
 
         internalLinksSupport: {
-            deps:['readiumSDK'],
+            deps:['readiumSDK', 'URIjs'],
             exports: 'internalLinksSupport'
         },
 
@@ -232,7 +292,7 @@ var requirejs = {
         readerView : {
             deps: [ 'backbone','readiumSDK', 'helpers', 'viewerSettings', 'styleCollection', 'package',
                 'mediaOverlayPlayer', 'pageOpenRequest', 'fixedView', 'reflowableView', 'mediaOvelayDataInjector',
-                'internalLinksSupport', 'iframeLoader', 'annotationsManager', 'scrollView', 'URIjs'],
+                'internalLinksSupport', 'iframeLoader', 'annotationsManager', 'scrollView', 'URIjs', 'triggers', 'switches'],
             exports:'readerView'
         },
 

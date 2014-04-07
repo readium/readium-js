@@ -1,19 +1,28 @@
 
-define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch', 'emub-model/package_document_parser', 'emub-model/package_document', 'epub-fetch/iframe_zip_loader', 'emub-model/smil_document_parser', 'URIjs', 'epub-ui/gestures'],
-    function (require, module, $, _, readerView, ResourceFetcher, PackageParser, PackageDocument, IframeZipLoader, SmilParser, URI, GesturesHandler) {
+define(['require', 'module', 'console_shim', 'jquery', 'underscore', 'readerView', 'epub-fetch', 'epub-model/package_document_parser', 'epub-fetch/iframe_zip_loader', 'URIjs', 'epub-ui/gestures'],
+    function (require, module, console_shim, $, _, readerView, PublicationFetcher, PackageParser, IframeZipLoader, URI, GesturesHandler) {
 
     console.log('Readium module id: ' + module.id);
 
     //hack to make URI object global for readers consumption.
     window.URI = URI;
 
+    //polyfill to support Safari 6
+    if ('URL' in window === false) {
+        if ('webkitURL' in window === false) {
+            throw Error('Browser does not support window.URL');
+        }
+
+        window.URL = window.webkitURL;
+    }
+
     var Readium = function(readiumOptions, readerOptions){
 
         var self = this;
 
-        var _currentResourceFetcher;
+        var _currentPublicationFetcher;
 
-        var _iframeZipLoader = new IframeZipLoader(ReadiumSDK, function() { return _currentResourceFetcher; });
+        var _iframeZipLoader = new IframeZipLoader(ReadiumSDK, function() { return _currentPublicationFetcher; });
 
         var jsLibRoot = readiumOptions.jsLibRoot;
         var renderingViewport = readerOptions.el;
@@ -26,31 +35,32 @@ define(['require', 'module', 'jquery', 'underscore', 'readerView', 'epub-fetch',
         _gesturesHandler.initialize();
 
 
-        this.openPackageDocument = function(bookRoot, callback)  {
+        this.openPackageDocument = function(bookRoot, callback, openPageRequest)  {
 
-            _currentResourceFetcher = new ResourceFetcher(bookRoot, jsLibRoot);
+            _currentPublicationFetcher = new PublicationFetcher(bookRoot, jsLibRoot);
 
-            _currentResourceFetcher.initialize(function() {
+            _currentPublicationFetcher.initialize(function() {
 
-                var _packageParser = new PackageParser(bookRoot, _currentResourceFetcher);
+                var _packageParser = new PackageParser(bookRoot, _currentPublicationFetcher);
 
-                _packageParser.parse(function(docJson){
-                    SmilParser.fillSmilData(docJson, bookRoot, jsLibRoot, _currentResourceFetcher, function() {
-                        var packageDocument = new PackageDocument(_currentResourceFetcher.getPackageUrl(), docJson, _currentResourceFetcher);
-                        var openBookOptions = readiumOptions.openBookOptions || {};
-                        var openBookData = $.extend(packageDocument.getPackageData(), openBookOptions);
-                        self.reader.openBook(openBookData);
+                _packageParser.parse(function(packageDocJson, packageDocument){
+                    var openBookOptions = readiumOptions.openBookOptions || {};
+                    var openBookData = $.extend(packageDocument.getPackageData(), openBookOptions);
 
-                        var options = { 
-                            packageDocumentUrl : _currentResourceFetcher.getPackageUrl(),
-                            metadata: docJson.metadata
-                        };
+                    if (openPageRequest) {
+                        openBookData.openPageRequest = openPageRequest;
+                    }
+                    self.reader.openBook(openBookData);
 
-                        if (callback){
-                            // gives caller access to document metadata like the table of contents
-                            callback(packageDocument, options);
-                        }
-                    })
+                    var options = {
+                        packageDocumentUrl : _currentPublicationFetcher.getPackageUrl(),
+                        metadata: packageDocJson.metadata
+                    };
+
+                    if (callback){
+                        // gives caller access to document metadata like the table of contents
+                        callback(packageDocument, options);
+                    }
                 });
             });
         }
