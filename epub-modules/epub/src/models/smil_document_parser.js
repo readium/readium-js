@@ -1,13 +1,14 @@
-define([ 'require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch' ], function(require, module, $, _, Backbone, ResourceFetcher) {
+define(['require', 'module', 'jquery', 'underscore'], function (require, module, $, _) {
 
     // `SmilDocumentParser` is used to parse the xml of an epub package
     // document and build a javascript object. The constructor accepts an
     // instance of `URI` that is used to resolve paths during the process
-    var SmilDocumentParser = function(packageFetcher, itemHref) {
+    var SmilDocumentParser = function(docJson, publicationFetcher) {
 
-        // Parse an XML package document into a javascript object
-        this.parse = function(callback) {
-            packageFetcher.getRelativeXmlFileDom(itemHref, function(xmlDom){
+        // Parse a media overlay manifest item XML
+        this.parse = function(itemHref, callback) {
+            var that = this;
+            publicationFetcher.getRelativeXmlFileDom(itemHref, function(xmlDom){
                 var json, cover;
 
                 json = {};
@@ -16,7 +17,7 @@ define([ 'require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch' ]
                 json.smilVersion = smil.getAttribute('version');
 
                 //var body = $("body", xmlDom)[0];
-                json.children = getChildren(smil);
+                json.children = that.getChildren(smil);
 
                 callback(json);
             })
@@ -46,13 +47,14 @@ define([ 'require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch' ]
         // supports this syntax:
         // http://idpf.org/epub/30/spec/epub30-mediaoverlays.html#app-clock-examples
 
-        function getChildren(element) {
+        this.getChildren = function(element) {
+            var that = this;
             var children = [];
 
             $.each(element.childNodes, function(elementIndex, currElement) {
 
                 if (currElement.nodeType === 1) { // ELEMENT
-                    var item = createItemFromElement(currElement);
+                    var item = that.createItemFromElement(currElement);
                     if (item) {
                         children.push(item);
                     }
@@ -62,7 +64,9 @@ define([ 'require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch' ]
             return children;
         }
 
-        function createItemFromElement(element) {
+        this.createItemFromElement = function(element) {
+            var that = this;
+
             var item = {};
             item.nodeType = element.nodeName;
             
@@ -79,14 +83,14 @@ define([ 'require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch' ]
                 safeCopyProperty("id", element, item);
                 safeCopyProperty("epub:type", element, item);
 
-                item.children = getChildren(element);
+                item.children = that.getChildren(element);
 
             } else if (item.nodeType === "par") {
 
                 safeCopyProperty("id", element, item);
                 safeCopyProperty("epub:type", element, item);
 
-                item.children = getChildren(element);
+                item.children = that.getChildren(element);
 
             } else if (item.nodeType === "text") {
 
@@ -100,8 +104,8 @@ define([ 'require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch' ]
             } else if (item.nodeType === "audio") {
                 safeCopyProperty("src", element, item, true);
                 safeCopyProperty("id", element, item);
-                item.clipBegin = resolveClockValue(element.getAttribute("clipBegin"));
-                item.clipEnd = resolveClockValue(element.getAttribute("clipEnd"));
+                item.clipBegin = SmilDocumentParser.resolveClockValue(element.getAttribute("clipBegin"));
+                item.clipEnd = SmilDocumentParser.resolveClockValue(element.getAttribute("clipEnd"));
             }
             else
             {
@@ -111,128 +115,130 @@ define([ 'require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch' ]
             return item;
         }
 
-    };
+        this.fillSmilData = function(callback) {
+            var that = this;
 
-    
-    function fillSmilData(docJson, publicationFetcher, callback) {
-
-        if (docJson.spine.length <= 0) {
-            docJson.mo_map = [];
-            callback(docJson);
-            return;
-        }
-
-        var allFakeSmil = true;
-        docJson.mo_map = [];
-        
-        var processSpineItem = function(ii) {
-
-            if (ii >= docJson.spine.length) {
-                if (allFakeSmil) {
-                    console.log("No Media Overlays");
-                    docJson.mo_map = [];
-                }
-
+            if (docJson.spine.length <= 0) {
+                docJson.mo_map = [];
                 callback(docJson);
                 return;
             }
-            
-            var spineItem = docJson.spine[ii];
-            
-            var manifestItem = undefined;
-            for (var jj = 0; jj < docJson.manifest.length; jj++) {
-                var item = docJson.manifest[jj];
-                if (item.id === spineItem.idref) {
-                    manifestItem = item;
-                    break;
+
+            var allFakeSmil = true;
+            docJson.mo_map = [];
+
+            var processSpineItem = function(ii) {
+
+                if (ii >= docJson.spine.length) {
+                    if (allFakeSmil) {
+                        console.log("No Media Overlays");
+                        docJson.mo_map = [];
+                    }
+
+                    callback(docJson);
+                    return;
                 }
-            }
-            if (!manifestItem) {
-                console.error("Cannot find manifest item for spine item?! " + spineItem.idref);
-                processSpineItem(ii+1);
-                return;
-            }
-            
-            if (manifestItem.media_overlay) {
-            
-                var manifestItemSMIL = undefined;
+
+                var spineItem = docJson.spine[ii];
+
+                var manifestItem = undefined;
                 for (var jj = 0; jj < docJson.manifest.length; jj++) {
                     var item = docJson.manifest[jj];
-                    if (item.id === manifestItem.media_overlay) {
-                        manifestItemSMIL = item;
+                    if (item.id === spineItem.idref) {
+                        manifestItem = item;
                         break;
                     }
                 }
-                if (!manifestItemSMIL) {
-                    console.error("Cannot find SMIL manifest item for spine/manifest item?! " + manifestItem.media_overlay);
+                if (!manifestItem) {
+                    console.error("Cannot find manifest item for spine item?! " + spineItem.idref);
                     processSpineItem(ii+1);
                     return;
                 }
-                //ASSERT manifestItemSMIL.media_type === "application/smil+xml"
-                
-                var smilParser = new SmilDocumentParser(publicationFetcher, manifestItemSMIL.href);
-                smilParser.parse(function(smilJson) {
-                    smilJson.href = manifestItemSMIL.href;
-                    smilJson.id = manifestItemSMIL.id;
-                    smilJson.spineItemId = spineItem.idref; // same as manifestItem.id
 
-                    if (docJson.metadata.mediaItems) {
-                        for (var idx = 0; idx < docJson.metadata.mediaItems.length; idx++) {
-                            var item = docJson.metadata.mediaItems[idx];
-                            if (!item.refines) continue;
-                            
-                            var id = item.refines;
-                            var hash = id.indexOf('#');
-                            if (hash >= 0) {
-                                var start = hash+1;
-                                var end = id.length-1;
-                                id = id.substr(start, end);
-                            }
-                            id = id.trim();
+                if (manifestItem.media_overlay) {
 
-                            if (id === manifestItemSMIL.id) {
-                                smilJson.duration = item.duration; //resolveClockValue already done.
-                                break;
-                            }
+                    var manifestItemSMIL = undefined;
+                    for (var jj = 0; jj < docJson.manifest.length; jj++) {
+                        var item = docJson.manifest[jj];
+                        if (item.id === manifestItem.media_overlay) {
+                            manifestItemSMIL = item;
+                            break;
                         }
                     }
+                    if (!manifestItemSMIL) {
+                        console.error("Cannot find SMIL manifest item for spine/manifest item?! " + manifestItem.media_overlay);
+                        processSpineItem(ii+1);
+                        return;
+                    }
+                    //ASSERT manifestItemSMIL.media_type === "application/smil+xml"
 
-                    allFakeSmil = false;
-                    docJson.mo_map.push(smilJson);
-                    
-                    setTimeout(function(){ processSpineItem(ii+1); }, 0);
-                    return;
-                });
-            }
-            else {
-                docJson.mo_map.push({
-                    id: "",
-                    href: "",
-                    spineItemId: spineItem.idref, // same as manifestItem.id
-                    children: [{
-                        nodeType: 'seq',
-                        textref: manifestItem.href,
+                    that.parse(manifestItemSMIL.href, function(smilJson) {
+                        smilJson.href = manifestItemSMIL.href;
+                        smilJson.id = manifestItemSMIL.id;
+                        smilJson.spineItemId = spineItem.idref; // same as manifestItem.id
+
+                        if (docJson.metadata.mediaItems) {
+                            for (var idx = 0; idx < docJson.metadata.mediaItems.length; idx++) {
+                                var item = docJson.metadata.mediaItems[idx];
+                                if (!item.refines) continue;
+
+                                var id = item.refines;
+                                var hash = id.indexOf('#');
+                                if (hash >= 0) {
+                                    var start = hash+1;
+                                    var end = id.length-1;
+                                    id = id.substr(start, end);
+                                }
+                                id = id.trim();
+
+                                if (id === manifestItemSMIL.id) {
+                                    smilJson.duration = item.duration; //resolveClockValue already done.
+                                    break;
+                                }
+                            }
+                        }
+
+                        allFakeSmil = false;
+                        docJson.mo_map.push(smilJson);
+
+                        setTimeout(function(){ processSpineItem(ii+1); }, 0);
+                        return;
+                    });
+                }
+                else {
+                    docJson.mo_map.push({
+                        id: "",
+                        href: "",
+                        spineItemId: spineItem.idref, // same as manifestItem.id
                         children: [{
-                            nodeType: 'par',
+                            nodeType: 'seq',
+                            textref: manifestItem.href,
                             children: [{
-                                nodeType: 'text',
-                                src: manifestItem.href,
-                                srcFile: manifestItem.href,
-                                srcFragmentId: ""
+                                nodeType: 'par',
+                                children: [{
+                                    nodeType: 'text',
+                                    src: manifestItem.href,
+                                    srcFile: manifestItem.href,
+                                    srcFragmentId: ""
+                                }]
                             }]
                         }]
-                    }]
-                });
-                
-                setTimeout(function(){ processSpineItem(ii+1); }, 0);
-                return;
-            }
-        };
-        
-        processSpineItem(0);
-    }
+                    });
 
-    function resolveClockValue(value) {
+                    setTimeout(function(){ processSpineItem(ii+1); }, 0);
+                    return;
+                }
+            };
+
+            processSpineItem(0);
+        }
+
+
+    };
+
+
+
+    SmilDocumentParser.resolveClockValue = function(value) {
         if (!value) return 0;
 
         var hours = 0;
@@ -264,12 +270,5 @@ define([ 'require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch' ]
         return total;
     }
     
-    
-    var SmilParser = {
-        fillSmilData: fillSmilData,
-        resolveClockValue: resolveClockValue,
-        Parser: SmilDocumentParser
-    }
-    
-    return SmilParser;
+    return SmilDocumentParser;
 });
