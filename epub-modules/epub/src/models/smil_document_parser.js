@@ -1,5 +1,4 @@
 define([ 'require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch' ], function(require, module, $, _, Backbone, ResourceFetcher) {
-    console.log('smil_document_parser module id: ' + module.id);
 
     // `SmilDocumentParser` is used to parse the xml of an epub package
     // document and build a javascript object. The constructor accepts an

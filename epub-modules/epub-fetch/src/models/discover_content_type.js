@@ -1,5 +1,4 @@
 define(['require', 'module', 'jquery', 'backbone', 'URIjs'], function (require, module, $, Backbone, URI) {
-    console.log('discover_content_type module id: ' + module.id);
 
     var _instance = undefined;
 

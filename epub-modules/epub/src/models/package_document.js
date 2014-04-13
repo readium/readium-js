@@ -1,6 +1,5 @@
 define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './manifest'],
     function (require, module, $, _, Backbone, URI, Manifest) {
-    console.log('package_document module id: ' + module.id);
 
     // Description: This model provides an interface for navigating an EPUB's package document
     var PackageDocument = function(packageDocumentURL, packageDocJson, resourceFetcher) {

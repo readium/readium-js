@@ -2,8 +2,6 @@
 define(['require', 'module', 'console_shim', 'jquery', 'underscore', 'readerView', 'epub-fetch', 'epub-model/package_document_parser', 'epub-fetch/iframe_zip_loader', 'URIjs', 'epub-ui/gestures'],
     function (require, module, console_shim, $, _, readerView, PublicationFetcher, PackageParser, IframeZipLoader, URI, GesturesHandler) {
 
-    console.log('Readium module id: ' + module.id);
-
     //hack to make URI object global for readers consumption.
     window.URI = URI;
 

@@ -1,6 +1,5 @@
 define(['require', 'module', 'jquery', 'underscore'],
     function (require, module, $, _) {
-        console.log('manifest module id: ' + module.id);
 
         var Manifest = function (manifestJson) {
 
