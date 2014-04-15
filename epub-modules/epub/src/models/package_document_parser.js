@@ -1,6 +1,5 @@
 define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/markup_parser', 'URIjs', './package_document', './smil_document_parser'],
-    function (require, module, $, _, Backbone, MarkupParser, URI, PackageDocument, SmilParser) {
-    console.log('package_document_parser module id: ' + module.id);
+    function (require, module, $, _, Backbone, MarkupParser, URI, PackageDocument, SmilDocumentParser) {
 
     // `PackageDocumentParser` is used to parse the xml of an epub package
     // document and build a javascript object. The constructor accepts an
@@ -29,7 +28,9 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
 
         function fillSmilData(packageDocJson, callback) {
 
-            SmilParser.fillSmilData(packageDocJson, publicationFetcher, function() {
+            var smilParser = new SmilDocumentParser(packageDocJson, publicationFetcher);
+
+            smilParser.fillSmilData(function() {
                 var packageDocument = new PackageDocument(publicationFetcher.getPackageUrl(), packageDocJson, publicationFetcher);
                 // return the parse result
                 callback(packageDocJson, packageDocument);
@@ -66,6 +67,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
 
                     // parse the spine into a proper collection
                     packageDocJson.spine = parseSpineProperties(packageDocJson.spine);
+
 
                     _packageFetcher.setPackageJson(packageDocJson, function () {
                         fillSmilData(packageDocJson, callback);
@@ -185,11 +187,11 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
             $.each($overlays, function(elementIndex, $currItem) {
                jsonMetadata.mediaItems.push({
                   refines: $currItem.getAttribute("refines"),
-                  duration: SmilParser.resolveClockValue($($currItem).text())
+                  duration: SmilDocumentParser.resolveClockValue($($currItem).text())
                });
             });
                
-            jsonMetadata.mediaDuration =  SmilParser.resolveClockValue($("meta[property='media:duration']:not([refines])", $metadata).text());
+            jsonMetadata.mediaDuration =  SmilDocumentParser.resolveClockValue($("meta[property='media:duration']:not([refines])", $metadata).text());
             jsonMetadata.mediaNarrator =  $("meta[property='media:narrator']", $metadata).text();
             jsonMetadata.mediaActiveClass =   $("meta[property='media:active-class']", $metadata).text();
             jsonMetadata.mediaPlaybackActiveClass =   $("meta[property='media:playback-active-class']", $metadata).text();
