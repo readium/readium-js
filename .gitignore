@@ -21,3 +21,14 @@ out
 *.ipr
 *.iws
 .idea/
+
+/.project
+/build.bat
+/.externalToolBuilders
+
+### vim ###
+.*.s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+*~

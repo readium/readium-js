@@ -1,188 +1,92 @@
-define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './manifest', './spine', './metadata',
-    './page_spread_property'],
-    function (require, module, $, _, Backbone, URI, Manifest, Spine, Metadata, PageSpreadProperty) {
-    console.log('package_document module id: ' + module.id);
+//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
+//  
+//  Redistribution and use in source and binary forms, with or without modification, 
+//  are permitted provided that the following conditions are met:
+//  1. Redistributions of source code must retain the above copyright notice, this 
+//  list of conditions and the following disclaimer.
+//  2. Redistributions in binary form must reproduce the above copyright notice, 
+//  this list of conditions and the following disclaimer in the documentation and/or 
+//  other materials provided with the distribution.
+//  3. Neither the name of the organization nor the names of its contributors may be 
+//  used to endorse or promote products derived from this software without specific 
+//  prior written permission.
+
+define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './manifest'],
+    function (require, module, $, _, Backbone, URI, Manifest) {
 
     // Description: This model provides an interface for navigating an EPUB's package document
-    var PackageDocument = function(packageDocumentURL, jsonData, resourceFetcher) {
+    var PackageDocument = function(packageDocumentURL, packageDocJson, resourceFetcher) {
 
-        var _spine = new Spine(jsonData.spine);
-        var _manifest = new Manifest(jsonData.manifest);
-        var _metadata = new Metadata(jsonData.metadata);
-        var _bindings = new Spine(jsonData.bindings);
-        var _pageSpreadProperty = new PageSpreadProperty();
-
-
-        // If this book is fixed layout, assign the page spread class
-        if (isFixedLayout()) {
-            assignPageSpreadClass();
-        }
+        var _manifest = new Manifest(packageDocJson.manifest);
+        var _moMap = packageDocJson.mo_map;
 
         this.getPackageData = function () {
 
             var spinePackageData = [];
+            // _spine.each(function (spineItem) {
+            //     spinePackageData.push(...);
+            // });
+            for (var i = 0; i < packageDocJson.spine.length; i++)
+            {
+                var spineItem = packageDocJson.spine[i];
+                
+                var manifestItem = _manifest.getManifestItemByIdref(spineItem.idref);
+
+                var spineInfo = {
+                    href : manifestItem.contentDocumentURI,
+                    media_type : manifestItem.media_type,
+                    media_overlay_id : manifestItem.media_overlay,
+                    idref : spineItem.idref,
+                    page_spread : spineItem.page_spread,
+                    rendition_layout : spineItem.rendition_layout,
+                    rendition_orientation : spineItem.rendition_orientation,
+                    rendition_spread : spineItem.rendition_spread,
+                    rendition_flow : spineItem.rendition_flow,
+                    linear: spineItem.linear
+                };
+                spinePackageData.push(spineInfo);
+            }
+
             var packageDocRoot = packageDocumentURL.substr(0, packageDocumentURL.lastIndexOf("/"));
-
-            _spine.each(function (spineItem) {
-                spinePackageData.push(generatePackageData(spineItem));
-            });
-
-            // This is where the package data format thing is generated
             return {
                 rootUrl : packageDocRoot,
-                rendition_layout : _metadata.get("layout"),
+                rendition_layout : packageDocJson.metadata.layout,
+                rendition_orientation : packageDocJson.metadata.orientation,
+                rendition_layout : packageDocJson.metadata.layout,
+                media_overlay : getMediaOverlay(),
                 spine : {
                     direction : pageProgressionDirection(),
-                    items : spinePackageData    
+                    items : spinePackageData
                 }
             };
         };
 
+        function getMediaOverlay(){
+           var result = {
+                 duration : packageDocJson.metadata.mediaDuration,
+                 narrator : packageDocJson.metadata.mediaNarrator,
+                 activeClass : packageDocJson.metadata.mediaActiveClass,
+                 playbackActiveClass : packageDocJson.metadata.mediaPlaybackActiveClass,
+                 smil_models : _moMap,
+                 
+                 skippables: ["sidebar", "practice", "marginalia", "annotation", "help", "note", "footnote", "rearnote", "table", "table-row", "table-cell", "list", "list-item", "pagebreak"],
+                 escapables: ["sidebar", "bibliography", "toc", "loi", "appendix", "landmarks", "lot", "index", "colophon", "epigraph", "conclusion", "afterword", "warning", "epilogue", "foreword", "introduction", "prologue", "preface", "preamble", "notice", "errata", "copyright-page", "acknowledgments", "other-credits", "titlepage", "imprimatur", "contributors", "halftitlepage", "dedication", "help", "annotation", "marginalia", "practice", "note", "footnote", "rearnote", "footnotes", "rearnotes", "bridgehead", "page-list", "table", "table-row", "table-cell", "list", "list-item", "glossary"]
+           };
+
+           return result;
+        }
+        
         function isFixedLayout() {
 
-            return _metadata.get("fixed_layout");
-        }
-
-        function getManifestItemById(id) {
-
-            var foundManifestItem = _manifest.find(
-                function (manifestItem) {
-                    if (manifestItem.get("id") === id) {
-                        return manifestItem;
-                    }
-
-                    return undefined;
-                });
-
-            if (foundManifestItem) {
-                return foundManifestItem.toJSON();
-            }
-            else {
-                return undefined;
-            }
-        }
-
-        function getManifestItemByIdref(idref) {
-
-            var foundManifestItem = getManifestItemById(idref);
-            if (foundManifestItem) {
-                return foundManifestItem;
-            }
-            else {
-                return undefined;
-            }
-        }
-
-        function getSpineItemByIdref(idref) {
-
-            var foundSpineItem = getSpineModelByIdref(idref);
-            if (foundSpineItem) {
-                return foundSpineItem.toJSON();
-            }
-            else {
-                return undefined;
-            }
-        }
-
-        function getSpineItem(spineIndex) {
-
-            var spineItem = _spine.at(spineIndex);
-            if (spineItem) {
-                return spineItem.toJSON();
-            }
-            else {
-                return undefined;
-            }
-        }
-
-        function spineLength() {
-            return _spine.length;
-        }
-
-        // Description: gets the next position in the spine for which the
-        // spineItem does not have `linear='no'`. The start
-        // param is the non-inclusive position to begin the search
-        // from. If start is not supplied, the search will begin at
-        // postion 0. If no linear position can be found, this
-        // function returns undefined
-        function getNextLinearSpinePosition(currSpineIndex) {
-
-            if (currSpineIndex === undefined || currSpineIndex < 0) {
-                currSpineIndex = 0;
-
-                if (_spine.at(currSpineIndex).get("linear") !== "no") {
-                    return currSpineIndex;
-                }
-            }
-
-            while (currSpineIndex < spineLength() - 1) {
-                currSpineIndex += 1;
-                if (_spine.at(currSpineIndex).get("linear") !== "no") {
-                    return currSpineIndex;
-                }
-            }
-
-            // No next linear spine position.
-            return undefined;
-        }
-
-        // Description: gets the previous position in the spine for which the
-        // spineItem does not have `linear='no'`. The start
-        // param is the non-inclusive position to begin the search
-        // from. If start is not supplied, the search will begin at
-        // the end of the spine. If no linear position can be found,
-        // this function returns undefined
-        function getPrevLinearSpinePosition(currSpineIndex) {
-
-            if (currSpineIndex === undefined || currSpineIndex > spineLength() - 1) {
-                currSpineIndex = spineLength() - 1;
-
-                if (_spine.at(currSpineIndex).get("linear") !== "no") {
-                    return currSpineIndex;
-                }
-            }
-
-            while (currSpineIndex > 0) {
-                currSpineIndex -= 1;
-                if (_spine.at(currSpineIndex).get("linear") !== "no") {
-                    return currSpineIndex;
-                }
-            }
-
-            // No previous linear spine position.
-            return undefined;
-        }
-
-        function hasNextSection(currSpineIndex) {
-
-            if (currSpineIndex >= 0 &&
-                currSpineIndex <= spineLength() - 1) {
-
-                return getNextLinearSpinePosition(currSpineIndex) > -1;
-            }
-            else {
-                return false;
-            }
-        }
-
-        function hasPrevSection(currSpineIndex) {
-
-            if (currSpineIndex >= 0 &&
-                currSpineIndex <= spineLength() - 1) {
-
-                return getPrevLinearSpinePosition(currSpineIndex) > -1;
-            }
-            else {
-                return false;
-            }
+            return packageDocJson.metadata.fixed_layout;
         }
 
         function pageProgressionDirection() {
 
-            if (_metadata.get("page_prog_dir") === "rtl") {
+            if (packageDocJson.metadata.page_prog_dir === "rtl") {
                 return "rtl";
             }
-            else if (_metadata.get("page_prog_dir") === "default") {
+            else if (packageDocJson.metadata.page_prog_dir === "default") {
                 return "default";
             }
             else {
@@ -190,124 +94,29 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             }
         }
 
-        function getSpineIndexByHref(manifestHref) {
-
-            var spineItem = getSpineModelFromHref(manifestHref);
-            return getSpineIndex(spineItem);
-        }
-
-        function getBindingByHandler(handler) {
-
-            var binding = _bindings.find(
-                function (binding) {
-
-                    if (binding.get("handler") === handler) {
-                        return binding;
-                    }
-                });
-
-            if (binding) {
-                return binding.toJSON();
-            }
-            else {
-                return undefined;
-            }
-        }
-
-        function generatePackageData(spineItem) {
-
-            var fixedLayoutProperty = "reflowable";
-            // var fixedLayoutType = undefined;
-            var manifestItem = getManifestModelByIdref(spineItem.get("idref"));
-            // var isLinear;
-            // var firstPageIsOffset;
-            var pageSpread;
-
-            // Get fixed layout properties
-            if (spineItem.isFixedLayout() || isFixedLayout()) {
-
-                fixedLayoutProperty = "pre-paginated";
-                // if (manifestItem.isSvg()) {
-                //     fixedLayoutType = "svg";
-                // }
-                // else if (manifestItem.isImage()) {
-                //     fixedLayoutType = "image";
-                // }
-                // else {
-                //     fixedLayoutType = "xhtml";
-                // }
-            }
-
-            // Set primary reading order attribute
-            // if (spineItem.get("linear").trim() === "no") {
-            //     isLinear = false;
-            // }
-            // else {
-            //     isLinear = true;
-            // }
-
-            pageSpread = spineItem.get("page_spread");
-            // Set first page is offset parameter
-            // if (!isFixedLayout) {
-            //     if (pageProgressionDirection() === "ltr" && pageSpread === "right") {
-            //         firstPageIsOffset = true;
-            //     }
-            //     else if (pageProgressionDirection() === "rtl" && pageSpread === "left") {
-            //         firstPageIsOffset = true;
-            //     }
-            //     else {
-            //         firstPageIsOffset = false;
-            //     }
-            // }
-
-            if (pageSpread === "left") {
-                pageSpread = "page-spread-left";
-            }
-            else if (pageSpread === "right") {
-                pageSpread = "page-spread-right";
-            }
-            else if (pageSpread === "center") {
-                pageSpread = "page-spread-center";
-            }
-
-            var spineInfo = {
-                href : manifestItem.get('contentDocumentURI'),
-                media_type : manifestItem.get('media_type'),
-                media_overlay : manifestItem.get('media_overlay'),
-                idref : spineItem.get("idref"),
-                page_spread : pageSpread,
-                rendition_layout : fixedLayoutProperty
-            };
-
-            return spineInfo;
-        }
-
-        function getToc() {
-
+        this.getToc = function() {
             var item = getTocItem();
             if (item) {
-                return item.get("contentDocumentURI");
+                return item.contentDocumentURI;
             }
             return null;
-        }
+        };
 
-        function getTocText(callback) {
+        this.getTocText = function(callback) {
+            var toc = this.getToc();
 
-            var tocUrl = getToc();
-            console.log('tocUrl: [' + tocUrl + ']');
-
-            resourceFetcher.relativeToPackageFetchFileContents(tocUrl, 'text', function (tocDocumentText) {
+            resourceFetcher.relativeToPackageFetchFileContents(toc, 'text', function (tocDocumentText) {
                 callback(tocDocumentText)
             }, function (err) {
-                console.error('ERROR fetching TOC from [' + getToc() + ']:');
+                console.error('ERROR fetching TOC from [' + toc + ']:');
                 console.error(err);
                 callback(undefined);
             });
-        }
+        };
 
-        function getTocDom(callback) {
+        this.getTocDom = function(callback) {
 
-            getTocText(function (tocText) {
+            this.getTocText(function (tocText) {
                 if (typeof tocText === 'string') {
                     var tocDom = (new DOMParser()).parseFromString(tocText, "text/xml");
                     callback(tocDom);
@@ -315,11 +124,12 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
                     callback(undefined);
                 }
             });
-        }
+        };
 
-        function generateTocListDOM(callback) {
-
-            getTocDom(function (tocDom) {
+        // Unused?
+        this.generateTocListDOM = function(callback) {
+            var that = this;
+            this.getTocDom(function (tocDom) {
                 if (tocDom) {
                     if (tocIsNcx()) {
                         var $ncxOrderedList;
@@ -327,7 +137,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
                         callback($ncxOrderedList[0]);
                     } else {
                         var packageDocumentAbsoluteURL = new URI(packageDocumentURL).absoluteTo(document.URL);
-                        var tocDocumentAbsoluteURL = new URI(getToc()).absoluteTo(packageDocumentAbsoluteURL);
+                        var tocDocumentAbsoluteURL = new URI(that.getToc()).absoluteTo(packageDocumentAbsoluteURL);
                         // add a BASE tag to change the TOC document's baseURI.
                         var oldBaseTag = $(tocDom).remove('base');
                         var newBaseTag = $('<base></base>');
@@ -340,12 +150,12 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
                     callback(undefined);
                 }
             });
-        }
+        };
 
         function tocIsNcx() {
 
             var tocItem = getTocItem();
-            var contentDocURI = tocItem.get("contentDocumentURI");
+            var contentDocURI = tocItem.contentDocumentURI;
             var fileExtension = contentDocURI.substr(contentDocURI.lastIndexOf('.') + 1);
 
             return fileExtension.trim().toLowerCase() === "ncx";
@@ -369,7 +179,9 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             // Add the current navPoint element to the TOC html
             var navText = $navPointDOM.children("navLabel").text().trim();
             var navHref = $navPointDOM.children("content").attr("src");
-            var $navPointLi = $("<li class='nav-elem'><a href='" + navHref + "'>'" + navText + "'</a></li>");
+            var $navPointLi = $('<li class="nav-elem"></li>').append(
+                $('<a></a>', { href: navHref, text: navText })
+            );
 
             // Append nav point info
             $ol.append($navPointLi);
@@ -388,134 +200,21 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             }
         }
 
-        // Refactoring candidate: This search will always iterate through entire manifest; this should be modified to
-        //   return when the manifest item is found.
-        function getSpineModelFromHref(manifestHref) {
-
-            var resourceURI = new URI(manifestHref);
-            var resourceName = resourceURI.filename();
-            var foundSpineModel;
-
-            _manifest.each(function (manifestItem) {
-
-                var manifestItemURI = new URI(manifestItem.get("href"));
-                var manifestItemName = manifestItemURI.filename();
-
-                // Rationale: Return a spine model based on the manifest item id, which is the idref of the spine item
-                if (manifestItemName === resourceName) {
-                    foundSpineModel = getSpineModelByIdref(manifestItem.get("id"));
-                }
-            });
-
-            return foundSpineModel;
-        }
-
-        function getSpineModelByIdref(idref) {
-
-            var foundSpineItem = _spine.find(
-                function (spineItem) {
-                    if (spineItem.get("idref") === idref) {
-                        return spineItem;
-                    }
-                });
-
-            return foundSpineItem;
-        }
-
-        function getManifestModelByIdref(idref) {
-
-            var foundManifestItem = _manifest.find(
-                function (manifestItem) {
-                    if (manifestItem.get("id") === idref) {
-                        return manifestItem;
-                    }
-                });
-
-            return foundManifestItem;
-        }
-
-        function getSpineIndex(spineItem) {
-
-            return _spine.indexOf(spineItem);
-        }
-
-        // Description: When rendering fixed layout pages we need to determine whether the page
-        //   should be on the left or the right in two up mode, options are:
-        //     left_page:      render on the left side
-        //     right_page:     render on the right side
-        //     center_page:    always center the page horizontally
-        //   This property must be assigned when the package document is initialized
-        // NOTE: Look into how spine items with the linear="no" property affect this algorithm
-        function assignPageSpreadClass() {
-
-            var pageSpreadClass;
-            var numSpineItems;
-
-            // If the epub is apple fixed layout
-            if (_metadata.get("apple_fixed")) {
-
-                numSpineItems = _spine.length;
-                _spine.each(function (spineItem, spineIndex) {
-
-                    pageSpreadClass = _pageSpreadProperty.inferiBooksPageSpread(spineIndex, numSpineItems);
-                    spineItem.set({ pageSpreadClass : pageSpreadClass });
-                });
-            }
-            else {
-                // For each spine item
-                _spine.each(function (spineItem, spineIndex) {
-
-                    if (spineItem.get("page_spread")) {
-
-                        pageSpreadClass = _pageSpreadProperty.getPageSpreadFromProperties(spineItem.get("page_spread"));
-                        spineItem.set({ pageSpreadClass : pageSpreadClass });
-                    }
-                    else {
-
-                        pageSpreadClass = _pageSpreadProperty.inferUnassignedPageSpread(spineIndex, _spine, pageProgressionDirection());
-                        spineItem.set({ pageSpreadClass : pageSpreadClass });
-                    }
-                });
-            }
-        }
-
         function getTocItem(){
 
-            var manifest = _manifest;
-            var spine_id = _metadata.get("ncx");
-
-            var item = manifest.find(function(item){
-
-                if (item.get("properties").indexOf("nav") !== -1) {
-                    return true;
-                }
-                else {
-                    return false;
-                }
-            });
-
-            if( item ) {
+            var item = _manifest.getNavItem();
+            if (item) {
                 return item;
             }
 
-            if( spine_id && spine_id.length > 0 ) {
-                return manifest.find(function(item) {
-                    return item.get("id") === spine_id;
-                });
+            var spine_id = packageDocJson.metadata.ncx;
+            if (spine_id && spine_id.length > 0) {
+                return _manifest.getManifestItemByIdref(spine_id);
             }
 
             return null;
         }
 
-        // NOTE: Media overlays are temporarily disabled
-        // getMediaOverlayItem : function(idref) {
-        //     // just look up the object in the mo_map
-        //     var map = this.get("mo_map");
-        //     return map && map[idref];
-        // },
-
-        this.generateTocListDOM = generateTocListDOM;
-        this.getTocURL = getToc;
     };
 
     return PackageDocument;

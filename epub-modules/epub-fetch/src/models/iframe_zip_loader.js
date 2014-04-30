@@ -1,35 +1,41 @@
+//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
+//  
+//  Redistribution and use in source and binary forms, with or without modification, 
+//  are permitted provided that the following conditions are met:
+//  1. Redistributions of source code must retain the above copyright notice, this 
+//  list of conditions and the following disclaimer.
+//  2. Redistributions in binary form must reproduce the above copyright notice, 
+//  this list of conditions and the following disclaimer in the documentation and/or 
+//  other materials provided with the distribution.
+//  3. Neither the name of the organization nor the names of its contributors may be 
+//  used to endorse or promote products derived from this software without specific 
+//  prior written permission.
+
 define([], function(){
 
     var zipIframeLoader = function(ReadiumSDK, getCurrentResourceFetcher) {
 
         var basicIframeLoader = new ReadiumSDK.Views.IFrameLoader();
 
-        this.loadIframe = function(iframe, src, callback, context) {
+        this.addIFrameEventListener = function(eventName, callback, context) {
+            basicIframeLoader.addIFrameEventListener(eventName, callback, context);
+        };
 
-            if (getCurrentResourceFetcher().isPackageExploded()) {
-                basicIframeLoader.loadIframe(iframe, src, callback, context);
-            } else {
-                var basicLoadCallback = function(success) {
-                    var context = this;
-                    var itemHref = context.currentSpineItem.href;
-                    getCurrentResourceFetcher().relativeToPackageFetchFileContents(itemHref, 'text', function(contentDocumentText) {
-                        var srcMediaType = context.currentSpineItem.media_type;
+        this.loadIframe = function(iframe, src, callback, caller, attachedData) {
 
-                        getCurrentResourceFetcher().resolveInternalPackageResources(itemHref, srcMediaType, contentDocumentText,
-                            function (resolvedContentDocumentDom) {
-                                var contentDocument = iframe.contentDocument;
-                                contentDocument.replaceChild(resolvedContentDocumentDom.documentElement,
-                                    contentDocument.documentElement);
-                                callback.call(context, success);
-                            });
-                    }, function(err) {
-                        if (err.message) {
-                            console.error(err.message);
+            var shouldFetchProgrammatically = getCurrentResourceFetcher().shouldFetchProgrammatically();
+            if (shouldFetchProgrammatically) {
+                var basicLoadCallback = function (success) {
+                    getCurrentResourceFetcher().fetchContentDocument(attachedData,
+                        function (resolvedContentDocumentDom) {
+                            var contentDocument = iframe.contentDocument;
+                            contentDocument.replaceChild(resolvedContentDocumentDom.documentElement,
+                                contentDocument.documentElement);
+                            callback.call(caller, success, attachedData);
+                        }, function (err) {
+                            callback.call(caller, success, attachedData);
                         }
-
-                        console.error(err);
-                        callback.call(context, success);
-                    });
+                    );
                 };
                 // Feed an artificial empty HTML document to the IFRAME, then let the wrapper onload function
                 // take care of actual document loading (from zipped EPUB) and calling callbacks:
@@ -37,7 +43,9 @@ define([], function(){
                     new Blob(['<html><body></body></html>'], {'type': 'text/html'})
                 );
 
-                basicIframeLoader.loadIframe(iframe, emptyDocumentDataUri, basicLoadCallback, context);
+                basicIframeLoader.loadIframe(iframe, emptyDocumentDataUri, basicLoadCallback, caller, attachedData);
+            } else {
+                basicIframeLoader.loadIframe(iframe, src, callback, caller, attachedData);
             }
         };
     };
