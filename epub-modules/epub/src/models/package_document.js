@@ -37,8 +37,16 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
                 rootUrl : packageDocRoot,
                 rendition_layout : packageDocJson.metadata.layout,
                 rendition_orientation : packageDocJson.metadata.orientation,
-                rendition_layout : packageDocJson.metadata.layout,
-                media_overlay : getMediaOverlay(),
+                media_overlay : {
+                    duration : packageDocJson.metadata.mediaDuration,
+                    narrator : packageDocJson.metadata.mediaNarrator,
+                    activeClass : packageDocJson.metadata.mediaActiveClass,
+                    playbackActiveClass : packageDocJson.metadata.mediaPlaybackActiveClass,
+                    smil_models : _mo_map,
+
+                    skippables: ["sidebar", "practice", "marginalia", "annotation", "help", "note", "footnote", "rearnote", "table", "table-row", "table-cell", "list", "list-item", "pagebreak"],
+                    escapables: ["sidebar", "bibliography", "toc", "loi", "appendix", "landmarks", "lot", "index", "colophon", "epigraph", "conclusion", "afterword", "warning", "epilogue", "foreword", "introduction", "prologue", "preface", "preamble", "notice", "errata", "copyright-page", "acknowledgments", "other-credits", "titlepage", "imprimatur", "contributors", "halftitlepage", "dedication", "help", "annotation", "marginalia", "practice", "note", "footnote", "rearnote", "footnotes", "rearnotes", "bridgehead", "page-list", "table", "table-row", "table-cell", "list", "list-item", "glossary"]
+                },
                 spine : {
                     direction : pageProgressionDirection(),
                     items : spinePackageData
@@ -74,26 +82,6 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
         this.setMoMap = function(mediaOverlaysMap) {
             _mo_map = mediaOverlaysMap;
         };
-
-        function getMediaOverlay(){
-           var result = {
-                 duration : packageDocJson.metadata.mediaDuration,
-                 narrator : packageDocJson.metadata.mediaNarrator,
-                 activeClass : packageDocJson.metadata.mediaActiveClass,
-                 playbackActiveClass : packageDocJson.metadata.mediaPlaybackActiveClass,
-                 smil_models : _mo_map,
-                 
-                 skippables: ["sidebar", "practice", "marginalia", "annotation", "help", "note", "footnote", "rearnote", "table", "table-row", "table-cell", "list", "list-item", "pagebreak"],
-                 escapables: ["sidebar", "bibliography", "toc", "loi", "appendix", "landmarks", "lot", "index", "colophon", "epigraph", "conclusion", "afterword", "warning", "epilogue", "foreword", "introduction", "prologue", "preface", "preamble", "notice", "errata", "copyright-page", "acknowledgments", "other-credits", "titlepage", "imprimatur", "contributors", "halftitlepage", "dedication", "help", "annotation", "marginalia", "practice", "note", "footnote", "rearnote", "footnotes", "rearnotes", "bridgehead", "page-list", "table", "table-row", "table-cell", "list", "list-item", "glossary"]
-           };
-
-           return result;
-        }
-        
-        function isFixedLayout() {
-
-            return packageDocJson.metadata.fixed_layout;
-        }
 
         function pageProgressionDirection() {
 

@@ -75,10 +75,6 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
 
                 $.when(updateMetadataWithIBookProperties(packageDocJson.metadata)).then(function() {
 
-                    if (packageDocJson.metadata.layout === "pre-paginated") {
-                        packageDocJson.metadata.fixed_layout = true;
-                    }
-
                     // parse the spine into a proper collection
                     packageDocJson.spine = parseSpineProperties(packageDocJson.spine);
 
