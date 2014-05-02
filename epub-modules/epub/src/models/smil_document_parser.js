@@ -16,23 +16,23 @@ define(['require', 'module', 'jquery', 'underscore'], function (require, module,
     // `SmilDocumentParser` is used to parse the xml of an epub package
     // document and build a javascript object. The constructor accepts an
     // instance of `URI` that is used to resolve paths during the process
-    var SmilDocumentParser = function(docJson, publicationFetcher) {
+    var SmilDocumentParser = function(packageDocument, publicationFetcher) {
 
         // Parse a media overlay manifest item XML
         this.parse = function(itemHref, callback) {
             var that = this;
             publicationFetcher.getRelativeXmlFileDom(itemHref, function(xmlDom){
-                var json, cover;
+                var smilJson, cover;
 
-                json = {};
+                smilJson = {};
 
                 var smil = $("smil", xmlDom)[0];
-                json.smilVersion = smil.getAttribute('version');
+                smilJson.smilVersion = smil.getAttribute('version');
 
                 //var body = $("body", xmlDom)[0];
-                json.children = that.getChildren(smil);
+                smilJson.children = that.getChildren(smil);
 
-                callback(json);
+                callback(smilJson);
             })
         };
 
@@ -131,37 +131,30 @@ define(['require', 'module', 'jquery', 'underscore'], function (require, module,
         this.fillSmilData = function(callback) {
             var that = this;
 
-            if (docJson.spine.length <= 0) {
-                docJson.mo_map = [];
-                callback(docJson);
+            if (packageDocument.spineLength() <= 0) {
+                callback();
                 return;
             }
 
             var allFakeSmil = true;
-            docJson.mo_map = [];
+            var mo_map = [];
 
             var processSpineItem = function(ii) {
 
-                if (ii >= docJson.spine.length) {
+                if (ii >= packageDocument.spineLength()) {
                     if (allFakeSmil) {
                         console.log("No Media Overlays");
-                        docJson.mo_map = [];
+                        packageDocument.setMoMap([]);
                     }
 
-                    callback(docJson);
+                    callback();
                     return;
                 }
 
-                var spineItem = docJson.spine[ii];
+                var spineItem = packageDocument.getSpineItem(ii);
 
-                var manifestItem = undefined;
-                for (var jj = 0; jj < docJson.manifest.length; jj++) {
-                    var item = docJson.manifest[jj];
-                    if (item.id === spineItem.idref) {
-                        manifestItem = item;
-                        break;
-                    }
-                }
+                var manifestItem = packageDocument.getManifest().getManifestItemByIdref(spineItem.idref);
+
                 if (!manifestItem) {
                     console.error("Cannot find manifest item for spine item?! " + spineItem.idref);
                     processSpineItem(ii+1);
@@ -170,14 +163,9 @@ define(['require', 'module', 'jquery', 'underscore'], function (require, module,
 
                 if (manifestItem.media_overlay) {
 
-                    var manifestItemSMIL = undefined;
-                    for (var jj = 0; jj < docJson.manifest.length; jj++) {
-                        var item = docJson.manifest[jj];
-                        if (item.id === manifestItem.media_overlay) {
-                            manifestItemSMIL = item;
-                            break;
-                        }
-                    }
+                    var manifestItemSMIL = packageDocument.getManifest()
+                        .getManifestItemByIdref(manifestItem.media_overlay);
+
                     if (!manifestItemSMIL) {
                         console.error("Cannot find SMIL manifest item for spine/manifest item?! " + manifestItem.media_overlay);
                         processSpineItem(ii+1);
@@ -190,36 +178,22 @@ define(['require', 'module', 'jquery', 'underscore'], function (require, module,
                         smilJson.id = manifestItemSMIL.id;
                         smilJson.spineItemId = spineItem.idref; // same as manifestItem.id
 
-                        if (docJson.metadata.mediaItems) {
-                            for (var idx = 0; idx < docJson.metadata.mediaItems.length; idx++) {
-                                var item = docJson.metadata.mediaItems[idx];
-                                if (!item.refines) continue;
 
-                                var id = item.refines;
-                                var hash = id.indexOf('#');
-                                if (hash >= 0) {
-                                    var start = hash+1;
-                                    var end = id.length-1;
-                                    id = id.substr(start, end);
-                                }
-                                id = id.trim();
-
-                                if (id === manifestItemSMIL.id) {
-                                    smilJson.duration = item.duration; //resolveClockValue already done.
-                                    break;
-                                }
-                            }
+                        var mediaItem = packageDocument.getMetadata().getMediaItemByRefinesId(manifestItemSMIL.id);
+                        if (mediaItem) {
+                            smilJson.duration = mediaItem.duration;
                         }
 
                         allFakeSmil = false;
-                        docJson.mo_map.push(smilJson);
+                        mo_map.push(smilJson);
+                        packageDocument.setMoMap(mo_map);
 
                         setTimeout(function(){ processSpineItem(ii+1); }, 0);
                         return;
                     });
                 }
                 else {
-                    docJson.mo_map.push({
+                    mo_map.push({
                         id: "",
                         href: "",
                         spineItemId: spineItem.idref, // same as manifestItem.id
@@ -237,6 +211,7 @@ define(['require', 'module', 'jquery', 'underscore'], function (require, module,
                             }]
                         }]
                     });
+                    packageDocument.setMoMap(mo_map);
 
                     setTimeout(function(){ processSpineItem(ii+1); }, 0);
                     return;

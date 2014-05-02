@@ -41,10 +41,11 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
 
         function fillSmilData(packageDocJson, callback) {
 
-            var smilParser = new SmilDocumentParser(packageDocJson, publicationFetcher);
+            var packageDocument = new PackageDocument(publicationFetcher.getPackageUrl(), packageDocJson, publicationFetcher);
+            var smilParser = new SmilDocumentParser(packageDocument, publicationFetcher);
 
             smilParser.fillSmilData(function() {
-                var packageDocument = new PackageDocument(publicationFetcher.getPackageUrl(), packageDocJson, publicationFetcher);
+
                 // return the parse result
                 callback(packageDocJson, packageDocument);
             });
