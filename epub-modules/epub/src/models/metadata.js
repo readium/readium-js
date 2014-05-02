@@ -11,8 +11,8 @@
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define(['require', 'module', 'jquery', 'underscore'],
-    function (require, module, $, _) {
+define(['require', 'module', 'underscore'],
+    function (require, module, _) {
 
         var Metadata = function (metadataJson) {
 
