@@ -39,9 +39,8 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
             _deferredXmlDom.resolve(packageDom);
         }, onError);
 
-        function fillSmilData(packageDocJson, callback) {
+        function fillSmilData(packageDocJson, packageDocument, callback) {
 
-            var packageDocument = new PackageDocument(publicationFetcher.getPackageUrl(), packageDocJson, publicationFetcher);
             var smilParser = new SmilDocumentParser(packageDocument, publicationFetcher);
 
             smilParser.fillSmilData(function() {
@@ -60,6 +59,11 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
 
                 packageDocJson = {};
                 packageDocJson.metadata = getJsonMetadata(xmlDom);
+
+
+                var spineElem = xmlDom.getElementsByTagNameNS("*", "spine")[0];
+                var page_prog_dir = getElemAttr(xmlDom, 'spine', "page-progression-direction");
+
                 packageDocJson.bindings = getJsonBindings(xmlDom);
                 packageDocJson.spine = getJsonSpine(xmlDom);
                 packageDocJson.manifest = getJsonManifest(xmlDom);
@@ -80,7 +84,10 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
 
 
                     _packageFetcher.setPackageJson(packageDocJson, function () {
-                        fillSmilData(packageDocJson, callback);
+                        var packageDocument = new PackageDocument(publicationFetcher.getPackageUrl(), packageDocJson, publicationFetcher);
+
+                        packageDocument.setPageProgressionDirection(page_prog_dir);
+                        fillSmilData(packageDocJson, packageDocument, callback);
                     });
                 });
 
@@ -161,6 +168,15 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
             }
         }
 
+        function getElemAttr(rootElement, localName, attrName) {
+            var foundElement = findXmlElemByLocalNameAnyNS(rootElement, localName);
+            if (foundElement) {
+                return foundElement.getAttribute(attrName);
+            } else {
+                return '';
+            }
+        }
+
         function getJsonMetadata(xmlDom) {
 
             var $metadata = $("metadata", xmlDom);
@@ -176,8 +192,6 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
             jsonMetadata.language = getElemText(metadataElem, "language");
             jsonMetadata.modified_date = $("meta[property='dcterms:modified']", $metadata).text();
             jsonMetadata.ncx = $("spine", xmlDom).attr("toc") ? $("spine", xmlDom).attr("toc") : "";
-            jsonMetadata.page_prog_dir = $("spine", xmlDom).attr("page-progression-direction") ?
-                $("spine", xmlDom).attr("page-progression-direction") : "";
             jsonMetadata.pubdate = getElemText(metadataElem, "date");
             jsonMetadata.publisher = getElemText(metadataElem, "publisher");
             jsonMetadata.rights = getElemText(metadataElem, "rights");

@@ -19,6 +19,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
 
         var _manifest = new Manifest(packageDocJson.manifest);
         var _metadata = new Metadata(packageDocJson.metadata);
+        var _page_prog_dir;
         var _mo_map = [];
 
         this.getPackageData = function () {
@@ -48,7 +49,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
                     escapables: ["sidebar", "bibliography", "toc", "loi", "appendix", "landmarks", "lot", "index", "colophon", "epigraph", "conclusion", "afterword", "warning", "epilogue", "foreword", "introduction", "prologue", "preface", "preamble", "notice", "errata", "copyright-page", "acknowledgments", "other-credits", "titlepage", "imprimatur", "contributors", "halftitlepage", "dedication", "help", "annotation", "marginalia", "practice", "note", "footnote", "rearnote", "footnotes", "rearnotes", "bridgehead", "page-list", "table", "table-row", "table-cell", "list", "list-item", "glossary"]
                 },
                 spine : {
-                    direction : pageProgressionDirection(),
+                    direction : this.getPageProgressionDirection(),
                     items : spinePackageData
                 }
             };
@@ -83,18 +84,22 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
             _mo_map = mediaOverlaysMap;
         };
 
-        function pageProgressionDirection() {
+        this.setPageProgressionDirection = function(page_prog_dir) {
+            _page_prog_dir = page_prog_dir;
+        };
 
-            if (packageDocJson.metadata.page_prog_dir === "rtl") {
+
+        this.getPageProgressionDirection = function() {
+            if (_page_prog_dir === "rtl") {
                 return "rtl";
             }
-            else if (packageDocJson.metadata.page_prog_dir === "default") {
+            else if (_page_prog_dir === "default") {
                 return "default";
             }
             else {
                 return "ltr";
             }
-        }
+        };
 
         this.spineLength = function() {
             return packageDocJson.spine.length;

@@ -82,10 +82,6 @@ describe('Epub.PackageDocument', function() {
             });
         });
 
-        describe("pageProgressionDirection()", function () {
-
-        });
-
         describe("getPackageDocumentDOM", function () {
 
             beforeEach(function() {

@@ -128,10 +128,6 @@ describe("EpubParser.PackageDocumentParser", function() {
             expect(this.metadata.orientation).toEqual("");
         });
 
-        it("parses page_prog_dir property", function () {
-            expect(this.metadata.page_prog_dir).toEqual("");
-        });
-
         it("parses the pubdate property", function () {
             expect(this.metadata.pubdate).toEqual("");
         });
