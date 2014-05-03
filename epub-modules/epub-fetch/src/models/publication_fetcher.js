@@ -183,6 +183,10 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
             }
 
             var pathRelativeToZipRoot = decodeURIComponent(self.convertPathRelativeToPackageToRelativeToBase(relativeToPackagePath));
+            // In case we received an absolute path, convert it to relative form or the fetch will fail:
+            if (pathRelativeToZipRoot.charAt(0) === '/') {
+                pathRelativeToZipRoot = pathRelativeToZipRoot.substr(1);
+            }
             var fetchFunction = _resourceFetcher.fetchFileContentsText;
             if (fetchMode === 'blob') {
                 fetchFunction = _resourceFetcher.fetchFileContentsBlob;

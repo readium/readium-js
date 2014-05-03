@@ -97,7 +97,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
             //if layout not set
             if(!metadata.layout)
             {
-                var pathToIBooksSpecificXml = new URI("/META-INF/com.apple.ibooks.display-options.xml");
+                var pathToIBooksSpecificXml = "/META-INF/com.apple.ibooks.display-options.xml";
 
                 publicationFetcher.relativeToPackageFetchFileContents(pathToIBooksSpecificXml, 'text', function (ibookPropText) {
                     if(ibookPropText) {
