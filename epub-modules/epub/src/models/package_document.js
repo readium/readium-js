@@ -22,7 +22,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
         var _page_prog_dir;
         var _mo_map = [];
 
-        this.getPackageData = function () {
+        this.getSharedJsPackageData = function () {
 
             var spinePackageData = [];
             // _spine.each(function (spineItem) {
