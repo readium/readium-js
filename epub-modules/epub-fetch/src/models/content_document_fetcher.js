@@ -45,6 +45,8 @@ define(
                 var resolutionDeferreds = [];
 
                 resolveDocumentImages(resolutionDeferreds, onerror);
+                resolveDocumentAudios(resolutionDeferreds, onerror);
+                resolveDocumentVideos(resolutionDeferreds, onerror);
                 resolveDocumentLinkStylesheets(resolutionDeferreds, onerror);
                 resolveDocumentEmbeddedStylesheets(resolutionDeferreds, onerror);
 
@@ -261,6 +263,14 @@ define(
 
             function resolveDocumentImages(resolutionDeferreds, onerror) {
                 resolveResourceElements('img', 'src', 'blob', resolutionDeferreds, onerror);
+            }
+
+            function resolveDocumentAudios(resolutionDeferreds, onerror) {
+                resolveResourceElements('audio', 'src', 'blob', resolutionDeferreds, onerror);
+            }
+
+            function resolveDocumentVideos(resolutionDeferreds, onerror) {
+                resolveResourceElements('video', 'src', 'blob', resolutionDeferreds, onerror);
             }
 
             function resolveDocumentLinkStylesheets(resolutionDeferreds, onerror) {
