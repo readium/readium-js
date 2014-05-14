@@ -190,6 +190,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
             jsonMetadata.orientation = $("meta[property='rendition:orientation']", $metadata).text();
             jsonMetadata.layout = $("meta[property='rendition:layout']", $metadata).text();
             jsonMetadata.spread = $("meta[property='rendition:spread']", $metadata).text();
+            jsonMetadata.flow = $("meta[property='rendition:flow']", $metadata).text();
             
             
             // Media part

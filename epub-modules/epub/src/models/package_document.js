@@ -52,7 +52,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
                 rootUrl : packageDocRoot,
                 rendition_layout : packageDocJson.metadata.layout,
                 rendition_orientation : packageDocJson.metadata.orientation,
-                rendition_layout : packageDocJson.metadata.layout,
+                rendition_flow : packageDocJson.metadata.flow,
                 media_overlay : getMediaOverlay(),
                 spine : {
                     direction : pageProgressionDirection(),
