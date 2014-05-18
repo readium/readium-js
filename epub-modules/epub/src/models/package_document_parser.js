@@ -101,7 +101,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
             //if layout not set
             if(!metadata.layout)
             {
-                var pathToIBooksSpecificXml = new URI("/META-INF/com.apple.ibooks.display-options.xml");
+                var pathToIBooksSpecificXml = "/META-INF/com.apple.ibooks.display-options.xml";
 
                 publicationFetcher.relativeToPackageFetchFileContents(pathToIBooksSpecificXml, 'text', function (ibookPropText) {
                     if(ibookPropText) {
@@ -201,6 +201,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
             jsonMetadata.orientation = $("meta[property='rendition:orientation']", $metadata).text();
             jsonMetadata.layout = $("meta[property='rendition:layout']", $metadata).text();
             jsonMetadata.spread = $("meta[property='rendition:spread']", $metadata).text();
+            jsonMetadata.flow = $("meta[property='rendition:flow']", $metadata).text();
             
             
             // Media part
