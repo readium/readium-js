@@ -56,7 +56,7 @@ define(['require', 'module', 'console_shim', 'jquery', 'underscore', 'readerView
 
                 _packageParser.parse(function(packageDocJson, packageDocument){
                     var openBookOptions = readiumOptions.openBookOptions || {};
-                    var openBookData = $.extend(packageDocument.getPackageData(), openBookOptions);
+                    var openBookData = $.extend(packageDocument.getSharedJsPackageData(), openBookOptions);
 
                     if (openPageRequest) {
                         openBookData.openPageRequest = openPageRequest;

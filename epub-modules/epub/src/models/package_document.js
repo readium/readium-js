@@ -11,39 +11,25 @@
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './manifest'],
-    function (require, module, $, _, Backbone, URI, Manifest) {
+define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './manifest', './metadata'],
+    function (require, module, $, _, Backbone, URI, Manifest, Metadata) {
 
     // Description: This model provides an interface for navigating an EPUB's package document
     var PackageDocument = function(packageDocumentURL, packageDocJson, resourceFetcher) {
 
         var _manifest = new Manifest(packageDocJson.manifest);
-        var _moMap = packageDocJson.mo_map;
+        var _metadata = new Metadata(packageDocJson.metadata);
+        var _page_prog_dir;
+        var _mo_map = [];
 
-        this.getPackageData = function () {
+        this.getSharedJsPackageData = function () {
 
             var spinePackageData = [];
             // _spine.each(function (spineItem) {
             //     spinePackageData.push(...);
             // });
-            for (var i = 0; i < packageDocJson.spine.length; i++)
-            {
-                var spineItem = packageDocJson.spine[i];
-                
-                var manifestItem = _manifest.getManifestItemByIdref(spineItem.idref);
-
-                var spineInfo = {
-                    href : manifestItem.contentDocumentURI,
-                    media_type : manifestItem.media_type,
-                    media_overlay_id : manifestItem.media_overlay,
-                    idref : spineItem.idref,
-                    page_spread : spineItem.page_spread,
-                    rendition_layout : spineItem.rendition_layout,
-                    rendition_orientation : spineItem.rendition_orientation,
-                    rendition_spread : spineItem.rendition_spread,
-                    rendition_flow : spineItem.rendition_flow,
-                    linear: spineItem.linear
-                };
+            for (var i = 0; i < this.spineLength(); i++) {
+                var spineInfo = this.getSpineItem(i);
                 spinePackageData.push(spineInfo);
             }
 
@@ -53,46 +39,80 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
                 rendition_layout : packageDocJson.metadata.layout,
                 rendition_orientation : packageDocJson.metadata.orientation,
                 rendition_flow : packageDocJson.metadata.flow,
-                media_overlay : getMediaOverlay(),
+                media_overlay : {
+                    duration : packageDocJson.metadata.mediaDuration,
+                    narrator : packageDocJson.metadata.mediaNarrator,
+                    activeClass : packageDocJson.metadata.mediaActiveClass,
+                    playbackActiveClass : packageDocJson.metadata.mediaPlaybackActiveClass,
+                    smil_models : _mo_map,
+
+                    skippables: ["sidebar", "practice", "marginalia", "annotation", "help", "note", "footnote", "rearnote", "table", "table-row", "table-cell", "list", "list-item", "pagebreak"],
+                    escapables: ["sidebar", "bibliography", "toc", "loi", "appendix", "landmarks", "lot", "index", "colophon", "epigraph", "conclusion", "afterword", "warning", "epilogue", "foreword", "introduction", "prologue", "preface", "preamble", "notice", "errata", "copyright-page", "acknowledgments", "other-credits", "titlepage", "imprimatur", "contributors", "halftitlepage", "dedication", "help", "annotation", "marginalia", "practice", "note", "footnote", "rearnote", "footnotes", "rearnotes", "bridgehead", "page-list", "table", "table-row", "table-cell", "list", "list-item", "glossary"]
+                },
                 spine : {
-                    direction : pageProgressionDirection(),
+                    direction : this.getPageProgressionDirection(),
                     items : spinePackageData
                 }
             };
         };
 
-        function getMediaOverlay(){
-           var result = {
-                 duration : packageDocJson.metadata.mediaDuration,
-                 narrator : packageDocJson.metadata.mediaNarrator,
-                 activeClass : packageDocJson.metadata.mediaActiveClass,
-                 playbackActiveClass : packageDocJson.metadata.mediaPlaybackActiveClass,
-                 smil_models : _moMap,
-                 
-                 skippables: ["sidebar", "practice", "marginalia", "annotation", "help", "note", "footnote", "rearnote", "table", "table-row", "table-cell", "list", "list-item", "pagebreak"],
-                 escapables: ["sidebar", "bibliography", "toc", "loi", "appendix", "landmarks", "lot", "index", "colophon", "epigraph", "conclusion", "afterword", "warning", "epilogue", "foreword", "introduction", "prologue", "preface", "preamble", "notice", "errata", "copyright-page", "acknowledgments", "other-credits", "titlepage", "imprimatur", "contributors", "halftitlepage", "dedication", "help", "annotation", "marginalia", "practice", "note", "footnote", "rearnote", "footnotes", "rearnotes", "bridgehead", "page-list", "table", "table-row", "table-cell", "list", "list-item", "glossary"]
-           };
+        /**
+         * Get spine item data in readium-shared-js accepted format.
+         * @param spineIndex the index of the item within the spine
+         * @returns Spine item data in readium-shared-js accepted format.
+         */
+        this.getSpineItem = function(spineIndex) {
+            var spineItem = packageDocJson.spine[spineIndex];
 
-           return result;
-        }
-        
-        function isFixedLayout() {
+            var manifestItem = _manifest.getManifestItemByIdref(spineItem.idref);
 
-            return packageDocJson.metadata.fixed_layout;
-        }
+            var spineInfo = {
+                href: manifestItem.contentDocumentURI,
+                media_type: manifestItem.media_type,
+                media_overlay_id: manifestItem.media_overlay,
+                idref: spineItem.idref,
+                page_spread: spineItem.page_spread,
+                rendition_layout: spineItem.rendition_layout,
+                rendition_orientation: spineItem.rendition_orientation,
+                rendition_spread: spineItem.rendition_spread,
+                rendition_flow: spineItem.rendition_flow,
+                linear: spineItem.linear
+            };
+            return spineInfo;
+        };
 
-        function pageProgressionDirection() {
+        this.setMoMap = function(mediaOverlaysMap) {
+            _mo_map = mediaOverlaysMap;
+        };
 
-            if (packageDocJson.metadata.page_prog_dir === "rtl") {
+        this.setPageProgressionDirection = function(page_prog_dir) {
+            _page_prog_dir = page_prog_dir;
+        };
+
+
+        this.getPageProgressionDirection = function() {
+            if (_page_prog_dir === "rtl") {
                 return "rtl";
             }
-            else if (packageDocJson.metadata.page_prog_dir === "default") {
+            else if (_page_prog_dir === "default") {
                 return "default";
             }
             else {
                 return "ltr";
             }
-        }
+        };
+
+        this.spineLength = function() {
+            return packageDocJson.spine.length;
+        };
+
+        this.getManifest = function() {
+            return _manifest;
+        };
+
+        this.getMetadata = function() {
+            return _metadata;
+        };
 
         this.getToc = function() {
             var item = getTocItem();

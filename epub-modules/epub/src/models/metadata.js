@@ -14,43 +14,42 @@
 define(['require', 'module', 'underscore'],
     function (require, module, _) {
 
-        var Manifest = function (manifestJson) {
+        var Metadata = function (metadataJson) {
 
-            var _manifestIndexById = {};
-            var _navItem;
-
-            this.manifestLength = function() {
-                return manifestJson.length;
-            };
-
-            this.getManifestItemByIdref = function (idref) {
-                return _manifestIndexById[idref];
-            };
+            var _mediaItemIndexByRefinesId = {};
 
             /**
-             * Iterate over manifest items and apply callback (synchronously) on each one of them.
-             * @param iteratorCallback the iterator callback function, will be called once for each manifest item,
+             * Iterate over media items and apply callback (synchronously) on each one of them.
+             * @param iteratorCallback the iterator callback function, will be called once for each media item,
              * and the item will be passed as the (one and only) argument.
-             * @returns the Manifest object for chaining.
+             * @returns the Metadata object for chaining.
              */
-            this.each = function(iteratorCallback) {
-                _.each(manifestJson, iteratorCallback);
+            this.eachMediaItem = function(iteratorCallback) {
+                if (metadataJson.mediaItems) {
+                    _.each(metadataJson.mediaItems, iteratorCallback);
+                }
                 return this;
             };
 
-            this.getNavItem = function () {
-                return _navItem;
+            this.getMediaItemByRefinesId = function(id) {
+                return _mediaItemIndexByRefinesId[id];
             };
 
             // Initialize indexes
-            this.each(function(manifestItem) {
-                _manifestIndexById[manifestItem.id] = manifestItem;
-
-                if (manifestItem.properties && manifestItem.properties.indexOf("nav") !== -1) {
-                    _navItem = manifestItem;
+            this.eachMediaItem(function(item) {
+                var id = item.refines;
+                var hash = id.indexOf('#');
+                if (hash >= 0) {
+                    var start = hash+1;
+                    var end = id.length-1;
+                    id = id.substr(start, end);
                 }
+                id = id.trim();
+
+                _mediaItemIndexByRefinesId[id] = item;
             });
 
+
         };
-        return Manifest;
+        return Metadata;
     });
