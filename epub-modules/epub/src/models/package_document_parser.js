@@ -11,10 +11,12 @@
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/markup_parser', 'URIjs', './package_document', './smil_document_parser'],
-    function (require, module, $, _, Backbone, MarkupParser, URI, PackageDocument, SmilDocumentParser) {
+define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/markup_parser', 'URIjs', './package_document',
+        './smil_document_parser', './metadata', './manifest'],
+    function(require, module, $, _, Backbone, MarkupParser, URI, PackageDocument, SmilDocumentParser, Metadata,
+             Manifest) {
 
-    // `PackageDocumentParser` is used to parse the xml of an epub package
+        // `PackageDocumentParser` is used to parse the xml of an epub package
     // document and build a javascript object. The constructor accepts an
     // instance of `URI` that is used to resolve paths during the process
     var PackageDocumentParser = function(bookRoot, publicationFetcher) {
@@ -84,7 +86,10 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
 
 
                     _packageFetcher.setPackageJson(packageDocJson, function () {
-                        var packageDocument = new PackageDocument(publicationFetcher.getPackageUrl(), packageDocJson, publicationFetcher);
+                        var metadata = new Metadata(packageDocJson.metadata);
+                        var manifest = new Manifest(packageDocJson.manifest);
+                        var packageDocument = new PackageDocument(publicationFetcher.getPackageUrl(), packageDocJson,
+                            publicationFetcher, metadata, manifest);
 
                         packageDocument.setPageProgressionDirection(page_prog_dir);
                         fillSmilData(packageDocJson, packageDocument, callback);
