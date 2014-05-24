@@ -14,7 +14,9 @@
 define(['require', 'module', 'underscore'],
     function (require, module, _) {
 
-        var Metadata = function (metadataJson) {
+        var Metadata = function () {
+
+            var that = this;
 
             var _mediaItemIndexByRefinesId = {};
 
@@ -25,14 +27,18 @@ define(['require', 'module', 'underscore'],
              * @returns the Metadata object for chaining.
              */
             this.eachMediaItem = function(iteratorCallback) {
-                if (metadataJson.mediaItems) {
-                    _.each(metadataJson.mediaItems, iteratorCallback);
+                if (that.mediaItems) {
+                    _.each(that.mediaItems, iteratorCallback);
                 }
                 return this;
             };
 
             this.getMediaItemByRefinesId = function(id) {
                 return _mediaItemIndexByRefinesId[id];
+            };
+
+            this.setMoMap = function(mediaOverlaysMap) {
+                that.media_overlay.smil_models = mediaOverlaysMap;
             };
 
             // Initialize indexes

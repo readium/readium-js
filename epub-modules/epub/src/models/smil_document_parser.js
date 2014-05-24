@@ -144,7 +144,7 @@ define(['require', 'module', 'jquery', 'underscore'], function (require, module,
                 if (ii >= packageDocument.spineLength()) {
                     if (allFakeSmil) {
                         console.log("No Media Overlays");
-                        packageDocument.setMoMap([]);
+                        packageDocument.getMetadata().setMoMap([]);
                     }
 
                     callback();
@@ -186,7 +186,7 @@ define(['require', 'module', 'jquery', 'underscore'], function (require, module,
 
                         allFakeSmil = false;
                         mo_map.push(smilJson);
-                        packageDocument.setMoMap(mo_map);
+                        packageDocument.getMetadata().setMoMap(mo_map);
 
                         setTimeout(function(){ processSpineItem(ii+1); }, 0);
                         return;
@@ -211,7 +211,7 @@ define(['require', 'module', 'jquery', 'underscore'], function (require, module,
                             }]
                         }]
                     });
-                    packageDocument.setMoMap(mo_map);
+                    packageDocument.getMetadata().setMoMap(mo_map);
 
                     setTimeout(function(){ processSpineItem(ii+1); }, 0);
                     return;

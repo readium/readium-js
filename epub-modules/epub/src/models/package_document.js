@@ -18,7 +18,6 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs'],
     var PackageDocument = function(packageDocumentURL, packageDocJson, resourceFetcher, metadata, manifest) {
 
         var _page_prog_dir;
-        var _mo_map = [];
 
         this.getSharedJsPackageData = function () {
 
@@ -34,19 +33,10 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs'],
             var packageDocRoot = packageDocumentURL.substr(0, packageDocumentURL.lastIndexOf("/"));
             return {
                 rootUrl : packageDocRoot,
-                rendition_layout : packageDocJson.metadata.layout,
-                rendition_orientation : packageDocJson.metadata.orientation,
-                rendition_flow : packageDocJson.metadata.flow,
-                media_overlay : {
-                    duration : packageDocJson.metadata.mediaDuration,
-                    narrator : packageDocJson.metadata.mediaNarrator,
-                    activeClass : packageDocJson.metadata.mediaActiveClass,
-                    playbackActiveClass : packageDocJson.metadata.mediaPlaybackActiveClass,
-                    smil_models : _mo_map,
-
-                    skippables: ["sidebar", "practice", "marginalia", "annotation", "help", "note", "footnote", "rearnote", "table", "table-row", "table-cell", "list", "list-item", "pagebreak"],
-                    escapables: ["sidebar", "bibliography", "toc", "loi", "appendix", "landmarks", "lot", "index", "colophon", "epigraph", "conclusion", "afterword", "warning", "epilogue", "foreword", "introduction", "prologue", "preface", "preamble", "notice", "errata", "copyright-page", "acknowledgments", "other-credits", "titlepage", "imprimatur", "contributors", "halftitlepage", "dedication", "help", "annotation", "marginalia", "practice", "note", "footnote", "rearnote", "footnotes", "rearnotes", "bridgehead", "page-list", "table", "table-row", "table-cell", "list", "list-item", "glossary"]
-                },
+                rendition_layout : metadata.rendition_layout,
+                rendition_orientation : metadata.rendition_orientation,
+                rendition_flow : metadata.rendition_flow,
+                media_overlay : metadata.media_overlay,
                 spine : {
                     direction : this.getPageProgressionDirection(),
                     items : spinePackageData
@@ -77,10 +67,6 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs'],
                 linear: spineItem.linear
             };
             return spineInfo;
-        };
-
-        this.setMoMap = function(mediaOverlaysMap) {
-            _mo_map = mediaOverlaysMap;
         };
 
         this.setPageProgressionDirection = function(page_prog_dir) {
@@ -225,7 +211,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs'],
                 return item;
             }
 
-            var spine_id = packageDocJson.metadata.ncx;
+            var spine_id = metadata.ncx;
             if (spine_id && spine_id.length > 0) {
                 return manifest.getManifestItemByIdref(spine_id);
             }

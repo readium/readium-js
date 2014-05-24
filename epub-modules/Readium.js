@@ -65,7 +65,7 @@ define(['require', 'module', 'console_shim', 'jquery', 'underscore', 'readerView
 
                     var options = {
                         packageDocumentUrl : _currentPublicationFetcher.getPackageUrl(),
-                        metadata: packageDocJson.metadata
+                        metadata: packageDocument.getMetadata()
                     };
 
                     if (callback){
