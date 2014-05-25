@@ -11,10 +11,12 @@
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/markup_parser', 'URIjs', './package_document', './smil_document_parser'],
-    function (require, module, $, _, Backbone, MarkupParser, URI, PackageDocument, SmilDocumentParser) {
+define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/markup_parser', 'URIjs', './package_document',
+        './smil_document_parser', './metadata', './manifest'],
+    function(require, module, $, _, Backbone, MarkupParser, URI, PackageDocument, SmilDocumentParser, Metadata,
+             Manifest) {
 
-    // `PackageDocumentParser` is used to parse the xml of an epub package
+        // `PackageDocumentParser` is used to parse the xml of an epub package
     // document and build a javascript object. The constructor accepts an
     // instance of `URI` that is used to resolve paths during the process
     var PackageDocumentParser = function(bookRoot, publicationFetcher) {
@@ -58,8 +60,8 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
                 var packageDocJson, cover;
 
                 packageDocJson = {};
-                packageDocJson.metadata = getJsonMetadata(xmlDom);
 
+                var metadata = getMetadata(xmlDom);
 
                 var spineElem = xmlDom.getElementsByTagNameNS("*", "spine")[0];
                 var page_prog_dir = getElemAttr(xmlDom, 'spine', "page-progression-direction");
@@ -74,17 +76,20 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
                 // try to find a cover image
                 cover = getCoverHref(xmlDom);
                 if (cover) {
-                    packageDocJson.metadata.cover_href = cover;
+                    metadata.cover_href = cover;
                 }
 
-                $.when(updateMetadataWithIBookProperties(packageDocJson.metadata)).then(function() {
+                $.when(updateMetadataWithIBookProperties(metadata)).then(function() {
 
                     // parse the spine into a proper collection
                     packageDocJson.spine = parseSpineProperties(packageDocJson.spine);
 
 
-                    _packageFetcher.setPackageJson(packageDocJson, function () {
-                        var packageDocument = new PackageDocument(publicationFetcher.getPackageUrl(), packageDocJson, publicationFetcher);
+                    _packageFetcher.setPackageMetadata(metadata, function () {
+
+                        var manifest = new Manifest(packageDocJson.manifest);
+                        var packageDocument = new PackageDocument(publicationFetcher.getPackageUrl(), packageDocJson,
+                            publicationFetcher, metadata, manifest);
 
                         packageDocument.setPageProgressionDirection(page_prog_dir);
                         fillSmilData(packageDocJson, packageDocument, callback);
@@ -99,7 +104,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
             var dff = $.Deferred();
 
             //if layout not set
-            if(!metadata.layout)
+            if(!metadata.rendition_layout)
             {
                 var pathToIBooksSpecificXml = "/META-INF/com.apple.ibooks.display-options.xml";
 
@@ -111,7 +116,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
                         if(fixLayoutProp) {
                             var fixLayoutVal = $(fixLayoutProp).text();
                             if(fixLayoutVal === "true") {
-                                metadata.layout = "pre-paginated";
+                                metadata.rendition_layout = "pre-paginated";
                                 console.log("using com.apple.ibooks.display-options.xml fixed-layout property");
                             }
                         }
@@ -177,51 +182,63 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
             }
         }
 
-        function getJsonMetadata(xmlDom) {
+        function getMetadata(xmlDom) {
 
+            var metadata = new Metadata();
             var $metadata = $("metadata", xmlDom);
             var metadataElem = xmlDom.getElementsByTagNameNS("*", "metadata")[0];
-            var jsonMetadata = {};
 
-            jsonMetadata.author = getElemText(metadataElem, "creator");
-            jsonMetadata.description = getElemText(metadataElem, "description");
+            metadata.author = getElemText(metadataElem, "creator");
+            metadata.description = getElemText(metadataElem, "description");
             // TODO: Convert all jQuery queries (that get confused by XML namespaces on Firefox) to getElementsByTagNameNS().
-            jsonMetadata.epub_version =
+            metadata.epub_version =
                 $("package", xmlDom).attr("version") ? $("package", xmlDom).attr("version") : "";
-            jsonMetadata.id = getElemText(metadataElem,"identifier");
-            jsonMetadata.language = getElemText(metadataElem, "language");
-            jsonMetadata.modified_date = $("meta[property='dcterms:modified']", $metadata).text();
-            jsonMetadata.ncx = $("spine", xmlDom).attr("toc") ? $("spine", xmlDom).attr("toc") : "";
-            jsonMetadata.pubdate = getElemText(metadataElem, "date");
-            jsonMetadata.publisher = getElemText(metadataElem, "publisher");
-            jsonMetadata.rights = getElemText(metadataElem, "rights");
-            jsonMetadata.title = getElemText(metadataElem, "title");
-            
+            metadata.id = getElemText(metadataElem,"identifier");
+            metadata.language = getElemText(metadataElem, "language");
+            metadata.modified_date = $("meta[property='dcterms:modified']", $metadata).text();
+            metadata.ncx = $("spine", xmlDom).attr("toc") ? $("spine", xmlDom).attr("toc") : "";
+            metadata.pubdate = getElemText(metadataElem, "date");
+            metadata.publisher = getElemText(metadataElem, "publisher");
+            metadata.rights = getElemText(metadataElem, "rights");
+            metadata.title = getElemText(metadataElem, "title");
 
-            jsonMetadata.orientation = $("meta[property='rendition:orientation']", $metadata).text();
-            jsonMetadata.layout = $("meta[property='rendition:layout']", $metadata).text();
-            jsonMetadata.spread = $("meta[property='rendition:spread']", $metadata).text();
-            jsonMetadata.flow = $("meta[property='rendition:flow']", $metadata).text();
+
+            metadata.rendition_orientation = $("meta[property='rendition:orientation']", $metadata).text();
+            metadata.rendition_layout = $("meta[property='rendition:layout']", $metadata).text();
+            metadata.rendition_spread = $("meta[property='rendition:spread']", $metadata).text();
+            metadata.rendition_flow = $("meta[property='rendition:flow']", $metadata).text();
             
             
             // Media part
-            jsonMetadata.mediaItems = [];
+            metadata.mediaItems = [];
 
             var $overlays = $("meta[property='media:duration'][refines]", $metadata);
 
             $.each($overlays, function(elementIndex, $currItem) {
-               jsonMetadata.mediaItems.push({
+                metadata.mediaItems.push({
                   refines: $currItem.getAttribute("refines"),
                   duration: SmilDocumentParser.resolveClockValue($($currItem).text())
                });
             });
-               
-            jsonMetadata.mediaDuration =  SmilDocumentParser.resolveClockValue($("meta[property='media:duration']:not([refines])", $metadata).text());
-            jsonMetadata.mediaNarrator =  $("meta[property='media:narrator']", $metadata).text();
-            jsonMetadata.mediaActiveClass =   $("meta[property='media:active-class']", $metadata).text();
-            jsonMetadata.mediaPlaybackActiveClass =   $("meta[property='media:playback-active-class']", $metadata).text();
-            
-            return jsonMetadata;
+
+            metadata.media_overlay = {
+                duration: SmilDocumentParser.resolveClockValue($("meta[property='media:duration']:not([refines])", $metadata).text()),
+                narrator: $("meta[property='media:narrator']", $metadata).text(),
+                activeClass: $("meta[property='media:active-class']", $metadata).text(),
+                playbackActiveClass: $("meta[property='media:playback-active-class']", $metadata).text(),
+                smil_models: [],
+                skippables: ["sidebar", "practice", "marginalia", "annotation", "help", "note", "footnote", "rearnote",
+                    "table", "table-row", "table-cell", "list", "list-item", "pagebreak"],
+                escapables: ["sidebar", "bibliography", "toc", "loi", "appendix", "landmarks", "lot", "index",
+                    "colophon", "epigraph", "conclusion", "afterword", "warning", "epilogue", "foreword",
+                    "introduction", "prologue", "preface", "preamble", "notice", "errata", "copyright-page",
+                    "acknowledgments", "other-credits", "titlepage", "imprimatur", "contributors", "halftitlepage",
+                    "dedication", "help", "annotation", "marginalia", "practice", "note", "footnote", "rearnote",
+                    "footnotes", "rearnotes", "bridgehead", "page-list", "table", "table-row", "table-cell", "list",
+                    "list-item", "glossary"]
+            };
+
+            return metadata;
         }
 
         function getJsonManifest(xmlDom) {

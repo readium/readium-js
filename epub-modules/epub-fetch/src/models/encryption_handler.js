@@ -13,10 +13,10 @@
 
 define(['require', 'module'], function (require, module) {
 
-    var EncryptionHandler = function (packageJson, publicationFetcher) {
+    var EncryptionHandler = function (packageMetadata, publicationFetcher) {
         var self = this;
 
-        var _uid = packageJson.metadata.id;
+        var _uid = packageMetadata.id;
         var _encryptionDom;
         var _encryptionHash;
         var _isEncryptionSpecified = false;

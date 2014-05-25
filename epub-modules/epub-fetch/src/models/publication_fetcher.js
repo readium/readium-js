@@ -203,9 +203,9 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
         };
 
         // Currently needed for deobfuscating fonts
-        this.setPackageJson = function(packageJson, settingFinishedCallback) {
+        this.setPackageMetadata = function(packageMetadata, settingFinishedCallback) {
 
-            _encryptionHandler = new EncryptionHandler(packageJson, self);
+            _encryptionHandler = new EncryptionHandler(packageMetadata, self);
 
             _encryptionHandler.initializeEncryptionHash(function() {
                 if (_encryptionHandler.isEncryptionSpecified()) {
