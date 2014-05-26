@@ -55,11 +55,6 @@ define(['require', 'module', 'jquery', 'underscore'], function (require, module,
             }
         };
 
-// TODO: duplicate in package_document_parser.js
-        // parse the timestamp and return the value in seconds
-        // supports this syntax:
-        // http://idpf.org/epub/30/spec/epub30-mediaoverlays.html#app-clock-examples
-
         this.getChildren = function(element) {
             var that = this;
             var children = [];
@@ -153,21 +148,12 @@ define(['require', 'module', 'jquery', 'underscore'], function (require, module,
 
                 var spineItem = packageDocument.getSpineItem(ii);
 
-                var manifestItem = packageDocument.getManifest().getManifestItemByIdref(spineItem.idref);
+                if (spineItem.media_overlay_id) {
 
-                if (!manifestItem) {
-                    console.error("Cannot find manifest item for spine item?! " + spineItem.idref);
-                    processSpineItem(ii+1);
-                    return;
-                }
-
-                if (manifestItem.media_overlay) {
-
-                    var manifestItemSMIL = packageDocument.getManifest()
-                        .getManifestItemByIdref(manifestItem.media_overlay);
+                    var manifestItemSMIL = packageDocument.manifest.getManifestItemByIdref(spineItem.media_overlay_id);
 
                     if (!manifestItemSMIL) {
-                        console.error("Cannot find SMIL manifest item for spine/manifest item?! " + manifestItem.media_overlay);
+                        console.error("Cannot find SMIL manifest item for spine/manifest item?! " + spineItem.media_overlay_id);
                         processSpineItem(ii+1);
                         return;
                     }
@@ -176,8 +162,7 @@ define(['require', 'module', 'jquery', 'underscore'], function (require, module,
                     that.parse(manifestItemSMIL.href, function(smilJson) {
                         smilJson.href = manifestItemSMIL.href;
                         smilJson.id = manifestItemSMIL.id;
-                        smilJson.spineItemId = spineItem.idref; // same as manifestItem.id
-
+                        smilJson.spineItemId = spineItem.idref;
 
                         var mediaItem = packageDocument.getMetadata().getMediaItemByRefinesId(manifestItemSMIL.id);
                         if (mediaItem) {
@@ -196,16 +181,16 @@ define(['require', 'module', 'jquery', 'underscore'], function (require, module,
                     mo_map.push({
                         id: "",
                         href: "",
-                        spineItemId: spineItem.idref, // same as manifestItem.id
+                        spineItemId: spineItem.idref,
                         children: [{
                             nodeType: 'seq',
-                            textref: manifestItem.href,
+                            textref: spineItem.href,
                             children: [{
                                 nodeType: 'par',
                                 children: [{
                                     nodeType: 'text',
-                                    src: manifestItem.href,
-                                    srcFile: manifestItem.href,
+                                    src: spineItem.href,
+                                    srcFile: spineItem.href,
                                     srcFragmentId: ""
                                 }]
                             }]
@@ -224,8 +209,9 @@ define(['require', 'module', 'jquery', 'underscore'], function (require, module,
 
     };
 
-
-
+    // parse the timestamp and return the value in seconds
+    // supports this syntax:
+    // http://idpf.org/epub/30/spec/epub30-mediaoverlays.html#app-clock-examples
     SmilDocumentParser.resolveClockValue = function(value) {
         if (!value) return 0;
 

@@ -15,20 +15,13 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs'],
     function (require, module, $, _, Backbone, URI) {
 
     // Description: This model provides an interface for navigating an EPUB's package document
-    var PackageDocument = function(packageDocumentURL, packageDocJson, resourceFetcher, metadata, manifest) {
+    var PackageDocument = function(packageDocumentURL, resourceFetcher, metadata, spine, manifest) {
 
         var _page_prog_dir;
 
-        this.getSharedJsPackageData = function () {
+        this.manifest = manifest;
 
-            var spinePackageData = [];
-            // _spine.each(function (spineItem) {
-            //     spinePackageData.push(...);
-            // });
-            for (var i = 0; i < this.spineLength(); i++) {
-                var spineInfo = this.getSpineItem(i);
-                spinePackageData.push(spineInfo);
-            }
+        this.getSharedJsPackageData = function () {
 
             var packageDocRoot = packageDocumentURL.substr(0, packageDocumentURL.lastIndexOf("/"));
             return {
@@ -39,7 +32,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs'],
                 media_overlay : metadata.media_overlay,
                 spine : {
                     direction : this.getPageProgressionDirection(),
-                    items : spinePackageData
+                    items : spine
                 }
             };
         };
@@ -50,23 +43,8 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs'],
          * @returns Spine item data in readium-shared-js accepted format.
          */
         this.getSpineItem = function(spineIndex) {
-            var spineItem = packageDocJson.spine[spineIndex];
-
-            var manifestItem = manifest.getManifestItemByIdref(spineItem.idref);
-
-            var spineInfo = {
-                href: manifestItem.contentDocumentURI,
-                media_type: manifestItem.media_type,
-                media_overlay_id: manifestItem.media_overlay,
-                idref: spineItem.idref,
-                page_spread: spineItem.page_spread,
-                rendition_layout: spineItem.rendition_layout,
-                rendition_orientation: spineItem.rendition_orientation,
-                rendition_spread: spineItem.rendition_spread,
-                rendition_flow: spineItem.rendition_flow,
-                linear: spineItem.linear
-            };
-            return spineInfo;
+            var spineItem = spine[spineIndex];
+            return spineItem;
         };
 
         this.setPageProgressionDirection = function(page_prog_dir) {
@@ -87,11 +65,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs'],
         };
 
         this.spineLength = function() {
-            return packageDocJson.spine.length;
-        };
-
-        this.getManifest = function() {
-            return manifest;
+            return spine.length;
         };
 
         this.getMetadata = function() {
@@ -101,7 +75,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs'],
         this.getToc = function() {
             var item = getTocItem();
             if (item) {
-                return item.contentDocumentURI;
+                return item.href;
             }
             return null;
         };
@@ -159,7 +133,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs'],
         function tocIsNcx() {
 
             var tocItem = getTocItem();
-            var contentDocURI = tocItem.contentDocumentURI;
+            var contentDocURI = tocItem.href;
             var fileExtension = contentDocURI.substr(contentDocURI.lastIndexOf('.') + 1);
 
             return fileExtension.trim().toLowerCase() === "ncx";
