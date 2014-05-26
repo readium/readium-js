@@ -29,6 +29,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs'],
                 rendition_layout : metadata.rendition_layout,
                 rendition_orientation : metadata.rendition_orientation,
                 rendition_flow : metadata.rendition_flow,
+                rendition_spread : metadata.rendition_spread,
                 media_overlay : metadata.media_overlay,
                 spine : {
                     direction : this.getPageProgressionDirection(),
