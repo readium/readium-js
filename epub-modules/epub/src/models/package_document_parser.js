@@ -41,14 +41,14 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
             _deferredXmlDom.resolve(packageDom);
         }, onError);
 
-        function fillSmilData(packageDocJson, packageDocument, callback) {
+        function fillSmilData(packageDocument, callback) {
 
             var smilParser = new SmilDocumentParser(packageDocument, publicationFetcher);
 
             smilParser.fillSmilData(function() {
 
                 // return the parse result
-                callback(packageDocJson, packageDocument);
+                callback(packageDocument);
             });
 
         }
@@ -57,42 +57,31 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
         this.parse = function(callback) {
 
             _deferredXmlDom.done(function (xmlDom) {
-                var packageDocJson, cover;
-
-                packageDocJson = {};
-
                 var metadata = getMetadata(xmlDom);
 
                 var spineElem = xmlDom.getElementsByTagNameNS("*", "spine")[0];
                 var page_prog_dir = getElemAttr(xmlDom, 'spine', "page-progression-direction");
 
-                packageDocJson.bindings = getJsonBindings(xmlDom);
-                packageDocJson.spine = getJsonSpine(xmlDom);
-                packageDocJson.manifest = getJsonManifest(xmlDom);
+                // TODO: Bindings are unused
+                var bindings = getJsonBindings(xmlDom);
 
-                // parse the page-progression-direction if it is present
-                packageDocJson.paginate_backwards = paginateBackwards(xmlDom);
+                var manifest = new Manifest(getJsonManifest(xmlDom));
+                var spine = getJsonSpine(xmlDom, manifest);
 
                 // try to find a cover image
-                cover = getCoverHref(xmlDom);
+                var cover = getCoverHref(xmlDom);
                 if (cover) {
                     metadata.cover_href = cover;
                 }
 
                 $.when(updateMetadataWithIBookProperties(metadata)).then(function() {
 
-                    // parse the spine into a proper collection
-                    packageDocJson.spine = parseSpineProperties(packageDocJson.spine);
-
-
                     _packageFetcher.setPackageMetadata(metadata, function () {
-
-                        var manifest = new Manifest(packageDocJson.manifest);
-                        var packageDocument = new PackageDocument(publicationFetcher.getPackageUrl(), packageDocJson,
-                            publicationFetcher, metadata, manifest);
+                        var packageDocument = new PackageDocument(publicationFetcher.getPackageUrl(),
+                            publicationFetcher, metadata, spine, manifest);
 
                         packageDocument.setPageProgressionDirection(page_prog_dir);
-                        fillSmilData(packageDocJson, packageDocument, callback);
+                        fillSmilData(packageDocument, callback);
                     });
                 });
 
@@ -138,7 +127,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
         }
 
 
-        function getJsonSpine(xmlDom) {
+        function getJsonSpine(xmlDom, manifest) {
 
             var $spineElements;
             var jsonSpine = [];
@@ -147,13 +136,22 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
             $.each($spineElements, function (spineElementIndex, currSpineElement) {
 
                 var $currSpineElement = $(currSpineElement);
-                var spineItem = {
+                var idref = $currSpineElement.attr("idref") ? $currSpineElement.attr("idref") : "";
+                var manifestItem = manifest.getManifestItemByIdref(idref);
 
-                    idref: $currSpineElement.attr("idref") ? $currSpineElement.attr("idref") : "",
+                var spineItem = {
+                    idref: idref,
+                    href: manifestItem.href,
+                    manifest_id: manifestItem.id,
+                    media_type: manifestItem.media_type,
+                    media_overlay_id: manifestItem.media_overlay_id,
                     linear: $currSpineElement.attr("linear") ? $currSpineElement.attr("linear") : "",
                     properties: $currSpineElement.attr("properties") ? $currSpineElement.attr("properties") : ""
                 };
-                
+
+                var parsedProperties = parsePropertiesString(spineItem.properties);
+                _.extend(spineItem, parsedProperties);
+
                 jsonSpine.push(spineItem);
             });
 
@@ -253,16 +251,15 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
                     "";
                 var manifestItem = {
 
-                    contentDocumentURI: currManifestElementHref,
                     href: currManifestElementHref,
                     id: $currManifestElement.attr("id") ? $currManifestElement.attr("id") : "",
-                    media_overlay: $currManifestElement.attr("media-overlay") ?
+                    media_overlay_id: $currManifestElement.attr("media-overlay") ?
                         $currManifestElement.attr("media-overlay") : "",
                     media_type: $currManifestElement.attr("media-type") ? $currManifestElement.attr("media-type") : "",
                     properties: $currManifestElement.attr("properties") ? $currManifestElement.attr("properties") : ""
                 };
                 // console.log('pushing manifest item to JSON manifest. currManifestElementHref: [' + currManifestElementHref + 
-                //     '], manifestItem.contentDocumentURI: [' + manifestItem.contentDocumentURI + 
+                //     '], manifestItem.href: [' + manifestItem.href +
                 //     '], manifestItem:');
                 // console.log(manifestItem);
                 jsonManifest.push(manifestItem);
@@ -325,93 +322,75 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
             return null;
         }
 
-        function parseSpineProperties(spine) {
+        function parsePropertiesString(str) {
+            var properties = {};
+            var allPropStrs = str.split(" "); // split it on white space
+            for (var i = 0; i < allPropStrs.length; i++) {
 
-            var parsePropertiesString = function (str) {
-                var properties = {};
-                var allPropStrs = str.split(" "); // split it on white space
-                for (var i = 0; i < allPropStrs.length; i++) {
+                //ReadiumSDK.Models.SpineItem.RENDITION_ORIENTATION_LANDSCAPE
+                if (allPropStrs[i] === "rendition:orientation-landscape") properties.rendition_orientation = "landscape";
 
-                    //ReadiumSDK.Models.SpineItem.RENDITION_ORIENTATION_LANDSCAPE
-                    if (allPropStrs[i] === "rendition:orientation-landscape") properties.rendition_orientation = "landscape";
+                //ReadiumSDK.Models.SpineItem.RENDITION_ORIENTATION_PORTRAIT
+                if (allPropStrs[i] === "rendition:orientation-portrait") properties.rendition_orientation = "portrait";
 
-                    //ReadiumSDK.Models.SpineItem.RENDITION_ORIENTATION_PORTRAIT
-                    if (allPropStrs[i] === "rendition:orientation-portrait") properties.rendition_orientation = "portrait";
+                //ReadiumSDK.Models.SpineItem.RENDITION_ORIENTATION_AUTO
+                if (allPropStrs[i] === "rendition:orientation-auto") properties.rendition_orientation = "auto";
 
-                    //ReadiumSDK.Models.SpineItem.RENDITION_ORIENTATION_AUTO
-                    if (allPropStrs[i] === "rendition:orientation-auto") properties.rendition_orientation = "auto";
-                    
-                    
-                    //ReadiumSDK.Models.SpineItem.RENDITION_SPREAD_NONE
-                    if (allPropStrs[i] === "rendition:spread-none") properties.rendition_spread = "none";
-                    
-                    //ReadiumSDK.Models.SpineItem.RENDITION_SPREAD_LANDSCAPE
-                    if (allPropStrs[i] === "rendition:spread-landscape") properties.rendition_spread = "landscape";
-                    
-                    //ReadiumSDK.Models.SpineItem.RENDITION_SPREAD_PORTRAIT
-                    if (allPropStrs[i] === "rendition:spread-portrait") properties.rendition_spread = "portrait";
-                    
-                    //ReadiumSDK.Models.SpineItem.RENDITION_SPREAD_BOTH
-                    if (allPropStrs[i] === "rendition:spread-both") properties.rendition_spread = "both";
-                    
-                    //ReadiumSDK.Models.SpineItem.RENDITION_SPREAD_AUTO
-                    if (allPropStrs[i] === "rendition:spread-auto") properties.rendition_spread = "auto";
-    
-    
-                    //ReadiumSDK.Models.SpineItem.RENDITION_FLOW_PAGINATED
-                    if (allPropStrs[i] === "rendition:flow-paginated") properties.rendition_flow = "paginated";
-    
-                    //ReadiumSDK.Models.SpineItem.RENDITION_FLOW_SCROLLED_CONTINUOUS
-                    if (allPropStrs[i] === "rendition:flow-scrolled-continuous") properties.rendition_flow = "scrolled-continuous";
-    
-                    //ReadiumSDK.Models.SpineItem.RENDITION_FLOW_SCROLLED_DOC
-                    if (allPropStrs[i] === "rendition:flow-scrolled-doc") properties.rendition_flow = "scrolled-doc";
-    
-                    //ReadiumSDK.Models.SpineItem.RENDITION_FLOW_AUTO
-                    if (allPropStrs[i] === "rendition:flow-auto") properties.rendition_flow = "auto";
-                    
-                    
-    
-                    //ReadiumSDK.Models.SpineItem.SPREAD_CENTER
-                    if (allPropStrs[i] === "rendition:page-spread-center") properties.page_spread = "page-spread-center";
-                    
-                    //ReadiumSDK.Models.SpineItem.SPREAD_LEFT
-                    if (allPropStrs[i] === "page-spread-left") properties.page_spread = "page-spread-left";
-                    
-                    //ReadiumSDK.Models.SpineItem.SPREAD_RIGHT
-                    if (allPropStrs[i] === "page-spread-right") properties.page_spread = "page-spread-right";
 
-                    //ReadiumSDK.Models.SpineItem.RENDITION_LAYOUT_REFLOWABLE
-                    if (allPropStrs[i] === "rendition:layout-reflowable") {
-                        properties.fixed_flow = false; // TODO: only used in spec tests!
-                        properties.rendition_layout = "reflowable";
-                    }
-                    
-                    //ReadiumSDK.Models.SpineItem.RENDITION_LAYOUT_PREPAGINATED
-                    if (allPropStrs[i] === "rendition:layout-pre-paginated") {
-                        properties.fixed_flow = true; // TODO: only used in spec tests!
-                        properties.rendition_layout = "pre-paginated";
-                    }
+                //ReadiumSDK.Models.SpineItem.RENDITION_SPREAD_NONE
+                if (allPropStrs[i] === "rendition:spread-none") properties.rendition_spread = "none";
+
+                //ReadiumSDK.Models.SpineItem.RENDITION_SPREAD_LANDSCAPE
+                if (allPropStrs[i] === "rendition:spread-landscape") properties.rendition_spread = "landscape";
+
+                //ReadiumSDK.Models.SpineItem.RENDITION_SPREAD_PORTRAIT
+                if (allPropStrs[i] === "rendition:spread-portrait") properties.rendition_spread = "portrait";
+
+                //ReadiumSDK.Models.SpineItem.RENDITION_SPREAD_BOTH
+                if (allPropStrs[i] === "rendition:spread-both") properties.rendition_spread = "both";
+
+                //ReadiumSDK.Models.SpineItem.RENDITION_SPREAD_AUTO
+                if (allPropStrs[i] === "rendition:spread-auto") properties.rendition_spread = "auto";
+
+
+                //ReadiumSDK.Models.SpineItem.RENDITION_FLOW_PAGINATED
+                if (allPropStrs[i] === "rendition:flow-paginated") properties.rendition_flow = "paginated";
+
+                //ReadiumSDK.Models.SpineItem.RENDITION_FLOW_SCROLLED_CONTINUOUS
+                if (allPropStrs[i] === "rendition:flow-scrolled-continuous") properties.rendition_flow = "scrolled-continuous";
+
+                //ReadiumSDK.Models.SpineItem.RENDITION_FLOW_SCROLLED_DOC
+                if (allPropStrs[i] === "rendition:flow-scrolled-doc") properties.rendition_flow = "scrolled-doc";
+
+                //ReadiumSDK.Models.SpineItem.RENDITION_FLOW_AUTO
+                if (allPropStrs[i] === "rendition:flow-auto") properties.rendition_flow = "auto";
+
+
+
+                //ReadiumSDK.Models.SpineItem.SPREAD_CENTER
+                if (allPropStrs[i] === "rendition:page-spread-center") properties.page_spread = "page-spread-center";
+
+                //ReadiumSDK.Models.SpineItem.SPREAD_LEFT
+                if (allPropStrs[i] === "page-spread-left") properties.page_spread = "page-spread-left";
+
+                //ReadiumSDK.Models.SpineItem.SPREAD_RIGHT
+                if (allPropStrs[i] === "page-spread-right") properties.page_spread = "page-spread-right";
+
+                //ReadiumSDK.Models.SpineItem.RENDITION_LAYOUT_REFLOWABLE
+                if (allPropStrs[i] === "rendition:layout-reflowable") {
+                    properties.fixed_flow = false; // TODO: only used in spec tests!
+                    properties.rendition_layout = "reflowable";
                 }
-                return properties;
 
-            };
-
-            for (var i = 0; i < spine.length; i++) {
-
-                var props = parsePropertiesString(spine[i].properties);
-                // add all the properties to the spine item
-                _.extend(spine[i], props);
+                //ReadiumSDK.Models.SpineItem.RENDITION_LAYOUT_PREPAGINATED
+                if (allPropStrs[i] === "rendition:layout-pre-paginated") {
+                    properties.fixed_flow = true; // TODO: only used in spec tests!
+                    properties.rendition_layout = "pre-paginated";
+                }
             }
-
-            return spine;
+            return properties;
         }
 
-        // parse the EPUB3 `page-progression-direction` attribute
-        function paginateBackwards (xmlDom) {
-
-            return $('spine', xmlDom).attr('page-progression-direction') === "rtl";
-        }
     };
 
     return PackageDocumentParser;

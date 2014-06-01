@@ -19,21 +19,28 @@ define(['require', 'module', 'jquery', 'underscore'], function (require, module,
     var SmilDocumentParser = function(packageDocument, publicationFetcher) {
 
         // Parse a media overlay manifest item XML
-        this.parse = function(itemHref, callback) {
+        this.parse = function(spineItem, manifestItemSMIL, smilJson, deferred, callback, errorCallback) {
             var that = this;
-            publicationFetcher.getRelativeXmlFileDom(itemHref, function(xmlDom){
-                var smilJson, cover;
-
-                smilJson = {};
+            publicationFetcher.getRelativeXmlFileDom(manifestItemSMIL.href, function(xmlDom) {
 
                 var smil = $("smil", xmlDom)[0];
                 smilJson.smilVersion = smil.getAttribute('version');
 
                 //var body = $("body", xmlDom)[0];
                 smilJson.children = that.getChildren(smil);
+                smilJson.href = manifestItemSMIL.href;
+                smilJson.id = manifestItemSMIL.id;
+                smilJson.spineItemId = spineItem.idref;
 
-                callback(smilJson);
-            })
+                var mediaItem = packageDocument.getMetadata().getMediaItemByRefinesId(manifestItemSMIL.id);
+                if (mediaItem) {
+                    smilJson.duration = mediaItem.duration;
+                }
+
+                callback(deferred, smilJson);
+            }, function(fetchError) {
+                errorCallback(deferred, fetchError);
+            });
         };
 
         var safeCopyProperty = function(property, fromNode, toItem, isRequired, defaultValue) {
@@ -54,11 +61,6 @@ define(['require', 'module', 'jquery', 'underscore'], function (require, module,
                 }
             }
         };
-
-// TODO: duplicate in package_document_parser.js
-        // parse the timestamp and return the value in seconds
-        // supports this syntax:
-        // http://idpf.org/epub/30/spec/epub30-mediaoverlays.html#app-clock-examples
 
         this.getChildren = function(element) {
             var that = this;
@@ -128,6 +130,27 @@ define(['require', 'module', 'jquery', 'underscore'], function (require, module,
             return item;
         }
 
+        function makeFakeSmilJson(spineItem) {
+            return {
+                id: "",
+                href: "",
+                spineItemId: spineItem.idref,
+                children: [{
+                    nodeType: 'seq',
+                    textref: spineItem.href,
+                    children: [{
+                        nodeType: 'par',
+                        children: [{
+                            nodeType: 'text',
+                            src: spineItem.href,
+                            srcFile: spineItem.href,
+                            srcFragmentId: ""
+                        }]
+                    }]
+                }]
+            };
+        }
+
         this.fillSmilData = function(callback) {
             var that = this;
 
@@ -138,94 +161,57 @@ define(['require', 'module', 'jquery', 'underscore'], function (require, module,
 
             var allFakeSmil = true;
             var mo_map = [];
+            var parsingDeferreds = [];
 
-            var processSpineItem = function(ii) {
+            for (var spineIdx = 0; spineIdx < packageDocument.spineLength(); spineIdx++) {
+                var spineItem = packageDocument.getSpineItem(spineIdx);
 
-                if (ii >= packageDocument.spineLength()) {
-                    if (allFakeSmil) {
-                        console.log("No Media Overlays");
-                        packageDocument.getMetadata().setMoMap([]);
-                    }
-
-                    callback();
-                    return;
-                }
-
-                var spineItem = packageDocument.getSpineItem(ii);
-
-                var manifestItem = packageDocument.getManifest().getManifestItemByIdref(spineItem.idref);
-
-                if (!manifestItem) {
-                    console.error("Cannot find manifest item for spine item?! " + spineItem.idref);
-                    processSpineItem(ii+1);
-                    return;
-                }
-
-                if (manifestItem.media_overlay) {
-
-                    var manifestItemSMIL = packageDocument.getManifest()
-                        .getManifestItemByIdref(manifestItem.media_overlay);
+                if (spineItem.media_overlay_id) {
+                    var manifestItemSMIL = packageDocument.manifest.getManifestItemByIdref(spineItem.media_overlay_id);
 
                     if (!manifestItemSMIL) {
-                        console.error("Cannot find SMIL manifest item for spine/manifest item?! " + manifestItem.media_overlay);
-                        processSpineItem(ii+1);
-                        return;
+                        console.error("Cannot find SMIL manifest item for spine/manifest item?! " + spineItem.media_overlay_id);
+                        continue;
                     }
                     //ASSERT manifestItemSMIL.media_type === "application/smil+xml"
 
-                    that.parse(manifestItemSMIL.href, function(smilJson) {
-                        smilJson.href = manifestItemSMIL.href;
-                        smilJson.id = manifestItemSMIL.id;
-                        smilJson.spineItemId = spineItem.idref; // same as manifestItem.id
+                    var parsingDeferred = $.Deferred();
+                    parsingDeferred.media_overlay_id = spineItem.media_overlay_id;
+                    parsingDeferreds.push(parsingDeferred);
+                    var smilJson = {};
 
+                    // Push the holder object onto the map early so that order isn't disturbed by asynchronicity:
+                    mo_map.push(smilJson);
 
-                        var mediaItem = packageDocument.getMetadata().getMediaItemByRefinesId(manifestItemSMIL.id);
-                        if (mediaItem) {
-                            smilJson.duration = mediaItem.duration;
-                        }
-
+                    // The local parsingDeferred variable will have its value replaced on next loop iteration.
+                    // Must pass the parsingDeferred through async calls as an argument and it arrives back as myDeferred.
+                    that.parse(spineItem, manifestItemSMIL, smilJson, parsingDeferred, function(myDeferred, smilJson) {
                         allFakeSmil = false;
-                        mo_map.push(smilJson);
-                        packageDocument.getMetadata().setMoMap(mo_map);
-
-                        setTimeout(function(){ processSpineItem(ii+1); }, 0);
-                        return;
+                        myDeferred.resolve();
+                    }, function(myDeferred, parseError) {
+                        console.log('Error when parsing SMIL manifest item ' + manifestItemSMIL.href + ':');
+                        console.log(parseError);
+                        myDeferred.resolve();
                     });
+                } else {
+                    mo_map.push(makeFakeSmilJson(spineItem));
                 }
-                else {
-                    mo_map.push({
-                        id: "",
-                        href: "",
-                        spineItemId: spineItem.idref, // same as manifestItem.id
-                        children: [{
-                            nodeType: 'seq',
-                            textref: manifestItem.href,
-                            children: [{
-                                nodeType: 'par',
-                                children: [{
-                                    nodeType: 'text',
-                                    src: manifestItem.href,
-                                    srcFile: manifestItem.href,
-                                    srcFragmentId: ""
-                                }]
-                            }]
-                        }]
-                    });
-                    packageDocument.getMetadata().setMoMap(mo_map);
+            }
 
-                    setTimeout(function(){ processSpineItem(ii+1); }, 0);
-                    return;
+            $.when.apply($, parsingDeferreds).done(function() {
+                packageDocument.getMetadata().setMoMap(mo_map);
+                if (allFakeSmil) {
+                    console.log("No Media Overlays");
+                    packageDocument.getMetadata().setMoMap([]);
                 }
-            };
-
-            processSpineItem(0);
+                callback();
+            });
         }
-
-
     };
 
-
-
+    // parse the timestamp and return the value in seconds
+    // supports this syntax:
+    // http://idpf.org/epub/30/spec/epub30-mediaoverlays.html#app-clock-examples
     SmilDocumentParser.resolveClockValue = function(value) {
         if (!value) return 0;
 

@@ -54,7 +54,7 @@ define(['require', 'module', 'console_shim', 'jquery', 'underscore', 'readerView
 
                 var _packageParser = new PackageParser(bookRoot, _currentPublicationFetcher);
 
-                _packageParser.parse(function(packageDocJson, packageDocument){
+                _packageParser.parse(function(packageDocument){
                     var openBookOptions = readiumOptions.openBookOptions || {};
                     var openBookData = $.extend(packageDocument.getSharedJsPackageData(), openBookOptions);
 

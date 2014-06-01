@@ -127,7 +127,7 @@ define(['require', 'module'], function (require, module) {
 
                 encryptionInitializedCallback();
             }, function (error) {
-                console.log(error.message);
+                console.log(error);
                 console.log("Document doesn't make use of encryption.");
                 encryptionInitializedCallback();
             });
