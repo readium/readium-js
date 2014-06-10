@@ -202,7 +202,7 @@ define(
             function preprocessCssStyleSheetData(styleSheetResourceData, styleSheetUriRelativeToPackageDocument,
                                                  callback) {
                 // TODO: regexp probably invalid for url('someUrl"ContainingQuote'):
-                var cssUrlRegexp = /[Uu][Rr][Ll]\(\s*(['"]?)([^']+)\1\s*\)/g;
+                var cssUrlRegexp = /[Uu][Rr][Ll]\(\s*(['"]?)([^"')]+)\1\s*\)/g;
                 var nonUrlCssImportRegexp = /@[Ii][Mm][Pp][Oo][Rr][Tt]\s*(['"])([^"']+)\1/g;
                 var stylesheetCssResourceUrlsMap = {};
                 var cssResourceDownloadDeferreds = [];
