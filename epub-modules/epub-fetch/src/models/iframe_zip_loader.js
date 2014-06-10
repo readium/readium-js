@@ -11,7 +11,7 @@
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define([], function(){
+define(['URIjs'], function(URI){
 
     var zipIframeLoader = function(ReadiumSDK, getCurrentResourceFetcher) {
 
@@ -23,10 +23,12 @@ define([], function(){
 
         this.loadIframe = function(iframe, src, callback, caller, attachedData) {
 
-            var shouldFetchProgrammatically = getCurrentResourceFetcher().shouldFetchProgrammatically();
-            if (shouldFetchProgrammatically) {
+            var loadedDocumentUri = new URI(src).absoluteTo(iframe.baseURI).search('').hash('').toString();
+
+            var shouldConstructDomProgrammatically = getCurrentResourceFetcher().shouldConstructDomProgrammatically();
+            if (shouldConstructDomProgrammatically) {
                 var basicLoadCallback = function (success) {
-                    getCurrentResourceFetcher().fetchContentDocument(attachedData,
+                    getCurrentResourceFetcher().fetchContentDocument(attachedData, loadedDocumentUri,
                         function (resolvedContentDocumentDom) {
                             var contentDocument = iframe.contentDocument;
                             contentDocument.replaceChild(resolvedContentDocumentDom.documentElement,
