@@ -202,16 +202,61 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
             self.getXmlFileDom(self.convertPathRelativeToPackageToRelativeToBase(filePath), callback, errorCallback);
         };
 
+        function readEncriptionData(callback) {
+            self.getXmlFileDom('META-INF/encryption.xml', function (encryptionDom, error) {
+
+                if(error) {
+                    console.log(error);
+                    console.log("Document doesn't make use of encryption.");
+                    _encryptionHandler = new EncryptionHandler(undefined);
+                    callback();
+                }
+                else {
+
+                    var encryptions = [];
+
+
+                    var encryptedData = $('EncryptedData', encryptionDom);
+                    encryptedData.each(function (index, encryptedData) {
+                        var encryptionAlgorithm = $('EncryptionMethod', encryptedData).first().attr('Algorithm');
+
+                        encryptions.push({algorithm: encryptionAlgorithm});
+
+                        // For some reason, jQuery selector "" against XML DOM sometimes doesn't match properly
+                        var cipherReference = $('CipherReference', encryptedData);
+                        cipherReference.each(function (index, CipherReference) {
+                            var cipherReferenceURI = $(CipherReference).attr('URI');
+                            console.log('Encryption/obfuscation algorithm ' + encryptionAlgorithm + ' specified for ' +
+                                cipherReferenceURI);
+                            encryptions[cipherReferenceURI] = encryptionAlgorithm;
+                        });
+                    });
+                }
+
+            });
+        }
+
         // Currently needed for deobfuscating fonts
         this.setPackageMetadata = function(packageMetadata, settingFinishedCallback) {
 
-            _encryptionHandler = new EncryptionHandler(packageMetadata, self);
+            self.getXmlFileDom('META-INF/encryption.xml', function (encryptionDom) {
 
-            _encryptionHandler.initializeEncryptionHash(function() {
-                if (_encryptionHandler.isEncryptionSpecified()) {
-                    // EPUBs that use encryption for any resources should be fetched in a programmatical manner:
-                    _shouldFetchProgrammatically = true;
-                }
+                var encryptionData = EncryptionHandler.CreateEncryptionData(packageMetadata.id, encryptionDom);
+
+                _encryptionHandler = new EncryptionHandler(encryptionData);
+
+                _encryptionHandler.initializeEncryptionHash(function() {
+                    if (_encryptionHandler.isEncryptionSpecified()) {
+                        // EPUBs that use encryption for any resources should be fetched in a programmatical manner:
+                        _shouldFetchProgrammatically = true;
+                    }
+                    settingFinishedCallback();
+                });
+
+            }, function(error){
+
+                console.log("Document doesn't make use of encryption.");
+                _encryptionHandler = new EncryptionHandler(undefined);
                 settingFinishedCallback();
             });
         };
@@ -219,7 +264,6 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
         this.getDecryptionFunctionForRelativePath = function(pathRelativeToRoot) {
             return _encryptionHandler.getDecryptionFunctionForRelativePath(pathRelativeToRoot);
         }
-
     };
 
     return PublicationFetcher
