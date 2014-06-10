@@ -16,7 +16,7 @@ define(
     function (require, module, $, URI, ContentTypeDiscovery) {
 
 
-        var ContentDocumentFetcher = function (publicationFetcher, spineItem, publicationResourcesCache) {
+        var ContentDocumentFetcher = function (publicationFetcher, spineItem, loadedDocumentUri, publicationResourcesCache) {
 
             var self = this;
 
@@ -41,12 +41,15 @@ define(
             this.resolveInternalPackageResources = function (resolvedDocumentCallback, onerror) {
 
                 _contentDocumentDom = _publicationFetcher.markupParser.parseMarkup(_contentDocumentText, _srcMediaType);
+                setBaseUri(_contentDocumentDom, loadedDocumentUri);
 
                 var resolutionDeferreds = [];
 
-                resolveDocumentImages(resolutionDeferreds, onerror);
-                resolveDocumentAudios(resolutionDeferreds, onerror);
-                resolveDocumentVideos(resolutionDeferreds, onerror);
+                if (_publicationFetcher.shouldFetchMediaAssetsProgrammatically()) {
+                    resolveDocumentImages(resolutionDeferreds, onerror);
+                    resolveDocumentAudios(resolutionDeferreds, onerror);
+                    resolveDocumentVideos(resolutionDeferreds, onerror);
+                }
                 resolveDocumentLinkStylesheets(resolutionDeferreds, onerror);
                 resolveDocumentEmbeddedStylesheets(resolutionDeferreds, onerror);
 
@@ -57,6 +60,15 @@ define(
             };
 
             // INTERNAL FUNCTIONS
+
+            function setBaseUri(documentDom, baseURI) {
+                var baseElem = documentDom.getElementsByTagName('base')[0];
+                if (!baseElem) {
+                    baseElem = documentDom.createElement('base');
+                    documentDom.getElementsByTagName('body')[0].appendChild(baseElem);
+                }
+                baseElem.setAttribute('href', baseURI);
+            }
 
             function _handleError(err) {
                 if (err) {
@@ -190,7 +202,7 @@ define(
             function preprocessCssStyleSheetData(styleSheetResourceData, styleSheetUriRelativeToPackageDocument,
                                                  callback) {
                 // TODO: regexp probably invalid for url('someUrl"ContainingQuote'):
-                var cssUrlRegexp = /[Uu][Rr][Ll]\(\s*(['"]?)([^']+)\1\s*\)/g;
+                var cssUrlRegexp = /[Uu][Rr][Ll]\(\s*(['"]?)([^"')]+)\1\s*\)/g;
                 var nonUrlCssImportRegexp = /@[Ii][Mm][Pp][Oo][Rr][Tt]\s*(['"])([^"']+)\1/g;
                 var stylesheetCssResourceUrlsMap = {};
                 var cssResourceDownloadDeferreds = [];
@@ -271,6 +283,7 @@ define(
 
             function resolveDocumentVideos(resolutionDeferreds, onerror) {
                 resolveResourceElements('video', 'src', 'blob', resolutionDeferreds, onerror);
+                resolveResourceElements('video', 'poster', 'blob', resolutionDeferreds, onerror);
             }
 
             function resolveDocumentLinkStylesheets(resolutionDeferreds, onerror) {
