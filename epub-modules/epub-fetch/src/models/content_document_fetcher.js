@@ -65,7 +65,9 @@ define(
                 var baseElem = documentDom.getElementsByTagName('base')[0];
                 if (!baseElem) {
                     baseElem = documentDom.createElement('base');
-                    documentDom.getElementsByTagName('head')[0].appendChild(baseElem);
+
+                    var anchor = documentDom.getElementsByTagName('head')[0];
+                    anchor.insertBefore(baseElem, anchor.childNodes[0]);
                 }
                 baseElem.setAttribute('href', baseURI);
             }
