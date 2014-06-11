@@ -30,10 +30,23 @@ define(['URIjs'], function(URI){
                 var basicLoadCallback = function (success) {
                     getCurrentResourceFetcher().fetchContentDocument(attachedData, loadedDocumentUri,
                         function (resolvedContentDocumentDom) {
-                            var contentDocument = iframe.contentDocument;
-                            contentDocument.replaceChild(resolvedContentDocumentDom.documentElement,
-                                contentDocument.documentElement);
-                            callback.call(caller, success, attachedData);
+                            
+                            var uri = iframe.getAttribute("src");
+                            iframe.setAttribute("src", "");
+
+                            window.URL.revokeObjectURL(uri);
+
+                            iframe.onload = function() {
+                                iframe.onload = undefined;
+    
+                                callback.call(caller, success, attachedData);
+                            };
+                            
+                            var documentDataUri = window.URL.createObjectURL(
+                                new Blob([resolvedContentDocumentDom.documentElement.outerHTML], {'type': 'text/html'})
+                            );
+                            iframe.setAttribute("src", documentDataUri);
+                            
                         }, function (err) {
                             callback.call(caller, success, attachedData);
                         }
