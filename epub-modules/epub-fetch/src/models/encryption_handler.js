@@ -90,7 +90,7 @@ define(['require', 'module'], function (require, module) {
 
 
         this.getEncryptionMethodForRelativePath = function (pathRelativeToRoot) {
-            if (self.isEncryptionSpecified) {
+            if (self.isEncryptionSpecified()) {
                 return encryptionData.encryptions[pathRelativeToRoot];
             } else {
                 return undefined;
