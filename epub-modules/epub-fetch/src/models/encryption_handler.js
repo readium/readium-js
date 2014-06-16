@@ -83,9 +83,8 @@ define(['require', 'module'], function (require, module) {
 
         // PUBLIC API
 
-
         this.isEncryptionSpecified = function () {
-            return encryptionData && encryptionData.encryptions.length > 0;
+            return encryptionData && encryptionData.encryptions;
         };
 
 
@@ -113,7 +112,7 @@ define(['require', 'module'], function (require, module) {
         var encryptionData = {
             uid: id,
             uidHash: window.Crypto.SHA1(unescape(encodeURIComponent(id.trim())), { asBytes: true }),
-            encryptions: []
+            encryptions: undefined
         };
 
         var encryptedData = $('EncryptedData', encryptionDom);
@@ -126,6 +125,11 @@ define(['require', 'module'], function (require, module) {
                 var cipherReferenceURI = $(CipherReference).attr('URI');
                 console.log('Encryption/obfuscation algorithm ' + encryptionAlgorithm + ' specified for ' +
                     cipherReferenceURI);
+
+                if(!encryptionData.encryptions) {
+                    encryptionData.encryptions = {};
+                }
+
                 encryptionData.encryptions[cipherReferenceURI] = encryptionAlgorithm;
             });
         });
