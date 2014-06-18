@@ -76,6 +76,9 @@ define(['require', 'module', 'console_shim', 'jquery', 'underscore', 'readerView
             });
         }
 
+        //we need global access to the reader object for automation test being able to call it's APIs
+        ReadiumSDK.reader = this.reader;
+
         ReadiumSDK.trigger(ReadiumSDK.Events.READER_INITIALIZED, this.reader);
     };
 
