@@ -50,6 +50,11 @@ define(
                     resolveDocumentAudios(resolutionDeferreds, onerror);
                     resolveDocumentVideos(resolutionDeferreds, onerror);
                 }
+                // TODO: recursive fetching, parsing and DOM construction of documents in IFRAMEs,
+                // with CSS preprocessing and obfuscated font handling
+                resolveDocumentIframes(resolutionDeferreds, onerror);
+                // TODO: resolution (e.g. using DOM mutation events) of scripts loaded dynamically by scripts
+                resolveDocumentScripts(resolutionDeferreds, onerror);
                 resolveDocumentLinkStylesheets(resolutionDeferreds, onerror);
                 resolveDocumentEmbeddedStylesheets(resolutionDeferreds, onerror);
 
@@ -288,6 +293,14 @@ define(
             function resolveDocumentVideos(resolutionDeferreds, onerror) {
                 resolveResourceElements('video', 'src', 'blob', resolutionDeferreds, onerror);
                 resolveResourceElements('video', 'poster', 'blob', resolutionDeferreds, onerror);
+            }
+
+            function resolveDocumentScripts(resolutionDeferreds, onerror) {
+                resolveResourceElements('script', 'src', 'blob', resolutionDeferreds, onerror);
+            }
+
+            function resolveDocumentIframes(resolutionDeferreds, onerror) {
+                resolveResourceElements('iframe', 'src', 'blob', resolutionDeferreds, onerror);
             }
 
             function resolveDocumentLinkStylesheets(resolutionDeferreds, onerror) {
