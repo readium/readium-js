@@ -12,8 +12,8 @@
 //  prior written permission.
 
 
-define(['require', 'module', 'console_shim', 'jquery', 'underscore', 'readerView', 'epub-fetch', 'epub-model/package_document_parser', 'epub-fetch/iframe_zip_loader', 'URIjs', 'epub-ui/gestures'],
-    function (require, module, console_shim, $, _, readerView, PublicationFetcher, PackageParser, IframeZipLoader, URI, GesturesHandler) {
+define(['require', 'module', 'console_shim', 'jquery', 'underscore', 'readerView', 'epub-fetch', 'epub-model/package_document_parser', 'epub-fetch/iframe_zip_loader', 'URIjs'],
+    function (require, module, console_shim, $, _, readerView, PublicationFetcher, PackageParser, IframeZipLoader, URI) {
 
     //hack to make URI object global for readers consumption.
     window.URI = URI;
@@ -36,15 +36,10 @@ define(['require', 'module', 'console_shim', 'jquery', 'underscore', 'readerView
         var _iframeZipLoader = new IframeZipLoader(ReadiumSDK, function() { return _currentPublicationFetcher; });
 
         var jsLibRoot = readiumOptions.jsLibRoot;
-        var renderingViewport = readerOptions.el;
 
         readerOptions.iframeLoader = _iframeZipLoader;
 
         this.reader = new ReadiumSDK.Views.ReaderView(readerOptions);
-
-        var _gesturesHandler = new GesturesHandler(this.reader,renderingViewport);
-        _gesturesHandler.initialize();
-
 
         this.openPackageDocument = function(bookRoot, callback, openPageRequest)  {
 
