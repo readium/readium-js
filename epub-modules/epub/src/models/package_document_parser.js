@@ -132,7 +132,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
             var $spineElements;
             var jsonSpine = [];
 
-            $spineElements = $("spine", xmlDom).children();
+            $spineElements = $(findXmlElemByLocalNameAnyNS(xmlDom,"spine")).children();
             $.each($spineElements, function (spineElementIndex, currSpineElement) {
 
                 var $currSpineElement = $(currSpineElement);
@@ -183,18 +183,21 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
         function getMetadata(xmlDom) {
 
             var metadata = new Metadata();
-            var $metadata = $("metadata", xmlDom);
+            var $metadata = $(findXmlElemByLocalNameAnyNS(xmlDom, "metadata"));
+            var $package = $(findXmlElemByLocalNameAnyNS(xmlDom, "package"));
+            var $spine = $(findXmlElemByLocalNameAnyNS(xmlDom, "spine"));
             var metadataElem = xmlDom.getElementsByTagNameNS("*", "metadata")[0];
+
 
             metadata.author = getElemText(metadataElem, "creator");
             metadata.description = getElemText(metadataElem, "description");
             // TODO: Convert all jQuery queries (that get confused by XML namespaces on Firefox) to getElementsByTagNameNS().
             metadata.epub_version =
-                $("package", xmlDom).attr("version") ? $("package", xmlDom).attr("version") : "";
+                $package.attr("version") ? $package.attr("version") : "";
             metadata.id = getElemText(metadataElem,"identifier");
             metadata.language = getElemText(metadataElem, "language");
             metadata.modified_date = $("meta[property='dcterms:modified']", $metadata).text();
-            metadata.ncx = $("spine", xmlDom).attr("toc") ? $("spine", xmlDom).attr("toc") : "";
+            metadata.ncx = $spine.attr("toc") ? $spine.attr("toc") : "";
             metadata.pubdate = getElemText(metadataElem, "date");
             metadata.publisher = getElemText(metadataElem, "publisher");
             metadata.rights = getElemText(metadataElem, "rights");
@@ -241,7 +244,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
 
         function getJsonManifest(xmlDom) {
 
-            var $manifestItems = $("manifest", xmlDom).children();
+            var $manifestItems = $(findXmlElemByLocalNameAnyNS(xmlDom, "manifest")).children();
             var jsonManifest = [];
 
             $.each($manifestItems, function (manifestElementIndex, currManifestElement) {
@@ -270,7 +273,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
 
         function getJsonBindings(xmlDom) {
 
-            var $bindings = $("bindings", xmlDom).children();
+            var $bindings = $(findXmlElemByLocalNameAnyNS(xmlDom, "bindings")).children();
             var jsonBindings = [];
 
             $.each($bindings, function (bindingElementIndex, currBindingElement) {
@@ -292,7 +295,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
 
             var manifest;
             var $imageNode;
-            manifest = xmlDom.getElementsByTagName('manifest')[0];
+            manifest = findXmlElemByLocalNameAnyNS(xmlDom, "manifest");
 
             // epub3 spec for a cover image is like this:
             /*<item properties="cover-image" id="ci" href="cover.svg" media-type="image/svg+xml" />*/
@@ -303,6 +306,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
 
             // some epub2's cover image is like this:
             /*<meta name="cover" content="cover-image-item-id" />*/
+            //TODO: this needs to be using findXmlElemByLocalNameAnyNS to obtain 'meta' elements
             var metaNode = $('meta[name="cover"]', xmlDom);
             var contentAttr = metaNode.attr("content");
             if (metaNode.length === 1 && contentAttr) {
