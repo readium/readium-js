@@ -13,9 +13,9 @@
 
 define(['URIjs'], function(URI){
 
-    var zipIframeLoader = function(ReadiumSDK, getCurrentResourceFetcher) {
+    var zipIframeLoader = function(ReadiumSDK, getCurrentResourceFetcher, options) {
 
-        var basicIframeLoader = new ReadiumSDK.Views.IFrameLoader();
+        var basicIframeLoader = new ReadiumSDK.Views.IFrameLoader(options);
 
         this.addIFrameEventListener = function(eventName, callback, context) {
             basicIframeLoader.addIFrameEventListener(eventName, callback, context);
