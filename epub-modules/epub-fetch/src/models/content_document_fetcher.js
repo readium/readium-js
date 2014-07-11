@@ -1,9 +1,22 @@
+//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
+//  
+//  Redistribution and use in source and binary forms, with or without modification, 
+//  are permitted provided that the following conditions are met:
+//  1. Redistributions of source code must retain the above copyright notice, this 
+//  list of conditions and the following disclaimer.
+//  2. Redistributions in binary form must reproduce the above copyright notice, 
+//  this list of conditions and the following disclaimer in the documentation and/or 
+//  other materials provided with the distribution.
+//  3. Neither the name of the organization nor the names of its contributors may be 
+//  used to endorse or promote products derived from this software without specific 
+//  prior written permission.
+
 define(
-    ['require', 'module', 'jquery', 'URIjs', './discover_content_type'],
-    function (require, module, $, URI, ContentTypeDiscovery) {
+    ['require', 'module', 'jquery', 'underscore', 'URIjs', './discover_content_type'],
+    function (require, module, $, _, URI, ContentTypeDiscovery) {
 
 
-        var ContentDocumentFetcher = function (publicationFetcher, spineItem, publicationResourcesCache) {
+        var ContentDocumentFetcher = function (publicationFetcher, spineItem, loadedDocumentUri, publicationResourcesCache) {
 
             var self = this;
 
@@ -28,10 +41,20 @@ define(
             this.resolveInternalPackageResources = function (resolvedDocumentCallback, onerror) {
 
                 _contentDocumentDom = _publicationFetcher.markupParser.parseMarkup(_contentDocumentText, _srcMediaType);
+                setBaseUri(_contentDocumentDom, loadedDocumentUri);
 
                 var resolutionDeferreds = [];
 
-                resolveDocumentImages(resolutionDeferreds, onerror);
+                if (_publicationFetcher.shouldFetchMediaAssetsProgrammatically()) {
+                    resolveDocumentImages(resolutionDeferreds, onerror);
+                    resolveDocumentAudios(resolutionDeferreds, onerror);
+                    resolveDocumentVideos(resolutionDeferreds, onerror);
+                }
+                // TODO: recursive fetching, parsing and DOM construction of documents in IFRAMEs,
+                // with CSS preprocessing and obfuscated font handling
+                resolveDocumentIframes(resolutionDeferreds, onerror);
+                // TODO: resolution (e.g. using DOM mutation events) of scripts loaded dynamically by scripts
+                resolveDocumentScripts(resolutionDeferreds, onerror);
                 resolveDocumentLinkStylesheets(resolutionDeferreds, onerror);
                 resolveDocumentEmbeddedStylesheets(resolutionDeferreds, onerror);
 
@@ -42,6 +65,17 @@ define(
             };
 
             // INTERNAL FUNCTIONS
+
+            function setBaseUri(documentDom, baseURI) {
+                var baseElem = documentDom.getElementsByTagName('base')[0];
+                if (!baseElem) {
+                    baseElem = documentDom.createElement('base');
+
+                    var anchor = documentDom.getElementsByTagName('head')[0];
+                    anchor.insertBefore(baseElem, anchor.childNodes[0]);
+                }
+                baseElem.setAttribute('href', baseURI);
+            }
 
             function _handleError(err) {
                 if (err) {
@@ -113,7 +147,10 @@ define(
                                                  styleSheetUriRelativeToPackageDocument, stylesheetCssResourceUrlsMap,
                                                  isStyleSheetResource) {
                 var origMatchedUrlString = cssUrlMatch[0];
-                var extractedUrl = cssUrlMatch[2];
+
+                var extractedUrlCandidates = cssUrlMatch.slice(2);
+                var extractedUrl = _.find(extractedUrlCandidates, function(matchGroup){ return typeof matchGroup !== 'undefined' });
+
                 var extractedUri = new URI(extractedUrl);
                 var isCssUrlRelative = extractedUri.scheme() === '';
                 if (!isCssUrlRelative) {
@@ -174,9 +211,8 @@ define(
 
             function preprocessCssStyleSheetData(styleSheetResourceData, styleSheetUriRelativeToPackageDocument,
                                                  callback) {
-                // TODO: regexp probably invalid for url('someUrl"ContainingQuote'):
-                var cssUrlRegexp = /[Uu][Rr][Ll]\(\s*(['"]?)([^']+)\1\s*\)/g;
-                var nonUrlCssImportRegexp = /@[Ii][Mm][Pp][Oo][Rr][Tt]\s*(['"])([^"']+)\1/g;
+                var cssUrlRegexp = /[Uu][Rr][Ll]\(\s*([']([^']+)[']|["]([^"]+)["]|([^)]+))\s*\)/g;
+                var nonUrlCssImportRegexp = /@[Ii][Mm][Pp][Oo][Rr][Tt]\s*('([^']+)'|"([^"]+)")/g;
                 var stylesheetCssResourceUrlsMap = {};
                 var cssResourceDownloadDeferreds = [];
                 // Go through the stylesheet text using all regexps and process according to those regexp matches, if any:
@@ -248,6 +284,23 @@ define(
 
             function resolveDocumentImages(resolutionDeferreds, onerror) {
                 resolveResourceElements('img', 'src', 'blob', resolutionDeferreds, onerror);
+            }
+
+            function resolveDocumentAudios(resolutionDeferreds, onerror) {
+                resolveResourceElements('audio', 'src', 'blob', resolutionDeferreds, onerror);
+            }
+
+            function resolveDocumentVideos(resolutionDeferreds, onerror) {
+                resolveResourceElements('video', 'src', 'blob', resolutionDeferreds, onerror);
+                resolveResourceElements('video', 'poster', 'blob', resolutionDeferreds, onerror);
+            }
+
+            function resolveDocumentScripts(resolutionDeferreds, onerror) {
+                resolveResourceElements('script', 'src', 'blob', resolutionDeferreds, onerror);
+            }
+
+            function resolveDocumentIframes(resolutionDeferreds, onerror) {
+                resolveResourceElements('iframe', 'src', 'blob', resolutionDeferreds, onerror);
             }
 
             function resolveDocumentLinkStylesheets(resolutionDeferreds, onerror) {

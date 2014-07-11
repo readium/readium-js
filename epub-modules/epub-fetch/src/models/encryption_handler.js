@@ -1,18 +1,25 @@
+//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
+//  
+//  Redistribution and use in source and binary forms, with or without modification, 
+//  are permitted provided that the following conditions are met:
+//  1. Redistributions of source code must retain the above copyright notice, this 
+//  list of conditions and the following disclaimer.
+//  2. Redistributions in binary form must reproduce the above copyright notice, 
+//  this list of conditions and the following disclaimer in the documentation and/or 
+//  other materials provided with the distribution.
+//  3. Neither the name of the organization nor the names of its contributors may be 
+//  used to endorse or promote products derived from this software without specific 
+//  prior written permission.
+
 define(['require', 'module'], function (require, module) {
 
-    var EncryptionHandler = function (packageJson, publicationFetcher) {
+    var EncryptionHandler = function (encryptionData) {
         var self = this;
-
-        var _uid = packageJson.metadata.id;
-        var _encryptionDom;
-        var _encryptionHash;
-        var _isEncryptionSpecified = false;
 
         var ENCRYPTION_METHODS = {
             'http://www.idpf.org/2008/embedding': embeddedFontDeobfuscateIdpf,
             'http://ns.adobe.com/pdf/enc#RC': embeddedFontDeobfuscateAdobe
         };
-
 
         // INTERNAL FUNCTIONS
 
@@ -42,11 +49,11 @@ define(['require', 'module'], function (require, module) {
         }
 
         function embeddedFontDeobfuscateIdpf(obfuscatedResourceBlob, callback) {
-            var hashedUid = window.Crypto.SHA1(unescape(encodeURIComponent(_uid.trim())), { asBytes: true });
+
             var prefixLength = 1040;
             // Shamelessly copied from
             // https://github.com/readium/readium-chrome-extension/blob/26d4b0cafd254cfa93bf7f6225887b83052642e0/scripts/models/path_resolver.js#L102 :
-            xorObfuscatedBlob(obfuscatedResourceBlob, prefixLength, hashedUid, callback);
+            xorObfuscatedBlob(obfuscatedResourceBlob, prefixLength, encryptionData.uidHash, callback);
         }
 
         function urnUuidToByteArray(id) {
@@ -68,7 +75,7 @@ define(['require', 'module'], function (require, module) {
         function embeddedFontDeobfuscateAdobe(obfuscatedResourceBlob, callback) {
 
             // extract the UUID and convert to big-endian binary form (16 bytes):
-            var uidWordArray = urnUuidToByteArray(_uid);
+            var uidWordArray = urnUuidToByteArray(encryptionData.uid);
             var prefixLength = 1024;
             xorObfuscatedBlob(obfuscatedResourceBlob, prefixLength, uidWordArray, callback)
         }
@@ -76,53 +83,14 @@ define(['require', 'module'], function (require, module) {
 
         // PUBLIC API
 
-        this.getEncryptionDom = function (callback, onerror) {
-            if (_encryptionDom) {
-                callback(_encryptionDom);
-            } else {
-                publicationFetcher.getXmlFileDom('META-INF/encryption.xml', function (encryptionDom) {
-                    _encryptionDom = encryptionDom;
-                    callback(_encryptionDom);
-                }, onerror);
-            }
-        };
-
         this.isEncryptionSpecified = function () {
-            return _isEncryptionSpecified;
+            return encryptionData && encryptionData.encryptions;
         };
 
-        this.initializeEncryptionHash = function (encryptionInitializedCallback) {
-            self.getEncryptionDom(function (encryptionDom) {
-                if (!_encryptionHash) {
-                    _encryptionHash = {};
-                }
-
-                var encryptedData = $('EncryptedData', encryptionDom);
-                encryptedData.each(function (index, encryptedData) {
-                    var encryptionAlgorithm = $('EncryptionMethod', encryptedData).first().attr('Algorithm');
-
-                    // For some reason, jQuery selector "" against XML DOM sometimes doesn't match properly
-                    var cipherReference = $('CipherReference', encryptedData);
-                    cipherReference.each(function (index, CipherReference) {
-                        var cipherReferenceURI = $(CipherReference).attr('URI');
-                        console.log('Encryption/obfuscation algorithm ' + encryptionAlgorithm + ' specified for ' +
-                            cipherReferenceURI);
-                        _isEncryptionSpecified = true;
-                        _encryptionHash[cipherReferenceURI] = encryptionAlgorithm;
-                    });
-                });
-
-                encryptionInitializedCallback();
-            }, function (error) {
-                console.log(error.message);
-                console.log("Document doesn't make use of encryption.");
-                encryptionInitializedCallback();
-            });
-        };
 
         this.getEncryptionMethodForRelativePath = function (pathRelativeToRoot) {
-            if (_encryptionHash) {
-                return _encryptionHash[pathRelativeToRoot];
+            if (self.isEncryptionSpecified()) {
+                return encryptionData.encryptions[pathRelativeToRoot];
             } else {
                 return undefined;
             }
@@ -130,7 +98,7 @@ define(['require', 'module'], function (require, module) {
 
         this.getDecryptionFunctionForRelativePath = function (pathRelativeToRoot) {
             var encryptionMethod = self.getEncryptionMethodForRelativePath(pathRelativeToRoot);
-            if (ENCRYPTION_METHODS[encryptionMethod]) {
+            if (encryptionMethod && ENCRYPTION_METHODS[encryptionMethod]) {
                 return ENCRYPTION_METHODS[encryptionMethod];
             } else {
                 return undefined;
@@ -138,5 +106,36 @@ define(['require', 'module'], function (require, module) {
         };
 
     };
+
+    EncryptionHandler.CreateEncryptionData =  function(id, encryptionDom) {
+
+        var encryptionData = {
+            uid: id,
+            uidHash: window.Crypto.SHA1(unescape(encodeURIComponent(id.trim())), { asBytes: true }),
+            encryptions: undefined
+        };
+
+        var encryptedData = $('EncryptedData', encryptionDom);
+        encryptedData.each(function (index, encryptedData) {
+            var encryptionAlgorithm = $('EncryptionMethod', encryptedData).first().attr('Algorithm');
+
+            // For some reason, jQuery selector "" against XML DOM sometimes doesn't match properly
+            var cipherReference = $('CipherReference', encryptedData);
+            cipherReference.each(function (index, CipherReference) {
+                var cipherReferenceURI = $(CipherReference).attr('URI');
+                console.log('Encryption/obfuscation algorithm ' + encryptionAlgorithm + ' specified for ' +
+                    cipherReferenceURI);
+
+                if(!encryptionData.encryptions) {
+                    encryptionData.encryptions = {};
+                }
+
+                encryptionData.encryptions[cipherReferenceURI] = encryptionAlgorithm;
+            });
+        });
+
+        return encryptionData;
+    };
+
     return EncryptionHandler;
 });

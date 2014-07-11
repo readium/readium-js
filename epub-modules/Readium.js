@@ -1,8 +1,19 @@
+//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
+//  
+//  Redistribution and use in source and binary forms, with or without modification, 
+//  are permitted provided that the following conditions are met:
+//  1. Redistributions of source code must retain the above copyright notice, this 
+//  list of conditions and the following disclaimer.
+//  2. Redistributions in binary form must reproduce the above copyright notice, 
+//  this list of conditions and the following disclaimer in the documentation and/or 
+//  other materials provided with the distribution.
+//  3. Neither the name of the organization nor the names of its contributors may be 
+//  used to endorse or promote products derived from this software without specific 
+//  prior written permission.
 
-define(['require', 'module', 'console_shim', 'jquery', 'underscore', 'readerView', 'epub-fetch', 'epub-model/package_document_parser', 'epub-fetch/iframe_zip_loader', 'URIjs', 'epub-ui/gestures'],
-    function (require, module, console_shim, $, _, readerView, PublicationFetcher, PackageParser, IframeZipLoader, URI, GesturesHandler) {
 
-    console.log('Readium module id: ' + module.id);
+define(['require', 'module', 'console_shim', 'jquery', 'underscore', 'readerView', 'epub-fetch', 'epub-model/package_document_parser', 'epub-fetch/iframe_zip_loader', 'URIjs'],
+    function (require, module, console_shim, $, _, readerView, PublicationFetcher, PackageParser, IframeZipLoader, URI) {
 
     //hack to make URI object global for readers consumption.
     window.URI = URI;
@@ -25,15 +36,10 @@ define(['require', 'module', 'console_shim', 'jquery', 'underscore', 'readerView
         var _iframeZipLoader = new IframeZipLoader(ReadiumSDK, function() { return _currentPublicationFetcher; });
 
         var jsLibRoot = readiumOptions.jsLibRoot;
-        var renderingViewport = readerOptions.el;
 
         readerOptions.iframeLoader = _iframeZipLoader;
 
         this.reader = new ReadiumSDK.Views.ReaderView(readerOptions);
-
-        var _gesturesHandler = new GesturesHandler(this.reader,renderingViewport);
-        _gesturesHandler.initialize();
-
 
         this.openPackageDocument = function(bookRoot, callback, openPageRequest)  {
 
@@ -43,9 +49,9 @@ define(['require', 'module', 'console_shim', 'jquery', 'underscore', 'readerView
 
                 var _packageParser = new PackageParser(bookRoot, _currentPublicationFetcher);
 
-                _packageParser.parse(function(packageDocJson, packageDocument){
+                _packageParser.parse(function(packageDocument){
                     var openBookOptions = readiumOptions.openBookOptions || {};
-                    var openBookData = $.extend(packageDocument.getPackageData(), openBookOptions);
+                    var openBookData = $.extend(packageDocument.getSharedJsPackageData(), openBookOptions);
 
                     if (openPageRequest) {
                         openBookData.openPageRequest = openPageRequest;
@@ -54,7 +60,7 @@ define(['require', 'module', 'console_shim', 'jquery', 'underscore', 'readerView
 
                     var options = {
                         packageDocumentUrl : _currentPublicationFetcher.getPackageUrl(),
-                        metadata: packageDocJson.metadata
+                        metadata: packageDocument.getMetadata()
                     };
 
                     if (callback){
@@ -64,6 +70,9 @@ define(['require', 'module', 'console_shim', 'jquery', 'underscore', 'readerView
                 });
             });
         }
+
+        //we need global access to the reader object for automation test being able to call it's APIs
+        ReadiumSDK.reader = this.reader;
 
         ReadiumSDK.trigger(ReadiumSDK.Events.READER_INITIALIZED, this.reader);
     };
