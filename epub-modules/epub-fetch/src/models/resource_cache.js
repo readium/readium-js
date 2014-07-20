@@ -19,12 +19,23 @@ define(function () {
             var _resourcesHash = {};
 
             this.getResourceURL = function (resourceAbsoluteHref) {
-                var resourceObjectUrl = _resourcesHash[resourceAbsoluteHref];
+                var resourceObjectUrl = null;
+                var resourceData = _resourcesHash[resourceAbsoluteHref];
+                if (resourceData) {
+                    resourceObjectUrl = resourceData.url;
+                }
                 return resourceObjectUrl;
             };
 
-            this.putResourceURL = function (resourceAbsoluteHref, resourceObjectUrl) {
-                _resourcesHash[resourceAbsoluteHref] = resourceObjectUrl;
+            this.putResourceURL = function (resourceAbsoluteHref, resourceObjectUrl, resourceBlob) {
+                _resourcesHash[resourceAbsoluteHref] = {
+                    url: resourceObjectUrl,
+                    blob: resourceBlob
+                };
+            };
+
+            this.consoleDump = function() {
+                console.log(_resourcesHash);
             };
             // TODO: methods to evict resource, destroy cache and release object URLs using window.URL.revokeObjectURL(), automatic
             // cache size accounting and management algorithms like LRU.
