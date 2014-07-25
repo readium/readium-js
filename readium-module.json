@@ -1,8 +1,0 @@
-{
-    "name": "readium-js",
-    "description": "ReadiumJS",
-    "url": "https://github.com/readium/readium-js/",
-    "modules": [ "epub-modules/epub-renderer/src/readium-shared-js/readium-module.json" ],
-    "version": "Release-0.10-282-gc546c0a",
-    "hash": "c546c0aaa581a377398d11802f3ffd1f7621b21c"
-}
