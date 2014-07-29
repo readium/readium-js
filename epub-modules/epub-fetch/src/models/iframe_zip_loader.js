@@ -27,38 +27,19 @@ define(['URIjs'], function(URI){
 
             var shouldConstructDomProgrammatically = getCurrentResourceFetcher().shouldConstructDomProgrammatically();
             if (shouldConstructDomProgrammatically) {
-                var basicLoadCallback = function (success) {
+
                     getCurrentResourceFetcher().fetchContentDocument(attachedData, loadedDocumentUri,
                         function (resolvedContentDocumentDom) {
-                            
-                            var uri = iframe.getAttribute("src");
-                            iframe.setAttribute("src", "");
-
-                            window.URL.revokeObjectURL(uri);
-
-                            iframe.onload = function() {
-                                iframe.onload = undefined;
-    
-                                callback.call(caller, success, attachedData);
-                            };
-                            
-                            var documentDataUri = window.URL.createObjectURL(
-                                new Blob([resolvedContentDocumentDom.documentElement.outerHTML], {'type': 'text/html'})
-                            );
-                            iframe.setAttribute("src", documentDataUri);
-                            
+                            basicIframeLoader._loadIframeWithDocument(iframe,
+                                attachedData,
+                                resolvedContentDocumentDom.documentElement.outerHTML,
+                                function () {
+                                    callback.call(caller, true, attachedData);
+                                });
                         }, function (err) {
-                            callback.call(caller, success, attachedData);
+                            callback.call(caller, false, attachedData);
                         }
                     );
-                };
-                // Feed an artificial empty HTML document to the IFRAME, then let the wrapper onload function
-                // take care of actual document loading (from zipped EPUB) and calling callbacks:
-                var emptyDocumentDataUri = window.URL.createObjectURL(
-                    new Blob(['<html><body></body></html>'], {'type': 'text/html'})
-                );
-
-                basicIframeLoader.loadIframe(iframe, emptyDocumentDataUri, basicLoadCallback, caller, attachedData);
             } else {
                 basicIframeLoader.loadIframe(iframe, src, callback, caller, attachedData);
             }
