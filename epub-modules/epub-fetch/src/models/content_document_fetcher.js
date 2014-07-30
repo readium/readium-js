@@ -59,6 +59,8 @@ define(
                 resolveDocumentEmbeddedStylesheets(resolutionDeferreds, onerror);
 
                 $.when.apply($, resolutionDeferreds).done(function () {
+                    // console.log('Publication resources cache contents after resolving resources:');
+                    // _publicationResourcesCache.consoleDump();
                     resolvedDocumentCallback(_contentDocumentDom);
                 });
 
@@ -127,7 +129,7 @@ define(
                                 //noinspection JSUnresolvedVariable,JSUnresolvedFunction
                                 var resourceObjectURL = window.URL.createObjectURL(finalResourceData);
                                 _publicationResourcesCache.putResourceURL(resourceUriRelativeToPackageDocument,
-                                    resourceObjectURL);
+                                    resourceObjectURL, finalResourceData);
                                 // TODO: take care of releasing object URLs when no longer needed
                                 replaceRefAttrInElem(resourceObjectURL);
                                 resolutionDeferred.resolve();
@@ -178,7 +180,8 @@ define(
                             isStyleSheetResource: isStyleSheetResource,
                             resourceObjectURL: resourceObjectURL
                         };
-                        _publicationResourcesCache.putResourceURL(resourceUriRelativeToPackageDocument, resourceObjectURL);
+                        _publicationResourcesCache.putResourceURL(resourceUriRelativeToPackageDocument,
+                            resourceObjectURL, resourceDataBlob);
                         cssUrlFetchDeferred.resolve();
                     };
                     var fetchErrorCallback = function (error) {
