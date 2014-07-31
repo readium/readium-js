@@ -33,7 +33,7 @@ define(['require', 'module', 'console_shim', 'jquery', 'underscore', 'readerView
 
         var _currentPublicationFetcher;
 
-        var _iframeZipLoader = new IframeZipLoader(ReadiumSDK, function() { return _currentPublicationFetcher; });
+        var _iframeZipLoader = new IframeZipLoader(ReadiumSDK, function() { return _currentPublicationFetcher; }, { mathJaxUrl: readerOptions.mathJaxUrl });
 
         var jsLibRoot = readiumOptions.jsLibRoot;
 
