@@ -26,6 +26,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs'],
             var packageDocRoot = packageDocumentURL.substr(0, packageDocumentURL.lastIndexOf("/"));
             return {
                 rootUrl : packageDocRoot,
+                rendition_viewport : metadata.rendition_viewport,
                 rendition_layout : metadata.rendition_layout,
                 rendition_orientation : metadata.rendition_orientation,
                 rendition_flow : metadata.rendition_flow,

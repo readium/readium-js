@@ -66,7 +66,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
                 var bindings = getJsonBindings(xmlDom);
 
                 var manifest = new Manifest(getJsonManifest(xmlDom));
-                var spine = getJsonSpine(xmlDom, manifest);
+                var spine = getJsonSpine(xmlDom, manifest, metadata);
 
                 // try to find a cover image
                 var cover = getCoverHref(xmlDom);
@@ -127,7 +127,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
         }
 
 
-        function getJsonSpine(xmlDom, manifest) {
+        function getJsonSpine(xmlDom, manifest, metadata) {
 
             var $spineElements;
             var jsonSpine = [];
@@ -139,7 +139,17 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
                 var idref = $currSpineElement.attr("idref") ? $currSpineElement.attr("idref") : "";
                 var manifestItem = manifest.getManifestItemByIdref(idref);
 
+                var id = $currSpineElement.attr("id");
+                var viewport = undefined;
+                _.each(metadata.rendition_viewports, function(vp) {
+                    if (vp.refines == id) {
+                        viewport = vp.viewport;
+                        return true; // break
+                    }
+                });
+
                 var spineItem = {
+                    rendition_viewport: viewport,
                     idref: idref,
                     href: manifestItem.href,
                     manifest_id: manifestItem.id,
@@ -225,11 +235,51 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
             metadata.rights = getElemText(metadataElem, "rights");
             metadata.title = getElemText(metadataElem, "title");
 
-
             metadata.rendition_orientation = getMetaElemPropertyText(metadataElem, "rendition:orientation");
             metadata.rendition_layout = getMetaElemPropertyText(metadataElem, "rendition:layout");
             metadata.rendition_spread = getMetaElemPropertyText(metadataElem, "rendition:spread");
             metadata.rendition_flow = getMetaElemPropertyText(metadataElem, "rendition:flow");
+
+
+
+
+
+
+            //http://www.idpf.org/epub/301/spec/epub-publications.html#fxl-property-viewport
+            
+            //metadata.rendition_viewport = getMetaElemPropertyText(metadataElem, "rendition:viewport");
+            metadata.rendition_viewport = getElemText(metadataElem, "meta", function (element) {
+                return element.getAttribute("property") === "rendition:viewport" && !element.hasAttribute("refines")
+            });
+
+            var viewports = [];
+            var viewportMetaElems = filterXmlElemsByLocalNameAnyNS(metadataElem, "meta", function (element) {
+                return element.getAttribute("property") === "rendition:viewport" && element.hasAttribute("refines");
+            });
+            _.each(viewportMetaElems, function(currItem) {
+                var id = currItem.getAttribute("refines");
+                if (id) {
+                    var hash = id.indexOf('#');
+                    if (hash >= 0) {
+                        var start = hash+1;
+                        var end = id.length-1;
+                        id = id.substr(start, end);
+                    }
+                    id = id.trim();
+                }
+                
+                var vp = {
+                  refines: id,
+                  viewport: currItem.textContent
+                };
+                viewports.push(vp);
+            });
+            
+            metadata.rendition_viewports = viewports;
+
+            
+            
+            
             
             
             // Media part
