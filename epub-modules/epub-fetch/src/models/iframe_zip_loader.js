@@ -21,6 +21,10 @@ define(['URIjs'], function(URI){
             basicIframeLoader.addIFrameEventListener(eventName, callback, context);
         };
 
+        this.updateIframeEvents = function (iframe) {
+            basicIframeLoader.updateIframeEvents(iframe);
+        };
+        
         this.loadIframe = function(iframe, src, callback, caller, attachedData) {
 
             var loadedDocumentUri = new URI(src).absoluteTo(iframe.baseURI).search('').hash('').toString();
