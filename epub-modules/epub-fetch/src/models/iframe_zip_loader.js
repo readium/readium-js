@@ -16,7 +16,8 @@ define(['URIjs'], function(URI){
     var zipIframeLoader = function(ReadiumSDK, getCurrentResourceFetcher, options) {
 
         var basicIframeLoader = new ReadiumSDK.Views.IFrameLoader();
-        var eventListeners = {};
+        var eventListeners = {},
+            self = this;
 
 
         this.addIFrameEventListener = function (eventName, callback, context) {
@@ -51,7 +52,7 @@ define(['URIjs'], function(URI){
 
                     getCurrentResourceFetcher().fetchContentDocument(attachedData, loadedDocumentUri,
                         function (resolvedContentDocumentDom) {
-                            this._loadIframeWithDocument(iframe,
+                            self._loadIframeWithDocument(iframe,
                                 attachedData,
                                 resolvedContentDocumentDom.documentElement.outerHTML,
                                 function () {
