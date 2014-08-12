@@ -33,11 +33,15 @@ define(['require', 'module', 'console_shim', 'jquery', 'underscore', 'readerView
 
         var _currentPublicationFetcher;
 
-        var _iframeZipLoader = new IframeZipLoader(ReadiumSDK, function() { return _currentPublicationFetcher; }, { mathJaxUrl: readerOptions.mathJaxUrl });
-
         var jsLibRoot = readiumOptions.jsLibRoot;
 
-        readerOptions.iframeLoader = _iframeZipLoader;
+        if (!readiumOptions.useSimpleLoader){
+            readerOptions.iframeLoader = new IframeZipLoader(ReadiumSDK, function() { return _currentPublicationFetcher; }, { mathJaxUrl: readerOptions.mathJaxUrl });;
+        }
+        else{
+            readerOptions.iframeLoader = new ReadiumSDK.Views.IFrameLoader();
+        }
+        
 
         this.reader = new ReadiumSDK.Views.ReaderView(readerOptions);
 
