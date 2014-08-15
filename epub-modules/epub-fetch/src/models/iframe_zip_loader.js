@@ -97,7 +97,7 @@ define(['URIjs'], function(URI){
                     var mathJaxCallback = _.once(callback);
                     mathJax.Hub.Queue(mathJaxCallback);
                     // Or at an 8 second timeout, which ever comes first
-                    window.setTimeout(mathJaxCallback, 8000);
+                    // window.setTimeout(mathJaxCallback, 8000);
                 } else {
                     callback();
                 }
