@@ -18,16 +18,42 @@ define(function () {
             var self = this;
             var _resourcesHash = {};
 
-            this.getResourceURL = function (resourceAbsoluteHref) {
-                var resourceObjectUrl = _resourcesHash[resourceAbsoluteHref];
+            this.getResourceURL = function(resourceAbsoluteHref) {
+                var resourceObjectUrl = null;
+                var resourceData = _resourcesHash[resourceAbsoluteHref];
+                if (resourceData) {
+                    resourceObjectUrl = resourceData.url;
+                }
                 return resourceObjectUrl;
             };
 
-            this.putResourceURL = function (resourceAbsoluteHref, resourceObjectUrl) {
-                _resourcesHash[resourceAbsoluteHref] = resourceObjectUrl;
+            this.putResource = function (resourceAbsoluteHref, resourceObjectUrl, resourceDataBlob) {
+                _resourcesHash[resourceAbsoluteHref] = {
+                    url: resourceObjectUrl,
+                    blob: resourceDataBlob
+                };
             };
-            // TODO: methods to evict resource, destroy cache and release object URLs using window.URL.revokeObjectURL(), automatic
-            // cache size accounting and management algorithms like LRU.
+
+            this.evictResource = function(resourceAbsoluteHref, sourceWindow) {
+                var resourceData = _resourcesHash[resourceAbsoluteHref];
+                if (resourceData) {
+                    console.log('revoking object URL: ' + resourceData.url);
+                    sourceWindow.URL.revokeObjectURL(resourceData.url);
+                    delete _resourcesHash[resourceAbsoluteHref];
+                }
+            };
+
+            this.flushCache = function(sourceWindow) {
+                console.log('Cache contents:');
+                console.log(_resourcesHash);
+                console.log('Flushing cache.');
+                for (var resourceAbsoluteHref in _resourcesHash) {
+                    this.evictResource(resourceAbsoluteHref, sourceWindow);
+                }
+                console.log('Cache contents:');
+                console.log(_resourcesHash);
+            };
+            // TODO: automatic cache size accounting and management algorithms e.g. LRU.
         };
 
         return ResourceCache;

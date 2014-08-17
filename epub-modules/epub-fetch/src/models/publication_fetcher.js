@@ -117,7 +117,11 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
 
         this.getJsLibRoot = function() {
             return jsLibRoot;
-        }
+        };
+
+        this.flushCache = function(sourceWindow) {
+            _publicationResourcesCache.flushCache(sourceWindow);
+        };
 
         this.getPackageUrl = function() {
             return _resourceFetcher.getPackageUrl();
