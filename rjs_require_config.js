@@ -16,6 +16,7 @@ var requirejs = {
 
     paths: {
 
+        text: 'lib/text/text',
         console_shim: 'lib/console_shim',
         jquery: 'lib/jquery-1.11.0',
         underscore: 'lib/underscore-1.4.4',
