@@ -47,7 +47,16 @@ define(['URIjs'], function(URI){
                         }
                     );
             } else {
-                basicIframeLoader.loadIframe(iframe, src, callback, caller, attachedData);
+                fetchContentDocument(loadedDocumentUri, function (contentDocumentHtml) {
+                      if (!contentDocumentHtml) {
+                          //failed to load content document
+                          callback.call(caller, false, attachedData);
+                      } else {
+                          self._loadIframeWithDocument(iframe, attachedData, contentDocumentHtml, function () {
+                              callback.call(caller, true, attachedData);
+                          });
+                      }
+                });
             }
         };
 
