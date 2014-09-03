@@ -55,7 +55,8 @@ var requirejs = {
         mediaOvelayDataInjector: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/media_overlay_data_injector',
         internalLinksSupport: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/internal_links_support',
         iframeLoader: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/iframe_loader',
-        
+
+        bowser : 'lib/bowser',
 
         domReady : 'lib/domReady',
         
@@ -316,6 +317,10 @@ var requirejs = {
         annotationsManager: {
             deps: ['epubCfi', 'annotations_module'],
             exports:'annotationsManager'
+        },
+
+        bowser: {
+            exports: 'bowser'
         }
 
     },

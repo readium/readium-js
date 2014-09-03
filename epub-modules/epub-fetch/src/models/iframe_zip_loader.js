@@ -11,7 +11,7 @@
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define(['URIjs'], function(URI){
+define(['URIjs', 'bowser'], function(URI, bowser){
 
     var zipIframeLoader = function(ReadiumSDK, getCurrentResourceFetcher, options) {
 
@@ -62,8 +62,9 @@ define(['URIjs'], function(URI){
 
         this._loadIframeWithDocument = function (iframe, attachedData, contentDocumentData, callback) {
 
-            var isIE = (window.navigator.userAgent.indexOf("Trident") > 0);
-            if (!isIE) {
+            // IE and Safari 6 for iOS don't handle Blobs correctly
+            var isBlobHandled = !bowser.msie && !(bowser.ios && (parseInt(bowser.version) < 7));
+            if (isBlobHandled) {
                 var contentType = 'text/html';
                 if (attachedData.spineItem.media_type && attachedData.spineItem.media_type.length) {
                     contentType = attachedData.spineItem.media_type;
@@ -95,12 +96,12 @@ define(['URIjs'], function(URI){
                     callback();
                 }
 
-                if (!isIE) {
+                if (isBlobHandled) {
                     window.URL.revokeObjectURL(documentDataUri);
                 }
             };
 
-            if (!isIE) {
+            if (isBlobHandled) {
                 iframe.setAttribute("src", documentDataUri);
             } else {
                 iframe.contentWindow.document.close();
