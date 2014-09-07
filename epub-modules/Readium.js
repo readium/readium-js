@@ -12,8 +12,8 @@
 //  prior written permission.
 
 
-define(['require', 'module', 'console_shim', 'jquery', 'underscore', 'readerView', 'epub-fetch', 'epub-model/package_document_parser', 'epub-fetch/iframe_zip_loader', 'URIjs'],
-    function (require, module, console_shim, $, _, readerView, PublicationFetcher, PackageParser, IframeZipLoader, URI) {
+define(['require', 'text!version.json', 'console_shim', 'jquery', 'underscore', 'readerView', 'epub-fetch', 'epub-model/package_document_parser', 'epub-fetch/iframe_zip_loader', 'URIjs'],
+    function (require, versionText, console_shim, $, _, readerView, PublicationFetcher, PackageParser, IframeZipLoader, URI) {
 
     //hack to make URI object global for readers consumption.
     window.URI = URI;
@@ -84,12 +84,14 @@ define(['require', 'module', 'console_shim', 'jquery', 'underscore', 'readerView
             }
         };
 
+
         //we need global access to the reader object for automation test being able to call it's APIs
         ReadiumSDK.reader = this.reader;
 
         ReadiumSDK.trigger(ReadiumSDK.Events.READER_INITIALIZED, this.reader);
     };
-
+    
+    Readium.version = JSON.parse(versionText);
 
     return Readium;
 

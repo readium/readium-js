@@ -16,27 +16,11 @@ define(['URIjs'], function(URI){
     var zipIframeLoader = function(ReadiumSDK, getCurrentResourceFetcher, options) {
 
         var basicIframeLoader = new ReadiumSDK.Views.IFrameLoader();
-        var eventListeners = {},
-            self = this;
 
+        var self = this;
 
         this.addIFrameEventListener = function (eventName, callback, context) {
-
-            if (eventListeners[eventName] == undefined) {
-                eventListeners[eventName] = [];
-            }
-
-            eventListeners[eventName].push({callback: callback, context: context});
-        };
-
-        this.updateIframeEvents = function (iframe) {
-
-            _.each(eventListeners, function (value, key) {
-                for (var i = 0, count = value.length; i < count; i++) {
-                    $(iframe.contentWindow).off(key);
-                    $(iframe.contentWindow).on(key, value[i].callback, value[i].context);
-                }
-            });
+            basicIframeLoader.addIFrameEventListener(eventName, callback, context);
         };
 
         this.updateIframeEvents = function (iframe) {
@@ -63,7 +47,16 @@ define(['URIjs'], function(URI){
                         }
                     );
             } else {
-                basicIframeLoader.loadIframe(iframe, src, callback, caller, attachedData);
+                fetchContentDocument(loadedDocumentUri, function (contentDocumentHtml) {
+                      if (!contentDocumentHtml) {
+                          //failed to load content document
+                          callback.call(caller, false, attachedData);
+                      } else {
+                          self._loadIframeWithDocument(iframe, attachedData, contentDocumentHtml, function () {
+                              callback.call(caller, true, attachedData);
+                          });
+                      }
+                });
             }
         };
 
