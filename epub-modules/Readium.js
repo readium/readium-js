@@ -12,8 +12,8 @@
 //  prior written permission.
 
 
-define(['require', 'module', 'console_shim', 'jquery', 'underscore', 'readerView', 'epub-fetch', 'epub-model/package_document_parser', 'epub-fetch/iframe_zip_loader', 'URIjs', 'epub-ui/gestures'],
-    function (require, module, console_shim, $, _, readerView, PublicationFetcher, PackageParser, IframeZipLoader, URI, GesturesHandler) {
+define(['require', 'text!version.json', 'console_shim', 'jquery', 'underscore', 'readerView', 'epub-fetch', 'epub-model/package_document_parser', 'epub-fetch/iframe_zip_loader', 'URIjs'],
+    function (require, versionText, console_shim, $, _, readerView, PublicationFetcher, PackageParser, IframeZipLoader, URI) {
 
     //hack to make URI object global for readers consumption.
     window.URI = URI;
@@ -33,18 +33,17 @@ define(['require', 'module', 'console_shim', 'jquery', 'underscore', 'readerView
 
         var _currentPublicationFetcher;
 
-        var _iframeZipLoader = new IframeZipLoader(ReadiumSDK, function() { return _currentPublicationFetcher; });
-
         var jsLibRoot = readiumOptions.jsLibRoot;
-        var renderingViewport = readerOptions.el;
 
-        readerOptions.iframeLoader = _iframeZipLoader;
+        if (!readiumOptions.useSimpleLoader){
+            readerOptions.iframeLoader = new IframeZipLoader(ReadiumSDK, function() { return _currentPublicationFetcher; }, { mathJaxUrl: readerOptions.mathJaxUrl });;
+        }
+        else{
+            readerOptions.iframeLoader = new ReadiumSDK.Views.IFrameLoader();
+        }
+        
 
         this.reader = new ReadiumSDK.Views.ReaderView(readerOptions);
-
-        var _gesturesHandler = new GesturesHandler(this.reader,renderingViewport);
-        _gesturesHandler.initialize();
-
 
         this.openPackageDocument = function(bookRoot, callback, openPageRequest)  {
 
@@ -54,9 +53,9 @@ define(['require', 'module', 'console_shim', 'jquery', 'underscore', 'readerView
 
                 var _packageParser = new PackageParser(bookRoot, _currentPublicationFetcher);
 
-                _packageParser.parse(function(packageDocJson, packageDocument){
+                _packageParser.parse(function(packageDocument){
                     var openBookOptions = readiumOptions.openBookOptions || {};
-                    var openBookData = $.extend(packageDocument.getPackageData(), openBookOptions);
+                    var openBookData = $.extend(packageDocument.getSharedJsPackageData(), openBookOptions);
 
                     if (openPageRequest) {
                         openBookData.openPageRequest = openPageRequest;
@@ -65,7 +64,7 @@ define(['require', 'module', 'console_shim', 'jquery', 'underscore', 'readerView
 
                     var options = {
                         packageDocumentUrl : _currentPublicationFetcher.getPackageUrl(),
-                        metadata: packageDocJson.metadata
+                        metadata: packageDocument.getMetadata()
                     };
 
                     if (callback){
@@ -76,9 +75,14 @@ define(['require', 'module', 'console_shim', 'jquery', 'underscore', 'readerView
             });
         }
 
+
+        //we need global access to the reader object for automation test being able to call it's APIs
+        ReadiumSDK.reader = this.reader;
+
         ReadiumSDK.trigger(ReadiumSDK.Events.READER_INITIALIZED, this.reader);
     };
-
+    
+    Readium.version = JSON.parse(versionText);
 
     return Readium;
 

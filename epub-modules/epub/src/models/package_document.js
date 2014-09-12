@@ -11,93 +11,73 @@
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './manifest'],
-    function (require, module, $, _, Backbone, URI, Manifest) {
+define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs'],
+    function (require, module, $, _, Backbone, URI) {
 
     // Description: This model provides an interface for navigating an EPUB's package document
-    var PackageDocument = function(packageDocumentURL, packageDocJson, resourceFetcher) {
+    var PackageDocument = function(packageDocumentURL, resourceFetcher, metadata, spine, manifest) {
 
-        var _manifest = new Manifest(packageDocJson.manifest);
-        var _moMap = packageDocJson.mo_map;
+        var _page_prog_dir;
 
-        this.getPackageData = function () {
+        this.manifest = manifest;
 
-            var spinePackageData = [];
-            // _spine.each(function (spineItem) {
-            //     spinePackageData.push(...);
-            // });
-            for (var i = 0; i < packageDocJson.spine.length; i++)
-            {
-                var spineItem = packageDocJson.spine[i];
-                
-                var manifestItem = _manifest.getManifestItemByIdref(spineItem.idref);
-
-                var spineInfo = {
-                    href : manifestItem.contentDocumentURI,
-                    media_type : manifestItem.media_type,
-                    media_overlay_id : manifestItem.media_overlay,
-                    idref : spineItem.idref,
-                    page_spread : spineItem.page_spread,
-                    rendition_layout : spineItem.rendition_layout,
-                    rendition_orientation : spineItem.rendition_orientation,
-                    rendition_spread : spineItem.rendition_spread,
-                    rendition_flow : spineItem.rendition_flow,
-                    linear: spineItem.linear
-                };
-                spinePackageData.push(spineInfo);
-            }
+        this.getSharedJsPackageData = function () {
 
             var packageDocRoot = packageDocumentURL.substr(0, packageDocumentURL.lastIndexOf("/"));
             return {
                 rootUrl : packageDocRoot,
-                rendition_layout : packageDocJson.metadata.layout,
-                rendition_orientation : packageDocJson.metadata.orientation,
-                rendition_layout : packageDocJson.metadata.layout,
-                media_overlay : getMediaOverlay(),
+                rendition_viewport : metadata.rendition_viewport,
+                rendition_layout : metadata.rendition_layout,
+                rendition_orientation : metadata.rendition_orientation,
+                rendition_flow : metadata.rendition_flow,
+                rendition_spread : metadata.rendition_spread,
+                media_overlay : metadata.media_overlay,
                 spine : {
-                    direction : pageProgressionDirection(),
-                    items : spinePackageData
+                    direction : this.getPageProgressionDirection(),
+                    items : spine
                 }
             };
         };
 
-        function getMediaOverlay(){
-           var result = {
-                 duration : packageDocJson.metadata.mediaDuration,
-                 narrator : packageDocJson.metadata.mediaNarrator,
-                 activeClass : packageDocJson.metadata.mediaActiveClass,
-                 playbackActiveClass : packageDocJson.metadata.mediaPlaybackActiveClass,
-                 smil_models : _moMap,
-                 
-                 skippables: ["sidebar", "practice", "marginalia", "annotation", "help", "note", "footnote", "rearnote", "table", "table-row", "table-cell", "list", "list-item", "pagebreak"],
-                 escapables: ["sidebar", "bibliography", "toc", "loi", "appendix", "landmarks", "lot", "index", "colophon", "epigraph", "conclusion", "afterword", "warning", "epilogue", "foreword", "introduction", "prologue", "preface", "preamble", "notice", "errata", "copyright-page", "acknowledgments", "other-credits", "titlepage", "imprimatur", "contributors", "halftitlepage", "dedication", "help", "annotation", "marginalia", "practice", "note", "footnote", "rearnote", "footnotes", "rearnotes", "bridgehead", "page-list", "table", "table-row", "table-cell", "list", "list-item", "glossary"]
-           };
+        /**
+         * Get spine item data in readium-shared-js accepted format.
+         * @param spineIndex the index of the item within the spine
+         * @returns Spine item data in readium-shared-js accepted format.
+         */
+        this.getSpineItem = function(spineIndex) {
+            var spineItem = spine[spineIndex];
+            return spineItem;
+        };
 
-           return result;
-        }
-        
-        function isFixedLayout() {
+        this.setPageProgressionDirection = function(page_prog_dir) {
+            _page_prog_dir = page_prog_dir;
+        };
 
-            return packageDocJson.metadata.fixed_layout;
-        }
 
-        function pageProgressionDirection() {
-
-            if (packageDocJson.metadata.page_prog_dir === "rtl") {
+        this.getPageProgressionDirection = function() {
+            if (_page_prog_dir === "rtl") {
                 return "rtl";
             }
-            else if (packageDocJson.metadata.page_prog_dir === "default") {
+            else if (_page_prog_dir === "default") {
                 return "default";
             }
             else {
                 return "ltr";
             }
-        }
+        };
+
+        this.spineLength = function() {
+            return spine.length;
+        };
+
+        this.getMetadata = function() {
+            return metadata;
+        };
 
         this.getToc = function() {
             var item = getTocItem();
             if (item) {
-                return item.contentDocumentURI;
+                return item.href;
             }
             return null;
         };
@@ -155,7 +135,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
         function tocIsNcx() {
 
             var tocItem = getTocItem();
-            var contentDocURI = tocItem.contentDocumentURI;
+            var contentDocURI = tocItem.href;
             var fileExtension = contentDocURI.substr(contentDocURI.lastIndexOf('.') + 1);
 
             return fileExtension.trim().toLowerCase() === "ncx";
@@ -202,14 +182,14 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs', './man
 
         function getTocItem(){
 
-            var item = _manifest.getNavItem();
+            var item = manifest.getNavItem();
             if (item) {
                 return item;
             }
 
-            var spine_id = packageDocJson.metadata.ncx;
+            var spine_id = metadata.ncx;
             if (spine_id && spine_id.length > 0) {
-                return _manifest.getManifestItemByIdref(spine_id);
+                return manifest.getManifestItemByIdref(spine_id);
             }
 
             return null;

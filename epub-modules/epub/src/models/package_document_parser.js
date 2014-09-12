@@ -11,10 +11,12 @@
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/markup_parser', 'URIjs', './package_document', './smil_document_parser'],
-    function (require, module, $, _, Backbone, MarkupParser, URI, PackageDocument, SmilDocumentParser) {
+define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/markup_parser', 'URIjs', './package_document',
+        './smil_document_parser', './metadata', './manifest'],
+    function(require, module, $, _, Backbone, MarkupParser, URI, PackageDocument, SmilDocumentParser, Metadata,
+             Manifest) {
 
-    // `PackageDocumentParser` is used to parse the xml of an epub package
+        // `PackageDocumentParser` is used to parse the xml of an epub package
     // document and build a javascript object. The constructor accepts an
     // instance of `URI` that is used to resolve paths during the process
     var PackageDocumentParser = function(bookRoot, publicationFetcher) {
@@ -39,14 +41,14 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
             _deferredXmlDom.resolve(packageDom);
         }, onError);
 
-        function fillSmilData(packageDocJson, callback) {
+        function fillSmilData(packageDocument, callback) {
 
-            var smilParser = new SmilDocumentParser(packageDocJson, publicationFetcher);
+            var smilParser = new SmilDocumentParser(packageDocument, publicationFetcher);
 
             smilParser.fillSmilData(function() {
-                var packageDocument = new PackageDocument(publicationFetcher.getPackageUrl(), packageDocJson, publicationFetcher);
+
                 // return the parse result
-                callback(packageDocJson, packageDocument);
+                callback(packageDocument);
             });
 
         }
@@ -55,35 +57,31 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
         this.parse = function(callback) {
 
             _deferredXmlDom.done(function (xmlDom) {
-                var packageDocJson, cover;
+                var metadata = getMetadata(xmlDom);
 
-                packageDocJson = {};
-                packageDocJson.metadata = getJsonMetadata(xmlDom);
-                packageDocJson.bindings = getJsonBindings(xmlDom);
-                packageDocJson.spine = getJsonSpine(xmlDom);
-                packageDocJson.manifest = getJsonManifest(xmlDom);
+                var spineElem = xmlDom.getElementsByTagNameNS("*", "spine")[0];
+                var page_prog_dir = getElemAttr(xmlDom, 'spine', "page-progression-direction");
 
-                // parse the page-progression-direction if it is present
-                packageDocJson.paginate_backwards = paginateBackwards(xmlDom);
+                // TODO: Bindings are unused
+                var bindings = getJsonBindings(xmlDom);
+
+                var manifest = new Manifest(getJsonManifest(xmlDom));
+                var spine = getJsonSpine(xmlDom, manifest, metadata);
 
                 // try to find a cover image
-                cover = getCoverHref(xmlDom);
+                var cover = getCoverHref(xmlDom);
                 if (cover) {
-                    packageDocJson.metadata.cover_href = cover;
+                    metadata.cover_href = cover;
                 }
 
-                $.when(updateMetadataWithIBookProperties(packageDocJson.metadata)).then(function() {
+                $.when(updateMetadataWithIBookProperties(metadata)).then(function() {
 
-                    if (packageDocJson.metadata.layout === "pre-paginated") {
-                        packageDocJson.metadata.fixed_layout = true;
-                    }
+                    _packageFetcher.setPackageMetadata(metadata, function () {
+                        var packageDocument = new PackageDocument(publicationFetcher.getPackageUrl(),
+                            publicationFetcher, metadata, spine, manifest);
 
-                    // parse the spine into a proper collection
-                    packageDocJson.spine = parseSpineProperties(packageDocJson.spine);
-
-
-                    _packageFetcher.setPackageJson(packageDocJson, function () {
-                        fillSmilData(packageDocJson, callback);
+                        packageDocument.setPageProgressionDirection(page_prog_dir);
+                        fillSmilData(packageDocument, callback);
                     });
                 });
 
@@ -95,9 +93,9 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
             var dff = $.Deferred();
 
             //if layout not set
-            if(!metadata.layout)
+            if(!metadata.rendition_layout)
             {
-                var pathToIBooksSpecificXml = new URI("/META-INF/com.apple.ibooks.display-options.xml");
+                var pathToIBooksSpecificXml = "/META-INF/com.apple.ibooks.display-options.xml";
 
                 publicationFetcher.relativeToPackageFetchFileContents(pathToIBooksSpecificXml, 'text', function (ibookPropText) {
                     if(ibookPropText) {
@@ -107,7 +105,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
                         if(fixLayoutProp) {
                             var fixLayoutVal = $(fixLayoutProp).text();
                             if(fixLayoutVal === "true") {
-                                metadata.layout = "pre-paginated";
+                                metadata.rendition_layout = "pre-paginated";
                                 console.log("using com.apple.ibooks.display-options.xml fixed-layout property");
                             }
                         }
@@ -129,34 +127,63 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
         }
 
 
-        function getJsonSpine(xmlDom) {
+        function getJsonSpine(xmlDom, manifest, metadata) {
 
             var $spineElements;
             var jsonSpine = [];
 
-            $spineElements = $("spine", xmlDom).children();
+            $spineElements = $(findXmlElemByLocalNameAnyNS(xmlDom,"spine")).children();
             $.each($spineElements, function (spineElementIndex, currSpineElement) {
 
                 var $currSpineElement = $(currSpineElement);
-                var spineItem = {
+                var idref = $currSpineElement.attr("idref") ? $currSpineElement.attr("idref") : "";
+                var manifestItem = manifest.getManifestItemByIdref(idref);
 
-                    idref: $currSpineElement.attr("idref") ? $currSpineElement.attr("idref") : "",
+                var id = $currSpineElement.attr("id");
+                var viewport = undefined;
+                _.each(metadata.rendition_viewports, function(vp) {
+                    if (vp.refines == id) {
+                        viewport = vp.viewport;
+                        return true; // break
+                    }
+                });
+
+                var spineItem = {
+                    rendition_viewport: viewport,
+                    idref: idref,
+                    href: manifestItem.href,
+                    manifest_id: manifestItem.id,
+                    media_type: manifestItem.media_type,
+                    media_overlay_id: manifestItem.media_overlay_id,
                     linear: $currSpineElement.attr("linear") ? $currSpineElement.attr("linear") : "",
                     properties: $currSpineElement.attr("properties") ? $currSpineElement.attr("properties") : ""
                 };
-                
+
+                var parsedProperties = parsePropertiesString(spineItem.properties);
+                _.extend(spineItem, parsedProperties);
+
                 jsonSpine.push(spineItem);
             });
 
             return jsonSpine;
         }
 
-        function findXmlElemByLocalNameAnyNS(rootElement, localName) {
-            return rootElement.getElementsByTagNameNS("*", localName)[0];
+        function findXmlElemByLocalNameAnyNS(rootElement, localName, predicate) {
+            var elements = rootElement.getElementsByTagNameNS("*", localName);
+            if (predicate) {
+                return _.find(elements, predicate);
+            } else {
+                return elements[0];
+            }
         }
 
-        function getElemText(rootElement, localName) {
-            var foundElement = findXmlElemByLocalNameAnyNS(rootElement, localName);
+        function filterXmlElemsByLocalNameAnyNS(rootElement, localName, predicate) {
+            var elements = rootElement.getElementsByTagNameNS("*", localName);
+            return _.filter(elements, predicate);
+        }
+
+        function getElemText(rootElement, localName, predicate) {
+            var foundElement = findXmlElemByLocalNameAnyNS(rootElement, localName, predicate);
             if (foundElement) {
                 return foundElement.textContent;
             } else {
@@ -164,57 +191,138 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
             }
         }
 
-        function getJsonMetadata(xmlDom) {
+        function getElemAttr(rootElement, localName, attrName, predicate) {
+            var foundElement = findXmlElemByLocalNameAnyNS(rootElement, localName, predicate);
+            if (foundElement) {
+                return foundElement.getAttribute(attrName);
+            } else {
+                return '';
+            }
+        }
 
-            var $metadata = $("metadata", xmlDom);
-            var metadataElem = xmlDom.getElementsByTagNameNS("*", "metadata")[0];
-            var jsonMetadata = {};
+        function getMetaElemPropertyText(rootElement, attrPropertyValue) {
 
-            jsonMetadata.author = getElemText(metadataElem, "creator");
-            jsonMetadata.description = getElemText(metadataElem, "description");
-            // TODO: Convert all jQuery queries (that get confused by XML namespaces on Firefox) to getElementsByTagNameNS().
-            jsonMetadata.epub_version =
-                $("package", xmlDom).attr("version") ? $("package", xmlDom).attr("version") : "";
-            jsonMetadata.id = getElemText(metadataElem,"identifier");
-            jsonMetadata.language = getElemText(metadataElem, "language");
-            jsonMetadata.modified_date = $("meta[property='dcterms:modified']", $metadata).text();
-            jsonMetadata.ncx = $("spine", xmlDom).attr("toc") ? $("spine", xmlDom).attr("toc") : "";
-            jsonMetadata.page_prog_dir = $("spine", xmlDom).attr("page-progression-direction") ?
-                $("spine", xmlDom).attr("page-progression-direction") : "";
-            jsonMetadata.pubdate = getElemText(metadataElem, "date");
-            jsonMetadata.publisher = getElemText(metadataElem, "publisher");
-            jsonMetadata.rights = getElemText(metadataElem, "rights");
-            jsonMetadata.title = getElemText(metadataElem, "title");
+            var foundElement = findXmlElemByLocalNameAnyNS(rootElement, "meta", function (element) {
+                return element.getAttribute("property") === attrPropertyValue;
+            });
+
+            if (foundElement) {
+                return foundElement.textContent;
+            } else {
+                return '';
+            }
+        }
+
+
+        function getMetadata(xmlDom) {
+
+            var metadata = new Metadata();
+            var metadataElem = findXmlElemByLocalNameAnyNS(xmlDom, "metadata");
+            var packageElem = findXmlElemByLocalNameAnyNS(xmlDom, "package");
+            var spineElem = findXmlElemByLocalNameAnyNS(xmlDom, "spine");
+
+
+            metadata.author = getElemText(metadataElem, "creator");
+            metadata.description = getElemText(metadataElem, "description");
+            metadata.epub_version =
+                packageElem.getAttribute("version") ? packageElem.getAttribute("version") : "";
+            metadata.id = getElemText(metadataElem,"identifier");
+            metadata.language = getElemText(metadataElem, "language");
+            metadata.modified_date = getMetaElemPropertyText(metadataElem, "dcterms:modified");
+            metadata.ncx = spineElem.getAttribute("toc") ? spineElem.getAttribute("toc") : "";
+            metadata.pubdate = getElemText(metadataElem, "date");
+            metadata.publisher = getElemText(metadataElem, "publisher");
+            metadata.rights = getElemText(metadataElem, "rights");
+            metadata.title = getElemText(metadataElem, "title");
+
+            metadata.rendition_orientation = getMetaElemPropertyText(metadataElem, "rendition:orientation");
+            metadata.rendition_layout = getMetaElemPropertyText(metadataElem, "rendition:layout");
+            metadata.rendition_spread = getMetaElemPropertyText(metadataElem, "rendition:spread");
+            metadata.rendition_flow = getMetaElemPropertyText(metadataElem, "rendition:flow");
+
+
+
+
+
+
+            //http://www.idpf.org/epub/301/spec/epub-publications.html#fxl-property-viewport
             
+            //metadata.rendition_viewport = getMetaElemPropertyText(metadataElem, "rendition:viewport");
+            metadata.rendition_viewport = getElemText(metadataElem, "meta", function (element) {
+                return element.getAttribute("property") === "rendition:viewport" && !element.hasAttribute("refines")
+            });
 
-            jsonMetadata.orientation = $("meta[property='rendition:orientation']", $metadata).text();
-            jsonMetadata.layout = $("meta[property='rendition:layout']", $metadata).text();
-            jsonMetadata.spread = $("meta[property='rendition:spread']", $metadata).text();
+            var viewports = [];
+            var viewportMetaElems = filterXmlElemsByLocalNameAnyNS(metadataElem, "meta", function (element) {
+                return element.getAttribute("property") === "rendition:viewport" && element.hasAttribute("refines");
+            });
+            _.each(viewportMetaElems, function(currItem) {
+                var id = currItem.getAttribute("refines");
+                if (id) {
+                    var hash = id.indexOf('#');
+                    if (hash >= 0) {
+                        var start = hash+1;
+                        var end = id.length-1;
+                        id = id.substr(start, end);
+                    }
+                    id = id.trim();
+                }
+                
+                var vp = {
+                  refines: id,
+                  viewport: currItem.textContent
+                };
+                viewports.push(vp);
+            });
+            
+            metadata.rendition_viewports = viewports;
+
+            
+            
+            
             
             
             // Media part
-            jsonMetadata.mediaItems = [];
+            metadata.mediaItems = [];
 
-            var $overlays = $("meta[property='media:duration'][refines]", $metadata);
+            var overlayElems = filterXmlElemsByLocalNameAnyNS(metadataElem, "meta", function (element) {
+                return element.getAttribute("property") === "media:duration" && element.hasAttribute("refines");
+            });
 
-            $.each($overlays, function(elementIndex, $currItem) {
-               jsonMetadata.mediaItems.push({
-                  refines: $currItem.getAttribute("refines"),
-                  duration: SmilDocumentParser.resolveClockValue($($currItem).text())
+            _.each(overlayElems, function(currItem) {
+                metadata.mediaItems.push({
+                  refines: currItem.getAttribute("refines"),
+                  duration: SmilDocumentParser.resolveClockValue(currItem.textContent)
                });
             });
-               
-            jsonMetadata.mediaDuration =  SmilDocumentParser.resolveClockValue($("meta[property='media:duration']:not([refines])", $metadata).text());
-            jsonMetadata.mediaNarrator =  $("meta[property='media:narrator']", $metadata).text();
-            jsonMetadata.mediaActiveClass =   $("meta[property='media:active-class']", $metadata).text();
-            jsonMetadata.mediaPlaybackActiveClass =   $("meta[property='media:playback-active-class']", $metadata).text();
-            
-            return jsonMetadata;
+
+            metadata.media_overlay = {
+                duration: SmilDocumentParser.resolveClockValue(
+                    getElemText(metadataElem, "meta", function (element) {
+                        return element.getAttribute("property") === "media:duration" && !element.hasAttribute("refines")
+                    })
+                ),
+                narrator: getMetaElemPropertyText(metadataElem, "media:narrator"),
+                activeClass: getMetaElemPropertyText(metadataElem, "media:active-class"),
+                playbackActiveClass: getMetaElemPropertyText(metadataElem, "media:playback-active-class"),
+                smil_models: [],
+                skippables: ["sidebar", "practice", "marginalia", "annotation", "help", "note", "footnote", "rearnote",
+                    "table", "table-row", "table-cell", "list", "list-item", "pagebreak"],
+                escapables: ["sidebar", "bibliography", "toc", "loi", "appendix", "landmarks", "lot", "index",
+                    "colophon", "epigraph", "conclusion", "afterword", "warning", "epilogue", "foreword",
+                    "introduction", "prologue", "preface", "preamble", "notice", "errata", "copyright-page",
+                    "acknowledgments", "other-credits", "titlepage", "imprimatur", "contributors", "halftitlepage",
+                    "dedication", "help", "annotation", "marginalia", "practice", "note", "footnote", "rearnote",
+                    "footnotes", "rearnotes", "bridgehead", "page-list", "table", "table-row", "table-cell", "list",
+                    "list-item", "glossary"]
+            };
+
+            return metadata;
         }
 
         function getJsonManifest(xmlDom) {
 
-            var $manifestItems = $("manifest", xmlDom).children();
+            var $manifestItems = $(findXmlElemByLocalNameAnyNS(xmlDom, "manifest")).children();
             var jsonManifest = [];
 
             $.each($manifestItems, function (manifestElementIndex, currManifestElement) {
@@ -224,16 +332,15 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
                     "";
                 var manifestItem = {
 
-                    contentDocumentURI: currManifestElementHref,
                     href: currManifestElementHref,
                     id: $currManifestElement.attr("id") ? $currManifestElement.attr("id") : "",
-                    media_overlay: $currManifestElement.attr("media-overlay") ?
+                    media_overlay_id: $currManifestElement.attr("media-overlay") ?
                         $currManifestElement.attr("media-overlay") : "",
                     media_type: $currManifestElement.attr("media-type") ? $currManifestElement.attr("media-type") : "",
                     properties: $currManifestElement.attr("properties") ? $currManifestElement.attr("properties") : ""
                 };
                 // console.log('pushing manifest item to JSON manifest. currManifestElementHref: [' + currManifestElementHref + 
-                //     '], manifestItem.contentDocumentURI: [' + manifestItem.contentDocumentURI + 
+                //     '], manifestItem.href: [' + manifestItem.href +
                 //     '], manifestItem:');
                 // console.log(manifestItem);
                 jsonManifest.push(manifestItem);
@@ -244,7 +351,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
 
         function getJsonBindings(xmlDom) {
 
-            var $bindings = $("bindings", xmlDom).children();
+            var $bindings = $(findXmlElemByLocalNameAnyNS(xmlDom, "bindings")).children();
             var jsonBindings = [];
 
             $.each($bindings, function (bindingElementIndex, currBindingElement) {
@@ -266,28 +373,37 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
 
             var manifest;
             var $imageNode;
-            manifest = xmlDom.getElementsByTagName('manifest')[0];
+            manifest = findXmlElemByLocalNameAnyNS(xmlDom, "manifest");
 
             // epub3 spec for a cover image is like this:
             /*<item properties="cover-image" id="ci" href="cover.svg" media-type="image/svg+xml" />*/
-            $imageNode = $('item[properties~="cover-image"]', manifest);
+            $imageNode = $(findXmlElemByLocalNameAnyNS(manifest, "item", function (element) {
+                var attr = element.getAttribute("properties");
+                return attr && _.contains(attr.split(" "), "cover-image");
+            }));
             if ($imageNode.length === 1 && $imageNode.attr("href")) {
                 return $imageNode.attr("href");
             }
 
             // some epub2's cover image is like this:
             /*<meta name="cover" content="cover-image-item-id" />*/
-            var metaNode = $('meta[name="cover"]', xmlDom);
+            var metaNode = $(findXmlElemByLocalNameAnyNS(xmlDom, "meta", function (element) {
+                return element.getAttribute("name") === "cover";
+            }));
             var contentAttr = metaNode.attr("content");
             if (metaNode.length === 1 && contentAttr) {
-                $imageNode = $('item[id="' + contentAttr + '"]', manifest);
+                $imageNode = $(findXmlElemByLocalNameAnyNS(manifest, "item", function (element) {
+                    return element.getAttribute("id") === contentAttr;
+                }));
                 if ($imageNode.length === 1 && $imageNode.attr("href")) {
                     return $imageNode.attr("href");
                 }
             }
 
             // that didn't seem to work so, it think epub2 just uses item with id=cover
-            $imageNode = $('#cover', manifest);
+            $imageNode = $(findXmlElemByLocalNameAnyNS(manifest, "item", function (element) {
+                return element.getAttribute("id") === "cover";
+            }));
             if ($imageNode.length === 1 && $imageNode.attr("href")) {
                 return $imageNode.attr("href");
             }
@@ -296,93 +412,75 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
             return null;
         }
 
-        function parseSpineProperties(spine) {
+        function parsePropertiesString(str) {
+            var properties = {};
+            var allPropStrs = str.split(" "); // split it on white space
+            for (var i = 0; i < allPropStrs.length; i++) {
 
-            var parsePropertiesString = function (str) {
-                var properties = {};
-                var allPropStrs = str.split(" "); // split it on white space
-                for (var i = 0; i < allPropStrs.length; i++) {
+                //ReadiumSDK.Models.SpineItem.RENDITION_ORIENTATION_LANDSCAPE
+                if (allPropStrs[i] === "rendition:orientation-landscape") properties.rendition_orientation = "landscape";
 
-                    //ReadiumSDK.Models.SpineItem.RENDITION_ORIENTATION_LANDSCAPE
-                    if (allPropStrs[i] === "rendition:orientation-landscape") properties.rendition_orientation = "landscape";
+                //ReadiumSDK.Models.SpineItem.RENDITION_ORIENTATION_PORTRAIT
+                if (allPropStrs[i] === "rendition:orientation-portrait") properties.rendition_orientation = "portrait";
 
-                    //ReadiumSDK.Models.SpineItem.RENDITION_ORIENTATION_PORTRAIT
-                    if (allPropStrs[i] === "rendition:orientation-portrait") properties.rendition_orientation = "portrait";
+                //ReadiumSDK.Models.SpineItem.RENDITION_ORIENTATION_AUTO
+                if (allPropStrs[i] === "rendition:orientation-auto") properties.rendition_orientation = "auto";
 
-                    //ReadiumSDK.Models.SpineItem.RENDITION_ORIENTATION_AUTO
-                    if (allPropStrs[i] === "rendition:orientation-auto") properties.rendition_orientation = "auto";
-                    
-                    
-                    //ReadiumSDK.Models.SpineItem.RENDITION_SPREAD_NONE
-                    if (allPropStrs[i] === "rendition:spread-none") properties.rendition_spread = "none";
-                    
-                    //ReadiumSDK.Models.SpineItem.RENDITION_SPREAD_LANDSCAPE
-                    if (allPropStrs[i] === "rendition:spread-landscape") properties.rendition_spread = "landscape";
-                    
-                    //ReadiumSDK.Models.SpineItem.RENDITION_SPREAD_PORTRAIT
-                    if (allPropStrs[i] === "rendition:spread-portrait") properties.rendition_spread = "portrait";
-                    
-                    //ReadiumSDK.Models.SpineItem.RENDITION_SPREAD_BOTH
-                    if (allPropStrs[i] === "rendition:spread-both") properties.rendition_spread = "both";
-                    
-                    //ReadiumSDK.Models.SpineItem.RENDITION_SPREAD_AUTO
-                    if (allPropStrs[i] === "rendition:spread-auto") properties.rendition_spread = "auto";
-    
-    
-                    //ReadiumSDK.Models.SpineItem.RENDITION_FLOW_PAGINATED
-                    if (allPropStrs[i] === "rendition:flow-paginated") properties.rendition_flow = "paginated";
-    
-                    //ReadiumSDK.Models.SpineItem.RENDITION_FLOW_SCROLLED_CONTINUOUS
-                    if (allPropStrs[i] === "rendition:flow-scrolled-continuous") properties.rendition_flow = "scrolled-continuous";
-    
-                    //ReadiumSDK.Models.SpineItem.RENDITION_FLOW_SCROLLED_DOC
-                    if (allPropStrs[i] === "rendition:flow-scrolled-doc") properties.rendition_flow = "scrolled-doc";
-    
-                    //ReadiumSDK.Models.SpineItem.RENDITION_FLOW_AUTO
-                    if (allPropStrs[i] === "rendition:flow-auto") properties.rendition_flow = "auto";
-                    
-                    
-    
-                    //ReadiumSDK.Models.SpineItem.SPREAD_CENTER
-                    if (allPropStrs[i] === "rendition:page-spread-center") properties.page_spread = "page-spread-center";
-                    
-                    //ReadiumSDK.Models.SpineItem.SPREAD_LEFT
-                    if (allPropStrs[i] === "page-spread-left") properties.page_spread = "page-spread-left";
-                    
-                    //ReadiumSDK.Models.SpineItem.SPREAD_RIGHT
-                    if (allPropStrs[i] === "page-spread-right") properties.page_spread = "page-spread-right";
 
-                    //ReadiumSDK.Models.SpineItem.RENDITION_LAYOUT_REFLOWABLE
-                    if (allPropStrs[i] === "rendition:layout-reflowable") {
-                        properties.fixed_flow = false; // TODO: only used in spec tests!
-                        properties.rendition_layout = "reflowable";
-                    }
-                    
-                    //ReadiumSDK.Models.SpineItem.RENDITION_LAYOUT_PREPAGINATED
-                    if (allPropStrs[i] === "rendition:layout-pre-paginated") {
-                        properties.fixed_flow = true; // TODO: only used in spec tests!
-                        properties.rendition_layout = "pre-paginated";
-                    }
+                //ReadiumSDK.Models.SpineItem.RENDITION_SPREAD_NONE
+                if (allPropStrs[i] === "rendition:spread-none") properties.rendition_spread = "none";
+
+                //ReadiumSDK.Models.SpineItem.RENDITION_SPREAD_LANDSCAPE
+                if (allPropStrs[i] === "rendition:spread-landscape") properties.rendition_spread = "landscape";
+
+                //ReadiumSDK.Models.SpineItem.RENDITION_SPREAD_PORTRAIT
+                if (allPropStrs[i] === "rendition:spread-portrait") properties.rendition_spread = "portrait";
+
+                //ReadiumSDK.Models.SpineItem.RENDITION_SPREAD_BOTH
+                if (allPropStrs[i] === "rendition:spread-both") properties.rendition_spread = "both";
+
+                //ReadiumSDK.Models.SpineItem.RENDITION_SPREAD_AUTO
+                if (allPropStrs[i] === "rendition:spread-auto") properties.rendition_spread = "auto";
+
+
+                //ReadiumSDK.Models.SpineItem.RENDITION_FLOW_PAGINATED
+                if (allPropStrs[i] === "rendition:flow-paginated") properties.rendition_flow = "paginated";
+
+                //ReadiumSDK.Models.SpineItem.RENDITION_FLOW_SCROLLED_CONTINUOUS
+                if (allPropStrs[i] === "rendition:flow-scrolled-continuous") properties.rendition_flow = "scrolled-continuous";
+
+                //ReadiumSDK.Models.SpineItem.RENDITION_FLOW_SCROLLED_DOC
+                if (allPropStrs[i] === "rendition:flow-scrolled-doc") properties.rendition_flow = "scrolled-doc";
+
+                //ReadiumSDK.Models.SpineItem.RENDITION_FLOW_AUTO
+                if (allPropStrs[i] === "rendition:flow-auto") properties.rendition_flow = "auto";
+
+
+
+                //ReadiumSDK.Models.SpineItem.SPREAD_CENTER
+                if (allPropStrs[i] === "rendition:page-spread-center") properties.page_spread = "page-spread-center";
+
+                //ReadiumSDK.Models.SpineItem.SPREAD_LEFT
+                if (allPropStrs[i] === "page-spread-left") properties.page_spread = "page-spread-left";
+
+                //ReadiumSDK.Models.SpineItem.SPREAD_RIGHT
+                if (allPropStrs[i] === "page-spread-right") properties.page_spread = "page-spread-right";
+
+                //ReadiumSDK.Models.SpineItem.RENDITION_LAYOUT_REFLOWABLE
+                if (allPropStrs[i] === "rendition:layout-reflowable") {
+                    properties.fixed_flow = false; // TODO: only used in spec tests!
+                    properties.rendition_layout = "reflowable";
                 }
-                return properties;
 
-            };
-
-            for (var i = 0; i < spine.length; i++) {
-
-                var props = parsePropertiesString(spine[i].properties);
-                // add all the properties to the spine item
-                _.extend(spine[i], props);
+                //ReadiumSDK.Models.SpineItem.RENDITION_LAYOUT_PREPAGINATED
+                if (allPropStrs[i] === "rendition:layout-pre-paginated") {
+                    properties.fixed_flow = true; // TODO: only used in spec tests!
+                    properties.rendition_layout = "pre-paginated";
+                }
             }
-
-            return spine;
+            return properties;
         }
 
-        // parse the EPUB3 `page-progression-direction` attribute
-        function paginateBackwards (xmlDom) {
-
-            return $('spine', xmlDom).attr('page-progression-direction') === "rtl";
-        }
     };
 
     return PackageDocumentParser;

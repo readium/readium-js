@@ -24,7 +24,47 @@ module.exports = function(grunt) {
     // Compile a list of paths and output files for our modules for requirejs to compile.
     // TODO: Translate the command-line code to this.
 
+    grunt.registerTask('versioning', function(){
 
+        var done = this.async();
+        var git = require('gift'),
+            fs = require('fs');
+
+        var readiumSharedJsRepo = git('epub-modules/epub-renderer/src/readium-shared-js');
+        readiumSharedJsRepo.current_commit(function(err, commit){
+            var sharedCommit = commit.id,
+                sharedIsClean;
+
+            readiumSharedJsRepo.status(function(err, status){
+                sharedIsClean = status.clean;
+
+                var readiumJsRepo = git('.');
+
+                readiumJsRepo.current_commit(function(err, commit){
+                    var commit = commit.id,
+                        isClean;
+
+                    readiumJsRepo.status(function(err, status){
+                        isClean = status.clean;
+
+                        var obj = {
+                            readiumJs : {
+                                sha: commit,
+                                clean : isClean
+                            },
+                            readiumSharedJs : {
+                                sha: sharedCommit,
+                                clean : sharedIsClean
+                            }
+                        }
+                        fs.writeFileSync('./version.json', JSON.stringify(obj));
+                        done();
+                    })
+                });
+            });
+
+        });
+    });
 
     grunt.initConfig({
 
@@ -45,13 +85,14 @@ module.exports = function(grunt) {
                     }:undefined
                 }
             }
-        }
+        },
+
 
     });
     
 
     require('load-grunt-tasks')(grunt);
     
-    grunt.registerTask('default', ['requirejs']);
+    grunt.registerTask('default', ['versioning', 'requirejs']);
 
 };
