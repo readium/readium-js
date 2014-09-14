@@ -47,10 +47,10 @@ define(['require', 'text!version.json', 'console_shim', 'jquery', 'underscore', 
 
         this.openPackageDocument = function(bookRoot, callback, openPageRequest)  {
             if (_currentPublicationFetcher) {
-                _currentPublicationFetcher.flushCache(window);
+                _currentPublicationFetcher.flushCache();
             }
 
-            _currentPublicationFetcher = new PublicationFetcher(bookRoot, jsLibRoot);
+            _currentPublicationFetcher = new PublicationFetcher(bookRoot, jsLibRoot, window);
 
             _currentPublicationFetcher.initialize(function() {
 
@@ -80,7 +80,7 @@ define(['require', 'text!version.json', 'console_shim', 'jquery', 'underscore', 
 
         this.closePackageDocument = function() {
             if (_currentPublicationFetcher) {
-                _currentPublicationFetcher.flushCache(window);
+                _currentPublicationFetcher.flushCache();
             }
         };
 
