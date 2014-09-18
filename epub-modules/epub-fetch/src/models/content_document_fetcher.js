@@ -126,8 +126,8 @@ define(
                                 }
                                 //noinspection JSUnresolvedVariable,JSUnresolvedFunction
                                 var resourceObjectURL = window.URL.createObjectURL(finalResourceData);
-                                _publicationResourcesCache.putResourceURL(resourceUriRelativeToPackageDocument,
-                                    resourceObjectURL);
+                                _publicationResourcesCache.putResource(resourceUriRelativeToPackageDocument,
+                                    resourceObjectURL, finalResourceData);
                                 // TODO: take care of releasing object URLs when no longer needed
                                 replaceRefAttrInElem(resourceObjectURL);
                                 resolutionDeferred.resolve();
@@ -178,7 +178,8 @@ define(
                             isStyleSheetResource: isStyleSheetResource,
                             resourceObjectURL: resourceObjectURL
                         };
-                        _publicationResourcesCache.putResourceURL(resourceUriRelativeToPackageDocument, resourceObjectURL);
+                        _publicationResourcesCache.putResource(resourceUriRelativeToPackageDocument,
+                            resourceObjectURL, resourceDataBlob);
                         cssUrlFetchDeferred.resolve();
                     };
                     var fetchErrorCallback = function (error) {

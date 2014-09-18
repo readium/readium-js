@@ -46,8 +46,11 @@ define(['require', 'text!version.json', 'console_shim', 'jquery', 'underscore', 
         this.reader = new ReadiumSDK.Views.ReaderView(readerOptions);
 
         this.openPackageDocument = function(bookRoot, callback, openPageRequest)  {
+            if (_currentPublicationFetcher) {
+                _currentPublicationFetcher.flushCache();
+            }
 
-            _currentPublicationFetcher = new PublicationFetcher(bookRoot, jsLibRoot);
+            _currentPublicationFetcher = new PublicationFetcher(bookRoot, jsLibRoot, window);
 
             _currentPublicationFetcher.initialize(function() {
 
@@ -73,7 +76,13 @@ define(['require', 'text!version.json', 'console_shim', 'jquery', 'underscore', 
                     }
                 });
             });
-        }
+        };
+
+        this.closePackageDocument = function() {
+            if (_currentPublicationFetcher) {
+                _currentPublicationFetcher.flushCache();
+            }
+        };
 
 
         //we need global access to the reader object for automation test being able to call it's APIs
