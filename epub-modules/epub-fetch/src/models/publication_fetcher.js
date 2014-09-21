@@ -16,7 +16,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
     function (require, module, $, URI, MarkupParser, PlainResourceFetcher, ZipResourceFetcher, ContentDocumentFetcher,
               ResourceCache, EncryptionHandler) {
 
-    var PublicationFetcher = function(bookRoot, jsLibRoot, sourceWindow) {
+    var PublicationFetcher = function(bookRoot, jsLibRoot, sourceWindow, cacheSizeEvictThreshold) {
 
         var self = this;
 
@@ -32,7 +32,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
         var _packageFullPath;
         var _packageDom;
         var _packageDomInitializationDeferred;
-        var _publicationResourcesCache = new ResourceCache(sourceWindow);
+        var _publicationResourcesCache = new ResourceCache(sourceWindow, cacheSizeEvictThreshold);
 
 
         this.markupParser = new MarkupParser();
