@@ -19,9 +19,6 @@ define(['underscore'], function (_) {
             var _resourcesHash = {};
             var _orderingByLastUseTimestamp = [];
             var _cacheSize = 0;
-            // TODO:
-            // 1) Size accordingly as a fraction of browser provided memory info (e.g. window.performance.memory on Chrome)
-            // 2) expose as a configuration option passed within readiumOptions
             var CACHE_SIZE_EVICT_THRESHOLD_DEFAULT = 100000000;
             var cacheSizeEvictThreshold = determineCacheSizeThreshold();
 
