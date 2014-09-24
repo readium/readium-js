@@ -269,6 +269,7 @@ define(
                                              resourceDataPreprocessing) {
 
                 var resolvedElems = $(elemName + '[' + refAttr + ']', _contentDocumentDom);
+                refAttr = refAttr.replace(/\\/g, '');
 
                 resolvedElems.each(function (index, resolvedElem) {
                     var refAttrOrigVal = $(resolvedElem).attr(refAttr);
@@ -285,6 +286,7 @@ define(
 
             function resolveDocumentImages(resolutionDeferreds, onerror) {
                 resolveResourceElements('img', 'src', 'blob', resolutionDeferreds, onerror);
+                resolveResourceElements('image', 'xlink\\:href', 'blob', resolutionDeferreds, onerror);
             }
 
             function resolveDocumentAudios(resolutionDeferreds, onerror) {
