@@ -50,7 +50,12 @@ define(['require', 'text!version.json', 'console_shim', 'jquery', 'underscore', 
                 _currentPublicationFetcher.flushCache();
             }
 
-            _currentPublicationFetcher = new PublicationFetcher(bookRoot, jsLibRoot, window);
+            var cacheSizeEvictThreshold = null;
+            if (readiumOptions.cacheSizeEvictThreshold) {
+                cacheSizeEvictThreshold = readiumOptions.cacheSizeEvictThreshold;
+            }
+
+            _currentPublicationFetcher = new PublicationFetcher(bookRoot, jsLibRoot, window, cacheSizeEvictThreshold);
 
             _currentPublicationFetcher.initialize(function() {
 

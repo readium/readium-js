@@ -13,19 +13,37 @@
 
 define(['underscore'], function (_) {
 
-        var ResourceCache = function(sourceWindow) {
+        var ResourceCache = function(sourceWindow, configuredCacheSizeEvictThreshold) {
 
             var self = this;
             var _resourcesHash = {};
             var _orderingByLastUseTimestamp = [];
             var _cacheSize = 0;
-            // TODO:
-            // 1) Size accordingly as a fraction of browser provided memory info (e.g. window.performance.memory on Chrome)
-            // 2) expose as a configuration option passed within readiumOptions
-            var CACHE_SIZE_EVICT_THRESHOLD = 100000000;
+            var CACHE_SIZE_EVICT_THRESHOLD_DEFAULT = 100000000;
+            var cacheSizeEvictThreshold = determineCacheSizeThreshold();
 
             function getTimestamp() {
                 return new Date().getTime();
+            }
+
+            function getBrowserHeapLimitInBytes() {
+                if (window.performance && window.performance.memory && window.performance.memory.jsHeapSizeLimit) {
+                    return window.performance.memory.jsHeapSizeLimit;
+                } else {
+                    return null;
+                }
+            }
+
+            function determineCacheSizeThreshold() {
+                if (configuredCacheSizeEvictThreshold) {
+                    return configuredCacheSizeEvictThreshold;
+                }
+                var browserHeapLimitInBytes = getBrowserHeapLimitInBytes();
+                if (browserHeapLimitInBytes && browserHeapLimitInBytes / 10 > CACHE_SIZE_EVICT_THRESHOLD_DEFAULT) {
+                    return browserHeapLimitInBytes / 10;
+                } else {
+                    return  CACHE_SIZE_EVICT_THRESHOLD_DEFAULT;
+                }
             }
 
             this.getResourceURL = function(resourceAbsoluteHref) {
@@ -126,7 +144,7 @@ define(['underscore'], function (_) {
             }
 
             this.trimCache = function() {
-                if (_cacheSize < CACHE_SIZE_EVICT_THRESHOLD) {
+                if (_cacheSize < cacheSizeEvictThreshold) {
                     return;
                 }
                 console.log('Trimming cache. Current cache size: ' + _cacheSize);
@@ -136,7 +154,7 @@ define(['underscore'], function (_) {
                 // 1) cache size drops below CACHE_SIZE_EVICT_THRESHOLD
                 // 2) there are no more unpinned resources to evict
                 for (var i = 0; i < _orderingByLastUseTimestamp.length; i++) {
-                    if (_cacheSize < CACHE_SIZE_EVICT_THRESHOLD) {
+                    if (_cacheSize < cacheSizeEvictThreshold) {
                         break;
                     }
                     var cacheEntry = _orderingByLastUseTimestamp[i];
