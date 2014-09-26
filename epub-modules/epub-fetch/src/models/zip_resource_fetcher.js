@@ -33,11 +33,19 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
 
                 zip.workerScriptsPath = libDir;
                 _zipFs = new zip.fs.FS();
-                _zipFs.importHttpContent(baseUrl, true, function () {
 
-                    callback(_zipFs, onerror);
-
-                }, onerror)
+                if(baseUrl instanceof File) {
+                    // baseUrl is the epub File (same as Blob)
+                    _zipFs.importBlob(baseUrl, function () {
+                        callback(_zipFs, onerror);
+                    }, onerror);
+                }
+                else {
+                    // baseUrl is the path to the epub
+                    _zipFs.importHttpContent(baseUrl, true, function () {
+                        callback(_zipFs, onerror);
+                    }, onerror);
+                }
             }
         }
 
@@ -65,7 +73,7 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
         // PUBLIC API
 
         this.getPackageUrl = function() {
-            return baseUrl;
+            return (baseUrl instanceof File) ? baseUrl.name : baseUrl;
         };
 
         this.fetchFileContentsText = function(relativePathRelativeToPackageRoot, fetchCallback, onerror) {
