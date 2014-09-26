@@ -268,7 +268,7 @@ define(
             function resolveResourceElements(elemName, refAttr, fetchMode, resolutionDeferreds, onerror,
                                              resourceDataPreprocessing) {
 
-                var resolvedElems = $(elemName + '[' + refAttr + ']', _contentDocumentDom);
+                var resolvedElems = $(elemName + '[' + refAttr.replace(':', '\\:') + ']', _contentDocumentDom);
 
                 resolvedElems.each(function (index, resolvedElem) {
                     var refAttrOrigVal = $(resolvedElem).attr(refAttr);
@@ -285,6 +285,7 @@ define(
 
             function resolveDocumentImages(resolutionDeferreds, onerror) {
                 resolveResourceElements('img', 'src', 'blob', resolutionDeferreds, onerror);
+                resolveResourceElements('image', 'xlink:href', 'blob', resolutionDeferreds, onerror);
             }
 
             function resolveDocumentAudios(resolutionDeferreds, onerror) {
