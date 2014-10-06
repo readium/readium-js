@@ -55,7 +55,9 @@ var requirejs = {
         mediaOvelayDataInjector: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/media_overlay_data_injector',
         internalLinksSupport: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/internal_links_support',
         iframeLoader: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/iframe_loader',
-        
+
+        pluginsController: 'epub-modules/epub-renderer/src/readium-shared-js/js/controllers/plugins_controller',
+        pluginsLoader: 'epub-modules/epub-renderer/src/readium-shared-js/js/controllers/plugins_loader',
 
         domReady : 'lib/domReady',
         
@@ -75,6 +77,11 @@ var requirejs = {
             name: 'epub-fetch',
             location: 'epub-modules/epub-fetch/src/models',
             main: 'publication_fetcher'
+        },
+
+        {
+            name: 'epub-plugins',
+            location: 'epub-modules/epub-renderer/src/readium-shared-js/plugins'
         },
 
         {
@@ -316,6 +323,10 @@ var requirejs = {
         annotationsManager: {
             deps: ['epubCfi', 'annotations_module'],
             exports:'annotationsManager'
+        pluginsLoader: {
+            //define the plugins to be loaded here:
+            deps: [
+            ]
         }
 
     },
