@@ -30,7 +30,9 @@ module.exports = function(grunt) {
         var git = require('gift'),
             fs = require('fs');
 
-        var readiumSharedJsRepo = git('epub-modules/epub-renderer/src/readium-shared-js');
+        var sharedJsPath = 'epub-modules/epub-renderer/src/readium-shared-js';
+
+        var readiumSharedJsRepo = git(sharedJsPath);
         readiumSharedJsRepo.current_commit(function(err, commit){
             var sharedCommit = commit.id,
                 sharedIsClean;
@@ -50,15 +52,59 @@ module.exports = function(grunt) {
                         var obj = {
                             readiumJs : {
                                 sha: commit,
+                                tag: "",
                                 clean : isClean
                             },
                             readiumSharedJs : {
                                 sha: sharedCommit,
+                                tag: "",
                                 clean : sharedIsClean
                             }
-                        }
-                        fs.writeFileSync('./version.json', JSON.stringify(obj));
-                        done();
+                        };
+                        
+                        var exec = require('child_process').exec;
+                        //var cmd = "git --git-dir='" + process.cwd() + "/.git' name-rev --tags --name-only " + commit;
+                        var cmd = "git --git-dir='" + process.cwd() + "/.git' describe --tags --long " + commit;
+                        grunt.log.writeln(cmd);
+                        exec(cmd,
+                            { cwd: process.cwd() },
+                            function(err, stdout, stderr) {
+                                if (err) {
+                                    grunt.log.writeln(err);
+                                }
+                                if (stderr) {
+                                    grunt.log.writeln(stderr);
+                                }
+                                if (stdout) {
+                                    grunt.log.writeln(stdout);
+                    
+                                    obj.readiumJs["tag"] = stdout.trim();
+                                }
+                                
+                                //cmd = "git --git-dir='" + process.cwd() + "/" + sharedJsPath + "/.git' name-rev --tags --name-only " + sharedCommit;
+                                cmd = "git --git-dir='" + process.cwd() + "/" + sharedJsPath + "/.git' describe --tags --long " + sharedCommit;
+                                grunt.log.writeln(cmd);
+                                exec(cmd,
+                                    { cwd: process.cwd() },
+                                    function(err, stdout, stderr) {
+                                        if (err) {
+                                            grunt.log.writeln(err);
+                                        }
+                                        if (stderr) {
+                                            grunt.log.writeln(stderr);
+                                        }
+                                        if (stdout) {
+                                            grunt.log.writeln(stdout);
+
+                                            obj.readiumSharedJs["tag"] = stdout.trim();
+                                        }
+
+                                        fs.writeFileSync('./version.json', JSON.stringify(obj));
+                                        done();
+                                    }
+                                );
+                            }
+                        );
                     })
                 });
             });
