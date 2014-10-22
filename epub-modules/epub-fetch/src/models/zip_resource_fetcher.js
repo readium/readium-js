@@ -37,6 +37,7 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
                 else {
                     zip.useWebWorkers = false;
                 }
+                _zipFs = new zip.fs.FS();
 
                 if(baseUrl instanceof Blob) {
                     // baseUrl is the epub File (same as Blob)
