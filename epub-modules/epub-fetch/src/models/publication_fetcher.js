@@ -63,7 +63,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
         }
 
         function isExploded() {
-            return !(bookRoot instanceof File) && !(/\.epub$/.test(bookRoot));
+            return !(bookRoot instanceof Blob) && !(/\.epub$/.test(bookRoot));
         }
 
         function createResourceFetcher(isExploded, callback) {

@@ -31,10 +31,14 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
 
             } else {
 
-                zip.workerScriptsPath = libDir;
-                _zipFs = new zip.fs.FS();
+                if(libDir) {
+                    zip.workerScriptsPath = libDir;
+                }
+                else {
+                    zip.useWebWorkers = false;
+                }
 
-                if(baseUrl instanceof File) {
+                if(baseUrl instanceof Blob) {
                     // baseUrl is the epub File (same as Blob)
                     _zipFs.importBlob(baseUrl, function () {
                         callback(_zipFs, onerror);
@@ -73,7 +77,7 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
         // PUBLIC API
 
         this.getPackageUrl = function() {
-            return (baseUrl instanceof File) ? baseUrl.name : baseUrl;
+            return (baseUrl instanceof Blob) ? ((baseUrl instanceof File) ? baseUrl.name : "readium.epub") : baseUrl;
         };
 
         this.fetchFileContentsText = function(relativePathRelativeToPackageRoot, fetchCallback, onerror) {
