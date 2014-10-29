@@ -111,7 +111,7 @@ define(['require', 'module'], function (require, module) {
 
         var encryptionData = {
             uid: id,
-            uidHash: window.Crypto.SHA1(unescape(encodeURIComponent(id.trim())), { asBytes: true }),
+            uidHash: crypto.SHA1(unescape(encodeURIComponent(id.trim())), { asBytes: true }),
             encryptions: undefined
         };
 
