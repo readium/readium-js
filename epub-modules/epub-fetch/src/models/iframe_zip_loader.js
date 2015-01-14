@@ -13,11 +13,13 @@
 
 define(['URIjs'], function(URI){
 
-    var zipIframeLoader = function(ReadiumSDK, getCurrentResourceFetcher, options) {
+    var zipIframeLoader = function(ReadiumSDK, getCurrentResourceFetcher, contentDocumentTextPreprocessor) {
 
         var basicIframeLoader = new ReadiumSDK.Views.IFrameLoader();
 
         var self = this;
+        
+        var _contentDocumentTextPreprocessor = contentDocumentTextPreprocessor;
 
         this.addIFrameEventListener = function (eventName, callback, context) {
             basicIframeLoader.addIFrameEventListener(eventName, callback, context);
@@ -135,27 +137,12 @@ define(['URIjs'], function(URI){
                     return;
                 }
 
-                var sourceParts = src.split("/");
-                sourceParts.pop(); //remove source file name
-
-                var base = "<base href=\"" + sourceParts.join("/") + "/" + "\"/>";
-
-                var scripts = "<script type=\"text/javascript\">(" + injectedScript.toString() + ")()<\/script>";
-
-                if (options && options.mathJaxUrl && contentDocumentHtml.indexOf("<math") >= 0) {
-                    scripts += "<script type=\"text/javascript\" src=\"" + options.mathJaxUrl + "\"><\/script>";
+                if (_contentDocumentTextPreprocessor) {
+                    contentDocumentHtml = _contentDocumentTextPreprocessor(src, contentDocumentHtml);
                 }
 
-                var mangledContent = contentDocumentHtml.replace(/(<head.*?>)/, "$1" + base + scripts);
-                callback(mangledContent);
+                callback(contentDocumentHtml);
             });
-        }
-
-        function injectedScript() {
-
-            navigator.epubReadingSystem = window.parent.navigator.epubReadingSystem;
-            window.parent = window.self;
-            window.top = window.self;
         }
     };
 
