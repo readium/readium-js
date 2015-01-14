@@ -16,7 +16,7 @@ define(
     function (require, module, $, _, URI, ContentTypeDiscovery) {
 
 
-        var ContentDocumentFetcher = function (publicationFetcher, spineItem, loadedDocumentUri, publicationResourcesCache) {
+        var ContentDocumentFetcher = function (publicationFetcher, spineItem, loadedDocumentUri, publicationResourcesCache, contentDocumentTextPreprocessor) {
 
             var self = this;
 
@@ -26,6 +26,7 @@ define(
             var _srcMediaType = spineItem.media_type;
             var _contentDocumentDom;
             var _publicationResourcesCache = publicationResourcesCache;
+            var _contentDocumentTextPreprocessor = contentDocumentTextPreprocessor;
 
             // PUBLIC API
 
@@ -33,6 +34,9 @@ define(
                 _publicationFetcher.relativeToPackageFetchFileContents(_contentDocumentPathRelativeToPackage, 'text',
                     function (contentDocumentText) {
                         _contentDocumentText = contentDocumentText;
+                        if (_contentDocumentTextPreprocessor) {
+                            _contentDocumentText = _contentDocumentTextPreprocessor(loadedDocumentUri, _contentDocumentText);
+                        }
                         self.resolveInternalPackageResources(contentDocumentResolvedCallback, errorCallback);
                     }, errorCallback
                 );
