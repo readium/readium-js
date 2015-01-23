@@ -64,9 +64,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
         }
 
         function isExploded() {
-
-            var ext = ".epub";
-            return bookRoot.indexOf(ext, bookRoot.length - ext.length) === -1;
+            return !(bookRoot instanceof Blob) && !(/\.epub$/.test(bookRoot));
         }
 
         function createResourceFetcher(isExploded, callback) {
