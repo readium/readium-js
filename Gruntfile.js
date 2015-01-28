@@ -62,10 +62,12 @@ module.exports = function(grunt) {
                             }
                         };
                         
-                        var exec = require('child_process').exec;
+                        var path = require('path');
                         //var cmd = "git --git-dir='" + process.cwd() + "/.git' name-rev --tags --name-only " + commit;
-                        var cmd = "git --git-dir='" + process.cwd() + "/.git' describe --tags --long " + commit;
+                        var cmd = "git --git-dir=\"" + path.join(process.cwd(), ".git") + "\" describe --tags --long " + commit;
                         grunt.log.writeln(cmd);
+                        
+                        var exec = require('child_process').exec;
                         exec(cmd,
                             { cwd: process.cwd() },
                             function(err, stdout, stderr) {
@@ -81,11 +83,12 @@ module.exports = function(grunt) {
                                     obj.readiumJs["tag"] = stdout.trim();
                                 }
                                 
+                                var sharedJsCwd = path.join(process.cwd(), sharedJsPath);
                                 //cmd = "git --git-dir='" + process.cwd() + "/" + sharedJsPath + "/.git' name-rev --tags --name-only " + sharedCommit;
-                                cmd = "git --git-dir='" + process.cwd() + "/" + sharedJsPath + "/.git' describe --tags --long " + sharedCommit;
+                                cmd = "git --git-dir=\"" + path.join(sharedJsCwd, ".git") + "\" describe --tags --long " + sharedCommit;
                                 grunt.log.writeln(cmd);
                                 exec(cmd,
-                                    { cwd: process.cwd() },
+                                    { cwd: sharedJsCwd },
                                     function(err, stdout, stderr) {
                                         if (err) {
                                             grunt.log.writeln(err);
