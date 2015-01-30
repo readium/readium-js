@@ -20,8 +20,7 @@ var requirejs = {
         console_shim: 'lib/console_shim',
         jquery: 'lib/jquery-1.11.0',
         underscore: 'lib/underscore-1.4.4',
-        backbone: 'lib/backbone-0.9.10',
-        bootstrap: 'lib/bootstrap.min',
+        eventEmitter: 'lib/eventemitter2',
         jquerySizes: 'epub-modules/epub-renderer/src/readium-shared-js/lib/jquery.sizes',
         readiumSDK: 'epub-modules/epub-renderer/src/readium-shared-js/js/readium_sdk',
         helpers: 'epub-modules/epub-renderer/src/readium-shared-js/js/helpers',
@@ -67,7 +66,8 @@ var requirejs = {
         "rangy-cssclassapplier" : 'epub-modules/epub-renderer/src/readium-shared-js/lib/rangy/rangy-cssclassapplier',
         "rangy-position" : 'epub-modules/epub-renderer/src/readium-shared-js/lib/rangy/rangy-position',
         
-        Readium: 'epub-modules/Readium'
+        Readium: 'epub-modules/Readium',
+        Bootstrapper: 'epub-modules/Bootstrapper'
     },
 
     packages: [
@@ -143,22 +143,13 @@ var requirejs = {
         underscore: {
             exports: '_'
         },
-        backbone: {
-            deps: ['underscore', 'jquery'],
-            exports: 'Backbone'
-        },
-        bootstrap: {
-            deps: ['jquery'],
-            exports: 'bootstrap'
-        },
-
         helpers: {
             deps: ['readiumSDK', 'jquerySizes'],
             exports: 'helpers'
         },
 
         readiumSDK: {
-            deps: ['backbone'],
+            deps: ['Bootstrapper'],
             exports:'readiumSDK'
         },
 
@@ -303,7 +294,7 @@ var requirejs = {
         },
 
         readerView : {
-            deps: [ 'backbone','readiumSDK', 'helpers', 'viewerSettings', 'styleCollection', 'package',
+            deps: [ 'readiumSDK', 'helpers', 'viewerSettings', 'styleCollection', 'package',
                 'mediaOverlayPlayer', 'pageOpenRequest', 'fixedView', 'reflowableView', 'mediaOvelayDataInjector',
                 'internalLinksSupport', 'iframeLoader', 'annotationsManager', 'scrollView', 'URIjs', 'triggers', 'switches'],
             exports:'readerView'
@@ -320,5 +311,5 @@ var requirejs = {
         }
     },
 
-    exclude: ['jquery', 'underscore', 'backbone', 'URIjs']
+    exclude: ['jquery', 'underscore', 'URIjs']
 };

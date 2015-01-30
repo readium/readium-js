@@ -11,21 +11,8 @@
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-
-define(['require', 'text!version.json', 'console_shim', 'jquery', 'underscore', 'readerView', 'epub-fetch', 'epub-model/package_document_parser', 'epub-fetch/iframe_zip_loader', 'URIjs', 'cryptoJs'],
-    function (require, versionText, console_shim, $, _, readerView, PublicationFetcher, PackageParser, IframeZipLoader, URI, cryptoJs) {
-
-    //hack to make URI object global for readers consumption.
-    window.URI = URI;
-
-    //polyfill to support Safari 6
-    if ('URL' in window === false) {
-        if ('webkitURL' in window === false) {
-            throw Error('Browser does not support window.URL');
-        }
-
-        window.URL = window.webkitURL;
-    }
+define(['require', 'text!version.json', 'jquery', 'underscore', 'readerView', 'epub-fetch', 'epub-model/package_document_parser', 'epub-fetch/iframe_zip_loader' ],
+    function (require, versionText, $, _, readerView, PublicationFetcher, PackageParser, IframeZipLoader) {
 
     var Readium = function(readiumOptions, readerOptions){
 

@@ -11,7 +11,7 @@
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define(['require', 'module', 'jquery', 'backbone', 'URIjs'], function (require, module, $, Backbone, URI) {
+define(['require', 'module', 'jquery', 'URIjs'], function (require, module, $, URI) {
 
     var _instance = undefined;
 

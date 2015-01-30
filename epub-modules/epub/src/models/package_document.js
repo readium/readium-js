@@ -11,8 +11,8 @@
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs'],
-    function (require, module, $, _, Backbone, URI) {
+define(['require', 'module', 'jquery', 'underscore', 'URIjs'],
+    function (require, module, $, _, URI) {
 
     // Description: This model provides an interface for navigating an EPUB's package document
     var PackageDocument = function(packageDocumentURL, resourceFetcher, metadata, spine, manifest) {
