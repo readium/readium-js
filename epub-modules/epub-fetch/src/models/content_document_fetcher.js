@@ -76,7 +76,9 @@ define(
                     baseElem = documentDom.createElement('base');
 
                     var anchor = documentDom.getElementsByTagName('head')[0];
-                    anchor.insertBefore(baseElem, anchor.childNodes[0]);
+                    if (anchor) {
+                        anchor.insertBefore(baseElem, anchor.childNodes[0]);
+                    }
                 }
                 baseElem.setAttribute('href', baseURI);
             }
