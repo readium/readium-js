@@ -20,7 +20,7 @@ var requirejs = {
         console_shim: 'lib/console_shim',
         jquery: 'lib/jquery-1.11.0',
         underscore: 'lib/underscore-1.4.4',
-        eventEmitter: 'lib/eventemitter2',
+        eventEmitter: 'lib/eventemitter3',
         jquerySizes: 'epub-modules/epub-renderer/src/readium-shared-js/lib/jquery.sizes',
 
         epubCfi: 'epub-modules/epub-renderer/src/readium-shared-js/lib/epub_cfi',
