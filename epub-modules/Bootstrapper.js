@@ -16,6 +16,7 @@ define(['console_shim','eventEmitter','URIjs', 'cryptoJs'], function(console_shi
     window.URI = URI;
     window.EventEmitter = EventEmitter;
 
+
     //polyfill to support Safari 6
     if ('URL' in window === false) {
         if ('webkitURL' in window === false) {

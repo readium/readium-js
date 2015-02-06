@@ -22,39 +22,10 @@ var requirejs = {
         underscore: 'lib/underscore-1.4.4',
         eventEmitter: 'lib/eventemitter2',
         jquerySizes: 'epub-modules/epub-renderer/src/readium-shared-js/lib/jquery.sizes',
-        readiumSDK: 'epub-modules/epub-renderer/src/readium-shared-js/js/readium_sdk',
-        helpers: 'epub-modules/epub-renderer/src/readium-shared-js/js/helpers',
-        style: 'epub-modules/epub-renderer/src/readium-shared-js/js/models/style',
-        styleCollection: 'epub-modules/epub-renderer/src/readium-shared-js/js/models/style_collection',
-        triggers: 'epub-modules/epub-renderer/src/readium-shared-js/js/models/trigger',
-        switches: 'epub-modules/epub-renderer/src/readium-shared-js/js/models/switches',
-        smilModel: 'epub-modules/epub-renderer/src/readium-shared-js/js/models/smil_model',
-        mediaOverlay: 'epub-modules/epub-renderer/src/readium-shared-js/js/models/media_overlay',
-        viewerSettings: 'epub-modules/epub-renderer/src/readium-shared-js/js/models/viewer_settings',
-        bookmarkData: 'epub-modules/epub-renderer/src/readium-shared-js/js/models/bookmark_data',
-        spineItem: 'epub-modules/epub-renderer/src/readium-shared-js/js/models/spine_item',
-        spine: 'epub-modules/epub-renderer/src/readium-shared-js/js/models/spine',
-        fixedPageSpread: 'epub-modules/epub-renderer/src/readium-shared-js/js/models/fixed_page_spread',
-        package: 'epub-modules/epub-renderer/src/readium-shared-js/js/models/package',
-        currentPagesInfo: 'epub-modules/epub-renderer/src/readium-shared-js/js/models/current_pages_info',
-        pageOpenRequest: 'epub-modules/epub-renderer/src/readium-shared-js/js/models/page_open_request',
-        smilIterator: 'epub-modules/epub-renderer/src/readium-shared-js/js/models/smil_iterator',
+
         epubCfi: 'epub-modules/epub-renderer/src/readium-shared-js/lib/epub_cfi',
-        cfiNavigationLogic: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/cfi_navigation_logic',
-        reflowableView: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/reflowable_view',
-        scrollView: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/scroll_view',
-        onePageView: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/one_page_view',
-        fixedView: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/fixed_view',
-        readerView: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/reader_view',
-        mediaOverlayElementHighlighter: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/media_overlay_element_highlighter',
-        audioPlayer: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/audio_player',
-        mediaOverlayPlayer: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/media_overlay_player',
+
         annotations_module: 'epub-modules/epub-renderer/src/readium-shared-js/lib/annotations_module',
-        annotationsManager: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/annotations_manager',
-        mediaOvelayDataInjector: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/media_overlay_data_injector',
-        internalLinksSupport: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/internal_links_support',
-        iframeLoader: 'epub-modules/epub-renderer/src/readium-shared-js/js/views/iframe_loader',
-        
 
         domReady : 'lib/domReady',
         cryptoJs: 'lib/2.5.3-crypto-sha1',
@@ -81,6 +52,10 @@ var requirejs = {
         {
             name: 'epub-model',
             location: 'epub-modules/epub/src/models'
+        },
+        {
+            name: 'epub-renderer',
+            location: 'epub-modules/epub-renderer/src/readium-shared-js/js'
         },
         {
             name: 'epub-ui',
@@ -143,80 +118,6 @@ var requirejs = {
         underscore: {
             exports: '_'
         },
-        helpers: {
-            deps: ['readiumSDK', 'jquerySizes'],
-            exports: 'helpers'
-        },
-
-        readiumSDK: {
-            deps: ['Bootstrapper'],
-            exports:'readiumSDK'
-        },
-
-        viewerSettings: {
-            deps: ['readiumSDK'],
-            exports: 'viewerSettings'
-        },
-
-        styleCollection: {
-            deps:['readiumSDK', 'style'],
-            exports: 'styleCollection'
-        },
-
-        spineItem: {
-            deps:['readiumSDK'],
-            exports:'spineItem'
-        },
-
-        spine: {
-            deps:['readiumSDK', 'spineItem'],
-            exports: 'spine'
-        },
-
-        smilModel: {
-            deps: ['readiumSDK'],
-            exports: 'smilModel'
-        },
-
-        mediaOverlayPlayer: {
-            deps:['readiumSDK', 'mediaOverlay', 'audioPlayer', 'mediaOverlayElementHighlighter', 'rangy'],
-            exports:'mediaOverlayPlayer'
-        },
-
-        mediaOverlay: {
-            deps:['readiumSDK', 'smilModel'],
-            exports: 'mediaOverlay'
-        },
-
-        package: {
-            deps:['readiumSDK', 'spine', 'mediaOverlay'],
-            exports:'package'
-        },
-
-        audioPlayer: {
-            deps:['readiumSDK'],
-            exports: 'audioPlayer'
-        },
-
-        mediaOverlayElementHighlighter: {
-            deps:['readiumSDK', 'rangy'],
-            exports: 'mediaOverlayElementHighlighter'
-        },
-
-        pageOpenRequest: {
-            deps:['readiumSDK'],
-            exports: 'pageOpenRequest'
-        },
-
-        onePageView: {
-            deps:['readiumSDK', 'cfiNavigationLogic'],
-            exports:'onePageView'
-        },
-
-        cfiNavigationLogic: {
-            deps: ['readiumSDK', 'epubCfi'],
-            exports:'cfiNavigationLogic'
-        },
 
         epubCFI: {
             deps: ['jquery'],
@@ -228,87 +129,12 @@ var requirejs = {
             exports: 'jquerySizes'
         },
 
-        style: {
-            deps: ['readiumSDK'],
-            exports: 'style'
-        },
-
-        triggers: {
-            deps: ['readiumSDK'],
-            exports: 'triggers'
-        },
-
-        switches: {
-            deps: ['readiumSDK'],
-            exports: 'switches'
-        },
-
-        bookmarkData: {
-            deps: ['readiumSDK'],
-            exports: 'bookmarkData'
-        },
-
-        fixedPageSpread: {
-            deps: ['readiumSDK'],
-            exports: 'fixedPageSpread'
-        },
-
-        currentPagesInfo: {
-            deps: ['readiumSDK'],
-            exports: 'currentPagesInfo'
-        },
-
-        smilIterator: {
-            deps: ['readiumSDK'],
-            exports: 'smilIterator'
-        },
-
-        reflowableView: {
-            deps: ['readiumSDK', 'cfiNavigationLogic', 'bookmarkData'],
-            exports: 'reflowableView'
-        },
-
-        scrollView: {
-            deps: ['readiumSDK', 'cfiNavigationLogic', 'bookmarkData', 'triggers', 'onePageView'],
-            exports: 'scrollView'
-        },
-
-        fixedView: {
-            deps: ['readiumSDK', 'onePageView', 'currentPagesInfo', 'fixedPageSpread', 'bookmarkData'],
-            exports: 'fixedView'
-        },
-
-        mediaOvelayDataInjector: {
-          deps: ['readiumSDK', 'mediaOverlay', 'mediaOverlayPlayer', 'smilModel', 'spineItem', 'smilIterator', 'rangy'],
-          exports: 'mediaOvelayDataInjector'
-        },
-
-        internalLinksSupport: {
-            deps:['readiumSDK', 'URIjs'],
-            exports: 'internalLinksSupport'
-        },
-
-        iframeLoader: {
-            deps:['readiumSDK'],
-            exports: 'iframeLoader'
-        },
-
-        readerView : {
-            deps: [ 'readiumSDK', 'helpers', 'viewerSettings', 'styleCollection', 'package',
-                'mediaOverlayPlayer', 'pageOpenRequest', 'fixedView', 'reflowableView', 'mediaOvelayDataInjector',
-                'internalLinksSupport', 'iframeLoader', 'annotationsManager', 'scrollView', 'URIjs', 'triggers', 'switches'],
-            exports:'readerView'
-        },
 
         annotations_module: {
             deps: ['epubCfi'],
-            exports:'annotations_module'
+            exports:'EpubAnnotationsModule'
         },
 
-        annotationsManager: {
-            deps: ['epubCfi', 'annotations_module'],
-            exports:'annotationsManager'
-        }
     },
 
     exclude: ['jquery', 'underscore', 'URIjs']

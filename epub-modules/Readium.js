@@ -11,8 +11,8 @@
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define(['require', 'text!version.json', 'jquery', 'underscore', 'readerView', 'epub-fetch', 'epub-model/package_document_parser', 'epub-fetch/iframe_zip_loader' ],
-    function (require, versionText, $, _, readerView, PublicationFetcher, PackageParser, IframeZipLoader) {
+define(['require', 'text!version.json', 'jquery', 'underscore', 'epub-renderer/views/iframe_loader', 'epub-renderer/views/reader_view', 'epub-fetch', 'epub-model/package_document_parser', 'epub-fetch/iframe_zip_loader', 'epub-renderer/readium_sdk'],
+    function(require, versionText, $, _, IFrameLoader, ReaderView, PublicationFetcher, PackageParser, IframeZipLoader, ReadiumSDK) {
 
     var Readium = function(readiumOptions, readerOptions){
 
@@ -23,14 +23,14 @@ define(['require', 'text!version.json', 'jquery', 'underscore', 'readerView', 'e
         var jsLibRoot = readiumOptions.jsLibRoot;
 
         if (!readiumOptions.useSimpleLoader){
-            readerOptions.iframeLoader = new IframeZipLoader(ReadiumSDK, function() { return _currentPublicationFetcher; }, { mathJaxUrl: readerOptions.mathJaxUrl });;
+            readerOptions.iframeLoader = new IframeZipLoader(function() { return _currentPublicationFetcher; }, { mathJaxUrl: readerOptions.mathJaxUrl });;
         }
         else{
-            readerOptions.iframeLoader = new ReadiumSDK.Views.IFrameLoader();
+            readerOptions.iframeLoader = new IFrameLoader();
         }
         
 
-        this.reader = new ReadiumSDK.Views.ReaderView(readerOptions);
+        this.reader = new ReaderView(readerOptions);
 
         this.openPackageDocument = function(bookRoot, callback, openPageRequest)  {
             if (_currentPublicationFetcher) {
@@ -76,7 +76,7 @@ define(['require', 'text!version.json', 'jquery', 'underscore', 'readerView', 'e
             }
         };
 
-
+        window.ReadiumSDK = ReadiumSDK;
         //we need global access to the reader object for automation test being able to call it's APIs
         ReadiumSDK.reader = this.reader;
 
