@@ -80,7 +80,7 @@ define(['require', 'text!version.json', 'jquery', 'underscore', 'epub-renderer/v
         //we need global access to the reader object for automation test being able to call it's APIs
         ReadiumSDK.reader = this.reader;
 
-        ReadiumSDK.trigger(ReadiumSDK.Events.READER_INITIALIZED, this.reader);
+        ReadiumSDK.emit(ReadiumSDK.Events.READER_INITIALIZED, this.reader);
     };
     
     Readium.version = JSON.parse(versionText);
