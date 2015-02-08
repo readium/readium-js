@@ -16,7 +16,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
     function (require, module, $, URI, MarkupParser, PlainResourceFetcher, ZipResourceFetcher, ContentDocumentFetcher,
               ResourceCache, EncryptionHandler) {
 
-    var PublicationFetcher = function(bookRoot, jsLibRoot, sourceWindow, cacheSizeEvictThreshold, contentDocumentTextPreprocessor) {
+    var PublicationFetcher = function(bookRoot, jsLibRoot, sourceWindow, cacheSizeEvictThreshold, contentDocumentTextPreprocessor, renditionSelection) {
 
         var self = this;
 
@@ -34,7 +34,11 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
         var _packageDomInitializationDeferred;
         var _publicationResourcesCache = new ResourceCache(sourceWindow, cacheSizeEvictThreshold);
 
+		var _mediaQuery = undefined;
+		var _mediaQueryEventCallback = undefined;
+		
         var _contentDocumentTextPreprocessor = contentDocumentTextPreprocessor;
+		var _renditionSelection = renditionSelection;
 
         this.markupParser = new MarkupParser();
 
@@ -124,6 +128,15 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
             _publicationResourcesCache.flushCache();
         };
 
+        this.cleanup = function() {
+            self.flushCache();
+
+			if (_mediaQueryEventCallback) {
+				_mediaQuery.removeListener(_mediaQueryEventCallback);
+				_mediaQueryEventCallback = undefined;
+			}
+        };
+
         this.getPackageUrl = function() {
             return _resourceFetcher.getPackageUrl();
         };
@@ -163,9 +176,130 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
         };
 
         this.getRootFile = function(containerXmlDom) {
-            var rootFile = $('rootfile', containerXmlDom);
+			//console.debug(containerXmlDom.documentElement.innerHTML);
+		
+			//console.debug("_renditionSelectionrenditionMedia: ", _renditionSelection.renditionMedia);
+			console.debug("_renditionSelection.renditionLayout: ", _renditionSelection.renditionLayout);
+			console.debug("_renditionSelection.renditionLanguage: ", _renditionSelection.renditionLanguage);
+			console.debug("_renditionSelection.renditionAccessMode: ", _renditionSelection.renditionAccessMode);
+			
+			
+            var rootFiles = $('rootfile', containerXmlDom);
+			//console.debug(rootFiles);
+			
+			
+			var rootFile = undefined;
+			if (rootFiles.length == 1 || !_renditionSelection) {
+				rootFile = rootFiles;
+			} else {
+				
+				for (var i = rootFiles.length - 1; i >= 0; i--) {
+					
+					console.debug("----- ROOT FILE #" + i);
+					
+					var rf = $(rootFiles[i]);
+						
+					var renditionMedia = rf.attr('rendition:media');
+					var renditionLayout = rf.attr('rendition:layout');
+					var renditionLanguage = rf.attr('rendition:language');
+					var renditionAccessMode = rf.attr('rendition:accessMode');
+					
+					var renditionLabel = rf.attr('rendition:label');
+					
+					console.debug("renditionMedia: ", renditionMedia);
+					console.debug("renditionLayout: ", renditionLayout);
+					console.debug("renditionLanguage: ", renditionLanguage);
+					console.debug("renditionAccessMode: ", renditionAccessMode);
+					
+					console.debug("renditionLabel: ", renditionLabel);
+					
+					var selected = true;
+					if (renditionMedia && renditionMedia !== "" && window.matchMedia) {
+						
+						if (_mediaQueryEventCallback) {
+							_mediaQuery.removeListener(_mediaQueryEventCallback);
+							
+							_mediaQueryEventCallback = undefined;
+							_mediaQuery = undefined;
+						}
+						
+						_mediaQuery = window.matchMedia(renditionMedia);
+						
+						_mediaQueryEventCallback = function(mq) {
+							console.debug("Rendition Selection Media Query changed: " + mq.media + " (" + mq.matches + ")");
+							if (mq.matches) {
+								// noop
+							}
+							if (_renditionSelection.renditionMediaQueryCallback) {
+								_renditionSelection.renditionMediaQueryCallback();
+							}
+						};
+						
+						_mediaQuery.addListener(_mediaQueryEventCallback);
+						
+						if (!_mediaQuery.matches) {
+							console.debug("=== EJECTED: renditionMedia");
+							
+							selected = selected && false;
+							//continue;
+						}
+					}
+					
+					if (_renditionSelection.renditionLayout && _renditionSelection.renditionLayout !== "" && renditionLayout && renditionLayout !== "") {
+						if (_renditionSelection.renditionLayout !== renditionLayout) {
+							console.debug("=== EJECTED: renditionLayout");
+							
+							selected = selected && false;
+							//continue;
+						}
+					}
+					
+					if (_renditionSelection.renditionLanguage && _renditionSelection.renditionLanguage !== "" && renditionLanguage && renditionLanguage !== "") {
+						
+						// TODO: language tag (+ script subtag) match algorithm RFC 4647 http://www.ietf.org/rfc/rfc4647.txt
+						if (_renditionSelection.renditionLanguage !== renditionLanguage) {
+							var langTags1 = _renditionSelection.renditionLanguage.split("-");
+							var langTags2 = renditionLanguage.split("-");
+							
+							console.debug(langTags1[0]);
+							console.debug(langTags2[0]);
+							
+							if (langTags1[0] !== langTags2[0]) {								
+								console.debug("=== EJECTED: renditionLanguage");
+									
+								selected = selected && false;
+								//continue;
+							}
+						}
+					}
+					
+					if (_renditionSelection.renditionAccessMode && _renditionSelection.renditionAccessMode !== "" && renditionAccessMode && renditionAccessMode !== "") {
+						if (_renditionSelection.renditionAccessMode !== renditionAccessMode) {
+							console.debug("=== EJECTED: renditionAccessMode");
+							
+							selected = selected && false;
+							//continue;
+						}
+					}
+					
+					if (selected) {
+						rootFile = rf;
+						break;
+					}
+				}
+				
+				if (!rootFile) {
+					// fallback to index zero ... is that a valid interpretation of the EPUB3 specification??
+					// See Processing Model:
+					//http://www.idpf.org/epub/renditions/multiple/epub-multiple-renditions.html#h.4n44azuq1490
+					
+					rootFile = $(rootFiles[0]);
+				}
+			}
+			
             var packageFullPath = rootFile.attr('full-path');
-            return packageFullPath;
+            
+			return packageFullPath;
         };
 
         this.getPackageDom = function (callback, onerror) {

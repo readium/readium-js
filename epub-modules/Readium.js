@@ -70,9 +70,9 @@ define(['require', 'text!version.json', 'console_shim', 'jquery', 'underscore', 
 
         this.reader = new ReadiumSDK.Views.ReaderView(readerOptions);
 
-        this.openPackageDocument = function(bookRoot, callback, openPageRequest)  {
+        this.openPackageDocument = function(bookRoot, callback, openPageRequest, renditionSelection)  {
             if (_currentPublicationFetcher) {
-                _currentPublicationFetcher.flushCache();
+                _currentPublicationFetcher.cleanup();
             }
 
             var cacheSizeEvictThreshold = null;
@@ -80,7 +80,7 @@ define(['require', 'text!version.json', 'console_shim', 'jquery', 'underscore', 
                 cacheSizeEvictThreshold = readiumOptions.cacheSizeEvictThreshold;
             }
 
-            _currentPublicationFetcher = new PublicationFetcher(bookRoot, jsLibRoot, window, cacheSizeEvictThreshold, _contentDocumentTextPreprocessor);
+            _currentPublicationFetcher = new PublicationFetcher(bookRoot, jsLibRoot, window, cacheSizeEvictThreshold, _contentDocumentTextPreprocessor, renditionSelection);
 
             _currentPublicationFetcher.initialize(function() {
 
@@ -110,7 +110,7 @@ define(['require', 'text!version.json', 'console_shim', 'jquery', 'underscore', 
 
         this.closePackageDocument = function() {
             if (_currentPublicationFetcher) {
-                _currentPublicationFetcher.flushCache();
+                _currentPublicationFetcher.cleanup();
             }
         };
 
