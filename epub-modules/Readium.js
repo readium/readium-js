@@ -96,8 +96,9 @@ define(['require', 'text!version.json', 'console_shim', 'jquery', 'underscore', 
                     self.reader.openBook(openBookData);
 
                     var options = {
-                        packageDocumentUrl : _currentPublicationFetcher.getPackageUrl(),
-                        metadata: packageDocument.getMetadata()
+                        packageDocumentUrl: _currentPublicationFetcher.getPackageUrl(),
+                        metadata: packageDocument.getMetadata(),
+						multipleRenditions: _currentPublicationFetcher.getMultipleRenditions()
                     };
 
                     if (callback){

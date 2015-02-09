@@ -40,6 +40,12 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
         var _contentDocumentTextPreprocessor = contentDocumentTextPreprocessor;
 		var _renditionSelection = renditionSelection;
 
+		// object is generated in getRootFile(), which parses container.xml searching for the appropriate OPF package
+		var _multipleRenditions = undefined;
+		this.getMultipleRenditions = function() {
+			return _multipleRenditions;
+		};
+		
         this.markupParser = new MarkupParser();
 
         this.initialize =  function(callback) {
@@ -186,16 +192,51 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
 			
             var rootFiles = $('rootfile', containerXmlDom);
 			//console.debug(rootFiles);
-			
-			
+							
+			_multipleRenditions = {};
+			_multipleRenditions.renditions = [];
+			_multipleRenditions.selectedIndex = -1;
+		
 			var rootFile = undefined;
 			if (rootFiles.length == 1 || !_renditionSelection) {
 				rootFile = rootFiles;
-			} else {
+			
+				var renditionMedia = rootFile.attr('rendition:media');
+				var renditionLayout = rootFile.attr('rendition:layout');
+				var renditionLanguage = rootFile.attr('rendition:language');
+				var renditionAccessMode = rootFile.attr('rendition:accessMode');
 				
+				var rendition = {};
+		
+				rendition.Media = renditionMedia;
+				rendition.Layout = renditionLayout;
+				rendition.Language = renditionLanguage;
+				rendition.AccessMode = renditionAccessMode;
+				rendition.Label = renditionLabel;
+				
+				_multipleRenditions.renditions.push(rendition);
+				_multipleRenditions.selectedIndex = 0;
+			
+			} else {
+				for (var i = 0; i < rootFiles.length; i++) {
+					var rendition = {};
+				
+					rendition.Media = undefined;
+					rendition.Layout = undefined;
+					rendition.Language = undefined;
+					rendition.AccessMode = undefined;
+					rendition.Label = undefined;
+					
+					_multipleRenditions.renditions.push(rendition);
+				}
+				
+				var selectedIndex = -1;
+			
 				for (var i = rootFiles.length - 1; i >= 0; i--) {
 					
 					console.debug("----- ROOT FILE #" + i);
+					
+					var rendition = _multipleRenditions.renditions[i];
 					
 					var rf = $(rootFiles[i]);
 						
@@ -212,6 +253,12 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
 					console.debug("renditionAccessMode: ", renditionAccessMode);
 					
 					console.debug("renditionLabel: ", renditionLabel);
+					
+					rendition.Media = renditionMedia;
+					rendition.Layout = renditionLayout;
+					rendition.Language = renditionLanguage;
+					rendition.AccessMode = renditionAccessMode;
+					rendition.Label = renditionLabel;
 					
 					var selected = true;
 					if (renditionMedia && renditionMedia !== "" && window.matchMedia) {
@@ -282,9 +329,10 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
 						}
 					}
 					
-					if (selected) {
+					if (selected && !rootFile) {
 						rootFile = rf;
-						break;
+						selectedIndex = i;
+						//break;
 					}
 				}
 				
@@ -293,8 +341,11 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
 					// See Processing Model:
 					//http://www.idpf.org/epub/renditions/multiple/epub-multiple-renditions.html#h.4n44azuq1490
 					
-					rootFile = $(rootFiles[0]);
+					selectedIndex = 0;
+					rootFile = $(rootFiles[selectedIndex]);
 				}
+				
+				_multipleRenditions.selectedIndex = selectedIndex;
 			}
 			
             var packageFullPath = rootFile.attr('full-path');
