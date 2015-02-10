@@ -44,19 +44,20 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
         // PUBLIC API
 
         this.initialize = function(callback) {
-
-            parentFetcher.getXmlFileDom('META-INF/container.xml', function (containerXmlDom) {
-                _packageDocumentRelativePath = parentFetcher.getRootFile(containerXmlDom);
-                _packageDocumentAbsoluteUrl = self.resolveURI(_packageDocumentRelativePath);
-
-                callback();
-
-            }, function(error) {
-                console.error("unable to find package document: " + error);
-                _packageDocumentAbsoluteUrl = baseUrl;
-
-                callback();
-            });
+				
+            parentFetcher.getPackageFullPath(
+				function(opfPath) {
+					_packageDocumentRelativePath = opfPath;
+					_packageDocumentAbsoluteUrl = self.resolveURI(_packageDocumentRelativePath);
+					callback();
+				},
+				function(error) {
+					console.error("unable to find package document: " + error);
+					_packageDocumentRelativePath = undefined;
+					_packageDocumentAbsoluteUrl = baseUrl;
+					callback();
+				}
+			);
         };
 
         this.resolveURI = function (pathRelativeToPackageRoot) {
