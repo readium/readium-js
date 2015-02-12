@@ -79,7 +79,17 @@ define(['URIjs'], function(URI){
                 // TODO: Currently using the document.write() approach only for IE, as it breaks CSS selectors
                 // with namespaces for some reason (e.g. the childrens-media-query sample EPUB)
                 iframe.contentWindow.document.open();
-                iframe.contentWindow.document.write(contentDocumentData);
+                
+                // Currently not handled automatically by winstore-jscompat,
+                // so we're doing it manually. See:
+                // https://github.com/MSOpenTech/winstore-jscompat/
+                if (window.MSApp && window.MSApp.execUnsafeLocalFunction) {
+                    window.MSApp.execUnsafeLocalFunction(function() {
+                        iframe.contentWindow.document.write(contentDocumentData);
+                    });
+                } else {
+                    iframe.contentWindow.document.write(contentDocumentData);
+                }
             }
 
             iframe.onload = function () {
