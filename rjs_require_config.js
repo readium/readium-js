@@ -18,7 +18,7 @@ var requirejs = {
 
         text: 'lib/text/text',
         console_shim: 'lib/console_shim',
-        jquery: 'lib/jquery-1.11.0',
+		jquery: 'epub-modules/epub-renderer/src/readium-shared-js/lib/jquery',
         underscore: 'lib/underscore-1.4.4',
         backbone: 'lib/backbone-0.9.10',
         bootstrap: 'lib/bootstrap.min',
