@@ -213,6 +213,9 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
 									for (var j = 0; j < uls.length; j++) {
 										var ul = $(uls[j]);
 											
+										var mappingUL = [];
+										_multipleRenditions.mappings.push(mappingUL);
+											
 										var lias = $('li > a', ul);
 										for (var k = 0; k < lias.length; k++) {
 											var lia = $(lias[k]);
@@ -220,7 +223,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
 											var arendition = lia.attr("epub:rendition");
 											
 											var mapping = {};
-											_multipleRenditions.mappings.push(mapping);
+											mappingUL.push(mapping);
 											
 											mapping.href = ahref;
 											mapping.rendition = arendition;
@@ -292,6 +295,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
 																if (itemRefs.length) {
 																	var itemRef = $(itemRefs[itemRefIndex]);
 																	var idref = itemRef.attr("idref");
+																	mapping_.idref = idref;
 																
 																	var item = $('#' + idref, opfDom);
 																	if (item.length) {
