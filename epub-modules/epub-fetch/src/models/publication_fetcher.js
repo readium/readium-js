@@ -264,7 +264,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
 											} else {
 												// this is relative to the root of the EPUB file tree
 												
-												console.debug("cfiOpfSpineItem: " + cfiOpfSpineItem);
+												//console.debug("cfiOpfSpineItem: " + cfiOpfSpineItem);
 												var slashi = cfiOpfSpineItem.lastIndexOf("/");
 												if (slashi > 0) {
 													var nStr = cfiOpfSpineItem.substr(slashi + 1, 1);
@@ -299,14 +299,14 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
 																		mapping_.target = itemHref;
 																		mapping_.target = thisOpfPathParentFolder + "/" + mapping_.target;
 																		//console.debug(">>> " + mapping_.target);
-																		console.debug(mapping_);
+																		//console.debug(mapping_);
 																	}
 																}
 															};
 															
 															var dom = cacheOpfDom[thisOpfPath];
 															if (dom) {
-																console.debug("*** CACHED OPF DOM: " + thisOpfPath);
+																//console.debug("*** CACHED OPF DOM: " + thisOpfPath);
 																processOpfDom(dom);
 															}
 															else {
@@ -330,6 +330,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
 												}
 											}
 											
+											/*
 											console.debug("============");
 											console.log("- href: " + mapping.href);
 											console.log("- rendition: " + mapping.rendition);
@@ -337,6 +338,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
 											console.log("cfiFull: " + mapping.cfiFull);
 											console.log("cfiPartial: " + mapping.cfiPartial);
 											console.log("target: " + mapping.target);
+											*/
 										}
 									}
 								}
@@ -497,8 +499,8 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
 							if (mq.matches) {
 								// noop
 							}
-							if (_renditionSelection && _renditionSelection.renditionMediaQueryCallback) {
-								_renditionSelection.renditionMediaQueryCallback();
+							if (_renditionSelection && _renditionSelection.renditionReload) {
+								_renditionSelection.renditionReload();
 							}
 						};
 						
@@ -512,7 +514,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
 						}
 					}
 					
-					if (_renditionSelection && _renditionSelection.renditionLayout && _renditionSelection.renditionLayout !== "" && renditionLayout && renditionLayout !== "") {
+					if (_renditionSelection && (typeof _renditionSelection.renditionLayout !== "undefined") && renditionLayout && renditionLayout !== "") {
 						if (_renditionSelection.renditionLayout !== renditionLayout) {
 							console.debug("=== EJECTED: renditionLayout");
 							
@@ -521,7 +523,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
 						}
 					}
 					
-					if (_renditionSelection && _renditionSelection.renditionLanguage && _renditionSelection.renditionLanguage !== "" && renditionLanguage && renditionLanguage !== "") {
+					if (_renditionSelection && (typeof _renditionSelection.renditionLanguage !== "undefined") && renditionLanguage && renditionLanguage !== "") {
 						
 						// TODO: language tag (+ script subtag) match algorithm RFC 4647 http://www.ietf.org/rfc/rfc4647.txt
 						if (_renditionSelection.renditionLanguage !== renditionLanguage) {
@@ -540,7 +542,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
 						}
 					}
 					
-					if (_renditionSelection && _renditionSelection.renditionAccessMode && _renditionSelection.renditionAccessMode !== "" && renditionAccessMode && renditionAccessMode !== "") {
+					if (_renditionSelection && (typeof _renditionSelection.renditionAccessMode !== "undefined") && renditionAccessMode && renditionAccessMode !== "") {
 						if (_renditionSelection.renditionAccessMode !== renditionAccessMode) {
 							console.debug("=== EJECTED: renditionAccessMode");
 							

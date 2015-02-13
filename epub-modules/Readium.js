@@ -90,7 +90,22 @@ define(['require', 'text!version.json', 'console_shim', 'jquery', 'underscore', 
                     var openBookOptions = readiumOptions.openBookOptions || {};
                     var openBookData = $.extend(packageDocument.getSharedJsPackageData(), openBookOptions);
 
+					var multipleRenditions = _currentPublicationFetcher.getMultipleRenditions();
+					
                     if (openPageRequest) {
+						
+						if (multipleRenditions && openPageRequest.opfPath) {
+							var rendition = multipleRenditions.renditions[multipleRenditions.selectedIndex];
+							if (rendition.opfPath !== openPageRequest.opfPath) {
+								console.debug("RENDITION: DIFFERENT");
+console.log("ADJUSTING READING LOCATION");
+console.debug(JSON.stringify(openPageRequest));
+openPageRequest = undefined;
+							} else {
+								console.debug("RENDITION: SAME");
+							}
+						}
+						
                         openBookData.openPageRequest = openPageRequest;
                     }
                     self.reader.openBook(openBookData);
@@ -98,7 +113,7 @@ define(['require', 'text!version.json', 'console_shim', 'jquery', 'underscore', 
                     var options = {
                         packageDocumentUrl: _currentPublicationFetcher.getPackageUrl(),
                         metadata: packageDocument.getMetadata(),
-						multipleRenditions: _currentPublicationFetcher.getMultipleRenditions()
+						multipleRenditions: multipleRenditions
                     };
 
                     if (callback){
