@@ -21,9 +21,6 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
             return baseUrl + "/" + pathRelativeToPackageRoot;
         };
 
-        var _packageDocumentRelativePath = parentFetcher.getPackageUrl();
-        var _packageDocumentAbsoluteUrl = _packageDocumentRelativePath ? resolveURI(_packageDocumentRelativePath) : baseUrl;
-
         // INTERNAL FUNCTIONS
 
         function fetchFileContents(pathRelativeToPackageRoot, readCallback, onerror) {
@@ -47,6 +44,11 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
 
         // PUBLIC API
 
+        this.getPackageUrl = function(opfPath) {
+		
+			return resolveURI(opfPath);
+        };
+		
         this.fetchFileContentsData64Uri = function(relativePathRelativeToPackageRoot, fetchCallback, onerror) {
            //TODO!? (potentially invoked from PublicationFetcher.relativeToPackageFetchFileContents(), also see ZipResourceFetcher implementation of fetchFileContentsData64Uri())
         };
@@ -111,15 +113,6 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
                 fetchCallback(blob);
             }, onerror);
         };
-
-		/*
-        this.getPackageDom = function (callback, onerror) {
-            self.fetchFileContentsText(_packageDocumentRelativePath, function (packageXml) {
-                var packageDom = parentFetcher.markupParser.parseXml(packageXml);
-                callback(packageDom);
-            }, onerror);
-        };
-		*/
     };
 
     return PlainResourceFetcher;

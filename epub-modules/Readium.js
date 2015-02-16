@@ -93,6 +93,10 @@ define(['require', 'text!version.json', 'console_shim', 'jquery', 'underscore', 
 
 					openBookData = $.extend(openBookData, {multipleRenditions: multipleRenditions});
 					
+                    if (openPageRequest) {
+                        openBookData.openPageRequest = openPageRequest;
+                    }
+					
                     self.reader.openBook(openBookData);
 
                     var options = {

@@ -54,7 +54,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
             // Non exploded EPUBs (i.e. zipped .epub documents) should be fetched in a programmatical manner:
             _shouldConstructDomProgrammatically = !isEpubExploded;
 						
-            if (isExploded) {
+            if (isEpubExploded) {
                 console.log('using new PlainResourceFetcher');
                 _resourceFetcher = new PlainResourceFetcher(self, bookRoot);
                 
@@ -63,7 +63,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
                 _resourceFetcher = new ZipResourceFetcher(self, bookRoot, jsLibRoot);
             }
 			
-			this.getPackageFullPath(
+			getPackageFullPath(
 				function (packageFullPath, multipleRenditions) {
 					callback(_resourceFetcher, multipleRenditions);
 				},
@@ -89,86 +89,6 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
             console.error(err);
         }
 
-
-        // PUBLIC API
-
-        /**
-         * Determine whether the documents fetched using this fetcher require special programmatic handling.
-         * (resolving of internal resource references).
-         * @returns {*} true if documents fetched using this fetcher require special programmatic handling
-         * (resolving of internal resource references). Typically needed for zipped EPUBs or exploded EPUBs that contain
-         * encrypted resources specified in META-INF/encryption.xml.
-         *
-         * false if documents can be fed directly into a window or iframe by src URL without using special fetching logic.
-         */
-        this.shouldConstructDomProgrammatically = function (){
-            return _shouldConstructDomProgrammatically;
-        };
-
-        /**
-         * Determine whether the media assets (audio, video, images) within content documents require special
-         * programmatic handling.
-         * @returns {*} true if content documents fetched using this fetcher require programmatic fetching
-         * of media assets. Typically needed for zipped EPUBs.
-         *
-         * false if paths to media assets are accessible directly for the browser through their paths relative to
-         * the base URI of their content document.
-         */
-        this.shouldFetchMediaAssetsProgrammatically = function() {
-            return _shouldConstructDomProgrammatically && !isExploded();
-        };
-
-        this.getBookRoot = function() {
-            return bookRoot;
-        };
-
-        this.getJsLibRoot = function() {
-            return jsLibRoot;
-        };
-
-        this.flushCache = function() {
-            _publicationResourcesCache.flushCache();
-        };
-
-        this.cleanup = function() {
-            self.flushCache();
-
-			if (_mediaQueryEventCallback) {
-				_mediaQuery.removeListener(_mediaQueryEventCallback);
-				_mediaQueryEventCallback = undefined;
-			}
-        };
-
-        this.getPackageUrl = function() {
-            return _OpfPath; // set in initialize()
-        };
-
-        this.fetchContentDocument = function (attachedData, loadedDocumentUri, contentDocumentResolvedCallback, errorCallback) {
-
-            // Resources loaded for previously fetched document no longer need to be pinned:
-            _publicationResourcesCache.unPinResources();
-            var contentDocumentFetcher = new ContentDocumentFetcher(self, attachedData.spineItem, loadedDocumentUri, _publicationResourcesCache, _contentDocumentTextPreprocessor);
-            contentDocumentFetcher.fetchContentDocumentAndResolveDom(contentDocumentResolvedCallback, function (err) {
-                _handleError(err);
-                errorCallback(err);
-            });
-        };
-
-        this.getFileContentsFromPackage = function(filePathRelativeToPackageRoot, callback, onerror) {
-
-            _resourceFetcher.fetchFileContentsText(filePathRelativeToPackageRoot, function (fileContents) {
-                callback(fileContents);
-            }, onerror);
-        };
-
-
-
-        this.getXmlFileDom = function (xmlFilePathRelativeToPackageRoot, callback, onerror) {
-            self.getFileContentsFromPackage(xmlFilePathRelativeToPackageRoot, function (xmlFileContents) {
-                var fileDom = self.markupParser.parseXml(xmlFileContents);
-                callback(fileDom);
-            }, onerror);
-        };
 
 		var buildRenditionMapping = function(callback, multipleRenditions, containerXmlDom, packageFullPath, cacheOpfDom) {
 
@@ -575,7 +495,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
 		
 		var _multipleRenditions = undefined;
 		var _OpfPath = undefined;
-        this.getPackageFullPath = function(callback, onerror) {
+        getPackageFullPath = function(callback, onerror) {
 			if (_OpfPath) {
 				callback(_OpfPath, _multipleRenditions);
 				return;
@@ -600,6 +520,120 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
             }, onerror);
         };
 
+        var readEncriptionData = function(callback) {
+            self.getXmlFileDom('META-INF/encryption.xml', function (encryptionDom, error) {
+
+                if(error) {
+                    console.log(error);
+                    console.log("Document doesn't make use of encryption.");
+                    _encryptionHandler = new EncryptionHandler(undefined);
+                    callback();
+                }
+                else {
+
+                    var encryptions = [];
+
+
+                    var encryptedData = $('EncryptedData', encryptionDom);
+                    encryptedData.each(function (index, encryptedData) {
+                        var encryptionAlgorithm = $('EncryptionMethod', encryptedData).first().attr('Algorithm');
+
+                        encryptions.push({algorithm: encryptionAlgorithm});
+
+                        // For some reason, jQuery selector "" against XML DOM sometimes doesn't match properly
+                        var cipherReference = $('CipherReference', encryptedData);
+                        cipherReference.each(function (index, CipherReference) {
+                            var cipherReferenceURI = $(CipherReference).attr('URI');
+                            console.log('Encryption/obfuscation algorithm ' + encryptionAlgorithm + ' specified for ' +
+                                cipherReferenceURI);
+                            encryptions[cipherReferenceURI] = encryptionAlgorithm;
+                        });
+                    });
+                }
+
+            });
+        };
+		
+        // PUBLIC API
+
+        /**
+         * Determine whether the documents fetched using this fetcher require special programmatic handling.
+         * (resolving of internal resource references).
+         * @returns {*} true if documents fetched using this fetcher require special programmatic handling
+         * (resolving of internal resource references). Typically needed for zipped EPUBs or exploded EPUBs that contain
+         * encrypted resources specified in META-INF/encryption.xml.
+         *
+         * false if documents can be fed directly into a window or iframe by src URL without using special fetching logic.
+         */
+        this.shouldConstructDomProgrammatically = function (){
+            return _shouldConstructDomProgrammatically;
+        };
+
+        /**
+         * Determine whether the media assets (audio, video, images) within content documents require special
+         * programmatic handling.
+         * @returns {*} true if content documents fetched using this fetcher require programmatic fetching
+         * of media assets. Typically needed for zipped EPUBs.
+         *
+         * false if paths to media assets are accessible directly for the browser through their paths relative to
+         * the base URI of their content document.
+         */
+        this.shouldFetchMediaAssetsProgrammatically = function() {
+            return _shouldConstructDomProgrammatically && !isExploded();
+        };
+
+        this.getBookRoot = function() {
+            return bookRoot;
+        };
+
+        this.getJsLibRoot = function() {
+            return jsLibRoot;
+        };
+
+        this.flushCache = function() {
+            _publicationResourcesCache.flushCache();
+        };
+
+        this.cleanup = function() {
+            self.flushCache();
+
+			if (_mediaQueryEventCallback) {
+				_mediaQuery.removeListener(_mediaQueryEventCallback);
+				_mediaQueryEventCallback = undefined;
+			}
+        };
+
+        this.getPackageUrl = function() {
+			return _resourceFetcher.getPackageUrl(_OpfPath); // set in initialize()
+        };
+
+        this.fetchContentDocument = function (attachedData, loadedDocumentUri, contentDocumentResolvedCallback, errorCallback) {
+
+            // Resources loaded for previously fetched document no longer need to be pinned:
+            _publicationResourcesCache.unPinResources();
+            var contentDocumentFetcher = new ContentDocumentFetcher(self, attachedData.spineItem, loadedDocumentUri, _publicationResourcesCache, _contentDocumentTextPreprocessor);
+            contentDocumentFetcher.fetchContentDocumentAndResolveDom(contentDocumentResolvedCallback, function (err) {
+                _handleError(err);
+                errorCallback(err);
+            });
+        };
+
+        this.getFileContentsFromPackage = function(filePathRelativeToPackageRoot, callback, onerror) {
+
+            _resourceFetcher.fetchFileContentsText(filePathRelativeToPackageRoot, function (fileContents) {
+                callback(fileContents);
+            }, onerror);
+        };
+
+
+
+        this.getXmlFileDom = function (xmlFilePathRelativeToPackageRoot, callback, onerror) {
+            self.getFileContentsFromPackage(xmlFilePathRelativeToPackageRoot, function (xmlFileContents) {
+                var fileDom = self.markupParser.parseXml(xmlFileContents);
+                callback(fileDom);
+            }, onerror);
+        };
+
         this.getPackageDom = function (callback, onerror) {
             if (_packageDom) {
                 callback(_packageDom);
@@ -612,7 +646,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
                 } else {
                     _packageDomInitializationDeferred = $.Deferred();
                     _packageDomInitializationDeferred.done(callback);
-                    self.getPackageFullPath(function (packageFullPath, multipleRenditions) {
+                    getPackageFullPath(function (packageFullPath, multipleRenditions) {
                         
                         self.getXmlFileDom(packageFullPath, function (packageDom) {
                             _packageDom = packageDom;
@@ -653,40 +687,6 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
         this.getRelativeXmlFileDom = function (filePath, callback, errorCallback) {
             self.getXmlFileDom(self.convertPathRelativeToPackageToRelativeToBase(filePath), callback, errorCallback);
         };
-
-        function readEncriptionData(callback) {
-            self.getXmlFileDom('META-INF/encryption.xml', function (encryptionDom, error) {
-
-                if(error) {
-                    console.log(error);
-                    console.log("Document doesn't make use of encryption.");
-                    _encryptionHandler = new EncryptionHandler(undefined);
-                    callback();
-                }
-                else {
-
-                    var encryptions = [];
-
-
-                    var encryptedData = $('EncryptedData', encryptionDom);
-                    encryptedData.each(function (index, encryptedData) {
-                        var encryptionAlgorithm = $('EncryptionMethod', encryptedData).first().attr('Algorithm');
-
-                        encryptions.push({algorithm: encryptionAlgorithm});
-
-                        // For some reason, jQuery selector "" against XML DOM sometimes doesn't match properly
-                        var cipherReference = $('CipherReference', encryptedData);
-                        cipherReference.each(function (index, CipherReference) {
-                            var cipherReferenceURI = $(CipherReference).attr('URI');
-                            console.log('Encryption/obfuscation algorithm ' + encryptionAlgorithm + ' specified for ' +
-                                cipherReferenceURI);
-                            encryptions[cipherReferenceURI] = encryptionAlgorithm;
-                        });
-                    });
-                }
-
-            });
-        }
 
         // Currently needed for deobfuscating fonts
         this.setPackageMetadata = function(packageMetadata, settingFinishedCallback) {

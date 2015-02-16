@@ -67,6 +67,10 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
 
         // PUBLIC API
 
+        this.getPackageUrl = function(opfPath) {
+			return baseUrl;
+        };
+		
         this.fetchFileContentsText = function(relativePathRelativeToPackageRoot, fetchCallback, onerror) {
 
             fetchFileContents(relativePathRelativeToPackageRoot, function (entry) {
