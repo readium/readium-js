@@ -449,6 +449,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
 					rendition.Language = undefined;
 					rendition.AccessMode = undefined;
 					rendition.Label = undefined;
+					rendition.opfPath = undefined;
 					
 					_multipleRenditions.renditions.push(rendition);
 				}
