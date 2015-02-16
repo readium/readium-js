@@ -16,13 +16,18 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
     var PlainResourceFetcher = function(parentFetcher, baseUrl){
 
         var self = this;
-        var _packageDocumentAbsoluteUrl;
-        var _packageDocumentRelativePath;
+		
+        var resolveURI = function (pathRelativeToPackageRoot) {
+            return baseUrl + "/" + pathRelativeToPackageRoot;
+        };
+
+        var _packageDocumentRelativePath = parentFetcher.getPackageUrl();
+        var _packageDocumentAbsoluteUrl = _packageDocumentRelativePath ? resolveURI(_packageDocumentRelativePath) : baseUrl;
 
         // INTERNAL FUNCTIONS
 
         function fetchFileContents(pathRelativeToPackageRoot, readCallback, onerror) {
-            var fileUrl = self.resolveURI(pathRelativeToPackageRoot);
+            var fileUrl = resolveURI(pathRelativeToPackageRoot);
 
             if (typeof pathRelativeToPackageRoot === 'undefined') {
                 throw 'Fetched file relative path is undefined!';
@@ -40,37 +45,14 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
             xhr.send();
         }
 
-
         // PUBLIC API
 
-        this.initialize = function(callback) {
-				
-            parentFetcher.getPackageFullPath(
-				function(opfPath) {
-					_packageDocumentRelativePath = opfPath;
-					_packageDocumentAbsoluteUrl = self.resolveURI(_packageDocumentRelativePath);
-					callback();
-				},
-				function(error) {
-					console.error("unable to find package document: " + error);
-					_packageDocumentRelativePath = undefined;
-					_packageDocumentAbsoluteUrl = baseUrl;
-					callback();
-				}
-			);
+        this.fetchFileContentsData64Uri = function(relativePathRelativeToPackageRoot, fetchCallback, onerror) {
+           //TODO!? (potentially invoked from PublicationFetcher.relativeToPackageFetchFileContents(), also see ZipResourceFetcher implementation of fetchFileContentsData64Uri())
         };
-
-        this.resolveURI = function (pathRelativeToPackageRoot) {
-            return baseUrl + "/" + pathRelativeToPackageRoot;
-        };
-
-
-        this.getPackageUrl = function() {
-            return _packageDocumentAbsoluteUrl;
-        };
-
+		
         this.fetchFileContentsText = function(pathRelativeToPackageRoot, fetchCallback, onerror) {
-            var fileUrl = self.resolveURI(pathRelativeToPackageRoot);
+            var fileUrl = resolveURI(pathRelativeToPackageRoot);
 
             if (typeof fileUrl === 'undefined') {
                 throw 'Fetched file URL is undefined!';
@@ -130,13 +112,14 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
             }, onerror);
         };
 
+		/*
         this.getPackageDom = function (callback, onerror) {
             self.fetchFileContentsText(_packageDocumentRelativePath, function (packageXml) {
                 var packageDom = parentFetcher.markupParser.parseXml(packageXml);
                 callback(packageDom);
             }, onerror);
         };
-
+		*/
     };
 
     return PlainResourceFetcher;

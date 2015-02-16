@@ -29,7 +29,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
         var _shouldConstructDomProgrammatically;
         var _resourceFetcher;
         var _encryptionHandler;
-        var _packageFullPath;
+        
         var _packageDom;
         var _packageDomInitializationDeferred;
         var _publicationResourcesCache = new ResourceCache(sourceWindow, cacheSizeEvictThreshold);
@@ -40,21 +40,37 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
         var _contentDocumentTextPreprocessor = contentDocumentTextPreprocessor;
 		var _renditionSelection = renditionSelection;
 
-		// object is generated in getRootFile(), which parses container.xml searching for the appropriate OPF package
-		var _multipleRenditions = undefined;
-		this.getMultipleRenditions = function() {
-			return _multipleRenditions;
-		};
-		
         this.markupParser = new MarkupParser();
 
-        this.initialize =  function(callback) {
+        function isExploded() {
 
+            var ext = ".epub";
+            return bookRoot.indexOf(ext, bookRoot.length - ext.length) === -1;
+        }
+		
+        this.initialize =  function(callback) {
             var isEpubExploded = isExploded();
 
             // Non exploded EPUBs (i.e. zipped .epub documents) should be fetched in a programmatical manner:
             _shouldConstructDomProgrammatically = !isEpubExploded;
-            createResourceFetcher(isEpubExploded, callback);
+						
+            if (isExploded) {
+                console.log('using new PlainResourceFetcher');
+                _resourceFetcher = new PlainResourceFetcher(self, bookRoot);
+                
+            } else {
+                console.log('using new ZipResourceFetcher');
+                _resourceFetcher = new ZipResourceFetcher(self, bookRoot, jsLibRoot);
+            }
+			
+			this.getPackageFullPath(
+				function (packageFullPath, multipleRenditions) {
+					callback(_resourceFetcher, multipleRenditions);
+				},
+				function() {
+					callback(_resourceFetcher, undefined);
+				}
+			);
         };
 
 
@@ -73,26 +89,6 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
             console.error(err);
         }
 
-        function isExploded() {
-
-            var ext = ".epub";
-            return bookRoot.indexOf(ext, bookRoot.length - ext.length) === -1;
-        }
-
-        function createResourceFetcher(isExploded, callback) {
-            if (isExploded) {
-                console.log('using new PlainResourceFetcher');
-                _resourceFetcher = new PlainResourceFetcher(self, bookRoot);
-                _resourceFetcher.initialize(function () {
-                    callback(_resourceFetcher);
-                });
-                return;
-            } else {
-                console.log('using new ZipResourceFetcher');
-                _resourceFetcher = new ZipResourceFetcher(self, bookRoot, jsLibRoot);
-                callback(_resourceFetcher);
-            }
-        }
 
         // PUBLIC API
 
@@ -144,7 +140,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
         };
 
         this.getPackageUrl = function() {
-            return _resourceFetcher.getPackageUrl();
+            return _OpfPath; // set in initialize()
         };
 
         this.fetchContentDocument = function (attachedData, loadedDocumentUri, contentDocumentResolvedCallback, errorCallback) {
@@ -174,11 +170,11 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
             }, onerror);
         };
 
-		var buildRenditionMapping = function(callback, containerXmlDom, packageFullPath, cacheOpfDom) {
+		var buildRenditionMapping = function(callback, multipleRenditions, containerXmlDom, packageFullPath, cacheOpfDom) {
 
 			var doCallback = true;
 		
-			_multipleRenditions.mappings = [];
+			multipleRenditions.mappings = [];
 				
 			var linkMapping = $('link[rel=mapping]', containerXmlDom);
 			if (linkMapping.length) {
@@ -214,7 +210,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
 										var ul = $(uls[j]);
 											
 										var mappingUL = [];
-										_multipleRenditions.mappings.push(mappingUL);
+										multipleRenditions.mappings.push(mappingUL);
 											
 										var lias = $('li > a', ul);
 										for (var k = 0; k < lias.length; k++) {
@@ -347,31 +343,31 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
 									}
 								}
 							}
-							callback(packageFullPath);
+							callback(packageFullPath, multipleRenditions);
 						},
 						function(error) {
-							callback(packageFullPath);
+							callback(packageFullPath, multipleRenditions);
 						}
 					);
 				}
 			}
 			
-			if (doCallback) callback(packageFullPath);
+			if (doCallback) callback(packageFullPath, multipleRenditions);
 		};
 		
-		var populateCacheOpfDom = function(i, cacheOpfDom, callback) {
+		var populateCacheOpfDom = function(i, multipleRenditions, cacheOpfDom, callback) {
 		
 			var next = function(j) {
-				if (j < _multipleRenditions.renditions.length) {
+				if (j < multipleRenditions.renditions.length) {
 					console.debug("next populateCacheOpfDom");
-					populateCacheOpfDom(j, cacheOpfDom, callback);
+					populateCacheOpfDom(j, multipleRenditions, cacheOpfDom, callback);
 				} else {
 					console.debug("callback populateCacheOpfDom");
 					callback();
 				}
 			};
 		
-			var rendition = _multipleRenditions.renditions[i];
+			var rendition = multipleRenditions.renditions[i];
 		
 			var thisOpfPath = rendition.opfPath.substr(1);
 		
@@ -395,8 +391,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
 			
 		};
 		
-
-        var getRootFile = function(containerXmlDom) {
+        var getRootFile = function(containerXmlDom, multipleRenditions) {
 			//console.debug(containerXmlDom.documentElement.innerHTML);
 			
 			console.debug("@@@@@@@@@@@@@@@@@@ getRootFile");
@@ -411,10 +406,8 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
             var rootFiles = $('rootfile', containerXmlDom);
 			//console.debug(rootFiles);
 							
-			_multipleRenditions = {};
-			
-			_multipleRenditions.renditions = [];
-			_multipleRenditions.selectedIndex = -1;
+			multipleRenditions.renditions = [];
+			multipleRenditions.selectedIndex = -1;
 		
 		
 			var rootFile = undefined;
@@ -437,8 +430,8 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
 				rendition.opfPath = "/" + rootFile.attr('full-path');
 				console.debug("opfPath: ", rendition.opfPath);
 				
-				_multipleRenditions.renditions.push(rendition);
-				_multipleRenditions.selectedIndex = 0;
+				multipleRenditions.renditions.push(rendition);
+				multipleRenditions.selectedIndex = 0;
 			
 			} else {
 				for (var i = 0; i < rootFiles.length; i++) {
@@ -451,7 +444,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
 					rendition.Label = undefined;
 					rendition.opfPath = undefined;
 					
-					_multipleRenditions.renditions.push(rendition);
+					multipleRenditions.renditions.push(rendition);
 				}
 				
 				var selectedIndex = -1;
@@ -460,7 +453,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
 					
 					console.debug("----- ROOT FILE #" + i);
 					
-					var rendition = _multipleRenditions.renditions[i];
+					var rendition = multipleRenditions.renditions[i];
 					
 					var rf = $(rootFiles[i]);
 						
@@ -572,7 +565,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
 					rootFile = $(rootFiles[selectedIndex]);
 				}
 				
-				_multipleRenditions.selectedIndex = selectedIndex;
+				multipleRenditions.selectedIndex = selectedIndex;
 			}
 			
             var packageFullPath = rootFile.attr('full-path');
@@ -580,26 +573,28 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
         };
 		
 		
-		
+		var _multipleRenditions = undefined;
 		var _OpfPath = undefined;
         this.getPackageFullPath = function(callback, onerror) {
 			if (_OpfPath) {
-				callback(_OpfPath);
+				callback(_OpfPath, _multipleRenditions);
 				return;
 			}
 			
             self.getXmlFileDom('META-INF/container.xml', function(containerXmlDom) {
 				
-                _OpfPath = getRootFile(containerXmlDom);
+				_multipleRenditions = {};
+			
+                _OpfPath = getRootFile(containerXmlDom, _multipleRenditions);
 				
 				var cacheOpfDom = {};
 
 				if (_multipleRenditions.renditions.length) {
-					populateCacheOpfDom(0, cacheOpfDom, function() {
-						buildRenditionMapping(callback, containerXmlDom, _OpfPath, cacheOpfDom);
+					populateCacheOpfDom(0, _multipleRenditions, cacheOpfDom, function() {
+						buildRenditionMapping(callback, _multipleRenditions, containerXmlDom, _OpfPath, cacheOpfDom);
 					});
 				} else {
-					buildRenditionMapping(callback, containerXmlDom, _OpfPath, cacheOpfDom);
+					buildRenditionMapping(callback, _multipleRenditions, containerXmlDom, _OpfPath, cacheOpfDom);
 				}
 				
             }, onerror);
@@ -617,8 +612,8 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
                 } else {
                     _packageDomInitializationDeferred = $.Deferred();
                     _packageDomInitializationDeferred.done(callback);
-                    self.getPackageFullPath(function (packageFullPath) {
-                        _packageFullPath = packageFullPath;
+                    self.getPackageFullPath(function (packageFullPath, multipleRenditions) {
+                        
                         self.getXmlFileDom(packageFullPath, function (packageDom) {
                             _packageDom = packageDom;
                             _packageDomInitializationDeferred.resolve(packageDom);
@@ -630,7 +625,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
         };
 
         this.convertPathRelativeToPackageToRelativeToBase = function (relativeToPackagePath) {
-            return new URI(relativeToPackagePath).absoluteTo(_packageFullPath).toString();
+            return new URI(relativeToPackagePath).absoluteTo(_OpfPath).toString();
         };
 
         this.relativeToPackageFetchFileContents = function(relativeToPackagePath, fetchMode, fetchCallback, onerror) {

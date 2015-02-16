@@ -82,21 +82,21 @@ define(['require', 'text!version.json', 'console_shim', 'jquery', 'underscore', 
 
             _currentPublicationFetcher = new PublicationFetcher(bookRoot, jsLibRoot, window, cacheSizeEvictThreshold, _contentDocumentTextPreprocessor, renditionSelection);
 
-            _currentPublicationFetcher.initialize(function() {
+            _currentPublicationFetcher.initialize(function(resourceFetcher, multipleRenditions) {
 
+				// invokes _currentPublicationFetcher.getPackageDom()
                 var _packageParser = new PackageParser(bookRoot, _currentPublicationFetcher);
 
                 _packageParser.parse(function(packageDocument) {
                     var openBookOptions = readiumOptions.openBookOptions || {};
                     var openBookData = $.extend(packageDocument.getSharedJsPackageData(), openBookOptions);
 
-					var multipleRenditions = _currentPublicationFetcher.getMultipleRenditions();
 					openBookData = $.extend(openBookData, {multipleRenditions: multipleRenditions});
 					
                     self.reader.openBook(openBookData);
 
                     var options = {
-                        packageDocumentUrl: _currentPublicationFetcher.getPackageUrl(),
+                        //packageDocumentUrl: _currentPublicationFetcher.getPackageUrl(),
                         metadata: packageDocument.getMetadata()
                     };
 

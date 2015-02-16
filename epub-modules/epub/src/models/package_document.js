@@ -15,7 +15,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs'],
     function (require, module, $, _, Backbone, URI) {
 
     // Description: This model provides an interface for navigating an EPUB's package document
-    var PackageDocument = function(packageDocumentURL, resourceFetcher, metadata, spine, manifest) {
+    var PackageDocument = function(packageDocRoot, publicationFetcher, metadata, spine, manifest) {
 
         var _page_prog_dir;
 
@@ -23,7 +23,6 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs'],
 
         this.getSharedJsPackageData = function () {
 
-            var packageDocRoot = packageDocumentURL.substr(0, packageDocumentURL.lastIndexOf("/"));
             return {
                 rootUrl : packageDocRoot,
                 rendition_viewport : metadata.rendition_viewport,
@@ -85,7 +84,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs'],
         this.getTocText = function(callback) {
             var toc = this.getToc();
 
-            resourceFetcher.relativeToPackageFetchFileContents(toc, 'text', function (tocDocumentText) {
+            publicationFetcher.relativeToPackageFetchFileContents(toc, 'text', function (tocDocumentText) {
                 callback(tocDocumentText)
             }, function (err) {
                 console.error('ERROR fetching TOC from [' + toc + ']:');
@@ -118,6 +117,7 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs'],
                         $ncxOrderedList = getNcxOrderedList($("navMap", tocDom));
                         callback($ncxOrderedList[0]);
                     } else {
+						var packageDocumentURL = publicationFetcher.getPackageUrl();
                         var packageDocumentAbsoluteURL = new URI(packageDocumentURL).absoluteTo(document.URL);
                         var tocDocumentAbsoluteURL = new URI(that.getToc()).absoluteTo(packageDocumentAbsoluteURL);
                         // add a BASE tag to change the TOC document's baseURI.

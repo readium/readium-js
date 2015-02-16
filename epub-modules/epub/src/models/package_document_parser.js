@@ -21,7 +21,6 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
     // instance of `URI` that is used to resolve paths during the process
     var PackageDocumentParser = function(bookRoot, publicationFetcher) {
 
-        var _packageFetcher = publicationFetcher;
         var _deferredXmlDom = $.Deferred();
         var _xmlDom;
 
@@ -76,8 +75,13 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/mar
 
                 $.when(updateMetadataWithIBookProperties(metadata)).then(function() {
 
-                    _packageFetcher.setPackageMetadata(metadata, function () {
-                        var packageDocument = new PackageDocument(publicationFetcher.getPackageUrl(),
+                    publicationFetcher.setPackageMetadata(metadata, function () {
+						
+						var packageDocumentURL = publicationFetcher.getPackageUrl();
+						var i = packageDocumentURL.lastIndexOf("/");
+						var packageDocRoot = i > 0 ? packageDocumentURL.substr(0, i) : "";
+						
+                        var packageDocument = new PackageDocument(packageDocRoot,
                             publicationFetcher, metadata, spine, manifest);
 
                         packageDocument.setPageProgressionDirection(page_prog_dir);
