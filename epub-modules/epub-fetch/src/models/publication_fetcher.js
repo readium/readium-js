@@ -431,7 +431,9 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
 							//continue;
 						}
 					}
-					
+console.log("######################################");
+console.debug(_renditionSelection);
+console.log("######################################");
 					if (_renditionSelection && (typeof _renditionSelection.renditionLayout !== "undefined") && renditionLayout && renditionLayout !== "") {
 						if (_renditionSelection.renditionLayout !== renditionLayout) {
 							console.debug("=== EJECTED: renditionLayout");
@@ -476,7 +478,10 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
 					}
 				}
 				
-				if (!rootFile) {
+				if (!rootFile
+					// first-time load, or app with no preferences at all
+					|| (_renditionSelection && (typeof _renditionSelection.renditionAccessMode === "undefined") && (typeof _renditionSelection.renditionLanguage === "undefined") && (typeof _renditionSelection.renditionLayout === "undefined"))
+				) {
 					// fallback to index zero ... is that a valid interpretation of the EPUB3 specification??
 					// See Processing Model:
 					//http://www.idpf.org/epub/renditions/multiple/epub-multiple-renditions.html#h.4n44azuq1490
