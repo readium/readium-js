@@ -304,6 +304,7 @@ var requirejs = {
         },
 		
         multipleRenditions: {
+            deps: ['readiumSDK'],
             exports: 'multipleRenditions'
         },
 
