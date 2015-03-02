@@ -11,11 +11,11 @@
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define(['URIjs'], function(URI){
+define(['URIjs', 'epub-renderer/views/iframe_loader'], function(URI, IFrameLoader){
 
-    var zipIframeLoader = function(ReadiumSDK, getCurrentResourceFetcher, contentDocumentTextPreprocessor) {
+    var zipIframeLoader = function( getCurrentResourceFetcher, contentDocumentTextPreprocessor) {
 
-        var basicIframeLoader = new ReadiumSDK.Views.IFrameLoader();
+        var basicIframeLoader = new IFrameLoader();
 
         var self = this;
         

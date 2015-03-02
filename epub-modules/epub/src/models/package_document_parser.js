@@ -11,9 +11,9 @@
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define(['require', 'module', 'jquery', 'underscore', 'backbone', 'epub-fetch/markup_parser', 'URIjs', './package_document',
+define(['require', 'module', 'jquery', 'underscore', 'epub-fetch/markup_parser', 'URIjs', './package_document',
         './smil_document_parser', './metadata', './manifest'],
-    function(require, module, $, _, Backbone, MarkupParser, URI, PackageDocument, SmilDocumentParser, Metadata,
+    function(require, module, $, _, MarkupParser, URI, PackageDocument, SmilDocumentParser, Metadata,
              Manifest) {
 
         // `PackageDocumentParser` is used to parse the xml of an epub package
