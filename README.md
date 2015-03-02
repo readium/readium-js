@@ -21,3 +21,7 @@ If you're interested in contributing here on Github, here are some resources to 
   * Some info about the [file and folder structure](https://github.com/readium/readium-js/wiki/Project-structure) of this project
 
 If you have any questions, please email Dmitry: dmitrym@evidentpoint.com
+
+Licensing info
+----------------
+Licensing information can be found in the file license.txt in the root of the repo, as well as in the source code itself.

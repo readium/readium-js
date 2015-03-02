@@ -31,7 +31,10 @@ define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], func
 
             } else {
 
+                // The Web Worker requires standalone inflate/deflate.js files in libDir (i.e. cannot be aggregated/minified/optimised in the final generated single-file build)
+                zip.useWebWorkers = true; // (true by default)
                 zip.workerScriptsPath = libDir;
+                
                 _zipFs = new zip.fs.FS();
                 _zipFs.importHttpContent(baseUrl, true, function () {
 
