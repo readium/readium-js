@@ -14,10 +14,10 @@
 
 define(['./Bootstrapper', 'text!version.json', 'jquery', 'underscore', 'epub-renderer/views/reader_view', 'epub-fetch',
         'epub-model/package_document_parser', 'epub-fetch/iframe_zip_loader', 'epub-renderer/views/iframe_loader',
-        'epub-renderer/globals'],
+        'epub-renderer/globals', 'readium-plugins'],
     function (Bootstrapper, versionText, $, _, ReaderView, PublicationFetcher,
               PackageParser, IframeZipLoader, IframeLoader,
-              Globals) {
+              Globals, Plugins) {
 
     var Readium = function(readiumOptions, readerOptions){
 
