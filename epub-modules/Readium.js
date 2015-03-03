@@ -12,20 +12,12 @@
 //  prior written permission.
 
 
-define(['require', 'text!version.json', 'console_shim', 'jquery', 'underscore', 'readerView', 'epub-fetch', 'epub-model/package_document_parser', 'epub-fetch/iframe_zip_loader', 'URIjs', 'cryptoJs'],
-    function (require, versionText, console_shim, $, _, readerView, PublicationFetcher, PackageParser, IframeZipLoader, URI, cryptoJs) {
-
-    //hack to make URI object global for readers consumption.
-    window.URI = URI;
-
-    //polyfill to support Safari 6
-    if ('URL' in window === false) {
-        if ('webkitURL' in window === false) {
-            throw Error('Browser does not support window.URL');
-        }
-
-        window.URL = window.webkitURL;
-    }
+define(['./Bootstrapper', 'text!version.json', 'jquery', 'underscore', 'epub-renderer/views/reader_view', 'epub-fetch',
+        'epub-model/package_document_parser', 'epub-fetch/iframe_zip_loader', 'epub-renderer/views/iframe_loader',
+        'epub-renderer/globals'],
+    function (Bootstrapper, versionText, $, _, ReaderView, PublicationFetcher,
+              PackageParser, IframeZipLoader, IframeLoader,
+              Globals) {
 
     var Readium = function(readiumOptions, readerOptions){
 
@@ -61,14 +53,14 @@ define(['require', 'text!version.json', 'console_shim', 'jquery', 'underscore', 
         var jsLibRoot = readiumOptions.jsLibRoot;
 
         if (!readiumOptions.useSimpleLoader){
-            readerOptions.iframeLoader = new IframeZipLoader(ReadiumSDK, function() { return _currentPublicationFetcher; }, _contentDocumentTextPreprocessor);
+            readerOptions.iframeLoader = new IframeZipLoader(function() { return _currentPublicationFetcher; }, _contentDocumentTextPreprocessor);
         }
         else{
-            readerOptions.iframeLoader = new ReadiumSDK.Views.IFrameLoader();
+            readerOptions.iframeLoader = new IframeLoader();
         }
         
 
-        this.reader = new ReadiumSDK.Views.ReaderView(readerOptions);
+        this.reader = new ReaderView(readerOptions);
 
         this.openPackageDocument = function(bookRoot, callback, openPageRequest)  {
             if (_currentPublicationFetcher) {
@@ -118,7 +110,7 @@ define(['require', 'text!version.json', 'console_shim', 'jquery', 'underscore', 
         //we need global access to the reader object for automation test being able to call it's APIs
         ReadiumSDK.reader = this.reader;
 
-        ReadiumSDK.trigger(ReadiumSDK.Events.READER_INITIALIZED, this.reader);
+        Globals.emit(Globals.Events.READER_INITIALIZED, this.reader);
     };
     
     Readium.version = JSON.parse(versionText);
