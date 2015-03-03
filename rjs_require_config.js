@@ -47,8 +47,9 @@ var requirejs = {
         },
 
         {
-            name: 'epub-plugins',
-            location: 'epub-modules/epub-renderer/src/readium-shared-js/plugins'
+            name: 'readium-plugins',
+            location: 'epub-modules/epub-renderer/src/readium-shared-js/plugins',
+            main: '_loader'
         },
 
         {
