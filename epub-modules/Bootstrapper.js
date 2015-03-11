@@ -11,7 +11,7 @@
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define(['console_shim', 'eventEmitter', 'URIjs', 'cryptoJs','epubCfi'], function (console_shim, EventEmitter, URI, epubCfi , cryptoJs) {
+define(['console_shim', 'eventEmitter', 'URIjs', 'cryptoJs','epubCfi'], function (console_shim, EventEmitter, URI, cryptoJs, epubCfi) {
     //expose required modules for sharedJS consumption.
     window.URI = URI;
 
