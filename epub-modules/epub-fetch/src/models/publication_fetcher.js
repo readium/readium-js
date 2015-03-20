@@ -16,7 +16,7 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
     function (require, module, $, URI, MarkupParser, PlainResourceFetcher, ZipResourceFetcher, ContentDocumentFetcher,
               ResourceCache, EncryptionHandler) {
 
-    var PublicationFetcher = function(bookRoot, jsLibRoot) {
+    var PublicationFetcher = function(bookRoot, jsLibRoot, sourceWindow, cacheSizeEvictThreshold, contentDocumentTextPreprocessor) {
 
         var self = this;
 
@@ -32,8 +32,9 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
         var _packageFullPath;
         var _packageDom;
         var _packageDomInitializationDeferred;
-        var _publicationResourcesCache = new ResourceCache;
+        var _publicationResourcesCache = new ResourceCache(sourceWindow, cacheSizeEvictThreshold);
 
+        var _contentDocumentTextPreprocessor = contentDocumentTextPreprocessor;
 
         this.markupParser = new MarkupParser();
 
@@ -117,7 +118,11 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
 
         this.getJsLibRoot = function() {
             return jsLibRoot;
-        }
+        };
+
+        this.flushCache = function() {
+            _publicationResourcesCache.flushCache();
+        };
 
         this.getPackageUrl = function() {
             return _resourceFetcher.getPackageUrl();
@@ -125,7 +130,9 @@ define(['require', 'module', 'jquery', 'URIjs', './markup_parser', './plain_reso
 
         this.fetchContentDocument = function (attachedData, loadedDocumentUri, contentDocumentResolvedCallback, errorCallback) {
 
-            var contentDocumentFetcher = new ContentDocumentFetcher(self, attachedData.spineItem, loadedDocumentUri, _publicationResourcesCache);
+            // Resources loaded for previously fetched document no longer need to be pinned:
+            _publicationResourcesCache.unPinResources();
+            var contentDocumentFetcher = new ContentDocumentFetcher(self, attachedData.spineItem, loadedDocumentUri, _publicationResourcesCache, _contentDocumentTextPreprocessor);
             contentDocumentFetcher.fetchContentDocumentAndResolveDom(contentDocumentResolvedCallback, function (err) {
                 _handleError(err);
                 errorCallback(err);

@@ -16,7 +16,7 @@ define(
     function (require, module, $, _, URI, ContentTypeDiscovery) {
 
 
-        var ContentDocumentFetcher = function (publicationFetcher, spineItem, loadedDocumentUri, publicationResourcesCache) {
+        var ContentDocumentFetcher = function (publicationFetcher, spineItem, loadedDocumentUri, publicationResourcesCache, contentDocumentTextPreprocessor) {
 
             var self = this;
 
@@ -26,6 +26,7 @@ define(
             var _srcMediaType = spineItem.media_type;
             var _contentDocumentDom;
             var _publicationResourcesCache = publicationResourcesCache;
+            var _contentDocumentTextPreprocessor = contentDocumentTextPreprocessor;
 
             // PUBLIC API
 
@@ -33,6 +34,9 @@ define(
                 _publicationFetcher.relativeToPackageFetchFileContents(_contentDocumentPathRelativeToPackage, 'text',
                     function (contentDocumentText) {
                         _contentDocumentText = contentDocumentText;
+                        if (_contentDocumentTextPreprocessor) {
+                            _contentDocumentText = _contentDocumentTextPreprocessor(loadedDocumentUri, _contentDocumentText);
+                        }
                         self.resolveInternalPackageResources(contentDocumentResolvedCallback, errorCallback);
                     }, errorCallback
                 );
@@ -72,7 +76,9 @@ define(
                     baseElem = documentDom.createElement('base');
 
                     var anchor = documentDom.getElementsByTagName('head')[0];
-                    anchor.insertBefore(baseElem, anchor.childNodes[0]);
+                    if (anchor) {
+                        anchor.insertBefore(baseElem, anchor.childNodes[0]);
+                    }
                 }
                 baseElem.setAttribute('href', baseURI);
             }
@@ -126,8 +132,8 @@ define(
                                 }
                                 //noinspection JSUnresolvedVariable,JSUnresolvedFunction
                                 var resourceObjectURL = window.URL.createObjectURL(finalResourceData);
-                                _publicationResourcesCache.putResourceURL(resourceUriRelativeToPackageDocument,
-                                    resourceObjectURL);
+                                _publicationResourcesCache.putResource(resourceUriRelativeToPackageDocument,
+                                    resourceObjectURL, finalResourceData);
                                 // TODO: take care of releasing object URLs when no longer needed
                                 replaceRefAttrInElem(resourceObjectURL);
                                 resolutionDeferred.resolve();
@@ -178,7 +184,8 @@ define(
                             isStyleSheetResource: isStyleSheetResource,
                             resourceObjectURL: resourceObjectURL
                         };
-                        _publicationResourcesCache.putResourceURL(resourceUriRelativeToPackageDocument, resourceObjectURL);
+                        _publicationResourcesCache.putResource(resourceUriRelativeToPackageDocument,
+                            resourceObjectURL, resourceDataBlob);
                         cssUrlFetchDeferred.resolve();
                     };
                     var fetchErrorCallback = function (error) {
@@ -267,7 +274,7 @@ define(
             function resolveResourceElements(elemName, refAttr, fetchMode, resolutionDeferreds, onerror,
                                              resourceDataPreprocessing) {
 
-                var resolvedElems = $(elemName + '[' + refAttr + ']', _contentDocumentDom);
+                var resolvedElems = $(elemName + '[' + refAttr.replace(':', '\\:') + ']', _contentDocumentDom);
 
                 resolvedElems.each(function (index, resolvedElem) {
                     var refAttrOrigVal = $(resolvedElem).attr(refAttr);
@@ -284,6 +291,7 @@ define(
 
             function resolveDocumentImages(resolutionDeferreds, onerror) {
                 resolveResourceElements('img', 'src', 'blob', resolutionDeferreds, onerror);
+                resolveResourceElements('image', 'xlink:href', 'blob', resolutionDeferreds, onerror);
             }
 
             function resolveDocumentAudios(resolutionDeferreds, onerror) {

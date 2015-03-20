@@ -12,8 +12,8 @@
 //  prior written permission.
 
 
-define(['require', 'text!version.json', 'console_shim', 'jquery', 'underscore', 'readerView', 'epub-fetch', 'epub-model/package_document_parser', 'epub-fetch/iframe_zip_loader', 'URIjs'],
-    function (require, versionText, console_shim, $, _, readerView, PublicationFetcher, PackageParser, IframeZipLoader, URI) {
+define(['require', 'text!version.json', 'console_shim', 'jquery', 'underscore', 'readerView', 'epub-fetch', 'epub-model/package_document_parser', 'epub-fetch/iframe_zip_loader', 'URIjs', 'cryptoJs'],
+    function (require, versionText, console_shim, $, _, readerView, PublicationFetcher, PackageParser, IframeZipLoader, URI, cryptoJs) {
 
     //hack to make URI object global for readers consumption.
     window.URI = URI;
@@ -29,6 +29,31 @@ define(['require', 'text!version.json', 'console_shim', 'jquery', 'underscore', 
 
     var Readium = function(readiumOptions, readerOptions){
 
+        var _options = { mathJaxUrl: readerOptions.mathJaxUrl };
+
+        var _contentDocumentTextPreprocessor = function(src, contentDocumentHtml) {
+
+            function injectedScript() {
+
+                navigator.epubReadingSystem = window.parent.navigator.epubReadingSystem;
+                window.parent = window.self;
+                window.top = window.self;
+            }
+
+            var sourceParts = src.split("/");
+            sourceParts.pop(); //remove source file name
+
+            var base = "<base href=\"" + sourceParts.join("/") + "/" + "\"/>";
+
+            var scripts = "<script type=\"text/javascript\">(" + injectedScript.toString() + ")()<\/script>";
+            
+            if (_options && _options.mathJaxUrl && contentDocumentHtml.indexOf("<math") >= 0) {
+                scripts += "<script type=\"text/javascript\" src=\"" + _options.mathJaxUrl + "\"><\/script>";
+            }
+
+            return contentDocumentHtml.replace(/(<head.*?>)/, "$1" + base + scripts);
+        };
+        
         var self = this;
 
         var _currentPublicationFetcher;
@@ -36,7 +61,7 @@ define(['require', 'text!version.json', 'console_shim', 'jquery', 'underscore', 
         var jsLibRoot = readiumOptions.jsLibRoot;
 
         if (!readiumOptions.useSimpleLoader){
-            readerOptions.iframeLoader = new IframeZipLoader(ReadiumSDK, function() { return _currentPublicationFetcher; }, { mathJaxUrl: readerOptions.mathJaxUrl });;
+            readerOptions.iframeLoader = new IframeZipLoader(ReadiumSDK, function() { return _currentPublicationFetcher; }, _contentDocumentTextPreprocessor);
         }
         else{
             readerOptions.iframeLoader = new ReadiumSDK.Views.IFrameLoader();
@@ -46,8 +71,16 @@ define(['require', 'text!version.json', 'console_shim', 'jquery', 'underscore', 
         this.reader = new ReadiumSDK.Views.ReaderView(readerOptions);
 
         this.openPackageDocument = function(bookRoot, callback, openPageRequest)  {
+            if (_currentPublicationFetcher) {
+                _currentPublicationFetcher.flushCache();
+            }
 
-            _currentPublicationFetcher = new PublicationFetcher(bookRoot, jsLibRoot);
+            var cacheSizeEvictThreshold = null;
+            if (readiumOptions.cacheSizeEvictThreshold) {
+                cacheSizeEvictThreshold = readiumOptions.cacheSizeEvictThreshold;
+            }
+
+            _currentPublicationFetcher = new PublicationFetcher(bookRoot, jsLibRoot, window, cacheSizeEvictThreshold, _contentDocumentTextPreprocessor);
 
             _currentPublicationFetcher.initialize(function() {
 
@@ -73,7 +106,13 @@ define(['require', 'text!version.json', 'console_shim', 'jquery', 'underscore', 
                     }
                 });
             });
-        }
+        };
+
+        this.closePackageDocument = function() {
+            if (_currentPublicationFetcher) {
+                _currentPublicationFetcher.flushCache();
+            }
+        };
 
 
         //we need global access to the reader object for automation test being able to call it's APIs

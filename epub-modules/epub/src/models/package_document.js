@@ -106,7 +106,9 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs'],
             });
         };
 
-        // Unused?
+
+        // Used in EpubReader (readium-js-viewer)
+        // https://github.com/readium/readium-js-viewer/blob/develop/lib/EpubReader.js#L59
         this.generateTocListDOM = function(callback) {
             var that = this;
             this.getTocDom(function (tocDom) {
