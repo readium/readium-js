@@ -23,7 +23,7 @@
     [
         {
             name: "readium-js",
-            exclude: "epub-renderer",
+            exclude: [],
             include: [],
             insertRequire: []
         }

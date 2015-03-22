@@ -17,7 +17,7 @@ require.config({
     /* http://requirejs.org/docs/api.html#config-waitSeconds */
     waitSeconds: 0,
     
-    baseUrl: "../epub-modules",
+    baseUrl: "../js",
     
     removeCombined: true,
     
@@ -68,13 +68,13 @@ require.config({
 
         {
             name: 'epub-fetch',
-            location: 'epub-modules/epub-fetch/src/models',
+            location: 'epub-fetch',
             main: 'publication_fetcher'
         },
 
         {
             name: 'epub-model',
-            location: 'epub-modules/epub/src/models',
+            location: 'epub-model',
             main: 'package_document_parser'
         }
     ],

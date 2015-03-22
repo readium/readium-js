@@ -170,11 +170,11 @@ scripts:
 #=====================
     'prepare:submodule': '
         
-        cd epub-modules/epub-renderer/src/readium-shared-js
+        cd readium-shared-js
         &&
         npm run prepare
         &&
-        cd ../../../../
+        cd ..
         &&
         ls
     '
@@ -221,24 +221,24 @@ scripts:
     
         node
             build-tools/jshint_glob.js
-            epub-modules/**.js
+            js/**.js
     '
 
 #=====================
     'build:submodule': '
     
-        cd epub-modules/epub-renderer/src/readium-shared-js
+        cd readium-shared-js
         &&
         npm run
             build
         &&
-        cd ../../../../
+        cd ..
         &&
         mkdirp build-output/readium-shared-js/
         &&
-        cp -r epub-modules/epub-renderer/src/readium-shared-js/build-output/ build-output/readium-shared-js/
+        cp -r readium-shared-js/build-output/ build-output/readium-shared-js/
         &&
-        ls build-output/readium-shared-js/
+        ls build-output/readium-shared-js/build-output
     '
     
 #=====================
