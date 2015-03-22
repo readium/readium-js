@@ -222,14 +222,15 @@ scripts:
             build
         &&
         cd ..
-        &&
-        mkdirp build-output/readium-shared-js/
-        &&
-        cp -r readium-shared-js/build-output/ build-output/readium-shared-js/
-        &&
-        ls build-output/readium-shared-js/build-output
     '
-    
+
+#        &&
+#        mkdirp build-output/readium-shared-js/
+#        &&
+#        cp -r readium-shared-js/build-output/ build-output/readium-shared-js/
+#        &&
+#        ls build-output/readium-shared-js/build-output
+        
 #=====================
 #    'prebuild:scripts': '
 #    

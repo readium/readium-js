@@ -34,12 +34,12 @@ require.config({
         
         "readium-js": '../build-config/readium-js',
         
-        'readium-external-libs': "../build-output/readium-shared-js/build-output/_multiple-bundles/readium-external-libs",
+        'readium-external-libs': "../readium-shared-js/build-output/_multiple-bundles/readium-external-libs",
         
-        'readium-shared-js': "../build-output/readium-shared-js/build-output/_multiple-bundles/readium-shared-js",
+        'readium-shared-js': "../readium-shared-js/build-output/_multiple-bundles/readium-shared-js",
         
-        'readium-plugin-annotations': "../build-output/readium-shared-js/build-output/_multiple-bundles/readium-plugin-annotations",
-        'readium-plugin-example': "../build-output/readium-shared-js/build-output/_multiple-bundles/readium-plugin-example",
+        'readium-plugin-annotations': "../readium-shared-js/build-output/_multiple-bundles/readium-plugin-annotations",
+        'readium-plugin-example': "../readium-shared-js/build-output/_multiple-bundles/readium-plugin-example",
         
         // ------ NPM MODULEs
         
@@ -51,7 +51,58 @@ require.config({
         inflate: '../node_modules/zip-js/WebContent/inflate',
         'z-worker': '../node_modules/zip-js/WebContent/z-worker',
         
-        text: '../node_modules/requirejs-text/text'
+        text: '../node_modules/requirejs-text/text',
+        
+        
+        
+        
+        
+        
+        //'plugins-controller': "../readium-shared-js/js/controllers/plugins_controller",
+        
+        
+        // ------ NPM MODULEs
+        
+        RequireJS: '../readium-shared-js/node_modules/requirejs/require',
+        
+        //text: '../node_modules/requirejs-text/text',
+        
+        jquery: '../readium-shared-js/node_modules/jquery/dist/jquery',
+        
+        backbone: "../readium-shared-js/node_modules/backbone/backbone",
+        
+        underscore: '../readium-shared-js/node_modules/underscore/underscore',
+
+        URIjs: '../readium-shared-js/node_modules/URIjs/src/URI',
+        punycode: '../readium-shared-js/node_modules/URIjs/src/punycode',
+        SecondLevelDomains: '../readium-shared-js/node_modules/URIjs/src/SecondLevelDomains',
+        IPv6: '../readium-shared-js/node_modules/URIjs/src/IPv6',
+        
+        jquerySizes: '../readium-shared-js/node_modules/jquery-sizes/lib/jquery.sizes',
+
+        domReady : '../readium-shared-js/node_modules/domReady/domReady',
+
+        //eventEmitter: '../readium-shared-js/node_modules/eventemitter3/index',
+        eventEmitter: '../readium-shared-js/node_modules/eventemitter3/_rjs/index',
+        //see pre-build npm task to wrap CommonJS into AMD: define(function(require, exports, module) { .... });
+
+        
+        
+        // ------ LIBs
+        
+        'console_shim': '../readium-shared-js/lib/console_shim',
+        
+        rangy : '../readium-shared-js/lib/rangy/rangy',
+        "rangy-core" : '../readium-shared-js/lib/rangy/rangy-core',
+        "rangy-textrange" : '../readium-shared-js/lib/rangy/rangy-textrange',
+        "rangy-highlighter" : '../readium-shared-js/lib/rangy/rangy-highlighter',
+        "rangy-cssclassapplier" : '../readium-shared-js/lib/rangy/rangy-cssclassapplier',
+        "rangy-position" : '../readium-shared-js/lib/rangy/rangy-position',
+        
+        
+        // TODO: move to an NPM package dependency (fetched directly from readium-cfi-js repository)
+        epubCfi: '../readium-shared-js/lib/epub_cfi'
+        
     },
     
     wrapShim: false,
