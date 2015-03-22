@@ -22,38 +22,13 @@
     modules:
     [
         {
-            name: "readium-external-libs"
-        },
-        
-        {
-            name: "readium-plugin-example",
-            exclude: ['globals', 'plugins-controller', 'readium-external-libs', 'readium-shared-js']
-        },
-        
-        {
-            name: "readium-plugin-annotations",
-            exclude: ['globals', 'plugins-controller', 'readium-external-libs', 'readium-shared-js'],
-            insertRequire: ["readium-plugin-annotations"]
-        },
-        
-        {
-            name: "readium-shared-js",
-            exclude: ['readium-external-libs'],
-            include: ['globals', 'plugins-controller'],
-            insertRequire: ["globalsSetup"]
+            name: "readium-js",
+            exclude: "epub-renderer",
+            include: [],
+            insertRequire: []
         }
     ],
     
     packages: [
-        {
-            name: "plugin-annotations",
-            location: "../../plugins/annotations",
-            main: "main"
-        },
-        {
-            name: "plugin-example",
-            location: "../../plugins",
-            main: "example"
-        }
     ]
 }

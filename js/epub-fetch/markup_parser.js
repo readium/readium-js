@@ -11,7 +11,7 @@
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define(
+define([],
     function () {
 
         var MarkupParser = function (){

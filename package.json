@@ -69,7 +69,7 @@
     "versioning": "node build-tools/versioning.js",
     "build": "npm run build:submodule && npm run build:scripts",
     "lint": "node build-tools/jshint_glob.js epub-modules/**.js",
-    "build:submodule": "cd epub-modules/epub-renderer/src/readium-shared-js && npm run build && cd ../../../../ && cp -r epub-modules/epub-renderer/src/readium-shared-js/build-output/ . && ls build-output/",
+    "build:submodule": "cd epub-modules/epub-renderer/src/readium-shared-js && npm run build && cd ../../../../ && mkdirp build-output/readium-shared-js/ && cp -r epub-modules/epub-renderer/src/readium-shared-js/build-output/ build-output/readium-shared-js/ && ls build-output/readium-shared-js/",
     "build:scripts": "npm run build:scripts:multiple && npm run build:scripts:single",
     "build:scripts:multiple": "node node_modules/requirejs/bin/r.js -o build-config/RequireJS_config_multiple-bundles.js",
     "build:scripts:single": "node node_modules/requirejs/bin/r.js -o build-config/RequireJS_config_single-bundle.js"

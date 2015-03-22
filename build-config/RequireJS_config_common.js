@@ -28,11 +28,21 @@ require.config({
     inlineText: true,
     stubModules: [], //['text'],
     
+    bundles: {
+        'readium-external-libs': [ 'jquery', 'underscore', 'backbone', 'URIjs', 'punycode', 'SecondLevelDomains', 'IPv6', 'jquerySizes', 'domReady', 'eventEmitter', 'console_shim', 'rangy', 'rangy-core', 'rangy-textrange', 'rangy-highlighter', 'rangy-cssclassapplier', 'rangy-position' ],
+        'readium-shared-js': ['views/reader_view']
+    },
+    
     paths:
     {
-        "readium-js": '../epub-modules/Readium',
+        "readium-js": 'Readium',
         
-        //'readium-external-libs': "../epub-modules/epub-renderer/src/readium-shared-js/build-output/_multiple-bundles/readium-external-libs",
+        'readium-external-libs': "../build-output/readium-shared-js/build-output/_multiple-bundles/readium-external-libs",
+        
+        'readium-shared-js': "../build-output/readium-shared-js/build-output/_multiple-bundles/readium-shared-js",
+        
+        'readium-plugin-annotations': "../build-output/readium-shared-js/build-output/_multiple-bundles/readium-plugin-annotations",
+        'readium-plugin-example': "../build-output/readium-shared-js/build-output/_multiple-bundles/readium-plugin-example",
         
         // ------ NPM MODULEs
         
@@ -45,10 +55,29 @@ require.config({
         
         sha1: '../node_modules/crypto-js/sha1',
         
-        text: '../node_modules/requirejs-text/text',
-        
-        RequireJS: '../node_modules/requirejs/require'
+        text: '../node_modules/requirejs-text/text'
     },
+    
+    map: {
+        '*': {
+            'epub-renderer/views': 'views'
+        }
+    },
+    
+    packages: [
+
+        {
+            name: 'epub-fetch',
+            location: 'epub-modules/epub-fetch/src/models',
+            main: 'publication_fetcher'
+        },
+
+        {
+            name: 'epub-model',
+            location: 'epub-modules/epub/src/models',
+            main: 'package_document_parser'
+        }
+    ],
     
     wrapShim: false,
 
