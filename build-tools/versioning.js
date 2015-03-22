@@ -4,7 +4,7 @@ console.log(process.cwd());
 var git = require('gift'),
     fs = require('fs');
 
-var sharedJsPath = process.cwd() + '/epub-modules/epub-renderer/src/readium-shared-js';
+var sharedJsPath = process.cwd() + '/readium-shared-js';
 
 var readiumSharedJsRepo = git(sharedJsPath);
 readiumSharedJsRepo.current_commit(function(err, commit){
