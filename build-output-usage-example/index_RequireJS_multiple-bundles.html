@@ -1,0 +1,43 @@
+<html>
+<head>
+<script src="http://localhost:9091"> </script> 
+
+<link href="../build-output/css/sdk.css" type="text/css" rel="stylesheet"/>
+
+<script type="text/javascript" src="../build-output/_multiple-bundles/RequireJS.js"> </script>
+
+
+<!-- ============================= -->
+<!-- Demonstrates usage of the "bundles" RequireJS directive -->
+<!-- script type="text/javascript" src="../build-output/_multiple-bundles/readium-external-libs.js"> </script -->
+<script type="text/javascript">
+requirejs.config({
+    paths: {
+        'readium-external-libs': "../build-output/_multiple-bundles/readium-external-libs"
+    },
+    bundles: {
+        
+        // See: ../build-config/_multiple-bundles/readium-external-libs.js
+        'readium-external-libs': [
+'jquery', 'underscore', 'backbone',
+'URIjs', 'punycode', 'SecondLevelDomains', 'IPv6',
+'jquerySizes', 'domReady', 'eventEmitter', 'console_shim',
+'rangy', 'rangy-core', 'rangy-textrange', 'rangy-highlighter', 'rangy-cssclassapplier', 'rangy-position'
+]
+    }
+});
+</script>
+<!-- ============================= -->
+
+<script type="text/javascript" src="../build-output/_multiple-bundles/readium-shared-js.js"> </script>
+
+<script type="text/javascript" src="../build-output/_multiple-bundles/readium-plugin-example.js"> </script>
+
+<script type="text/javascript" src="../build-output/_multiple-bundles/readium-plugin-annotations.js"> </script>
+
+<script type="text/javascript" src="./index.js"> </script>
+</head>
+<body>
+<div id="viewport"> </div>
+</body>
+</html>

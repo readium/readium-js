@@ -11,7 +11,7 @@
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define(['require', 'module'], function (require, module) {
+define(['sha1'], function (SHA1) {
 
     var EncryptionHandler = function (encryptionData) {
         var self = this;
@@ -111,7 +111,7 @@ define(['require', 'module'], function (require, module) {
 
         var encryptionData = {
             uid: id,
-            uidHash: window.Crypto.SHA1(unescape(encodeURIComponent(id.trim())), { asBytes: true }),
+            uidHash: SHA1(unescape(encodeURIComponent(id.trim())), { asBytes: true }),
             encryptions: undefined
         };
 

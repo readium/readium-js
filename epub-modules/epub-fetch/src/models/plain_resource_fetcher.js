@@ -11,7 +11,7 @@
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define(['require', 'module', 'jquery', 'URIjs', './discover_content_type'], function (require, module, $, URI, ContentTypeDiscovery) {
+define(['jquery', 'URIjs', './discover_content_type'], function ($, URI, ContentTypeDiscovery) {
 
     var PlainResourceFetcher = function(parentFetcher, baseUrl){
 

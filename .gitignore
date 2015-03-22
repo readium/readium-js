@@ -33,3 +33,6 @@ version.json
 Session.vim
 .netrwhist
 *~
+
+readium-js-viewer.sublime-project
+readium-js-viewer.sublime-workspace

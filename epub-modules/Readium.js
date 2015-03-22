@@ -12,12 +12,11 @@
 //  prior written permission.
 
 
-define(['./Bootstrapper', 'text!version.json', 'jquery', 'underscore', 'epub-renderer/views/reader_view', 'epub-fetch',
+define(['text!version.json', 'jquery', 'underscore', 'epub-renderer/views/reader_view', 'epub-fetch',
         'epub-model/package_document_parser', 'epub-fetch/iframe_zip_loader', 'epub-renderer/views/iframe_loader',
-        'epub-renderer/globals', 'readium-plugins'],
-    function (Bootstrapper, versionText, $, _, ReaderView, PublicationFetcher,
-              PackageParser, IframeZipLoader, IframeLoader,
-              Globals, Plugins) {
+        ],
+    function (versionText, $, _, ReaderView, PublicationFetcher,
+              PackageParser, IframeZipLoader, IframeLoader) {
 
     var Readium = function(readiumOptions, readerOptions){
 
@@ -106,13 +105,7 @@ define(['./Bootstrapper', 'text!version.json', 'jquery', 'underscore', 'epub-ren
             }
         };
 
-
-        window.ReadiumSDK = Globals;
-
-        //we need global access to the reader object for automation test being able to call it's APIs
-        Globals.reader = this.reader;
-
-        Globals.emit(Globals.Events.READER_INITIALIZED, this.reader);
+        ReadiumSDK.emit(ReadiumSDK.Events.READER_INITIALIZED, ReadiumSDK.reader);
     };
     
     Readium.version = JSON.parse(versionText);

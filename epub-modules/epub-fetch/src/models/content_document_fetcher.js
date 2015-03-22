@@ -12,8 +12,8 @@
 //  prior written permission.
 
 define(
-    ['require', 'module', 'jquery', 'underscore', 'URIjs', './discover_content_type'],
-    function (require, module, $, _, URI, ContentTypeDiscovery) {
+    ['jquery', 'underscore', 'URIjs', './discover_content_type'],
+    function ($, _, URI, ContentTypeDiscovery) {
 
 
         var ContentDocumentFetcher = function (publicationFetcher, spineItem, loadedDocumentUri, publicationResourcesCache, contentDocumentTextPreprocessor) {

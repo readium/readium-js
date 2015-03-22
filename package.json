@@ -1,32 +1,77 @@
 {
-  "name": "Readium.js",
-  "title": "Readium Web Components",
-  "description": "Readium is an open-source ePub reader.",
-  "version": "0.1.0",
-  "devDependencies": {
-    "connect": "~2.9.0",
-    "gift": "^0.4.2",
-    "grunt": "~0.4.1",
-    "grunt-contrib-copy": "~0.4.1",
-    "grunt-contrib-requirejs": "~0.4.0",
-    "grunt-contrib-watch": "~0.5.3",
-    "grunt-exec": "~0.4.2",
-    "grunt-notify": "~0.2.13",
-    "load-grunt-tasks": "~0.1.0"
-  },
-  "devDependenciesUnused": {
-    "grunt-cli": "~0.1.9 (Installed globally by the install script)",
-    "grunt-contrib-clean": "~0.5.0",
-    "grunt-contrib-concat": "~0.3.0",
-    "grunt-contrib-uglify": "~0.2.4"
-  },
-  "homepage": "https://github.com/readium/readium-js",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/readium/readium-js.git"
-  },
+  "/*": "----------------------------------------------------------------------------",
+  "..": "This package.json (JSON) is automatically generated from package.cson (CSON)",
+  ".-": "DO NOT invoke 'npm init' or 'npm install --save' ('--save-dev' / '--save-optional')",
+  "._": "as this would overwrite / update the JSON, not the master CSON!",
+  "*/": "----------------------------------------------------------------------------",
+  "name": "readium-js",
+  "version": "0.0.0",
+  "description": "Readium - core javascript module",
   "keywords": [
     "readium",
-    "epub"
-  ]
+    "epub",
+    "epub3"
+  ],
+  "author": {
+    "name": "Readium (Daniel Weck)",
+    "email": "daniel.weck@gmail.com",
+    "url": "http://github.com/readium"
+  },
+  "licenses": [
+    {
+      "type": "BSD-3-Clause",
+      "url": "http://opensource.org/licenses/BSD-3-Clause"
+    }
+  ],
+  "homepage": "http://github.com/readium/readium-js",
+  "bugs": {
+    "url": "http://github.com/readium/readium-js/issues",
+    "email": "daniel.weck@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/readium/readium-js.git"
+  },
+  "files": [
+    "build-output/",
+    "build-output-usage-example/",
+    "license.txt",
+    "README.md"
+  ],
+  "dependencies": {
+    "parallelshell": "latest",
+    "http-server": "latest",
+    "opener": "latest"
+  },
+  "devDependencies": {
+    "crypto-js": "latest",
+    "zipjs": "danielweck/zip.js",
+    "requirejs": "latest",
+    "requirejs-text": "latest",
+    "gift": "latest",
+    "cson": "latest",
+    "jshint": "latest",
+    "glob": "latest",
+    "rimraf": "latest",
+    "mkdirp": "latest",
+    "watch": "latest",
+    "live-reload": "latest"
+  },
+  "scripts": {
+    "env": "env",
+    "echo": "echo \"\"",
+    "cson2json": "node node_modules/cson/bin/cson2json package.cson && node node_modules/cson/bin/cson2json package.cson > package.json",
+    "prepare": "npm run prepare:submodule",
+    "prepare:dependencies": "npm install && npm update",
+    "prepare:submodule": "cd epub-modules/epub-renderer/src/readium-shared-js && npm run prepare && cd ../../../../ && ls",
+    "clean": "node --version && npm --version && rimraf build-output/*",
+    "prebuild": "npm run clean && npm run versioning",
+    "versioning": "node build-tools/versioning.js",
+    "build": "npm run build:submodule && npm run build:scripts",
+    "lint": "node build-tools/jshint_glob.js epub-modules/**.js",
+    "build:submodule": "cd epub-modules/epub-renderer/src/readium-shared-js && npm run build && cd ../../../../ && cp -r epub-modules/epub-renderer/src/readium-shared-js/build-output/ . && ls build-output/",
+    "build:scripts": "npm run build:scripts:multiple && npm run build:scripts:single",
+    "build:scripts:multiple": "node node_modules/requirejs/bin/r.js -o build-config/RequireJS_config_multiple-bundles.js",
+    "build:scripts:single": "node node_modules/requirejs/bin/r.js -o build-config/RequireJS_config_single-bundle.js"
+  }
 }

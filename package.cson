@@ -1,0 +1,275 @@
+
+# NPM package file, see https://docs.npmjs.com/files/package.json
+# Oh, this is CSON, not JSON ( see CoffeeScript-Object-Notation https://github.com/bevry/cson )
+
+#####################################################################
+#####################################################################
+
+# Master source file used to generate package.json
+
+# DEFAULT METHOD (if package.json is intact):
+# npm run cson2json
+#
+# ALTERNATIVE METHOD (if package.json is corrupted):
+# npm install cson
+# node ./node_modules/cson/bin/cson2json package.cson > package.json
+# Note that on some Windows terminals (e.g. GitShell),
+# unfortunately the package.json file might need its encoding
+# converted to UTF-no-BOM :(
+# This is somehow due to the piped stdout-stdin result being UCS2-little-endian
+# (yet this works just fine when the same command is invoked from
+# "npm run cson2json" instead of from Node!)
+
+#####################################################################
+#####################################################################
+
+'/*': '----------------------------------------------------------------------------'
+'..': 'This package.json (JSON) is automatically generated from package.cson (CSON)'
+'.-': "DO NOT invoke 'npm init' or 'npm install --save' ('--save-dev' / '--save-optional')"
+'._': 'as this would overwrite / update the JSON, not the master CSON!'
+'*/': '----------------------------------------------------------------------------'
+
+#####################################################################
+
+name: "readium-js"
+
+version: "0.0.0"
+
+description: "Readium - core javascript module"
+
+keywords: [
+    "readium"
+    "epub"
+    "epub3"
+]
+
+author:
+    name: "Readium (Daniel Weck)"
+    email: "daniel.weck@gmail.com"
+    url: "http://github.com/readium"
+
+licenses: [
+    type: "BSD-3-Clause"
+    url: "http://opensource.org/licenses/BSD-3-Clause"
+]
+
+homepage: "http://github.com/readium/readium-js"
+
+bugs:
+    url: "http://github.com/readium/readium-js/issues"
+    email: "daniel.weck@gmail.com"
+
+repository:
+    type: "git"
+    url: "git://github.com/readium/readium-js.git"
+
+#####################################################################
+files: [
+    
+    "build-output/"
+    
+    "build-output-usage-example/"
+    
+    "license.txt"
+    
+    "README.md"
+]
+
+# "main" is designed for Node/CommonJS modules, not RequireJS/AMD ones.
+# See http://requirejs.org/docs/commonjs.html
+# See http://requirejs.org/docs/node.html
+#
+#main: "build-output/_multiple-bundles/readium-js.js"
+
+#####################################################################
+dependencies:
+
+    parallelshell: 'latest'
+    
+    'http-server': 'latest'
+    
+    opener: 'latest'
+
+# See remark below about *runtime* dependencies
+
+#####################################################################
+devDependencies:
+
+    "crypto-js": "latest"
+    
+#    "zipjs": "gildas-lormeau/zip.js"
+#    "zipjs": "ryanackley/zip.js"
+    "zipjs": "danielweck/zip.js"
+
+    requirejs: "latest"
+
+    "requirejs-text": "latest"
+
+# Above items are in fact runtime dependencies,
+# but because they are already bundled in the "build-output" folder that ships with the NPM package,
+# we declare them in "devDependencies" to avoid unnecessary downloads.
+# The download can be forced by using the "--dev" option after "npm install readium-js".
+    
+    "gift": "latest"
+    
+    cson: "latest"
+
+    jshint: "latest"
+
+    glob: 'latest'
+
+    rimraf: 'latest'
+
+    mkdirp: 'latest'
+
+    watch: 'latest'
+    
+    'live-reload': 'latest'
+
+#####################################################################
+scripts:
+
+#=====================
+    env: '
+    
+        env
+    '
+    
+#=====================
+    echo: '
+    
+        echo ""
+    '
+
+#=====================
+    cson2json: '
+    
+        node node_modules/cson/bin/cson2json package.cson
+        &&
+        node node_modules/cson/bin/cson2json package.cson > package.json
+    '
+
+#=====================
+    'prepare': '
+        
+        npm run
+            prepare:submodule
+    '
+#        &&
+#        npm run
+#            prepare:dependencies
+            
+#=====================
+    'prepare:dependencies': '
+        
+        npm install
+        &&
+        npm update
+    '
+
+#=====================
+    'prepare:submodule': '
+        
+        cd epub-modules/epub-renderer/src/readium-shared-js
+        &&
+        npm run prepare
+        &&
+        cd ../../../../
+        &&
+        ls
+    '
+    
+#=====================
+    clean: '
+        node --version
+        &&
+        npm --version
+        &&
+        rimraf
+            build-output/*
+    '
+
+#=====================
+    'prebuild': '
+    
+        npm run clean
+        &&
+        npm run versioning
+    '
+    
+#=====================
+    'versioning': '
+    
+        node build-tools/versioning.js
+    '
+# SYNC CHECK
+#        &&
+#        cat build-output/version.json
+
+#=====================
+    build: '
+    
+        npm run
+            build:submodule
+        &&
+        npm run
+            build:scripts
+    '
+    
+#=====================
+    lint: '
+    
+        node
+            build-tools/jshint_glob.js
+            epub-modules/**.js
+    '
+
+#=====================
+    'build:submodule': '
+    
+        cd epub-modules/epub-renderer/src/readium-shared-js
+        &&
+        npm run
+            build
+        &&
+        cd ../../../../
+        &&
+        mkdirp build-output/readium-shared-js/
+        &&
+        cp -r epub-modules/epub-renderer/src/readium-shared-js/build-output/ build-output/readium-shared-js/
+        &&
+        ls build-output/readium-shared-js/
+    '
+    
+#=====================
+#    'prebuild:scripts': '
+#    
+#        npm run
+#            lint
+#    '
+
+#=====================
+    'build:scripts': '
+    
+        npm run
+            build:scripts:multiple
+        &&
+        npm run
+            build:scripts:single
+    '
+
+#=====================
+    'build:scripts:multiple': '
+    
+        node node_modules/requirejs/bin/r.js
+             -o
+             build-config/RequireJS_config_multiple-bundles.js
+    '
+    
+#=====================
+    'build:scripts:single': '
+    
+        node node_modules/requirejs/bin/r.js
+             -o
+             build-config/RequireJS_config_single-bundle.js
+    '
