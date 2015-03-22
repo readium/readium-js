@@ -38,60 +38,91 @@
     // },
     */
 
-    name: "almond",
-    include: ["readium-shared-js", "readium-plugin-example", "readium-plugin-annotations"],
-    out: "../build-output/_single-bundle/readium-shared-js_all.js",
+    name: "readium-js",
+    include: ["readium-external-libs", "readium-shared-js", "readium-plugin-example", "readium-plugin-annotations"],
+    out: "../build-output/_single-bundle/readium-js_all.js",
     
-    insertRequire: ["globalsSetup", "readium-plugin-annotations"],
+    insertRequire: [],
+    
+    map: {
+        '*': {
+            'shared-js/views': 'views',
+            'shared-js/models': 'models',
+            'shared-js/helpers': 'helpers',
+            'shared-js/controllers': 'controllers',
+            'shared-js/epubCfi': 'epubCfi',
+            'shared-js/globals': 'globals',
+            'shared-js/globalsSetup': 'globalsSetup',
+            
+            'version.json': '../build-output/version.json'
+        }
+    },
     
     
     packages: [
-        
+
         {
-            name: "plugin-annotations",
-            location: "../plugins/annotations",
-            main: "main"
+            name: 'epub-fetch',
+            location: '../js/epub-fetch',
+            main: 'publication_fetcher'
         },
+
         {
-            name: "plugin-example",
-            location: "../plugins",
-            main: "example"
+            name: 'epub-model',
+            location: '../js/epub-model',
+            main: 'package_document_parser'
         },
+
         {
-            name: "almond",
-            location: '../node_modules/almond',
-            main: 'almond'
-        }
-    ]
-    
-/*
-    
-    dir: "../build-output/_single-bundle",
-    modules:
-    [
-        {
-            name: "readium-shared-js_all",
-            include: ["readium-shared-js", "readium-plugin-example", "readium-plugin-annotations"],
-            insertRequire: ["globalsSetup", "readium-plugin-annotations"]
+            name: 'sha1',
+            location: '../node_modules/crypto-js',
+            main: 'sha1'
         }
     ],
     
-    packages: [
-        {
-            name: "plugin-annotations",
-            location: "../../plugins/annotations",
-            main: "main"
-        },
-        {
-            name: "plugin-example",
-            location: "../../plugins",
-            main: "example"
-        },
-        {
-            name: "readium-shared-js_all",
-            location: '../node_modules/almond',
-            main: 'almond'
-        }
-    ]
-*/
+    bundles: {
+        'readium-external-libs':
+        //"../build-output/readium-shared-js/build-output/_multiple-bundles/readium-external-libs":
+        [
+            'jquery', 'underscore', 'backbone', 'URIjs', 'punycode', 'SecondLevelDomains', 'IPv6', 'jquerySizes', 'domReady', 'eventEmitter', 'console_shim', 'rangy', 'rangy-core', 'rangy-textrange', 'rangy-highlighter', 'rangy-cssclassapplier', 'rangy-position'
+        ],
+        
+        'readium-shared-js':
+        //"../build-output/readium-shared-js/build-output/_multiple-bundles/readium-shared-js":
+        [
+"epubCfi",
+"globals",
+"globalsSetup",
+"controllers/plugins_controller",
+"models/bookmark_data",
+"models/current_pages_info",
+"models/fixed_page_spread",
+"models/spine_item",
+"helpers",
+"views/cfi_navigation_logic",
+"models/viewer_settings",
+"views/one_page_view",
+"models/page_open_request",
+"views/fixed_view",
+"views/iframe_loader",
+"views/internal_links_support",
+"models/smil_iterator",
+"views/media_overlay_data_injector",
+"views/audio_player",
+"views/media_overlay_element_highlighter",
+"views/scroll_view",
+"views/media_overlay_player",
+"models/spine",
+"models/smil_model",
+"models/media_overlay",
+"models/package_data",
+"models/package",
+"views/reflowable_view",
+"models/style",
+"models/style_collection",
+"models/switches",
+"models/trigger",
+"views/reader_view"
+]
+    }
 }

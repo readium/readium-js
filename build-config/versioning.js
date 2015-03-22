@@ -1,3 +1,10 @@
+
+var args = process.argv.slice(2);
+
+console.log("versioning.js arguments: ");
+console.log(args);
+
+
 console.log(process.cwd());
 //process.exit(-1);
 
@@ -76,7 +83,10 @@ readiumSharedJsRepo.current_commit(function(err, commit){
                                     obj.readiumSharedJs["tag"] = stdout.trim();
                                 }
 
-                                fs.writeFileSync(process.cwd() + '/build-output/version.json', JSON.stringify(obj));
+                                var str = JSON.stringify(obj);
+                                for (var i = 0; i < args.length; i++) {
+                                    fs.writeFileSync(process.cwd() + '/' + args[i], str);
+                                }
                             }
                         );
                     }

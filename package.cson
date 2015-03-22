@@ -193,19 +193,8 @@ scripts:
     'prebuild': '
     
         npm run clean
-        &&
-        npm run versioning
     '
     
-#=====================
-    'versioning': '
-    
-        node build-tools/versioning.js
-    '
-# SYNC CHECK
-#        &&
-#        cat build-output/version.json
-
 #=====================
     build: '
     
@@ -249,8 +238,23 @@ scripts:
 #    '
 
 #=====================
+    'versioning': '
+        mkdirp build-output/_multiple-bundles
+        &&
+        mkdirp build-output/_single-bundle
+        &&
+        node build-config/versioning.js build-output/version.json
+    '
+#build-output/_multiple-bundles/version.json build-output/_single-bundle/version.json
+# SYNC CHECK
+#        &&
+#        cat build-output/version.json
+
+#=====================
     'build:scripts': '
-    
+        
+        npm run versioning
+        &&
         npm run
             build:scripts:multiple
         &&

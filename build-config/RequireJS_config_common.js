@@ -28,14 +28,11 @@ require.config({
     inlineText: true,
     stubModules: [], //['text'],
     
-    bundles: {
-        'readium-external-libs': [ 'jquery', 'underscore', 'backbone', 'URIjs', 'punycode', 'SecondLevelDomains', 'IPv6', 'jquerySizes', 'domReady', 'eventEmitter', 'console_shim', 'rangy', 'rangy-core', 'rangy-textrange', 'rangy-highlighter', 'rangy-cssclassapplier', 'rangy-position' ],
-        'readium-shared-js': ['views/reader_view']
-    },
-    
     paths:
     {
-        "readium-js": 'Readium',
+        //"Readium": 'Readium',
+        
+        "readium-js": '../build-config/readium-js',
         
         'readium-external-libs': "../build-output/readium-shared-js/build-output/_multiple-bundles/readium-external-libs",
         
@@ -49,35 +46,13 @@ require.config({
         zip: '../node_modules/zip-js/WebContent/zip',
         'zip-fs': '../node_modules/zip-js/WebContent/zip-fs',
         'zip-ext': '../node_modules/zip-js/WebContent/zip-ext',
+        
         deflate: '../node_modules/zip-js/WebContent/deflate',
         inflate: '../node_modules/zip-js/WebContent/inflate',
         'z-worker': '../node_modules/zip-js/WebContent/z-worker',
         
-        sha1: '../node_modules/crypto-js/sha1',
-        
         text: '../node_modules/requirejs-text/text'
     },
-    
-    map: {
-        '*': {
-            'epub-renderer/views': 'views'
-        }
-    },
-    
-    packages: [
-
-        {
-            name: 'epub-fetch',
-            location: 'epub-fetch',
-            main: 'publication_fetcher'
-        },
-
-        {
-            name: 'epub-model',
-            location: 'epub-model',
-            main: 'package_document_parser'
-        }
-    ],
     
     wrapShim: false,
 

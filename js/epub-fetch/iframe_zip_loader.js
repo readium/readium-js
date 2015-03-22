@@ -11,7 +11,7 @@
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define(['URIjs', 'epub-renderer/views/iframe_loader', 'underscore'], function(URI, IFrameLoader, _){
+define(['URIjs', 'shared-js/views/iframe_loader', 'underscore'], function(URI, IFrameLoader, _){
 
     var zipIframeLoader = function( getCurrentResourceFetcher, contentDocumentTextPreprocessor) {
 
