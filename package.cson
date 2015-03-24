@@ -257,11 +257,11 @@ scripts:
         npm run versioning
         &&
         npm run
+            build:scripts:multiple
+        &&
+        npm run
             build:scripts:single
     '
-#        &&
-#        npm run
-#            build:scripts:multiple
 
 #=====================
     'build:scripts:multiple': '
@@ -269,6 +269,8 @@ scripts:
         node node_modules/requirejs/bin/r.js
              -o
              build-config/RequireJS_config_multiple-bundles.js
+        &&
+        cp build-output/version.json build-output/_multiple-bundles/
     '
     
 #=====================
@@ -283,4 +285,10 @@ scripts:
         cp node_modules/zip-js/WebContent/deflate.js build-output/_single-bundle/
         &&
         cp node_modules/zip-js/WebContent/inflate.js build-output/_single-bundle/
+        &&
+        cp node_modules/zip-js/WebContent/z-worker.js build-output/_multiple-bundles/
+        &&
+        cp node_modules/zip-js/WebContent/deflate.js build-output/_multiple-bundles/
+        &&
+        cp node_modules/zip-js/WebContent/inflate.js build-output/_multiple-bundles/
     '

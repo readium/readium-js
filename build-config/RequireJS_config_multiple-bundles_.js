@@ -13,47 +13,65 @@
 
 require.config({
     
-    optimize: "none",
-    generateSourceMaps: true,
-    preserveLicenseComments: true,
-    
-    dir: "../build-output/_multiple-bundles",
     modules:
     [
         {
             name: "readium-js",
-            exclude: ["readium-external-libs", "readium-shared-js", "readium-plugin-example", "readium-plugin-annotations"],
-            include: [],
-            insertRequire: []
-        },
-        // {
-        //     name: "readium-shared-js",
-        //     exclude: ["readium-external-libs", "readium-js"],
-        //     include: [],
-        //     insertRequire: []
-        // },
-        // {
-        //     name: "readium-external-libs",
-        //     exclude: ["readium-shared-js", "readium-js"],
-        //     include: [],
-        //     insertRequire: []
-        // }
+            exclude: ["readium-external-libs", "readium-shared-js", "readium-plugin-example", "readium-plugin-annotations"]
+        }
     ],
     
-    map: {
+    
+    // Merges with readium-shared-js build config
+    // Paths are relative to readium-shared-js baseUrl
+    paths:
+    {
+        RequireJS: '../../node_modules/requirejs/require',
+        
+        "readium-js": '../../build-config/readium-js',
+        "Readium": '../../js/Readium',
+        
+        // ------ NPM MODULEs
+        
+        zip: '../../node_modules/zip-js/WebContent/zip',
+        'zip-fs': '../../node_modules/zip-js/WebContent/zip-fs',
+        'zip-ext': '../../node_modules/zip-js/WebContent/zip-ext',
+        
+        deflate: '../../node_modules/zip-js/WebContent/deflate',
+        inflate: '../../node_modules/zip-js/WebContent/inflate',
+        'z-worker': '../../node_modules/zip-js/WebContent/z-worker',
+        
+        text: '../../node_modules/requirejs-text/text',
+        
+        //'../version.json': '../../build-output/version.jsonz'
+        //'../version': '../../build-output/versionz'
+        //'version': '../../build-output/version'
+    },
+    
+     map: {
         '*': {
-            'shared-js/views': 'views',
-            'shared-js/models': 'models',
-            'shared-js/helpers': 'helpers',
-            'shared-js/controllers': 'controllers',
-            'shared-js/epubCfi': 'epubCfi',
-            'shared-js/globals': 'globals',
-            'shared-js/globalsSetup': 'globalsSetup',
-            
+            //TODO that's just here because the above path does not work (.js extension always appended by RequireJS optimizer, unlike the single-bundle build). Note that this requires version.json to be in the output folder (not inlined).
             'version.json': '../version.json'
         }
     },
     
+    shim:
+    {
+        zip : {
+            exports: 'zip'
+        },
+        'zip-fs' : {
+            deps: ['zip'],
+            exports: 'zip-fs'
+        },
+        'zip-ext' : {
+            deps: ['zip-fs'],
+            exports: 'zip-ext'
+        }
+    },
+    
+    // Merges with readium-shared-js build config
+    // Paths are relative to readium-shared-js baseUrl (defined in the common config file)
     packages: [
 
         {
@@ -69,55 +87,9 @@ require.config({
         },
 
         {
-            name: 'sha1',
+            name: 'cryptoJs',
             location: '../../node_modules/crypto-js',
-            main: 'sha1'
+            main: 'core'
         }
-    ],
-    
-    bundles: {
-        'readium-external-libs':
-        //"../../build-output/readium-shared-js/build-output/_multiple-bundles/readium-external-libs":
-        [
-            'jquery', 'underscore', 'backbone', 'URIjs', 'punycode', 'SecondLevelDomains', 'IPv6', 'jquerySizes', 'domReady', 'eventEmitter', 'console_shim', 'rangy', 'rangy-core', 'rangy-textrange', 'rangy-highlighter', 'rangy-cssclassapplier', 'rangy-position'
-        ],
-        
-        'readium-shared-js':
-        //"../../build-output/readium-shared-js/build-output/_multiple-bundles/readium-shared-js":
-        [
-"epubCfi",
-"globals",
-"globalsSetup",
-"controllers/plugins_controller",
-"models/bookmark_data",
-"models/current_pages_info",
-"models/fixed_page_spread",
-"models/spine_item",
-"helpers",
-"views/cfi_navigation_logic",
-"models/viewer_settings",
-"views/one_page_view",
-"models/page_open_request",
-"views/fixed_view",
-"views/iframe_loader",
-"views/internal_links_support",
-"models/smil_iterator",
-"views/media_overlay_data_injector",
-"views/audio_player",
-"views/media_overlay_element_highlighter",
-"views/scroll_view",
-"views/media_overlay_player",
-"models/spine",
-"models/smil_model",
-"models/media_overlay",
-"models/package_data",
-"models/package",
-"views/reflowable_view",
-"models/style",
-"models/style_collection",
-"models/switches",
-"models/trigger",
-"views/reader_view"
-]
-    }
+    ]
 });

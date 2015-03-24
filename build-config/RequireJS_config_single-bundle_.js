@@ -57,17 +57,7 @@ require.config({
     // Merges with readium-shared-js build config
     include: [
         "readium-js"
-        ],
-        
-    // Overrides readium-shared-js build config
-    //out: "../build-output/_single-bundle/readium-js_all.js",
-    
-    // // Paths are relative to readium-shared-js baseUrl (defined in the common config file)
-    // map: {
-    //     '*': {
-            
-    //     }
-    // },
+    ],
     
     // Merges with readium-shared-js build config
     // Paths are relative to readium-shared-js baseUrl (defined in the common config file)

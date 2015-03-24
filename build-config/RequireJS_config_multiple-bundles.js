@@ -32,6 +32,8 @@ function(thiz){
     // The order is IMPORTANT!
     // Paths are relative to this file (they are intentionally convoluted, to test the parameterized RequireJS build workflow from readium-js)
     mainConfigFile: [
+    "./RequireJS_config_multiple-bundles_.js",
+    
     "../readium-shared-js/build-config/RequireJS_config_multiple-bundles_.js",
     "../readium-shared-js/build-config/RequireJS_config_common.js"
     ],
