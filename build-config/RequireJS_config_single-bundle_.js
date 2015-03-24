@@ -14,149 +14,85 @@
 
 require.config({
     
-    optimize: "none",
-    generateSourceMaps: true,
-    preserveLicenseComments: true,
+    // Merges with readium-shared-js build config
+    // Paths are relative to readium-shared-js baseUrl
+    paths:
+    {
+        "readium-js": '../../build-config/readium-js',
+        "Readium": '../../js/Readium',
+        
+        // ------ NPM MODULEs
+        
+        zip: '../../node_modules/zip-js/WebContent/zip',
+        'zip-fs': '../../node_modules/zip-js/WebContent/zip-fs',
+        'zip-ext': '../../node_modules/zip-js/WebContent/zip-ext',
+        
+        deflate: '../../node_modules/zip-js/WebContent/deflate',
+        inflate: '../../node_modules/zip-js/WebContent/inflate',
+        'z-worker': '../../node_modules/zip-js/WebContent/z-worker',
+        
+        text: '../../node_modules/requirejs-text/text'
+    },
     
-    /*
-    optimize: "uglify2",
-    generateSourceMaps: true,
-    preserveLicenseComments: false,
-
-    // uglify2: {
-    //   mangle: true,
-    //   except: [
-    //         'zzzzz'
-    //   ],
-    //   output: {
-    //     beautify: true,
-    //   },
-    //   beautify: {
-    //     semicolons: false
-    //   }
-    // },
-    */
-
-    name: "readium-js",
+    shim:
+    {
+        zip : {
+            exports: 'zip'
+        },
+        'zip-fs' : {
+            deps: ['zip'],
+            exports: 'zip-fs'
+        },
+        'zip-ext' : {
+            deps: ['zip-fs'],
+            exports: 'zip-ext'
+        },
+    },
+    
+    // Overrides readium-shared-js build config
+    //name: "readium-js_all",
+    
+    // Merges with readium-shared-js build config
     include: [
-        // "readium-external-libs",
-        // "readium-shared-js",
-        // "readium-plugin-example",
-        // "readium-plugin-annotations"
+        "readium-js"
         ],
-    exclude: [
-         "readium-external-libs",
-         "readium-shared-js",
-         "readium-plugin-example",
-         "readium-plugin-annotations"
-        ],
-    out: "../build-output/_single-bundle/readium-js_all.js",
+        
+    // Overrides readium-shared-js build config
+    //out: "../build-output/_single-bundle/readium-js_all.js",
     
-    insertRequire: [],
-    
+    // Paths are relative to readium-shared-js baseUrl (defined in the common config file)
     map: {
         '*': {
-            // 'shared-js/views': 'views',
-            // 'shared-js/models': 'models',
-            // 'shared-js/helpers': 'helpers',
-            // 'shared-js/controllers': 'controllers',
-            // 'shared-js/epubCfi': 'epubCfi',
-            // 'shared-js/globals': 'globals',
-            // 'shared-js/globalsSetup': 'globalsSetup',
-            
-            'version.json': '../build-output/version.json',
-            
-            'plugins-controller': 'shared-js/controllers/plugins_controller'
+            'version.json': '../../build-output/version.json'
         }
     },
     
-    
+    // Merges with readium-shared-js build config
+    // Paths are relative to readium-shared-js baseUrl (defined in the common config file)
     packages: [
 
         {
             name: 'epub-fetch',
-            location: '../js/epub-fetch',
+            location: '../../js/epub-fetch',
             main: 'publication_fetcher'
         },
 
         {
             name: 'epub-model',
-            location: '../js/epub-model',
+            location: '../../js/epub-model',
             main: 'package_document_parser'
         },
 
         {
-            name: 'shared-js',
-            location: '../readium-shared-js/js',
-            main: 'views/reader_view'
-        },
-
-        {
             name: 'sha1',
-            location: '../node_modules/crypto-js',
+            location: '../../node_modules/crypto-js',
             main: 'sha1'
-        }
-    ],
-    
-//     bundles: {
-//         //'readium-external-libs':
-//         "../build-output/readium-shared-js/build-output/_multiple-bundles/readium-external-libs":
-//         [
-//             'jquery',
-//             'underscore',
-//             'backbone',
-//             'URIjs',
-//             'punycode',
-//             'SecondLevelDomains',
-//             'IPv6',
-//              'jquerySizes',
-//             'domReady',
-//              'eventEmitter',
-//              'console_shim',
-//              'rangy',
-//             'rangy-core',
-//             'rangy-textrange',
-//             'rangy-highlighter',
-//             'rangy-cssclassapplier',
-//             'rangy-position'
-//         ],
+        },
         
-//         'readium-shared-js':
-//         //"../build-output/readium-shared-js/build-output/_multiple-bundles/readium-shared-js":
-//         [
-// "epubCfi",
-// "globals",
-// "globalsSetup",
-// "controllers/plugins_controller",
-// "models/bookmark_data",
-// "models/current_pages_info",
-// "models/fixed_page_spread",
-// "models/spine_item",
-// "helpers",
-// "views/cfi_navigation_logic",
-// "models/viewer_settings",
-// "views/one_page_view",
-// "models/page_open_request",
-// "views/fixed_view",
-// "views/iframe_loader",
-// "views/internal_links_support",
-// "models/smil_iterator",
-// "views/media_overlay_data_injector",
-// "views/audio_player",
-// "views/media_overlay_element_highlighter",
-// "views/scroll_view",
-// "views/media_overlay_player",
-// "models/spine",
-// "models/smil_model",
-// "models/media_overlay",
-// "models/package_data",
-// "models/package",
-// "views/reflowable_view",
-// "models/style",
-// "models/style_collection",
-// "models/switches",
-// "models/trigger",
-//  "views/reader_view"
-// ]
-//     }
+        {
+            name: "readium-js_all",
+            location: '../node_modules/almond',
+            main: 'almond'
+        }
+    ]
 });

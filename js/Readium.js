@@ -12,8 +12,8 @@
 //  prior written permission.
 
 
-define(['text!version.json', 'jquery', 'underscore', 'shared-js/views/reader_view', 'epub-fetch',
-        'epub-model/package_document_parser', 'epub-fetch/iframe_zip_loader', 'shared-js/views/iframe_loader',
+define(['text!version.json', 'jquery', 'underscore', 'views/reader_view', 'epub-fetch',
+        'epub-model/package_document_parser', 'epub-fetch/iframe_zip_loader', 'views/iframe_loader',
         ],
     function (versionText, $, _, ReaderView, PublicationFetcher,
               PackageParser, IframeZipLoader, IframeLoader) {
