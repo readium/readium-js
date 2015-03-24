@@ -11,153 +11,77 @@
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-
+(
+function(thiz){
+    
+    //console.log(thiz);
+    console.log(process.cwd());
+    
+    process._readium = {};
+    
+    // Path is relative to mainConfigFile[0]
+    process._readium.buildOutputPath = "../../";
+    
+    return true;
+}(this)
+?
 {
-    mainConfigFile: "RequireJS_config_common.js",
-    
-    optimize: "none",
-    generateSourceMaps: true,
-    preserveLicenseComments: true,
-    
-    /*
-    optimize: "uglify2",
-    generateSourceMaps: true,
-    preserveLicenseComments: false,
-
-    // uglify2: {
-    //   mangle: true,
-    //   except: [
-    //         'zzzzz'
-    //   ],
-    //   output: {
-    //     beautify: true,
-    //   },
-    //   beautify: {
-    //     semicolons: false
-    //   }
-    // },
-    */
-
-    name: "readium-js",
-    include: [
-        // "readium-external-libs",
-        // "readium-shared-js",
-        // "readium-plugin-example",
-        // "readium-plugin-annotations"
-        ],
-    exclude: [
-         "readium-external-libs",
-         "readium-shared-js",
-         "readium-plugin-example",
-         "readium-plugin-annotations"
-        ],
-    out: "../build-output/_single-bundle/readium-js_all.js",
-    
-    insertRequire: [],
-    
-    map: {
-        '*': {
-            // 'shared-js/views': 'views',
-            // 'shared-js/models': 'models',
-            // 'shared-js/helpers': 'helpers',
-            // 'shared-js/controllers': 'controllers',
-            // 'shared-js/epubCfi': 'epubCfi',
-            // 'shared-js/globals': 'globals',
-            // 'shared-js/globalsSetup': 'globalsSetup',
-            
-            'version.json': '../build-output/version.json',
-            
-            'plugins-controller': 'shared-js/controllers/plugins_controller'
-        }
-    },
-    
-    
-    packages: [
-
-        {
-            name: 'epub-fetch',
-            location: '../js/epub-fetch',
-            main: 'publication_fetcher'
-        },
-
-        {
-            name: 'epub-model',
-            location: '../js/epub-model',
-            main: 'package_document_parser'
-        },
-
-        {
-            name: 'shared-js',
-            location: '../readium-shared-js/js',
-            main: 'views/reader_view'
-        },
-
-        {
-            name: 'sha1',
-            location: '../node_modules/crypto-js',
-            main: 'sha1'
-        }
+    // The order is IMPORTANT!
+    // Paths are relative to this file (they are intentionally convoluted, to test the parameterized RequireJS build workflow from readium-js)
+    mainConfigFile: [
+    "../readium-shared-js/build-config/RequireJS_config_single-bundle_.js",
+    "../readium-shared-js/build-config/RequireJS_config_common.js"
     ],
     
-//     bundles: {
-//         //'readium-external-libs':
-//         "../build-output/readium-shared-js/build-output/_multiple-bundles/readium-external-libs":
-//         [
-//             'jquery',
-//             'underscore',
-//             'backbone',
-//             'URIjs',
-//             'punycode',
-//             'SecondLevelDomains',
-//             'IPv6',
-//              'jquerySizes',
-//             'domReady',
-//              'eventEmitter',
-//              'console_shim',
-//              'rangy',
-//             'rangy-core',
-//             'rangy-textrange',
-//             'rangy-highlighter',
-//             'rangy-cssclassapplier',
-//             'rangy-position'
-//         ],
-        
-//         'readium-shared-js':
-//         //"../build-output/readium-shared-js/build-output/_multiple-bundles/readium-shared-js":
-//         [
-// "epubCfi",
-// "globals",
-// "globalsSetup",
-// "controllers/plugins_controller",
-// "models/bookmark_data",
-// "models/current_pages_info",
-// "models/fixed_page_spread",
-// "models/spine_item",
-// "helpers",
-// "views/cfi_navigation_logic",
-// "models/viewer_settings",
-// "views/one_page_view",
-// "models/page_open_request",
-// "views/fixed_view",
-// "views/iframe_loader",
-// "views/internal_links_support",
-// "models/smil_iterator",
-// "views/media_overlay_data_injector",
-// "views/audio_player",
-// "views/media_overlay_element_highlighter",
-// "views/scroll_view",
-// "views/media_overlay_player",
-// "models/spine",
-// "models/smil_model",
-// "models/media_overlay",
-// "models/package_data",
-// "models/package",
-// "views/reflowable_view",
-// "models/style",
-// "models/style_collection",
-// "models/switches",
-// "models/trigger",
-//  "views/reader_view"
-// ]
-//     }
+    onModuleBundleComplete: function(data) {
+        console.log("========> onModuleBundleComplete");
+        console.log(data.name);
+
+        var fs = nodeRequire("fs");
+    
+        for (var i = 0; i < config.modules.length; i++) {
+
+            if (config.modules[i].name !== data.name)
+                continue;
+
+            //__dirname is RequireJS node_modules bin folder
+            var rootPath = process.cwd() + "/build-output/_single-bundle/";
+            rootPath = rootPath.replace(/\\/g, '/');
+            console.log(rootPath);
+
+            var path = config.modules[i].out; //config.modules[i].layer.buildPathMap[config.modules[i].name];
+            console.log(path);
+            
+            // var shortpath = path.replace(rootPath, './');
+            // console.log(shortpath);
+            
+            // var pathConfig = {};
+            // pathConfig[config.modules[i].name] = shortpath;
+            
+            var bundleConfig = {};
+            bundleConfig[config.modules[i].name] = [];
+            
+            for (var moduleName in config.modules[i].layer.modulesWithNames) {
+                bundleConfig[config.modules[i].name].push(moduleName);
+                console.log(">> " + moduleName);
+            }
+            for (var moduleName in config.modules[i].layer.needsDefine) {
+                bundleConfig[config.modules[i].name].push(moduleName);
+                console.log(">> " + moduleName);
+            }
+            
+            fs.writeFile(
+                path + ".bundles.js",
+                "require.config({" +
+                    //"paths: " + JSON.stringify(pathConfig) + ", " +
+                    "bundles: " + JSON.stringify(bundleConfig) + "});",
+                function(error) {
+                    if (error) throw error;
+                }
+            );
+        }
+    }
 }
+:
+function(){console.log("NOOP");return {};}()
+)
