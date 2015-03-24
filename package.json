@@ -66,12 +66,11 @@
     "prepare:submodule": "cd readium-shared-js && npm run prepare && cd .. && ls",
     "clean": "node --version && npm --version && rimraf build-output/*",
     "prebuild": "npm run clean",
-    "build": "npm run build:submodule && npm run build:scripts",
+    "build": "npm run build:scripts",
     "lint": "node build-tools/jshint_glob.js js/**.js",
-    "build:submodule": "cd readium-shared-js && npm run build && cd ..",
     "versioning": "mkdirp build-output/_multiple-bundles && mkdirp build-output/_single-bundle && node build-config/versioning.js build-output/version.json",
-    "build:scripts": "npm run versioning && npm run build:scripts:multiple && npm run build:scripts:single",
+    "build:scripts": "npm run versioning && npm run build:scripts:single",
     "build:scripts:multiple": "node node_modules/requirejs/bin/r.js -o build-config/RequireJS_config_multiple-bundles.js",
-    "build:scripts:single": "node node_modules/requirejs/bin/r.js -o build-config/RequireJS_config_single-bundle.js"
+    "build:scripts:single": "node node_modules/requirejs/bin/r.js -o build-config/RequireJS_config_single-bundle.js && cp node_modules/zip-js/WebContent/z-worker.js build-output/_single-bundle/ && cp node_modules/zip-js/WebContent/deflate.js build-output/_single-bundle/ && cp node_modules/zip-js/WebContent/inflate.js build-output/_single-bundle/"
   }
 }

@@ -199,12 +199,12 @@ scripts:
     build: '
     
         npm run
-            build:submodule
-        &&
-        npm run
             build:scripts
     '
-    
+#        npm run
+#            build:submodule
+#        &&
+
 #=====================
     lint: '
     
@@ -214,15 +214,15 @@ scripts:
     '
 
 #=====================
-    'build:submodule': '
-    
-        cd readium-shared-js
-        &&
-        npm run
-            build
-        &&
-        cd ..
-    '
+#    'build:submodule': '
+#    
+#        cd readium-shared-js
+#        &&
+#        npm run
+#            build
+#        &&
+#        cd ..
+#    '
 
 #        &&
 #        mkdirp build-output/readium-shared-js/
@@ -257,11 +257,11 @@ scripts:
         npm run versioning
         &&
         npm run
-            build:scripts:multiple
-        &&
-        npm run
             build:scripts:single
     '
+#        &&
+#        npm run
+#            build:scripts:multiple
 
 #=====================
     'build:scripts:multiple': '
@@ -277,4 +277,10 @@ scripts:
         node node_modules/requirejs/bin/r.js
              -o
              build-config/RequireJS_config_single-bundle.js
+        &&
+        cp node_modules/zip-js/WebContent/z-worker.js build-output/_single-bundle/
+        &&
+        cp node_modules/zip-js/WebContent/deflate.js build-output/_single-bundle/
+        &&
+        cp node_modules/zip-js/WebContent/inflate.js build-output/_single-bundle/
     '

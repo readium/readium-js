@@ -31,7 +31,9 @@ require.config({
         inflate: '../../node_modules/zip-js/WebContent/inflate',
         'z-worker': '../../node_modules/zip-js/WebContent/z-worker',
         
-        text: '../../node_modules/requirejs-text/text'
+        text: '../../node_modules/requirejs-text/text',
+        
+        'version': '../../build-output/version'
     },
     
     shim:
@@ -46,7 +48,7 @@ require.config({
         'zip-ext' : {
             deps: ['zip-fs'],
             exports: 'zip-ext'
-        },
+        }
     },
     
     // Overrides readium-shared-js build config
@@ -60,12 +62,12 @@ require.config({
     // Overrides readium-shared-js build config
     //out: "../build-output/_single-bundle/readium-js_all.js",
     
-    // Paths are relative to readium-shared-js baseUrl (defined in the common config file)
-    map: {
-        '*': {
-            'version.json': '../../build-output/version.json'
-        }
-    },
+    // // Paths are relative to readium-shared-js baseUrl (defined in the common config file)
+    // map: {
+    //     '*': {
+            
+    //     }
+    // },
     
     // Merges with readium-shared-js build config
     // Paths are relative to readium-shared-js baseUrl (defined in the common config file)
@@ -84,15 +86,9 @@ require.config({
         },
 
         {
-            name: 'sha1',
+            name: 'cryptoJs',
             location: '../../node_modules/crypto-js',
-            main: 'sha1'
-        },
-        
-        {
-            name: "readium-js_all",
-            location: '../node_modules/almond',
-            main: 'almond'
+            main: 'core'
         }
     ]
 });

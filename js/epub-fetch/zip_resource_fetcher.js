@@ -11,7 +11,7 @@
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define(['jquery', 'URIjs', './discover_content_type', 'zip'], function ($, URI, ContentTypeDiscovery, zip) {
+define(['jquery', 'URIjs', './discover_content_type', 'zip-ext'], function ($, URI, ContentTypeDiscovery, zip) {
 
     var ZipResourceFetcher = function(parentFetcher, baseUrl, libDir) {
 

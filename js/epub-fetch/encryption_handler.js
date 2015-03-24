@@ -11,7 +11,7 @@
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define(['sha1'], function (SHA1) {
+define(['cryptoJs/sha1'], function (SHA1) {
 
     var EncryptionHandler = function (encryptionData) {
         var self = this;
