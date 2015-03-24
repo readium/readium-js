@@ -38,68 +38,23 @@ function(thiz){
     
     // MUST be in root config file because of access to context-dependent 'config'
     onModuleBundleComplete: function(data) {
-        console.log("========> onModuleBundleComplete");
-        console.log(data.name);
-
+        
+        //console.log(process.cwd());
+        var filePath = process.cwd() + "/readium-shared-js/build-config/RequireJS_config_multiple-bundles_onModuleBundleComplete.js";
+        
         var fs = nodeRequire("fs");
-    
-        for (var i = 0; i < config.modules.length; i++) {
-
-            if (config.modules[i].name !== data.name)
-                continue;
-
-            //__dirname is RequireJS node_modules bin folder
-            var rootPath = process.cwd() + "/build-output/_multiple-bundles/";
-            rootPath = rootPath.replace(/\\/g, '/');
-            console.log(rootPath);
-
-            var path = config.modules[i].layer.buildPathMap[config.modules[i].name];
-            console.log(path);
-            
-            // var shortpath = path.replace(rootPath, './');
-            // console.log(shortpath);
-            
-            // var pathConfig = {};
-            // pathConfig[config.modules[i].name] = shortpath;
-            
-            data.includedModuleNames = [];
-            
-            for (var j = 0; j < data.included.length; j++) {
-                
-                var fullPath = rootPath + data.included[j];
-                
-                for (var modulePath in config.modules[i].layer.buildFileToModule) {
-                    if (fullPath === modulePath) {
-                        data.includedModuleNames.push(config.modules[i].layer.buildFileToModule[modulePath]);
-                        break;
-                    }
+        fs.readFile(
+            filePath,
+            {encoding: 'utf-8'},
+            function(err, fileContents) {
+                if (!err) {
+                    var func = eval("("+fileContents+")");
+                    return func(data);
+                } else {
+                    console.log(err);
                 }
             }
-            
-            var bundleConfig = {};
-            bundleConfig[config.modules[i].name] = [];
-            
-            //for (var moduleName in config.modules[i].layer.modulesWithNames) {
-            for (var j = 0; j < data.includedModuleNames.length; j++) {
-                var moduleName = data.includedModuleNames[j];
-                
-                if (moduleName === config.modules[i].name)
-                    continue;
-                
-                bundleConfig[config.modules[i].name].push(moduleName);
-                console.log(">> " + moduleName);
-            }
-
-            fs.writeFile(
-                path + ".bundles.js",
-                "require.config({" +
-                    //"paths: " + JSON.stringify(pathConfig) + ", " +
-                    "bundles: " + JSON.stringify(bundleConfig) + "});",
-                function(error) {
-                    if (error) throw error;
-                }
-            );
-        }
+        );
     }
 }
 :
