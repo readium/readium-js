@@ -36,24 +36,6 @@ require.config({
         'version': '../../build-output/version'
     },
     
-    shim:
-    {
-        zip : {
-            exports: 'zip'
-        },
-        'zip-fs' : {
-            deps: ['zip'],
-            exports: 'zip-fs'
-        },
-        'zip-ext' : {
-            deps: ['zip-fs'],
-            exports: 'zip-ext'
-        }
-    },
-    
-    // Overrides readium-shared-js build config
-    //name: "readium-js_all",
-    
     // Merges with readium-shared-js build config
     include: [
         "readium-js"

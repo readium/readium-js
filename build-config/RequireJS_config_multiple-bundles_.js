@@ -55,21 +55,6 @@ require.config({
         }
     },
     
-    shim:
-    {
-        zip : {
-            exports: 'zip'
-        },
-        'zip-fs' : {
-            deps: ['zip'],
-            exports: 'zip-fs'
-        },
-        'zip-ext' : {
-            deps: ['zip-fs'],
-            exports: 'zip-ext'
-        }
-    },
-    
     // Merges with readium-shared-js build config
     // Paths are relative to readium-shared-js baseUrl (defined in the common config file)
     packages: [

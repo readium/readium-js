@@ -26,14 +26,6 @@ require.config({
     wrap: false,
     
     inlineText: true,
-    stubModules: [], //['text'],
-    
-    paths:
-    {   
-        // ------ NPM MODULEs
-        
-        RequireJS: '../readium-shared-js/node_modules/requirejs/require',
-    },
     
     wrapShim: false,
 
@@ -44,11 +36,11 @@ require.config({
         },
         'zip-fs' : {
             deps: ['zip'],
-            exports: 'zip-fs'
+            exports: 'zipfs'
         },
         'zip-ext' : {
             deps: ['zip-fs'],
-            exports: 'zip-ext'
+            exports: 'zipext'
         },
     }
 });

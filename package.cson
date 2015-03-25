@@ -199,6 +199,9 @@ scripts:
     build: '
     
         npm run
+            build:styles
+        &&
+        npm run
             build:scripts
     '
 #        npm run
@@ -291,4 +294,90 @@ scripts:
         cp node_modules/zip-js/WebContent/deflate.js build-output/_multiple-bundles/
         &&
         cp node_modules/zip-js/WebContent/inflate.js build-output/_multiple-bundles/
+    '
+
+#=====================
+    'prebuild:styles': '
+    
+        mkdirp build-output/css/
+    '
+    
+#=====================
+# TODO use cssminify
+    'build:styles': '
+    
+        cp readium-shared-js/static/sdk.css build-output/css/
+    '
+
+#=====================
+#### BLOCKING! (CTRL-C) [watch][live-reload][http]
+    'example:dev': '
+        npm run
+            clean
+        &&
+        echo > open_webbrowser.js
+        &&
+        parallelshell
+            \"npm run live-reload\"
+            \"npm run watch\"
+            \"npm run http\"
+    '
+
+#=====================
+#### BLOCKING! (CTRL-C) [http]
+    'example': '
+        parallelshell
+            \"npm run http\"
+            \"npm run webbrowser\"
+    '
+
+#=====================
+#### BLOCKING! (CTRL-C) [watch:build]
+    watch: '
+    
+        parallelshell
+            \"npm run watch:build\"
+    '
+    #   \"npm run watch:test\
+
+#=====================
+#   'watch:test': 'karma start'
+
+#=====================
+#   test: 'karma start --singleRun'
+
+#=====================
+#### BLOCKING! (CTRL-C) [watch or nodemon]
+    'watch:build': '
+        watch
+            \"npm run build
+                && node build-tools/webbrowser.js
+                && npm run webbrowser
+                && rimraf open_webbrowser.js\"
+            build-output-usage-example/
+    '
+    #    nodemon -q
+    #    -w build-output-usage-example/
+    #    --ext \".\"
+    #    --exec \"npm run build
+    #            && node build-tools/webbrowser.js 
+    #            && npm run webbrowser
+    #            && rimraf open_webbrowser.js\"
+    
+#=====================
+    'http': '
+    
+        http-server -p 9090 ./
+    '
+
+#=====================
+    'live-reload': '
+    
+        live-reload --port 9091 --delay 1000 build-output/
+    '
+
+#=====================
+    'webbrowser': '
+    
+        opener http://localhost:9090/build-output-usage-example/
     '

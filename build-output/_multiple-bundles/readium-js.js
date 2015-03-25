@@ -390,7 +390,7 @@ define('text',['module'], function (module) {
 });
 
 
-define('text!../version.json',[],function () { return '{"readiumJs":{"sha":"30d2cccb862feb37454f581b12528ec0d1e99dd6","tag":"0.15-100-g30d2ccc","clean":false},"readiumSharedJs":{"sha":"d97c6333a91a530cf1fe15c46c4bbc0dcbdfc12d","tag":"0.16-95-gd97c633","clean":true}}';});
+define('text!../version.json',[],function () { return '{"readiumJs":{"sha":"e1ad17674b734b43258ec29ee3329abdb443a056","tag":"0.15-101-ge1ad176","clean":false},"readiumSharedJs":{"sha":"4f5d7425d4756dde11b9ec816165ffc4245eb7cb","tag":"0.16-97-g4f5d742","clean":true}}';});
 
 //  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
 //  
@@ -2149,7 +2149,7 @@ define("zip", (function (global) {
 define("zip-fs", ["zip"], (function (global) {
     return function () {
         var ret, fn;
-        return ret || global.zip-fs;
+        return ret || global.zipfs;
     };
 }(this)));
 
@@ -2399,7 +2399,7 @@ define("zip-fs", ["zip"], (function (global) {
 define("zip-ext", ["zip-fs"], (function (global) {
     return function () {
         var ret, fn;
-        return ret || global.zip-ext;
+        return ret || global.zipext;
     };
 }(this)));
 
@@ -4759,6 +4759,7 @@ define('Readium',['text!version.json', 'jquery', 'underscore', 'views/reader_vie
         
 
         this.reader = new ReaderView(readerOptions);
+        ReadiumSDK.reader = this.reader;
 
         this.openPackageDocument = function(bookRoot, callback, openPageRequest)  {
             if (_currentPublicationFetcher) {

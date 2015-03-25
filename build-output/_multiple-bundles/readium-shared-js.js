@@ -3042,7 +3042,7 @@ define('plugins-controller',["jquery", "underscore", "eventEmitter", "globals"],
             }
 
             _.defer(function () {
-                Globals.emit(Globals.Events.PLUGINS_LOADED);
+                Globals.emit(Globals.Events.PLUGINS_LOADED, reader);
             });
         });
     };

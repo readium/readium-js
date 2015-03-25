@@ -60,6 +60,7 @@ define(['text!version.json', 'jquery', 'underscore', 'views/reader_view', 'epub-
         
 
         this.reader = new ReaderView(readerOptions);
+        ReadiumSDK.reader = this.reader;
 
         this.openPackageDocument = function(bookRoot, callback, openPageRequest)  {
             if (_currentPublicationFetcher) {
