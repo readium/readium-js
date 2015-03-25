@@ -100,9 +100,11 @@ The `_multiple-bundles` folder contains several Javascript bundles (and their re
 
 
 * `readium-external-libs.js`: aggregated library dependencies (e.g. Underscore, jQuery, etc.)
-* `readium-shared-js.js`: Readium-specific code (basically, equivalent to the `js` folder)
+* `readium-shared-js.js`: shared Readium code (basically, equivalent to the `js` folder of the "readium-shared-js" submodule)
+* `readium-js.js`: this Readium code (see the `js` folder, which includes epub-fetch and epub-model source code
 * `readium-plugin-example.js`: simple plugin demo
 * `readium-plugin-annotations.js`: the annotation plugin (DOM selection + highlight), which bundle actually contains the "Backbone" library, as this dependency is not already included in the "external libs" bundle.
+)
 
 In addition, the folder contains the full `RequireJS.js` library ( http://requirejs.org ), as the above bundles do no include the lightweight "Almond" AMD loader ( https://github.com/jrburke/almond ).
 
