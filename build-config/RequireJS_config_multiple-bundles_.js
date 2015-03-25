@@ -28,21 +28,6 @@ require.config({
     {
         RequireJS: '../../node_modules/requirejs/require',
         
-        "readium-js": '../../build-config/readium-js',
-        "Readium": '../../js/Readium',
-        
-        // ------ NPM MODULEs
-        
-        zip: '../../node_modules/zip-js/WebContent/zip',
-        'zip-fs': '../../node_modules/zip-js/WebContent/zip-fs',
-        'zip-ext': '../../node_modules/zip-js/WebContent/zip-ext',
-        
-        deflate: '../../node_modules/zip-js/WebContent/deflate',
-        inflate: '../../node_modules/zip-js/WebContent/inflate',
-        'z-worker': '../../node_modules/zip-js/WebContent/z-worker',
-        
-        text: '../../node_modules/requirejs-text/text',
-        
         //'../version.json': '../../build-output/version.jsonz'
         //'../version': '../../build-output/versionz'
         //'version': '../../build-output/version'

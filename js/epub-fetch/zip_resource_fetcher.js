@@ -31,16 +31,19 @@ define(['jquery', 'URIjs', './discover_content_type', 'zip-ext'], function ($, U
 
             } else {
 
-                // The Web Worker requires standalone inflate/deflate.js files in libDir (i.e. cannot be aggregated/minified/optimised in the final generated single-file build)
+                // The Web Worker requires standalone z-worker/inflate/deflate.js files in libDir (i.e. cannot be aggregated/minified/optimised in the final generated single-file build)
                 zip.useWebWorkers = true; // (true by default)
                 zip.workerScriptsPath = libDir;
                 
                 _zipFs = new zip.fs.FS();
-                _zipFs.importHttpContent(baseUrl, true, function () {
-
-                    callback(_zipFs, onerror);
-
-                }, onerror)
+                _zipFs.importHttpContent(
+                    baseUrl,
+                    true,
+                    function () {
+                        callback(_zipFs, onerror);
+                    },
+                    onerror
+                );
             }
         }
 
@@ -50,18 +53,26 @@ define(['jquery', 'URIjs', './discover_content_type', 'zip-ext'], function ($, U
                 throw 'Fetched file relative path is undefined!';
             }
 
-            withZipFsPerform(function (zipFs, onerror) {
-                var entry = zipFs.find(relativePathRelativeToPackageRoot);
-                if (typeof entry === 'undefined' || entry === null) {
-                    onerror(new Error('Entry ' + relativePathRelativeToPackageRoot + ' not found in zip ' + baseUrl));
-                } else {
-                    if (entry.directory) {
-                        onerror(new Error('Entry ' + relativePathRelativeToPackageRoot + ' is a directory while a file has been expected'));
+            withZipFsPerform(
+                function (zipFs, onerror) {
+                    var entry = zipFs.find(relativePathRelativeToPackageRoot);
+                    
+                    if (typeof entry === 'undefined' || entry === null) {
+                        onerror(new Error('Entry ' + relativePathRelativeToPackageRoot + ' not found in zip ' + baseUrl));
                     } else {
-                        readCallback(entry);
+                        if (entry.directory) {
+                            onerror(new Error('Entry ' + relativePathRelativeToPackageRoot + ' is a directory while a file has been expected'));
+                        } else {
+                            readCallback(entry);
+                        }
                     }
+                },
+                function() {
+                    console.log("ERROR");
+                    console.log(arguments);
+                    onerror(arguments);
                 }
-            }, onerror);
+            );
         }
 
 

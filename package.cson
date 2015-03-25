@@ -87,6 +87,8 @@ dependencies:
     parallelshell: 'latest'
     
     'http-server': 'latest'
+#    'httpserver': 'latest'
+#    'node-http-server': 'latest'
     
     opener: 'latest'
 
@@ -154,6 +156,8 @@ scripts:
         
         npm run
             prepare:submodule
+        &&
+        node build-config/patchZipLib.js
     '
 #        &&
 #        npm run
@@ -366,9 +370,12 @@ scripts:
     
 #=====================
     'http': '
-    
         http-server -p 9090 ./
     '
+#    node node_modules/httpserver/httpserver.js 9090 127.0.0.1
+#    http-server -p 9090 ./
+#    node  .\node_modules\node-http-server\server\http.js root=. port=9090 launch=now verbose=true
+#    node build-tools/http-server.js
 
 #=====================
     'live-reload': '
@@ -379,5 +386,5 @@ scripts:
 #=====================
     'webbrowser': '
     
-        opener http://localhost:9090/build-output-usage-example/
+        opener http://127.0.0.1:9090/build-output-usage-example/
     '

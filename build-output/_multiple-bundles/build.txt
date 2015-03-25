@@ -7,6 +7,7 @@ text!../version.json
 ../../js/epub-fetch/discover_content_type.js
 ../../js/epub-fetch/plain_resource_fetcher.js
 zip.js
+mime-types.js
 zip-fs.js
 zip-ext.js
 ../../js/epub-fetch/zip_resource_fetcher.js

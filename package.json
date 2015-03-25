@@ -61,7 +61,7 @@
     "env": "env",
     "echo": "echo \"\"",
     "cson2json": "node node_modules/cson/bin/cson2json package.cson && node node_modules/cson/bin/cson2json package.cson > package.json",
-    "prepare": "npm run prepare:submodule",
+    "prepare": "npm run prepare:submodule && node build-config/patchZipLib.js",
     "prepare:dependencies": "npm install && npm update",
     "prepare:submodule": "cd readium-shared-js && npm run prepare && cd .. && ls",
     "clean": "node --version && npm --version && rimraf build-output/*",
@@ -80,6 +80,6 @@
     "watch:build": "watch \"npm run build && node build-tools/webbrowser.js && npm run webbrowser && rimraf open_webbrowser.js\" build-output-usage-example/",
     "http": "http-server -p 9090 ./",
     "live-reload": "live-reload --port 9091 --delay 1000 build-output/",
-    "webbrowser": "opener http://localhost:9090/build-output-usage-example/"
+    "webbrowser": "opener http://127.0.0.1:9090/build-output-usage-example/"
   }
 }
