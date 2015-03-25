@@ -29,7 +29,7 @@ See license.txt ( https://github.com/readium/readium-js/blob/develop/license.txt
 
 **Initial setup:**
 
-* `git submodule --init --recursive` to ensure that the readium-shared-js dependency is initialised
+* `git submodule init` + `git submodule update` to ensure that the readium-shared-js dependency is initialised
 * `npm install` (to download dependencies defined in `package.json` ... note that the `--production` option can be used to avoid downloading development dependencies, for example when testing only the pre-built `build-output` folder contents)
 * `npm update` (to make sure that the dependency tree is up to date)
 * `npm run prepare` (to perform required preliminary tasks, like patching code before building)
@@ -39,6 +39,7 @@ See license.txt ( https://github.com/readium/readium-js/blob/develop/license.txt
 * Hack away! (mostly the source code in the `epub-modules` folder)
 * `npm run build` (to update the RequireJS bundles in the build output folder)
 * `npm run example:dev` (to launch an http server with live-reload, automatically opens a web browser instance to the HTML files in the `build-output-usage-example` folder)
+* `npm run example` (same as above, but without watching for file changes (no automatic rebuild))
 
 Optionally:
 
@@ -68,7 +69,7 @@ The `build-output` directory contains common CSS styles, as well as two distinct
 
 ### Single bundle
 
-The `_single-bundle` folder contains `readium-js_all.js` (and its associated source-map file),
+The `_single-bundle` folder contains `readium-js_all.js` (and its associated source-map file, as well as a RequireJS bundle index file (which isn't actually needed at runtime, so here just as a reference)),
 which aggregates all the required code (external library dependencies included, such as Underscore, jQuery, etc.),
 as well as the "Almond" lightweight AMD loader ( https://github.com/jrburke/almond ).
 
@@ -80,7 +81,7 @@ as demonstrated by the HTML file in the `build-output-usage-example` folder (tri
 <head>
 
 <!-- main code bundle, which includes its own Almond AMD loader (no need for the full RequireJS library) -->
-<script type="text/javascript" src="../build-output/_single-bundle/readium-shared-js_all.js"> </script>
+<script type="text/javascript" src="../build-output/_single-bundle/readium-js_all.js"> </script>
 
 <!-- index.js calls into the above library -->
 <script type="text/javascript" src="./index.js"> </script>
@@ -95,7 +96,7 @@ as demonstrated by the HTML file in the `build-output-usage-example` folder (tri
 ### Multiple bundles
 
 
-The `_multiple-bundles` folder contains several Javascript bundles (and their respective source-map files):
+The `_multiple-bundles` folder contains several Javascript bundles (and their respective source-map files, as well as RequireJS bundle index files):
 
 
 * `readium-external-libs.js`: aggregated library dependencies (e.g. Underscore, jQuery, etc.)
@@ -130,6 +131,8 @@ Usage is demonstrated by the HTML file in the `build-output-usage-example` folde
 <!-- annotations plugin -->
 <script type="text/javascript" src="../build-output/_multiple-bundles/readium-plugin-annotations.js"> </script>
 
+<!-- readium js -->
+<script type="text/javascript" src="../build-output/_multiple-bundles/readium-js.js"> </script>
 
 
 <!-- index.js calls into the above libraries -->
@@ -149,24 +152,22 @@ Note how the "external libs" set of AMD modules can be explicitly described usin
 
 ```html
 
-<!-- script type="text/javascript" src="../build-output/_multiple-bundles/readium-external-libs.js"> </script -->
-
 <script type="text/javascript">
 requirejs.config({
-    paths: {
-        'readium-external-libs': "../build-output/_multiple-bundles/readium-external-libs"
-    },
-    bundles: {
-        
-        'readium-external-libs': [
-'jquery', 'underscore', 'backbone',
-'URIjs', 'punycode', 'SecondLevelDomains', 'IPv6',
-'jquerySizes', 'domReady', 'eventEmitter', 'console_shim',
-'rangy', 'rangy-core', 'rangy-textrange', 'rangy-highlighter', 'rangy-cssclassapplier', 'rangy-position'
-]
-    }
+    baseUrl: '../build-output/_multiple-bundles'
 });
 </script>
+
+<script type="text/javascript" src="../build-output/_multiple-bundles/readium-external-libs.js.bundles.js"> </script>
+
+<script type="text/javascript" src="../build-output/_multiple-bundles/readium-shared-js.js.bundles.js"> </script>
+
+<script type="text/javascript" src="../build-output/_multiple-bundles/readium-plugin-example.js.bundles.js"> </script>
+
+<script type="text/javascript" src="../build-output/_multiple-bundles/readium-plugin-annotations.js.bundles.js"> </script>
+
+<script type="text/javascript" src="../build-output/_multiple-bundles/readium-js.js.bundles.js"> </script>
+
 ```
 
 
