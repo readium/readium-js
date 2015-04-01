@@ -13,7 +13,7 @@
 
 require.config({
     
-    baseUrl: process._readium.baseUrl__readium_js,
+    baseUrl: process._readium.baseUrl__readium_js_,
     
     optimize: "none",
     generateSourceMaps: true,
@@ -76,11 +76,12 @@ require.config({
             main: 'core'
         },
         
-        {
-            name: "readium-shared-js_baseUrl",
-            location: "../" +
-                process._readium.path__readium_js + "/build-config/" + process._readium.baseUrl__readium_js + "/"
-                + "../readium-shared-js/js"
-        }
+        // {
+        //     name: "readium-shared-js",
+        //     location: //"../" +
+        //         process._readium.path__readium_js + "/build-config/" + process._readium.baseUrl__readium_js + "/"
+        //         + "../readium-shared-js/build-output/_multiple-bundles",
+        //     main: "readium-shared-js"
+        // }
     ]
 });

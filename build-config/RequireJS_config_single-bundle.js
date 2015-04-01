@@ -20,6 +20,7 @@ function(thiz){
     process._readium = {};
     
     process._readium.baseUrl__readium_js = "../js";
+    process._readium.baseUrl__readium_js_ = "../readium-shared-js/js";
     
     process._readium.path__readium_js = "..";
     
@@ -29,7 +30,7 @@ function(thiz){
     process._readium.path__readium_shared_js = "../readium-shared-js";
     
     
-    process._readium.baseUrl__readium_cfi_js = "../js";
+    process._readium.baseUrl__readium_cfi_js = "../gen";
     
     process._readium.path__readium_cfi_js = "../readium-shared-js/readium-cfi-js";
     
@@ -37,7 +38,7 @@ function(thiz){
 }(this)
 ?
 {
-    baseUrl: process._readium.baseUrl__readium_js,
+    baseUrl: process._readium.baseUrl__readium_js_,
     
     mainConfigFile: [
     "../readium-shared-js/readium-cfi-js/build-config/RequireJS_config_single-bundle_.js",

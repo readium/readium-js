@@ -17,7 +17,7 @@ require.config({
     /* http://requirejs.org/docs/api.html#config-waitSeconds */
     waitSeconds: 0,
     
-    baseUrl: process._readium.baseUrl__readium_js,
+    baseUrl: process._readium.baseUrl__readium_js_,
     
     removeCombined: true,
     

@@ -20,24 +20,25 @@ function(thiz){
     process._readium = {};
     
     process._readium.baseUrl__readium_js = "../js";
+    process._readium.baseUrl__readium_js_ = "../js"; //"../readium-shared-js/js";
     
-    process._readium.path__readium_js = "..";
+    process._readium.path__readium_js = ".."; // "../..";
     
     
     process._readium.baseUrl__readium_shared_js = "../js";
     
-    process._readium.path__readium_shared_js = "../readium-shared-js";
+    process._readium.path__readium_shared_js = process._readium.path__readium_js + "/readium-shared-js";
     
     
-    process._readium.baseUrl__readium_cfi_js = "../js";
+    process._readium.baseUrl__readium_cfi_js = "../gen";
     
-    process._readium.path__readium_cfi_js = "../readium-shared-js/readium-cfi-js";
+    process._readium.path__readium_cfi_js = process._readium.path__readium_shared_js + "/readium-cfi-js";
     
     return true;
 }(this)
 ?
 {
-    baseUrl: process._readium.baseUrl__readium_js,
+    baseUrl: process._readium.baseUrl__readium_js_,
     
     mainConfigFile: [
     "../readium-shared-js/readium-cfi-js/build-config/RequireJS_config_multiple-bundles_.js",

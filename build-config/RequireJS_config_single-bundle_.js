@@ -14,7 +14,7 @@
 
 require.config({
     
-    baseUrl: process._readium.baseUrl__readium_js,
+    baseUrl: process._readium.baseUrl__readium_js_,
     
     stubModules: ['text'],
     
