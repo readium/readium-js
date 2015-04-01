@@ -19,23 +19,35 @@ function(thiz){
     
     process._readium = {};
     
-    // Path is relative to mainConfigFile[0]
-    process._readium.buildOutputPath = "../../";
+    process._readium.baseUrl__readium_js = "../js";
     
-    process._readium.targetName = "readium-js";
+    process._readium.path__readium_js = "..";
+    
+    
+    process._readium.baseUrl__readium_shared_js = "../js";
+    
+    process._readium.path__readium_shared_js = "../readium-shared-js";
+    
+    
+    process._readium.baseUrl__readium_cfi_js = "../js";
+    
+    process._readium.path__readium_cfi_js = "../readium-shared-js/readium-cfi-js";
     
     return true;
 }(this)
 ?
 {
-    // The order is IMPORTANT!
-    // Paths are relative to this file (they are intentionally convoluted, to test the parameterized RequireJS build workflow from readium-js)
+    baseUrl: process._readium.baseUrl__readium_js,
+    
     mainConfigFile: [
-    "./RequireJS_config_common.js",
-    "./RequireJS_config_single-bundle_.js",
+    "../readium-shared-js/readium-cfi-js/build-config/RequireJS_config_single-bundle_.js",
+    "../readium-shared-js/readium-cfi-js/build-config/RequireJS_config_common.js",
     
     "../readium-shared-js/build-config/RequireJS_config_single-bundle_.js",
-    "../readium-shared-js/build-config/RequireJS_config_common.js"
+    "../readium-shared-js/build-config/RequireJS_config_common.js",
+    
+    "RequireJS_config_common.js",
+    "RequireJS_config_single-bundle_.js"
     ],
     
     // MUST be in root config file because of access to context-dependent 'config'

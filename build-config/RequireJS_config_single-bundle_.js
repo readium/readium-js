@@ -14,37 +14,74 @@
 
 require.config({
     
-    // Merges with readium-shared-js build config
-    // Paths are relative to readium-shared-js baseUrl
+    baseUrl: process._readium.baseUrl__readium_js,
+    
+    stubModules: ['text'],
+    
+    optimize: "none",
+    generateSourceMaps: true,
+    preserveLicenseComments: true,
+    
+    /*
+    optimize: "uglify2",
+    generateSourceMaps: true,
+    preserveLicenseComments: false,
+
+    // uglify2: {
+    //   mangle: true,
+    //   except: [
+    //         'zzzzz'
+    //   ],
+    //   output: {
+    //     beautify: true,
+    //   },
+    //   beautify: {
+    //     semicolons: false
+    //   }
+    // },
+    */
+
+    name: "readium-js_all",
+    
+    out: "../build-output/_single-bundle/readium-js_all.js",
+    
     paths:
     {
-        'version': '../../build-output/version'
+        'version':
+            process._readium.path__readium_js + "/build-config/" + process._readium.baseUrl__readium_js + "/"
+            + '../build-output/version'
     },
     
-    // Merges with readium-shared-js build config
     include: [
         "readium-js"
     ],
     
-    // Merges with readium-shared-js build config
-    // Paths are relative to readium-shared-js baseUrl (defined in the common config file)
     packages: [
 
         {
             name: 'epub-fetch',
-            location: '../../js/epub-fetch',
+            location: "../" +
+            process._readium.path__readium_js + "/build-config/" + process._readium.baseUrl__readium_js + "/"
+            + 'epub-fetch',
+            
             main: 'publication_fetcher'
         },
 
         {
             name: 'epub-model',
-            location: '../../js/epub-model',
+            location: "../" +
+            process._readium.path__readium_js + "/build-config/" + process._readium.baseUrl__readium_js + "/"
+            + 'epub-model',
+            
             main: 'package_document_parser'
         },
 
         {
             name: 'cryptoJs',
-            location: '../../node_modules/crypto-js',
+            location: "../" +
+            process._readium.path__readium_js + "/build-config/" + process._readium.baseUrl__readium_js + "/"
+            + '../node_modules/crypto-js',
+            
             main: 'core'
         }
     ]

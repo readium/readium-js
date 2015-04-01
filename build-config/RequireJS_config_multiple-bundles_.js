@@ -13,6 +13,14 @@
 
 require.config({
     
+    baseUrl: process._readium.baseUrl__readium_js,
+    
+    optimize: "none",
+    generateSourceMaps: true,
+    preserveLicenseComments: true,
+    
+    dir: "../build-output/_multiple-bundles",
+    
     modules:
     [
         {
@@ -21,12 +29,11 @@ require.config({
         }
     ],
     
-    
-    // Merges with readium-shared-js build config
-    // Paths are relative to readium-shared-js baseUrl
     paths:
     {
-        RequireJS: '../../node_modules/requirejs/require',
+        RequireJS:
+            process._readium.path__readium_js + "/build-config/" + process._readium.baseUrl__readium_js + "/"
+            + '../node_modules/requirejs/require',
         
         //'../version.json': '../../build-output/version.jsonz'
         //'../version': '../../build-output/versionz'
@@ -40,26 +47,40 @@ require.config({
         }
     },
     
-    // Merges with readium-shared-js build config
-    // Paths are relative to readium-shared-js baseUrl (defined in the common config file)
     packages: [
 
         {
             name: 'epub-fetch',
-            location: '../../js/epub-fetch',
+            location: "../" +
+            process._readium.path__readium_js + "/build-config/" + process._readium.baseUrl__readium_js + "/"
+            + 'epub-fetch',
+            
             main: 'publication_fetcher'
         },
 
         {
             name: 'epub-model',
-            location: '../../js/epub-model',
+            location: "../" +
+            process._readium.path__readium_js + "/build-config/" + process._readium.baseUrl__readium_js + "/"
+            + 'epub-model',
+            
             main: 'package_document_parser'
         },
 
         {
             name: 'cryptoJs',
-            location: '../../node_modules/crypto-js',
+            location: "../" +
+            process._readium.path__readium_js + "/build-config/" + process._readium.baseUrl__readium_js + "/"
+            + '../node_modules/crypto-js',
+            
             main: 'core'
+        },
+        
+        {
+            name: "readium-shared-js_baseUrl",
+            location: "../" +
+                process._readium.path__readium_js + "/build-config/" + process._readium.baseUrl__readium_js + "/"
+                + "../readium-shared-js/js"
         }
     ]
 });
