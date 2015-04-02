@@ -12,23 +12,72 @@
 //  prior written permission.
 
 require.config({
-    //xhtml: true, //document.createElementNS()
     
-    /* http://requirejs.org/docs/api.html#config-waitSeconds */
-    waitSeconds: 0,
+    baseUrl: process._RJS_baseUrl(2),
     
-    baseUrl: process._readium.baseUrl__readium_js_,
-    
-    removeCombined: true,
-    
-    //findNestedDependencies: true,
-            
-    wrap: false,
-    
-    inlineText: true,
-    
-    wrapShim: false,
+    packages: [
 
+        {
+            name: 'epub-fetch',
+            location:
+                process._RJS_rootDir(2) + '/js/epub-fetch',
+            
+            main: 'publication_fetcher'
+        },
+
+        {
+            name: 'epub-model',
+            location:
+                process._RJS_rootDir(2) + '/js/epub-model',
+            
+            main: 'package_document_parser'
+        },
+
+        {
+            name: 'cryptoJs',
+            location:
+                process._RJS_rootDir(2) + '/node_modules/crypto-js',
+            
+            main: 'core'
+        }
+    ],
+    
+    paths:
+    {
+        "readium-js":
+            process._RJS_rootDir(2) + '/build-config/readium-js',
+        
+        "Readium":
+            process._RJS_rootDir(2) + '/js/Readium',
+        
+        // ------ NPM MODULEs
+        
+        text:
+            process._RJS_rootDir(2) + '/node_modules/requirejs-text/text',
+            
+        zip:
+            process._RJS_rootDir(2) + '/node_modules/zip-js/WebContent/zip',
+            
+        'mime-types':
+            process._RJS_rootDir(2) + '/node_modules/zip-js/WebContent/mime-types',
+            
+        'zip-fs':
+            process._RJS_rootDir(2) + '/node_modules/zip-js/WebContent/zip-fs',
+            
+        'zip-ext':
+            process._RJS_rootDir(2) + '/node_modules/zip-js/WebContent/zip-ext',
+        
+        deflate:
+            process._RJS_rootDir(2) + '/node_modules/zip-js/WebContent/deflate',
+            
+        inflate:
+            process._RJS_rootDir(2) + '/node_modules/zip-js/WebContent/inflate',
+            
+        'z-worker':
+            process._RJS_rootDir(2) + '/node_modules/zip-js/WebContent/z-worker'
+    },
+    
+    
     shim:
     {
         zip : {
@@ -46,49 +95,5 @@ require.config({
             deps: ['zip-fs'],
             exports: 'zip'
         }
-    },
-    
-    paths:
-    {
-        "readium-js":
-            process._readium.path__readium_js + "/build-config/" + process._readium.baseUrl__readium_js + "/"
-            + '../build-config/readium-js',
-        "Readium":
-            process._readium.path__readium_js + "/build-config/" + process._readium.baseUrl__readium_js + "/"
-            + 'Readium',
-        
-        // ------ NPM MODULEs
-        
-        zip:
-            process._readium.path__readium_js + "/build-config/" + process._readium.baseUrl__readium_js + "/"
-            + '../node_modules/zip-js/WebContent/zip',
-            
-        'mime-types':
-            process._readium.path__readium_js + "/build-config/" + process._readium.baseUrl__readium_js + "/"
-            + '../node_modules/zip-js/WebContent/mime-types',
-            
-        'zip-fs':
-            process._readium.path__readium_js + "/build-config/" + process._readium.baseUrl__readium_js + "/"
-            + '../node_modules/zip-js/WebContent/zip-fs',
-            
-        'zip-ext':
-            process._readium.path__readium_js + "/build-config/" + process._readium.baseUrl__readium_js + "/"
-            + '../node_modules/zip-js/WebContent/zip-ext',
-        
-        deflate:
-            process._readium.path__readium_js + "/build-config/" + process._readium.baseUrl__readium_js + "/"
-            + '../node_modules/zip-js/WebContent/deflate',
-            
-        inflate:
-            process._readium.path__readium_js + "/build-config/" + process._readium.baseUrl__readium_js + "/"
-            + '../node_modules/zip-js/WebContent/inflate',
-            
-        'z-worker':
-            process._readium.path__readium_js + "/build-config/" + process._readium.baseUrl__readium_js + "/"
-            + '../node_modules/zip-js/WebContent/z-worker',
-            
-        text:
-            process._readium.path__readium_js + "/build-config/" + process._readium.baseUrl__readium_js + "/"
-            + '../node_modules/requirejs-text/text'
     }
 });

@@ -11,67 +11,23 @@
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-(
-function(thiz){
+
+require.config({
     
-    //console.log(thiz);
-    console.log(process.cwd());
+    baseUrl: process._RJS_baseUrl(2),
     
-    process._readium = {};
+    name: "readium-js_all",
     
-    process._readium.baseUrl__readium_js = "../js";
-    process._readium.baseUrl__readium_js_ = "../readium-shared-js/js";
+    // relative to this config file (not baseUrl)
+    out: "../build-output/_single-bundle/readium-js_all.js",
     
-    process._readium.path__readium_js = "..";
-    
-    
-    process._readium.baseUrl__readium_shared_js = "../js";
-    
-    process._readium.path__readium_shared_js = "../readium-shared-js";
-    
-    
-    process._readium.baseUrl__readium_cfi_js = "../gen";
-    
-    process._readium.path__readium_cfi_js = "../readium-shared-js/readium-cfi-js";
-    
-    return true;
-}(this)
-?
-{
-    baseUrl: process._readium.baseUrl__readium_js_,
-    
-    mainConfigFile: [
-    "../readium-shared-js/readium-cfi-js/build-config/RequireJS_config_single-bundle_.js",
-    "../readium-shared-js/readium-cfi-js/build-config/RequireJS_config_common.js",
-    
-    "../readium-shared-js/build-config/RequireJS_config_single-bundle_.js",
-    "../readium-shared-js/build-config/RequireJS_config_common.js",
-    
-    "RequireJS_config_common.js",
-    "RequireJS_config_single-bundle_.js"
+    include: [
+        "readium-js"
     ],
     
-    // MUST be in root config file because of access to context-dependent 'config'
-    onModuleBundleComplete: function(data) {
-        
-        //console.log(process.cwd());
-        var filePath = process.cwd() + "/readium-shared-js/build-config/RequireJS_config_single-bundle_onModuleBundleComplete.js";
-        
-        var fs = nodeRequire("fs");
-        fs.readFile(
-            filePath,
-            {encoding: 'utf-8'},
-            function(err, fileContents) {
-                if (!err) {
-                    var func = eval("("+fileContents+")");
-                    return func(data);
-                } else {
-                    console.log(err);
-                }
-            }
-        );
+    paths:
+    {
+        "readium-js_all":
+            process._RJS_rootDir(1) + '/readium-cfi-js/node_modules/almond/almond'
     }
-}
-:
-function(){console.log("NOOP");return {};}()
-)
+});
