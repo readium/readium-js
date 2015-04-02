@@ -29,14 +29,17 @@ See license.txt ( https://github.com/readium/readium-js/blob/develop/license.txt
 
 **Initial setup:**
 
-* `git submodule init` + `git submodule update` to ensure that the readium-shared-js dependency is initialised
+* `git submodule update --init --recursive` to ensure that the readium-shared-js dependency is initialised
+* `npm run prepare` (to perform required preliminary tasks, like patching code before building)
+
+Note that the above command executes the following:
+
 * `npm install` (to download dependencies defined in `package.json` ... note that the `--production` option can be used to avoid downloading development dependencies, for example when testing only the pre-built `build-output` folder contents)
 * `npm update` (to make sure that the dependency tree is up to date)
-* `npm run prepare` (to perform required preliminary tasks, like patching code before building)
 
 **Typical workflow:**
 
-* Hack away! (mostly the source code in the `epub-modules` folder)
+* Hack away! (mostly the source code in the `js` folder)
 * `npm run build` (to update the RequireJS bundles in the build output folder)
 * `npm run example:dev` (to launch an http server with live-reload, automatically opens a web browser instance to the HTML files in the `build-output-usage-example` folder)
 * `npm run example` (same as above, but without watching for file changes (no automatic rebuild))
