@@ -43864,7 +43864,7 @@ define('text',['module'], function (module) {
 });
 
 
-define('text!version.json',[],function () { return '{"readiumJs":{"sha":"6775dc99258ff289c8841a350d8b73ecfe867a8a","tag":"0.15-118-g6775dc9","clean":false},"readiumSharedJs":{"sha":"c800145bd9553ecb899965002ae2ebd9bfafbbfd","tag":"0.16-109-gc800145","clean":false},"readiumCfiJs":{"sha":"aba7a5afb3d7de42f47c60a40d718a28ba1daea1","tag":"0.1.4-71-gaba7a5a","clean":false}}';});
+define('text!version.json',[],function () { return '{"readiumJs":{"sha":"76903124dce821a4c3d3316824162629aef29ba9","tag":"0.15-119-g7690312","clean":false},"readiumSharedJs":{"sha":"c800145bd9553ecb899965002ae2ebd9bfafbbfd","tag":"0.16-109-gc800145","clean":false},"readiumCfiJs":{"sha":"aba7a5afb3d7de42f47c60a40d718a28ba1daea1","tag":"0.1.4-71-gaba7a5a","clean":false}}';});
 
 //  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
 //  
