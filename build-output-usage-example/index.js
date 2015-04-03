@@ -51,6 +51,17 @@ require(["globalsSetup", "readium-plugin-annotations"], function () {
         repo3.url = "https://github.com/readium/" + repo3.name + "/tree/" + repo3.sha;
         window.navigator.epubReadingSystem.readium.buildInfo.gitRepositories.push(repo3);
 
+        if (Readium.version.readiumCfiJs)
+        {
+            var repo4 = {};
+            repo4.name = "readium-cfi-js";
+            repo4.sha = Readium.version.readiumCfiJs.sha;
+            repo4.tag = Readium.version.readiumCfiJs.tag;
+            repo4.clean = Readium.version.readiumCfiJs.clean;
+            repo4.url = "https://github.com/readium/" + repo4.name + "/tree/" + repo4.sha;
+            window.navigator.epubReadingSystem.readium.buildInfo.gitRepositories.push(repo4);
+        }
+
         // Debug check:
         //console.debug(JSON.stringify(window.navigator.epubReadingSystem, undefined, 2));
         

@@ -4,94 +4,125 @@ var args = process.argv.slice(2);
 console.log("versioning.js arguments: ");
 console.log(args);
 
-
 console.log(process.cwd());
 //process.exit(-1);
 
-var git = require('gift'),
-    fs = require('fs');
+var git = require('gift');
+var fs = require('fs');
+var path = require('path');
+var exec = require('child_process').exec;
 
-var sharedJsPath = process.cwd() + '/readium-shared-js';
+var path_readiumJS = process.cwd();
+var path_readiumSharedJS = path.join(path_readiumJS, '/readium-shared-js');
+var path_readiumCfiJS = path.join(path_readiumSharedJS, '/readium-cfi-js');
 
-var readiumSharedJsRepo = git(sharedJsPath);
-readiumSharedJsRepo.current_commit(function(err, commit){
-    var sharedCommit = commit.id,
-        sharedIsClean;
+var repoVersions = {
+    readiumJs: {
+        sha: "??",
+        tag: "??",
+        clean: "??",
+        path: path_readiumJS
+    },
+    readiumSharedJs: {
+        sha: "??",
+        tag: "??",
+        clean: "??",
+        path: path_readiumSharedJS
+    },
+    readiumCfiJs: {
+        sha: "??",
+        tag: "??",
+        clean: "??",
+        path: path_readiumCfiJS
+    }
+};
 
-    readiumSharedJsRepo.status(function(err, status){
-        sharedIsClean = status.clean;
+var repos = [];
+for (var repo in repoVersions) {
+    
+    repos.push({
+        name: repo,
+        path: repoVersions[repo].path,
+        versionInfo: repoVersions[repo]
+    });
+    
+    repoVersions[repo].path = undefined;
+}
 
-        var readiumJsRepo = git('.');
+var nextRepo = function(i) {
+    
+    if (i >= repos.length) {
 
-        readiumJsRepo.current_commit(function(err, commit){
-            var commit = commit.id,
-                isClean;
+        var str = JSON.stringify(repoVersions);
+        
+        for (var i = 0; i < args.length; i++) {
+            fs.writeFileSync(path.join(process.cwd(), '/') + args[i], str);
+        }
+        
+        return;
+    }
+    
+    var repoPath = repos[i].path;
+    console.log("\n\n>> Versioning: " + repoPath);
+    
+    var repoGit = git(repoPath);
+    
+    repoGit.current_commit(function(err, commit) {
+        if (err) {
+            console.log("ERROR: 'current_commit'");
+            console.log(err);
+        }
+        
+        var repoCommit = commit.id;
+        console.log("SHA: " + repoCommit);
 
-            readiumJsRepo.status(function(err, status){
-                isClean = status.clean;
-
-                var obj = {
-                    readiumJs : {
-                        sha: commit,
-                        tag: "",
-                        clean : isClean
-                    },
-                    readiumSharedJs : {
-                        sha: sharedCommit,
-                        tag: "",
-                        clean : sharedIsClean
-                    }
-                };
-                
-                var path = require('path');
-                //var cmd = "git --git-dir='" + process.cwd() + "/.git' name-rev --tags --name-only " + commit;
-                var cmd = "git --git-dir=\"" + path.join(process.cwd(), ".git") + "\" describe --tags --long " + commit;
-                console.log(cmd);
-                
-                var exec = require('child_process').exec;
-                exec(cmd,
-                    { cwd: process.cwd() },
-                    function(err, stdout, stderr) {
-                        if (err) {
-                            console.log(err);
-                        }
-                        if (stderr) {
-                            console.log(stderr);
-                        }
-                        if (stdout) {
-                            console.log(stdout);
+        repoGit.status(function(err, status){
+            if (err) {
+                console.log("ERROR: 'status'");
+                console.log(err);
+            }
             
-                            obj.readiumJs["tag"] = stdout.trim();
-                        }
-                        
-                        var sharedJsCwd = sharedJsPath; //path.join(process.cwd(), sharedJsPath);
-                        //cmd = "git --git-dir='" + process.cwd() + "/" + sharedJsPath + "/.git' name-rev --tags --name-only " + sharedCommit;
-                        cmd = "git --git-dir=\"" + path.join(sharedJsCwd, ".git") + "\" describe --tags --long " + sharedCommit;
+            var repoIsClean = status.clean;
+            console.log("Clean: " + repoIsClean);
+        
+            repoVersions[repos[i].name]
+            //repos[i].versionInfo
+            = {
+                sha: repoCommit,
+                tag: "",
+                clean : repoIsClean
+            };
+            
+            var cmd = "git --git-dir=\""
+                        + path.join(repoPath, ".git")
+                        + "\" describe --tags --long "   //   "\" name-rev --tags --name-only "
+                        + repoCommit;
+            
+            exec(cmd,
+                { cwd: repoPath },
+                function(err, stdout, stderr) {
+                    if (err) {
+                        console.log("ERROR: 'git describe'");
                         console.log(cmd);
-                        exec(cmd,
-                            { cwd: sharedJsCwd },
-                            function(err, stdout, stderr) {
-                                if (err) {
-                                    console.log(err);
-                                }
-                                if (stderr) {
-                                    console.log(stderr);
-                                }
-                                if (stdout) {
-                                    console.log(stdout);
-
-                                    obj.readiumSharedJs["tag"] = stdout.trim();
-                                }
-
-                                var str = JSON.stringify(obj);
-                                for (var i = 0; i < args.length; i++) {
-                                    fs.writeFileSync(process.cwd() + '/' + args[i], str);
-                                }
-                            }
-                        );
+                        console.log(err);
                     }
-                );
-            })
+                    if (stderr) {
+                        console.log(stderr);
+                    }
+                    if (stdout) {
+                        var tag = stdout.trim();
+                        console.log("Tag: " + tag);
+        
+                        repoVersions[repos[i].name].tag
+                        //repos[i].versionInfo.tag
+                        = tag;
+                    }
+                    
+                    nextRepo(++i);
+                }
+            );
         });
     });
-});
+}
+
+nextRepo(0);
