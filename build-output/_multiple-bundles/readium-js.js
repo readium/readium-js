@@ -390,7 +390,7 @@ define('text',['module'], function (module) {
 });
 
 
-define('text!version.json',[],function () { return '{"readiumJs":{"sha":"76903124dce821a4c3d3316824162629aef29ba9","tag":"0.15-119-g7690312","clean":false},"readiumSharedJs":{"sha":"c800145bd9553ecb899965002ae2ebd9bfafbbfd","tag":"0.16-109-gc800145","clean":false},"readiumCfiJs":{"sha":"aba7a5afb3d7de42f47c60a40d718a28ba1daea1","tag":"0.1.4-71-gaba7a5a","clean":false}}';});
+define('text!version.json',[],function () { return '{"readiumJs":{"sha":"020c2f374625c2d2c32c6f06777125450996a8b7","tag":"0.15-120-g020c2f3","clean":false},"readiumSharedJs":{"sha":"fd8977a554193d1ba4d613d73bff26b4929c3aae","tag":"0.16-110-gfd8977a","clean":false},"readiumCfiJs":{"sha":"c6238017585a60146788aff2dd71b7999a85a2bd","tag":"0.1.4-72-gc623801","clean":false}}';});
 
 EPUBcfiParser = (function() {
   /*

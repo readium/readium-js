@@ -217,9 +217,6 @@ scripts:
         npm run
             build:scripts
     '
-#        npm run
-#            build:submodule
-#        &&
 
 #=====================
     lint: '
@@ -229,24 +226,6 @@ scripts:
             js/**.js
     '
 
-#=====================
-#    'build:submodule': '
-#    
-#        cd readium-shared-js
-#        &&
-#        npm run
-#            build
-#        &&
-#        cd ..
-#    '
-
-#        &&
-#        mkdirp build-output/readium-shared-js/
-#        &&
-#        cp -r readium-shared-js/build-output/ build-output/readium-shared-js/
-#        &&
-#        ls build-output/readium-shared-js/build-output
-        
 #=====================
 #    'prebuild:scripts': '
 #    
