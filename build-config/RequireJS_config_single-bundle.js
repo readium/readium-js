@@ -28,6 +28,6 @@ require.config({
     paths:
     {
         "readium-js_all":
-            process._RJS_rootDir(1) + '/readium-cfi-js/node_modules/almond/almond'
+            process._RJS_rootDir(2) + '/readium-shared-js/readium-cfi-js/node_modules/almond/almond'
     }
 });

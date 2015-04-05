@@ -43864,7 +43864,7 @@ define('text',['module'], function (module) {
 });
 
 
-define('text!version.json',[],function () { return '{"readiumJs":{"sha":"020c2f374625c2d2c32c6f06777125450996a8b7","tag":"0.15-120-g020c2f3","clean":false},"readiumSharedJs":{"sha":"fd8977a554193d1ba4d613d73bff26b4929c3aae","tag":"0.16-110-gfd8977a","clean":false},"readiumCfiJs":{"sha":"c6238017585a60146788aff2dd71b7999a85a2bd","tag":"0.1.4-72-gc623801","clean":false}}';});
+define('text!version.json',[],function () { return '{"readiumJs":{"sha":"73bc00a93df5cdcb40aa6fc542845b45b740fa8a","clean":false,"version":"0.17.0","chromeVersion":"2.17.0","tag":"0.15-122-g73bc00a","branch":"feature/pluginsX"},"readiumSharedJs":{"sha":"907b8f02e2801ae15b24006032739801a21f7764","clean":false,"version":"0.17.0","tag":"0.16-112-g907b8f0","branch":"feature/pluginsX"},"readiumCfiJs":{"sha":"bdd9ae62273f65cd15596a0e79ef34439dd80709","clean":false,"version":"0.17.0","tag":"0.1.4-73-gbdd9ae6","branch":"feature/plugins"}}';});
 
 //  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
 //  
