@@ -73,7 +73,7 @@ require(["globalsSetup", "readium-plugin-annotations"], function () {
         
         var readiumOptions =
         {
-            jsLibRoot: "../build-output/_multiple-bundles/",
+            jsLibRoot: "../build-output/",
             cacheSizeEvictThreshold: undefined,
             useSimpleLoader: false, // false so we can load ZIP'ed EPUBs
             openBookOptions: {}
