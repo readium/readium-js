@@ -390,7 +390,7 @@ define('text',['module'], function (module) {
 });
 
 
-define('text!version.json',[],function () { return '{"readiumJs":{"sha":"73bc00a93df5cdcb40aa6fc542845b45b740fa8a","clean":false,"version":"0.17.0","chromeVersion":"2.17.0","tag":"0.15-122-g73bc00a","branch":"feature/pluginsX"},"readiumSharedJs":{"sha":"907b8f02e2801ae15b24006032739801a21f7764","clean":false,"version":"0.17.0","tag":"0.16-112-g907b8f0","branch":"feature/pluginsX"},"readiumCfiJs":{"sha":"bdd9ae62273f65cd15596a0e79ef34439dd80709","clean":false,"version":"0.17.0","tag":"0.1.4-73-gbdd9ae6","branch":"feature/plugins"}}';});
+define('text!version.json',[],function () { return '{"readiumJs":{"sha":"754074a5124005a7a3d1ca8941c7077f16554be9","clean":false,"version":"0.19.0-alpha","chromeVersion":"2.19.0-alpha","tag":"0.15-123-g754074a","branch":"feature/pluginsX"},"readiumSharedJs":{"sha":"409277f57e0528e9a07ba3f2ae26ddd3af858fa3","clean":false,"version":"0.19.0-alpha","tag":"0.16-113-g409277f","branch":"feature/pluginsX"},"readiumCfiJs":{"sha":"2889756746048b44829eebeedef11de83ca0310f","clean":false,"version":"0.19.0-alpha","tag":"0.1.4-74-g2889756","branch":"feature/plugins"}}';});
 
 EPUBcfiParser = (function() {
   /*
