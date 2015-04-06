@@ -129,7 +129,9 @@ function epubReadingSystem()
         appendNameValuePair("version", repo.version);
         appendNameValuePair("tag", repo.tag);
         appendNameValuePair("branch", repo.branch);
+        appendNameValuePair("release", repo.release);
         appendNameValuePair("clean", repo.clean);
+        appendNameValuePair("timestamp", repo.timestamp);
         appendNameValuePair("url", repo.url, true);
     }
 }

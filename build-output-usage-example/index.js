@@ -21,7 +21,7 @@ require(["globalsSetup", "readium-plugin-annotations"], function () {
         
         window.navigator.epubReadingSystem.readium.buildInfo = {};
         
-        window.navigator.epubReadingSystem.readium.buildInfo.dateTime = Date.now().toString();
+        window.navigator.epubReadingSystem.readium.buildInfo.dateTime = Readium.version.readiumJs.timestamp;
         window.navigator.epubReadingSystem.readium.buildInfo.version = Readium.version.readiumJs.version;
         window.navigator.epubReadingSystem.readium.buildInfo.chromeVersion = Readium.version.readiumJs.chromeVersion;
         
@@ -42,6 +42,8 @@ require(["globalsSetup", "readium-plugin-annotations"], function () {
         repo2.tag = Readium.version.readiumJs.tag;
         repo2.branch = Readium.version.readiumJs.branch;
         repo2.clean = Readium.version.readiumJs.clean;
+        repo2.release = Readium.version.readiumJs.release;
+        repo2.timestamp = Readium.version.readiumJs.timestamp;
         repo2.url = "https://github.com/readium/" + repo2.name + "/tree/" + repo2.sha;
         window.navigator.epubReadingSystem.readium.buildInfo.gitRepositories.push(repo2);
         
@@ -52,6 +54,8 @@ require(["globalsSetup", "readium-plugin-annotations"], function () {
         repo3.tag = Readium.version.readiumSharedJs.tag;
         repo3.branch = Readium.version.readiumSharedJs.branch;
         repo3.clean = Readium.version.readiumSharedJs.clean;
+        repo3.release = Readium.version.readiumSharedJs.release;
+        repo3.timestamp = Readium.version.readiumSharedJs.timestamp;
         repo3.url = "https://github.com/readium/" + repo3.name + "/tree/" + repo3.sha;
         window.navigator.epubReadingSystem.readium.buildInfo.gitRepositories.push(repo3);
 
@@ -64,6 +68,8 @@ require(["globalsSetup", "readium-plugin-annotations"], function () {
             repo4.tag = Readium.version.readiumCfiJs.tag;
             repo4.branch = Readium.version.readiumCfiJs.branch;
             repo4.clean = Readium.version.readiumCfiJs.clean;
+            repo4.release = Readium.version.readiumCfiJs.release;
+            repo4.timestamp = Readium.version.readiumCfiJs.timestamp;
             repo4.url = "https://github.com/readium/" + repo4.name + "/tree/" + repo4.sha;
             window.navigator.epubReadingSystem.readium.buildInfo.gitRepositories.push(repo4);
         }
