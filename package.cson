@@ -248,6 +248,8 @@ scripts:
     'postbuild:scripts': '
     
         rimraf build-output/_SOURCES
+        &&
+        rimraf build-output/_multiple-bundles/version.json
     '
 
 #=====================
