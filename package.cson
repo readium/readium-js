@@ -277,7 +277,6 @@ scripts:
              -o
              readium-shared-js/readium-cfi-js/build-config/RequireJS_config.js
              --rjs_bundle=multiple
-             \"--rjs_sources=/readium-shared-js/js,/readium-shared-js/readium-cfi-js/js,/readium-shared-js/readium-cfi-js/gen\"
     '
     
 #=====================
@@ -286,7 +285,6 @@ scripts:
              -o
              readium-shared-js/readium-cfi-js/build-config/RequireJS_config.js
              --rjs_bundle=single
-             \"--rjs_sources=/readium-shared-js/js,/readium-shared-js/readium-cfi-js/js,/readium-shared-js/readium-cfi-js/gen\"
     '
 
 #=====================
