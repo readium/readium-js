@@ -31,6 +31,16 @@ define(['URIjs', 'views/iframe_loader', 'underscore'], function(URI, IFrameLoade
         
         this.loadIframe = function(iframe, src, callback, caller, attachedData) {
 
+            if (!iframe.baseURI) {
+                if (typeof location !== 'undefined') {
+                    iframe.baseURI = location.href + "";
+                }
+                console.log("!iframe.baseURI => " + iframe.baseURI);
+            }
+                
+            iframe.setAttribute("data-baseUri", iframe.baseURI);
+            iframe.setAttribute("data-src", src);
+
             var loadedDocumentUri = new URI(src).absoluteTo(iframe.baseURI).search('').hash('').toString();
 
             var shouldConstructDomProgrammatically = getCurrentResourceFetcher().shouldConstructDomProgrammatically();
