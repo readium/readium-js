@@ -170,15 +170,13 @@ define(['require', 'module', 'jquery', 'underscore', 'backbone', 'URIjs'],
 
             // Append ordered list of nav points
             if ($navPointDOM.children("navPoint").length > 0 ) {
-
-                var $newLi = $("<li></li>");
+                
                 var $newOl = $("<ol></ol>");
                 $.each($navPointDOM.children("navPoint"), function (navIndex, navPoint) {
                     $newOl.append(addNavPointElements($(navPoint), $newOl));
                 });
 
-                $newLi.append($newOl);
-                $ol.append($newLi);
+                $navPointLi.append($newOl);
             }
         }
 
