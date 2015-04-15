@@ -57,8 +57,10 @@ define(['text!version.json', 'jquery', 'underscore', 'views/reader_view', 'epub-
         else{
             readerOptions.iframeLoader = new IframeLoader();
         }
+       
+        // is false by default, but just making this initialisation setting more explicit here.
+        readerOptions.needsFixedLayoutScalerWorkAround = false;
         
-
         this.reader = new ReaderView(readerOptions);
         ReadiumSDK.reader = this.reader;
 
