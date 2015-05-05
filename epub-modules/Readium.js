@@ -67,7 +67,9 @@ define(['require', 'text!version.json', 'console_shim', 'jquery', 'underscore', 
             readerOptions.iframeLoader = new ReadiumSDK.Views.IFrameLoader();
         }
         
-
+        // is false by default, but just making this initialisation setting more explicit here.
+        readerOptions.needsFixedLayoutScalerWorkAround = false;
+        
         this.reader = new ReadiumSDK.Views.ReaderView(readerOptions);
 
         this.openPackageDocument = function(bookRoot, callback, openPageRequest)  {
