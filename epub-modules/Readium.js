@@ -67,8 +67,11 @@ define(['require', 'text!version.json', 'console_shim', 'jquery', 'underscore', 
             readerOptions.iframeLoader = new ReadiumSDK.Views.IFrameLoader();
         }
         
-        // is false by default, but just making this initialisation setting more explicit here.
-        readerOptions.needsFixedLayoutScalerWorkAround = false;
+        // Chrome extension and cross-browser cloud reader build configuration uses this scaling method across the board (no browser sniffing for Chrome)
+        // See https://github.com/readium/readium-js-viewer/issues/313#issuecomment-101578284
+        // true means: apply CSS scale transform to the root HTML element of spine item documents (fixed layout / pre-paginated)
+        // and to any spine items in scroll view (both continuous and document modes). Scroll view layout includes reflowable spine items, but the zoom level is 1x so there is no impact.
+        readerOptions.needsFixedLayoutScalerWorkAround = true;
         
         this.reader = new ReadiumSDK.Views.ReaderView(readerOptions);
 
