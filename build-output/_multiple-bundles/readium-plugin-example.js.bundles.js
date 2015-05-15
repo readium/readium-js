@@ -1,1 +1,1 @@
-require.config({bundles: {"readium-plugin-example":["plugin-example/example"]}});
+require.config({bundles: {"readium-plugin-example":["plugin_example/example"]}});

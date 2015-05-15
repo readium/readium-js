@@ -1,17 +1,17 @@
 //  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
-//  
-//  Redistribution and use in source and binary forms, with or without modification, 
+//
+//  Redistribution and use in source and binary forms, with or without modification,
 //  are permitted provided that the following conditions are met:
-//  1. Redistributions of source code must retain the above copyright notice, this 
+//  1. Redistributions of source code must retain the above copyright notice, this
 //  list of conditions and the following disclaimer.
-//  2. Redistributions in binary form must reproduce the above copyright notice, 
-//  this list of conditions and the following disclaimer in the documentation and/or 
+//  2. Redistributions in binary form must reproduce the above copyright notice,
+//  this list of conditions and the following disclaimer in the documentation and/or
 //  other materials provided with the distribution.
-//  3. Neither the name of the organization nor the names of its contributors may be 
-//  used to endorse or promote products derived from this software without specific 
+//  3. Neither the name of the organization nor the names of its contributors may be
+//  used to endorse or promote products derived from this software without specific
 //  prior written permission.
 
-define(['jquery', 'underscore', 'epub-fetch/markup_parser', 'URIjs', './package_document',
+define(['jquery', 'underscore', 'epub_fetch/markup_parser', 'URIjs', './package_document',
         './smil_document_parser', './metadata', './manifest'],
     function($, _, MarkupParser, URI, PackageDocument, SmilDocumentParser, Metadata,
              Manifest) {
@@ -246,7 +246,7 @@ define(['jquery', 'underscore', 'epub-fetch/markup_parser', 'URIjs', './package_
 
 
             //http://www.idpf.org/epub/301/spec/epub-publications.html#fxl-property-viewport
-            
+
             //metadata.rendition_viewport = getMetaElemPropertyText(metadataElem, "rendition:viewport");
             metadata.rendition_viewport = getElemText(metadataElem, "meta", function (element) {
                 return element.getAttribute("property") === "rendition:viewport" && !element.hasAttribute("refines")
@@ -267,21 +267,21 @@ define(['jquery', 'underscore', 'epub-fetch/markup_parser', 'URIjs', './package_
                     }
                     id = id.trim();
                 }
-                
+
                 var vp = {
                   refines: id,
                   viewport: currItem.textContent
                 };
                 viewports.push(vp);
             });
-            
+
             metadata.rendition_viewports = viewports;
 
-            
-            
-            
-            
-            
+
+
+
+
+
             // Media part
             metadata.mediaItems = [];
 
@@ -339,7 +339,7 @@ define(['jquery', 'underscore', 'epub-fetch/markup_parser', 'URIjs', './package_
                     media_type: $currManifestElement.attr("media-type") ? $currManifestElement.attr("media-type") : "",
                     properties: $currManifestElement.attr("properties") ? $currManifestElement.attr("properties") : ""
                 };
-                // console.log('pushing manifest item to JSON manifest. currManifestElementHref: [' + currManifestElementHref + 
+                // console.log('pushing manifest item to JSON manifest. currManifestElementHref: [' + currManifestElementHref +
                 //     '], manifestItem.href: [' + manifestItem.href +
                 //     '], manifestItem:');
                 // console.log(manifestItem);

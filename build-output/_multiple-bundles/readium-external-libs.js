@@ -11271,7 +11271,7 @@ return jQuery;
  * URI.js - Mutating URLs
  * IPv6 Support
  *
- * Version: 1.15.0
+ * Version: 1.15.1
  *
  * Author: Rodney Rehm
  * Web: http://medialize.github.io/URI.js/
@@ -11460,7 +11460,7 @@ return jQuery;
  * URI.js - Mutating URLs
  * Second Level Domain (SLD) Support
  *
- * Version: 1.15.0
+ * Version: 1.15.1
  *
  * Author: Rodney Rehm
  * Web: http://medialize.github.io/URI.js/
@@ -11701,7 +11701,7 @@ return jQuery;
 /*!
  * URI.js - Mutating URLs
  *
- * Version: 1.15.0
+ * Version: 1.15.1
  *
  * Author: Rodney Rehm
  * Web: http://medialize.github.io/URI.js/
@@ -11734,13 +11734,24 @@ return jQuery;
   var _URI = root && root.URI;
 
   function URI(url, base) {
+    var _urlSupplied = arguments.length >= 1;
+    var _baseSupplied = arguments.length >= 2;
+
     // Allow instantiation without the 'new' keyword
     if (!(this instanceof URI)) {
-      return new URI(url, base);
+      if (_urlSupplied) {
+        if (_baseSupplied) {
+          return new URI(url, base);
+        }
+
+        return new URI(url);
+      }
+
+      return new URI();
     }
 
     if (url === undefined) {
-      if (arguments.length) {
+      if (_urlSupplied) {
         throw new TypeError('undefined is not a valid argument for URI');
       }
 
@@ -11761,7 +11772,7 @@ return jQuery;
     return this;
   }
 
-  URI.version = '1.15.0';
+  URI.version = '1.15.1';
 
   var p = URI.prototype;
   var hasOwn = Object.prototype.hasOwnProperty;
@@ -11788,7 +11799,9 @@ return jQuery;
     var lookup = {};
     var i, length;
 
-    if (isArray(value)) {
+    if (getType(value) === 'RegExp') {
+      lookup = null;
+    } else if (isArray(value)) {
       for (i = 0, length = value.length; i < length; i++) {
         lookup[value[i]] = true;
       }
@@ -11797,7 +11810,11 @@ return jQuery;
     }
 
     for (i = 0, length = data.length; i < length; i++) {
-      if (lookup[data[i]] !== undefined) {
+      /*jshint laxbreak: true */
+      var _match = lookup && lookup[data[i]] !== undefined
+        || !lookup && value.test(data[i]);
+      /*jshint laxbreak: false */
+      if (_match) {
         data.splice(i, 1);
         length--;
         i--;
@@ -12433,6 +12450,12 @@ return jQuery;
       for (i = 0, length = name.length; i < length; i++) {
         data[name[i]] = undefined;
       }
+    } else if (getType(name) === 'RegExp') {
+      for (key in data) {
+        if (name.test(key)) {
+          data[key] = undefined;
+        }
+      }
     } else if (typeof name === 'object') {
       for (key in name) {
         if (hasOwn.call(name, key)) {
@@ -12441,7 +12464,13 @@ return jQuery;
       }
     } else if (typeof name === 'string') {
       if (value !== undefined) {
-        if (data[name] === value) {
+        if (getType(value) === 'RegExp') {
+          if (!isArray(data[name]) && value.test(data[name])) {
+            data[name] = undefined;
+          } else {
+            data[name] = filterArrayValues(data[name], value);
+          }
+        } else if (data[name] === value) {
           data[name] = undefined;
         } else if (isArray(data[name])) {
           data[name] = filterArrayValues(data[name], value);
@@ -12450,7 +12479,7 @@ return jQuery;
         data[name] = undefined;
       }
     } else {
-      throw new TypeError('URI.removeQuery() accepts an object, string as the first parameter');
+      throw new TypeError('URI.removeQuery() accepts an object, string, RegExp as the first parameter');
     }
   };
   URI.hasQuery = function(data, name, value, withinArray) {
@@ -13996,6 +14025,16 @@ define('domReady',[],function () {
 
 define('eventEmitter',['require','exports','module'],function (require, exports, module) {'use strict';
 
+//
+// We store our EE objects in a plain object whose properties are event names.
+// If `Object.create(null)` is not supported we prefix the event names with a
+// `~` to make sure that the built-in object properties are not overridden or
+// used as an attack vector.
+// We also assume that `Object.create(null)` is available when the event name
+// is an ES6 Symbol.
+//
+var prefix = typeof Object.create !== 'function' ? '~' : false;
+
 /**
  * Representation of a single EventEmitter function.
  *
@@ -14036,15 +14075,15 @@ EventEmitter.prototype._events = undefined;
  * @api public
  */
 EventEmitter.prototype.listeners = function listeners(event, exists) {
-  var prefix = '~'+ event
-    , available = this._events && this._events[prefix];
+  var evt = prefix ? prefix + event : event
+    , available = this._events && this._events[evt];
 
   if (exists) return !!available;
   if (!available) return [];
-  if (this._events[prefix].fn) return [this._events[prefix].fn];
+  if (this._events[evt].fn) return [this._events[evt].fn];
 
-  for (var i = 0, l = this._events[prefix].length, ee = new Array(l); i < l; i++) {
-    ee[i] = this._events[prefix][i].fn;
+  for (var i = 0, l = this._events[evt].length, ee = new Array(l); i < l; i++) {
+    ee[i] = this._events[evt][i].fn;
   }
 
   return ee;
@@ -14058,11 +14097,11 @@ EventEmitter.prototype.listeners = function listeners(event, exists) {
  * @api public
  */
 EventEmitter.prototype.emit = function emit(event, a1, a2, a3, a4, a5) {
-  var prefix = '~'+ event;
+  var evt = prefix ? prefix + event : event;
 
-  if (!this._events || !this._events[prefix]) return false;
+  if (!this._events || !this._events[evt]) return false;
 
-  var listeners = this._events[prefix]
+  var listeners = this._events[evt]
     , len = arguments.length
     , args
     , i;
@@ -14118,14 +14157,14 @@ EventEmitter.prototype.emit = function emit(event, a1, a2, a3, a4, a5) {
  */
 EventEmitter.prototype.on = function on(event, fn, context) {
   var listener = new EE(fn, context || this)
-    , prefix = '~'+ event;
+    , evt = prefix ? prefix + event : event;
 
-  if (!this._events) this._events = {};
-  if (!this._events[prefix]) this._events[prefix] = listener;
+  if (!this._events) this._events = prefix ? {} : Object.create(null);
+  if (!this._events[evt]) this._events[evt] = listener;
   else {
-    if (!this._events[prefix].fn) this._events[prefix].push(listener);
-    else this._events[prefix] = [
-      this._events[prefix], listener
+    if (!this._events[evt].fn) this._events[evt].push(listener);
+    else this._events[evt] = [
+      this._events[evt], listener
     ];
   }
 
@@ -14142,14 +14181,14 @@ EventEmitter.prototype.on = function on(event, fn, context) {
  */
 EventEmitter.prototype.once = function once(event, fn, context) {
   var listener = new EE(fn, context || this, true)
-    , prefix = '~'+ event;
+    , evt = prefix ? prefix + event : event;
 
-  if (!this._events) this._events = {};
-  if (!this._events[prefix]) this._events[prefix] = listener;
+  if (!this._events) this._events = prefix ? {} : Object.create(null);
+  if (!this._events[evt]) this._events[evt] = listener;
   else {
-    if (!this._events[prefix].fn) this._events[prefix].push(listener);
-    else this._events[prefix] = [
-      this._events[prefix], listener
+    if (!this._events[evt].fn) this._events[evt].push(listener);
+    else this._events[evt] = [
+      this._events[evt], listener
     ];
   }
 
@@ -14166,11 +14205,11 @@ EventEmitter.prototype.once = function once(event, fn, context) {
  * @api public
  */
 EventEmitter.prototype.removeListener = function removeListener(event, fn, context, once) {
-  var prefix = '~'+ event;
+  var evt = prefix ? prefix + event : event;
 
-  if (!this._events || !this._events[prefix]) return this;
+  if (!this._events || !this._events[evt]) return this;
 
-  var listeners = this._events[prefix]
+  var listeners = this._events[evt]
     , events = [];
 
   if (fn) {
@@ -14199,9 +14238,9 @@ EventEmitter.prototype.removeListener = function removeListener(event, fn, conte
   // Reset the array, or remove it completely if we have no more listeners.
   //
   if (events.length) {
-    this._events[prefix] = events.length === 1 ? events[0] : events;
+    this._events[evt] = events.length === 1 ? events[0] : events;
   } else {
-    delete this._events[prefix];
+    delete this._events[evt];
   }
 
   return this;
@@ -14216,8 +14255,8 @@ EventEmitter.prototype.removeListener = function removeListener(event, fn, conte
 EventEmitter.prototype.removeAllListeners = function removeAllListeners(event) {
   if (!this._events) return this;
 
-  if (event) delete this._events['~'+ event];
-  else this._events = {};
+  if (event) delete this._events[prefix ? prefix + event : event];
+  else this._events = prefix ? {} : Object.create(null);
 
   return this;
 };
@@ -14234,6 +14273,11 @@ EventEmitter.prototype.addListener = EventEmitter.prototype.on;
 EventEmitter.prototype.setMaxListeners = function setMaxListeners() {
   return this;
 };
+
+//
+// Expose the prefix.
+//
+EventEmitter.prefixed = prefix;
 
 //
 // Expose the module.

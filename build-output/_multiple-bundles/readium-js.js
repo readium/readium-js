@@ -390,7 +390,7 @@ define('text',['module'], function (module) {
 });
 
 
-define('text!version.json',[],function () { return '{"readiumJs":{"sha":"2cad164030a15bf2936bb5e33d684d556759f9b7","clean":false,"version":"0.19.0-alpha","chromeVersion":"2.19.0-alpha","tag":"0.15-134-g2cad164","branch":"feature/pluginsX","release":false,"timestamp":1430830233991},"readiumSharedJs":{"sha":"257b1238d20da742c39066701d19171a1eec7526","clean":false,"version":"0.19.0-alpha","tag":"0.16-120-g257b123","branch":"feature/pluginsX","release":false,"timestamp":1430830234261},"readiumCfiJs":{"sha":"0698ab8b5b206bf08c8a8b79be51a60fa7f35647","clean":false,"version":"0.19.0-alpha","tag":"0.1.4-90-g0698ab8","branch":"feature/plugins","release":false,"timestamp":1430830234483}}';});
+define('text!version.json',[],function () { return '{"readiumJs":{"sha":"42f9cce30bb6741164c78468482a056a937a93fe","clean":false,"version":"0.19.0-alpha","chromeVersion":"2.19.0-alpha","tag":"0.15-135-g42f9cce","branch":"feature/pluginsX","release":false,"timestamp":1431680189700},"readiumSharedJs":{"sha":"c710b8b445c8da5359e1ad06158d6a2201d9fb42","clean":false,"version":"0.19.0-alpha","tag":"0.16-121-gc710b8b","branch":"feature/pluginsX","release":false,"timestamp":1431680189965},"readiumCfiJs":{"sha":"f88600405d6dfaa72f32b3a5e09450070c5ff0e9","clean":false,"version":"0.19.0-alpha","tag":"0.1.4-93-gf886004","branch":"feature/plugins","release":false,"timestamp":1431680190201}}';});
 
 EPUBcfiParser = (function() {
   /*
@@ -1854,7 +1854,7 @@ define("cfi_parser_gen", (function (global) {
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define('cfi_parser',["./cfi_parser_gen"], function (cfi_parser_gen) {
+define('readium_cfi_js/cfi_parser',["cfi_parser_gen"], function (cfi_parser_gen) {
 return cfi_parser_gen;
 });
 
@@ -1956,7 +1956,7 @@ CFIAssertionError: function (expectedAssertion, targetElementAssertion, message)
 if (typeof define == 'function' && typeof define.amd == 'object') {
     console.log("RequireJS ... cfi_errors");
     
-    define('cfi_runtime_errors',[],
+    define('readium_cfi_js/cfi_runtime_errors',[],
     function () {
         return obj;
     });
@@ -2343,7 +2343,7 @@ return obj;
 if (typeof define == 'function' && typeof define.amd == 'object') {
     console.log("RequireJS ... cfi_instructions");
     
-    define('cfi_instructions',['jquery', './cfi_runtime_errors'],
+    define('readium_cfi_js/cfi_instructions',['jquery', './cfi_runtime_errors'],
     function ($, cfiRuntimeErrors) {
         return init($, cfiRuntimeErrors);
     });
@@ -2780,7 +2780,7 @@ return obj;
 if (typeof define == 'function' && typeof define.amd == 'object') {
     console.log("RequireJS ... cfi_interpreter");
     
-    define('cfi_interpreter',['jquery', './cfi_parser', './cfi_instructions', './cfi_runtime_errors'],
+    define('readium_cfi_js/cfi_interpreter',['jquery', './cfi_parser', './cfi_instructions', './cfi_runtime_errors'],
     function ($, cfiParser, cfiInstructions, cfiRuntimeErrors) {
         return init($, cfiParser, cfiInstructions, cfiRuntimeErrors);
     });
@@ -3286,7 +3286,7 @@ return obj;
 if (typeof define == 'function' && typeof define.amd == 'object') {
     console.log("RequireJS ... cfi_generator");
     
-    define('cfi_generator',['jquery', './cfi_instructions', './cfi_runtime_errors'],
+    define('readium_cfi_js/cfi_generator',['jquery', './cfi_instructions', './cfi_runtime_errors'],
     function ($, cfiInstructions, cfiRuntimeErrors) {
         return init($, cfiInstructions, cfiRuntimeErrors);
     });
@@ -3433,7 +3433,7 @@ var init = function(cfiParser, cfiInterpreter, cfiInstructions, cfiRuntimeErrors
 if (typeof define == 'function' && typeof define.amd == 'object') {
     console.log("RequireJS ... cfi_API");
     
-    define('cfi_API',['./cfi_parser', './cfi_interpreter', './cfi_instructions', './cfi_runtime_errors', './cfi_generator'],
+    define('readium_cfi_js/cfi_API',['./cfi_parser', './cfi_interpreter', './cfi_instructions', './cfi_runtime_errors', './cfi_generator'],
     function (cfiParser, cfiInterpreter, cfiInstructions, cfiRuntimeErrors, cfiGenerator) {
         
         return init(cfiParser, cfiInterpreter, cfiInstructions, cfiRuntimeErrors, cfiGenerator);
@@ -3460,22 +3460,7 @@ if (typeof define == 'function' && typeof define.amd == 'object') {
 })(typeof window !== "undefined" ? window : this);
 
 
-//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
-//  
-//  Redistribution and use in source and binary forms, with or without modification, 
-//  are permitted provided that the following conditions are met:
-//  1. Redistributions of source code must retain the above copyright notice, this 
-//  list of conditions and the following disclaimer.
-//  2. Redistributions in binary form must reproduce the above copyright notice, 
-//  this list of conditions and the following disclaimer in the documentation and/or 
-//  other materials provided with the distribution.
-//  3. Neither the name of the organization nor the names of its contributors may be 
-//  used to endorse or promote products derived from this software without specific 
-//  prior written permission.
-
-define('readium-cfi-js',['cfi_API'], function (cfi) {
-return cfi;
-});
+define('readium_cfi_js', ['readium_cfi_js/cfi_API'], function (main) { return main; });
 
 //  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
 //  
@@ -3490,24 +3475,7 @@ return cfi;
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define('epubCfi',['readium-cfi-js'], function (cfi) {
-return cfi;
-});
-
-//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
-//  
-//  Redistribution and use in source and binary forms, with or without modification, 
-//  are permitted provided that the following conditions are met:
-//  1. Redistributions of source code must retain the above copyright notice, this 
-//  list of conditions and the following disclaimer.
-//  2. Redistributions in binary form must reproduce the above copyright notice, 
-//  this list of conditions and the following disclaimer in the documentation and/or 
-//  other materials provided with the distribution.
-//  3. Neither the name of the organization nor the names of its contributors may be 
-//  used to endorse or promote products derived from this software without specific 
-//  prior written permission.
-
-define('epub-fetch/markup_parser',[],
+define('epub_fetch/markup_parser',[],
     function () {
 
         var MarkupParser = function (){
@@ -3541,7 +3509,7 @@ define('epub-fetch/markup_parser',[],
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define('epub-fetch/discover_content_type',['jquery', 'URIjs'], function ($, URI) {
+define('epub_fetch/discover_content_type',['jquery', 'URIjs'], function ($, URI) {
 
     var _instance = undefined;
 
@@ -3614,7 +3582,7 @@ define('epub-fetch/discover_content_type',['jquery', 'URIjs'], function ($, URI)
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define('epub-fetch/plain_resource_fetcher',['jquery', 'URIjs', './discover_content_type'], function ($, URI, ContentTypeDiscovery) {
+define('epub_fetch/plain_resource_fetcher',['jquery', 'URIjs', './discover_content_type'], function ($, URI, ContentTypeDiscovery) {
 
     var PlainResourceFetcher = function(parentFetcher, baseUrl){
 
@@ -6528,7 +6496,7 @@ define("zip-ext", ["zip-fs"], (function (global) {
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define('epub-fetch/zip_resource_fetcher',['jquery', 'URIjs', './discover_content_type', 'zip-ext'], function ($, URI, ContentTypeDiscovery, zip) {
+define('epub_fetch/zip_resource_fetcher',['jquery', 'URIjs', './discover_content_type', 'zip-ext'], function ($, URI, ContentTypeDiscovery, zip) {
 
     var ZipResourceFetcher = function(parentFetcher, baseUrl, libDir) {
 
@@ -6648,7 +6616,7 @@ define('epub-fetch/zip_resource_fetcher',['jquery', 'URIjs', './discover_content
 //  prior written permission.
 
 define(
-    'epub-fetch/content_document_fetcher',['jquery', 'underscore', 'URIjs', './discover_content_type'],
+    'epub_fetch/content_document_fetcher',['jquery', 'underscore', 'URIjs', './discover_content_type'],
     function ($, _, URI, ContentTypeDiscovery) {
 
 
@@ -6986,7 +6954,7 @@ define(
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define('epub-fetch/resource_cache',['underscore'], function (_) {
+define('epub_fetch/resource_cache',['underscore'], function (_) {
 
         var ResourceCache = function(sourceWindow, configuredCacheSizeEvictThreshold) {
 
@@ -8069,7 +8037,7 @@ define('cryptoJs', ['cryptoJs/core'], function (main) { return main; });
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define('epub-fetch/encryption_handler',['cryptoJs/sha1'], function (SHA1) {
+define('epub_fetch/encryption_handler',['cryptoJs/sha1'], function (SHA1) {
 
     var EncryptionHandler = function (encryptionData) {
         var self = this;
@@ -8210,7 +8178,7 @@ define('epub-fetch/encryption_handler',['cryptoJs/sha1'], function (SHA1) {
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define('epub-fetch/publication_fetcher',['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip_resource_fetcher',
+define('epub_fetch/publication_fetcher',['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip_resource_fetcher',
     './content_document_fetcher', './resource_cache', './encryption_handler'],
     function ($, URI, MarkupParser, PlainResourceFetcher, ZipResourceFetcher, ContentDocumentFetcher,
               ResourceCache, EncryptionHandler) {
@@ -8490,7 +8458,7 @@ define('epub-fetch/publication_fetcher',['jquery', 'URIjs', './markup_parser', '
 
 });
 
-define('epub-fetch', ['epub-fetch/publication_fetcher'], function (main) { return main; });
+define('epub_fetch', ['epub_fetch/publication_fetcher'], function (main) { return main; });
 
 //  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
 //  
@@ -8505,7 +8473,7 @@ define('epub-fetch', ['epub-fetch/publication_fetcher'], function (main) { retur
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define('epub-model/package_document',['jquery', 'underscore', 'URIjs'],
+define('epub_model/package_document',['jquery', 'underscore', 'URIjs'],
     function ($, _, URI) {
 
     // Description: This model provides an interface for navigating an EPUB's package document
@@ -8709,7 +8677,7 @@ define('epub-model/package_document',['jquery', 'underscore', 'URIjs'],
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define('epub-model/smil_document_parser',['jquery', 'underscore'], function ($, _) {
+define('epub_model/smil_document_parser',['jquery', 'underscore'], function ($, _) {
 
     // `SmilDocumentParser` is used to parse the xml of an epub package
     // document and build a javascript object. The constructor accepts an
@@ -8958,7 +8926,7 @@ define('epub-model/smil_document_parser',['jquery', 'underscore'], function ($, 
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define('epub-model/metadata',['underscore'],
+define('epub_model/metadata',['underscore'],
     function (_) {
 
         var Metadata = function () {
@@ -9019,7 +8987,7 @@ define('epub-model/metadata',['underscore'],
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define('epub-model/manifest',['underscore'],
+define('epub_model/manifest',['underscore'],
     function (_) {
 
         var Manifest = function (manifestJson) {
@@ -9063,19 +9031,19 @@ define('epub-model/manifest',['underscore'],
         return Manifest;
     });
 //  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
-//  
-//  Redistribution and use in source and binary forms, with or without modification, 
+//
+//  Redistribution and use in source and binary forms, with or without modification,
 //  are permitted provided that the following conditions are met:
-//  1. Redistributions of source code must retain the above copyright notice, this 
+//  1. Redistributions of source code must retain the above copyright notice, this
 //  list of conditions and the following disclaimer.
-//  2. Redistributions in binary form must reproduce the above copyright notice, 
-//  this list of conditions and the following disclaimer in the documentation and/or 
+//  2. Redistributions in binary form must reproduce the above copyright notice,
+//  this list of conditions and the following disclaimer in the documentation and/or
 //  other materials provided with the distribution.
-//  3. Neither the name of the organization nor the names of its contributors may be 
-//  used to endorse or promote products derived from this software without specific 
+//  3. Neither the name of the organization nor the names of its contributors may be
+//  used to endorse or promote products derived from this software without specific
 //  prior written permission.
 
-define('epub-model/package_document_parser',['jquery', 'underscore', 'epub-fetch/markup_parser', 'URIjs', './package_document',
+define('epub_model/package_document_parser',['jquery', 'underscore', 'epub_fetch/markup_parser', 'URIjs', './package_document',
         './smil_document_parser', './metadata', './manifest'],
     function($, _, MarkupParser, URI, PackageDocument, SmilDocumentParser, Metadata,
              Manifest) {
@@ -9310,7 +9278,7 @@ define('epub-model/package_document_parser',['jquery', 'underscore', 'epub-fetch
 
 
             //http://www.idpf.org/epub/301/spec/epub-publications.html#fxl-property-viewport
-            
+
             //metadata.rendition_viewport = getMetaElemPropertyText(metadataElem, "rendition:viewport");
             metadata.rendition_viewport = getElemText(metadataElem, "meta", function (element) {
                 return element.getAttribute("property") === "rendition:viewport" && !element.hasAttribute("refines")
@@ -9331,21 +9299,21 @@ define('epub-model/package_document_parser',['jquery', 'underscore', 'epub-fetch
                     }
                     id = id.trim();
                 }
-                
+
                 var vp = {
                   refines: id,
                   viewport: currItem.textContent
                 };
                 viewports.push(vp);
             });
-            
+
             metadata.rendition_viewports = viewports;
 
-            
-            
-            
-            
-            
+
+
+
+
+
             // Media part
             metadata.mediaItems = [];
 
@@ -9403,7 +9371,7 @@ define('epub-model/package_document_parser',['jquery', 'underscore', 'epub-fetch
                     media_type: $currManifestElement.attr("media-type") ? $currManifestElement.attr("media-type") : "",
                     properties: $currManifestElement.attr("properties") ? $currManifestElement.attr("properties") : ""
                 };
-                // console.log('pushing manifest item to JSON manifest. currManifestElementHref: [' + currManifestElementHref + 
+                // console.log('pushing manifest item to JSON manifest. currManifestElementHref: [' + currManifestElementHref +
                 //     '], manifestItem.href: [' + manifestItem.href +
                 //     '], manifestItem:');
                 // console.log(manifestItem);
@@ -9550,29 +9518,29 @@ define('epub-model/package_document_parser',['jquery', 'underscore', 'epub-fetch
     return PackageDocumentParser;
 });
 
-define('epub-model', ['epub-model/package_document_parser'], function (main) { return main; });
+define('epub_model', ['epub_model/package_document_parser'], function (main) { return main; });
 
 //  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
-//  
-//  Redistribution and use in source and binary forms, with or without modification, 
+//
+//  Redistribution and use in source and binary forms, with or without modification,
 //  are permitted provided that the following conditions are met:
-//  1. Redistributions of source code must retain the above copyright notice, this 
+//  1. Redistributions of source code must retain the above copyright notice, this
 //  list of conditions and the following disclaimer.
-//  2. Redistributions in binary form must reproduce the above copyright notice, 
-//  this list of conditions and the following disclaimer in the documentation and/or 
+//  2. Redistributions in binary form must reproduce the above copyright notice,
+//  this list of conditions and the following disclaimer in the documentation and/or
 //  other materials provided with the distribution.
-//  3. Neither the name of the organization nor the names of its contributors may be 
-//  used to endorse or promote products derived from this software without specific 
+//  3. Neither the name of the organization nor the names of its contributors may be
+//  used to endorse or promote products derived from this software without specific
 //  prior written permission.
 
-define('epub-fetch/iframe_zip_loader',['URIjs', 'views/iframe_loader', 'underscore'], function(URI, IFrameLoader, _){
+define('epub_fetch/iframe_zip_loader',['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore'], function(URI, IFrameLoader, _){
 
     var zipIframeLoader = function( getCurrentResourceFetcher, contentDocumentTextPreprocessor) {
 
         var basicIframeLoader = new IFrameLoader();
 
         var self = this;
-        
+
         var _contentDocumentTextPreprocessor = contentDocumentTextPreprocessor;
 
         this.addIFrameEventListener = function (eventName, callback, context) {
@@ -9582,7 +9550,7 @@ define('epub-fetch/iframe_zip_loader',['URIjs', 'views/iframe_loader', 'undersco
         this.updateIframeEvents = function (iframe) {
             basicIframeLoader.updateIframeEvents(iframe);
         };
-        
+
         this.loadIframe = function(iframe, src, callback, caller, attachedData) {
 
             if (!iframe.baseURI) {
@@ -9591,7 +9559,7 @@ define('epub-fetch/iframe_zip_loader',['URIjs', 'views/iframe_loader', 'undersco
                 }
                 console.log("!iframe.baseURI => " + iframe.baseURI);
             }
-                
+
             iframe.setAttribute("data-baseUri", iframe.baseURI);
             iframe.setAttribute("data-src", src);
 
@@ -9643,7 +9611,7 @@ define('epub-fetch/iframe_zip_loader',['URIjs', 'views/iframe_loader', 'undersco
                 // TODO: Currently using the document.write() approach only for IE, as it breaks CSS selectors
                 // with namespaces for some reason (e.g. the childrens-media-query sample EPUB)
                 iframe.contentWindow.document.open();
-                
+
                 // Currently not handled automatically by winstore-jscompat,
                 // so we're doing it manually. See:
                 // https://github.com/MSOpenTech/winstore-jscompat/
@@ -9724,21 +9692,21 @@ define('epub-fetch/iframe_zip_loader',['URIjs', 'views/iframe_loader', 'undersco
 });
 
 //  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
-//  
-//  Redistribution and use in source and binary forms, with or without modification, 
+//
+//  Redistribution and use in source and binary forms, with or without modification,
 //  are permitted provided that the following conditions are met:
-//  1. Redistributions of source code must retain the above copyright notice, this 
+//  1. Redistributions of source code must retain the above copyright notice, this
 //  list of conditions and the following disclaimer.
-//  2. Redistributions in binary form must reproduce the above copyright notice, 
-//  this list of conditions and the following disclaimer in the documentation and/or 
+//  2. Redistributions in binary form must reproduce the above copyright notice,
+//  this list of conditions and the following disclaimer in the documentation and/or
 //  other materials provided with the distribution.
-//  3. Neither the name of the organization nor the names of its contributors may be 
-//  used to endorse or promote products derived from this software without specific 
+//  3. Neither the name of the organization nor the names of its contributors may be
+//  used to endorse or promote products derived from this software without specific
 //  prior written permission.
 
 
-define('Readium',['text!version.json', 'jquery', 'underscore', 'views/reader_view', 'epub-fetch',
-        'epub-model/package_document_parser', 'epub-fetch/iframe_zip_loader', 'views/iframe_loader',
+define('Readium',['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/reader_view', 'epub_fetch',
+        'epub_model/package_document_parser', 'epub_fetch/iframe_zip_loader', 'readium_shared_js/views/iframe_loader'
         ],
     function (versionText, $, _, ReaderView, PublicationFetcher,
               PackageParser, IframeZipLoader, IframeLoader) {
@@ -9762,14 +9730,14 @@ define('Readium',['text!version.json', 'jquery', 'underscore', 'views/reader_vie
             var base = "<base href=\"" + sourceParts.join("/") + "/" + "\"/>";
 
             var scripts = "<script type=\"text/javascript\">(" + injectedScript.toString() + ")()<\/script>";
-            
+
             if (_options && _options.mathJaxUrl && contentDocumentHtml.indexOf("<math") >= 0) {
                 scripts += "<script type=\"text/javascript\" src=\"" + _options.mathJaxUrl + "\"><\/script>";
             }
 
             return contentDocumentHtml.replace(/(<head.*?>)/, "$1" + base + scripts);
         };
-        
+
         var self = this;
 
         var _currentPublicationFetcher;
@@ -9782,10 +9750,10 @@ define('Readium',['text!version.json', 'jquery', 'underscore', 'views/reader_vie
         else{
             readerOptions.iframeLoader = new IframeLoader();
         }
-       
+
         // is false by default, but just making this initialisation setting more explicit here.
         readerOptions.needsFixedLayoutScalerWorkAround = false;
-        
+
         this.reader = new ReaderView(readerOptions);
         ReadiumSDK.reader = this.reader;
 
@@ -9835,7 +9803,7 @@ define('Readium',['text!version.json', 'jquery', 'underscore', 'views/reader_vie
 
         ReadiumSDK.emit(ReadiumSDK.Events.READER_INITIALIZED, ReadiumSDK.reader);
     };
-    
+
     Readium.version = JSON.parse(versionText);
 
     return Readium;

@@ -1893,7 +1893,7 @@ define("cfi_parser_gen", (function (global) {
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define('cfi_parser',["./cfi_parser_gen"], function (cfi_parser_gen) {
+define('readium_cfi_js/cfi_parser',["cfi_parser_gen"], function (cfi_parser_gen) {
 return cfi_parser_gen;
 });
 
@@ -11206,7 +11206,7 @@ CFIAssertionError: function (expectedAssertion, targetElementAssertion, message)
 if (typeof define == 'function' && typeof define.amd == 'object') {
     console.log("RequireJS ... cfi_errors");
     
-    define('cfi_runtime_errors',[],
+    define('readium_cfi_js/cfi_runtime_errors',[],
     function () {
         return obj;
     });
@@ -11593,7 +11593,7 @@ return obj;
 if (typeof define == 'function' && typeof define.amd == 'object') {
     console.log("RequireJS ... cfi_instructions");
     
-    define('cfi_instructions',['jquery', './cfi_runtime_errors'],
+    define('readium_cfi_js/cfi_instructions',['jquery', './cfi_runtime_errors'],
     function ($, cfiRuntimeErrors) {
         return init($, cfiRuntimeErrors);
     });
@@ -12030,7 +12030,7 @@ return obj;
 if (typeof define == 'function' && typeof define.amd == 'object') {
     console.log("RequireJS ... cfi_interpreter");
     
-    define('cfi_interpreter',['jquery', './cfi_parser', './cfi_instructions', './cfi_runtime_errors'],
+    define('readium_cfi_js/cfi_interpreter',['jquery', './cfi_parser', './cfi_instructions', './cfi_runtime_errors'],
     function ($, cfiParser, cfiInstructions, cfiRuntimeErrors) {
         return init($, cfiParser, cfiInstructions, cfiRuntimeErrors);
     });
@@ -12536,7 +12536,7 @@ return obj;
 if (typeof define == 'function' && typeof define.amd == 'object') {
     console.log("RequireJS ... cfi_generator");
     
-    define('cfi_generator',['jquery', './cfi_instructions', './cfi_runtime_errors'],
+    define('readium_cfi_js/cfi_generator',['jquery', './cfi_instructions', './cfi_runtime_errors'],
     function ($, cfiInstructions, cfiRuntimeErrors) {
         return init($, cfiInstructions, cfiRuntimeErrors);
     });
@@ -12683,7 +12683,7 @@ var init = function(cfiParser, cfiInterpreter, cfiInstructions, cfiRuntimeErrors
 if (typeof define == 'function' && typeof define.amd == 'object') {
     console.log("RequireJS ... cfi_API");
     
-    define('cfi_API',['./cfi_parser', './cfi_interpreter', './cfi_instructions', './cfi_runtime_errors', './cfi_generator'],
+    define('readium_cfi_js/cfi_API',['./cfi_parser', './cfi_interpreter', './cfi_instructions', './cfi_runtime_errors', './cfi_generator'],
     function (cfiParser, cfiInterpreter, cfiInstructions, cfiRuntimeErrors, cfiGenerator) {
         
         return init(cfiParser, cfiInterpreter, cfiInstructions, cfiRuntimeErrors, cfiGenerator);
@@ -12710,6 +12710,8 @@ if (typeof define == 'function' && typeof define.amd == 'object') {
 })(typeof window !== "undefined" ? window : this);
 
 
+define('readium_cfi_js', ['readium_cfi_js/cfi_API'], function (main) { return main; });
+
 //  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
 //  
 //  Redistribution and use in source and binary forms, with or without modification, 
@@ -12723,24 +12725,24 @@ if (typeof define == 'function' && typeof define.amd == 'object') {
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define('readium-cfi-js',['cfi_API'], function (cfi) {
+define('readium_cfi_js/epubCfi',['readium_cfi_js/cfi_API'], function (cfi) {
 return cfi;
 });
 
 //  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
-//  
-//  Redistribution and use in source and binary forms, with or without modification, 
+//
+//  Redistribution and use in source and binary forms, with or without modification,
 //  are permitted provided that the following conditions are met:
-//  1. Redistributions of source code must retain the above copyright notice, this 
+//  1. Redistributions of source code must retain the above copyright notice, this
 //  list of conditions and the following disclaimer.
-//  2. Redistributions in binary form must reproduce the above copyright notice, 
-//  this list of conditions and the following disclaimer in the documentation and/or 
+//  2. Redistributions in binary form must reproduce the above copyright notice,
+//  this list of conditions and the following disclaimer in the documentation and/or
 //  other materials provided with the distribution.
-//  3. Neither the name of the organization nor the names of its contributors may be 
-//  used to endorse or promote products derived from this software without specific 
+//  3. Neither the name of the organization nor the names of its contributors may be
+//  used to endorse or promote products derived from this software without specific
 //  prior written permission.
 
-define('epubCfi',['readium-cfi-js'], function (cfi) {
+define('readium-cfi-js',['readium_cfi_js/epubCfi'], function (cfi) {
 return cfi;
 });
 
@@ -12757,6 +12759,16 @@ This code is required to IE for console shim
 define("console_shim", function(){});
 
 define('eventEmitter',['require','exports','module'],function (require, exports, module) {'use strict';
+
+//
+// We store our EE objects in a plain object whose properties are event names.
+// If `Object.create(null)` is not supported we prefix the event names with a
+// `~` to make sure that the built-in object properties are not overridden or
+// used as an attack vector.
+// We also assume that `Object.create(null)` is available when the event name
+// is an ES6 Symbol.
+//
+var prefix = typeof Object.create !== 'function' ? '~' : false;
 
 /**
  * Representation of a single EventEmitter function.
@@ -12798,15 +12810,15 @@ EventEmitter.prototype._events = undefined;
  * @api public
  */
 EventEmitter.prototype.listeners = function listeners(event, exists) {
-  var prefix = '~'+ event
-    , available = this._events && this._events[prefix];
+  var evt = prefix ? prefix + event : event
+    , available = this._events && this._events[evt];
 
   if (exists) return !!available;
   if (!available) return [];
-  if (this._events[prefix].fn) return [this._events[prefix].fn];
+  if (this._events[evt].fn) return [this._events[evt].fn];
 
-  for (var i = 0, l = this._events[prefix].length, ee = new Array(l); i < l; i++) {
-    ee[i] = this._events[prefix][i].fn;
+  for (var i = 0, l = this._events[evt].length, ee = new Array(l); i < l; i++) {
+    ee[i] = this._events[evt][i].fn;
   }
 
   return ee;
@@ -12820,11 +12832,11 @@ EventEmitter.prototype.listeners = function listeners(event, exists) {
  * @api public
  */
 EventEmitter.prototype.emit = function emit(event, a1, a2, a3, a4, a5) {
-  var prefix = '~'+ event;
+  var evt = prefix ? prefix + event : event;
 
-  if (!this._events || !this._events[prefix]) return false;
+  if (!this._events || !this._events[evt]) return false;
 
-  var listeners = this._events[prefix]
+  var listeners = this._events[evt]
     , len = arguments.length
     , args
     , i;
@@ -12880,14 +12892,14 @@ EventEmitter.prototype.emit = function emit(event, a1, a2, a3, a4, a5) {
  */
 EventEmitter.prototype.on = function on(event, fn, context) {
   var listener = new EE(fn, context || this)
-    , prefix = '~'+ event;
+    , evt = prefix ? prefix + event : event;
 
-  if (!this._events) this._events = {};
-  if (!this._events[prefix]) this._events[prefix] = listener;
+  if (!this._events) this._events = prefix ? {} : Object.create(null);
+  if (!this._events[evt]) this._events[evt] = listener;
   else {
-    if (!this._events[prefix].fn) this._events[prefix].push(listener);
-    else this._events[prefix] = [
-      this._events[prefix], listener
+    if (!this._events[evt].fn) this._events[evt].push(listener);
+    else this._events[evt] = [
+      this._events[evt], listener
     ];
   }
 
@@ -12904,14 +12916,14 @@ EventEmitter.prototype.on = function on(event, fn, context) {
  */
 EventEmitter.prototype.once = function once(event, fn, context) {
   var listener = new EE(fn, context || this, true)
-    , prefix = '~'+ event;
+    , evt = prefix ? prefix + event : event;
 
-  if (!this._events) this._events = {};
-  if (!this._events[prefix]) this._events[prefix] = listener;
+  if (!this._events) this._events = prefix ? {} : Object.create(null);
+  if (!this._events[evt]) this._events[evt] = listener;
   else {
-    if (!this._events[prefix].fn) this._events[prefix].push(listener);
-    else this._events[prefix] = [
-      this._events[prefix], listener
+    if (!this._events[evt].fn) this._events[evt].push(listener);
+    else this._events[evt] = [
+      this._events[evt], listener
     ];
   }
 
@@ -12928,11 +12940,11 @@ EventEmitter.prototype.once = function once(event, fn, context) {
  * @api public
  */
 EventEmitter.prototype.removeListener = function removeListener(event, fn, context, once) {
-  var prefix = '~'+ event;
+  var evt = prefix ? prefix + event : event;
 
-  if (!this._events || !this._events[prefix]) return this;
+  if (!this._events || !this._events[evt]) return this;
 
-  var listeners = this._events[prefix]
+  var listeners = this._events[evt]
     , events = [];
 
   if (fn) {
@@ -12961,9 +12973,9 @@ EventEmitter.prototype.removeListener = function removeListener(event, fn, conte
   // Reset the array, or remove it completely if we have no more listeners.
   //
   if (events.length) {
-    this._events[prefix] = events.length === 1 ? events[0] : events;
+    this._events[evt] = events.length === 1 ? events[0] : events;
   } else {
-    delete this._events[prefix];
+    delete this._events[evt];
   }
 
   return this;
@@ -12978,8 +12990,8 @@ EventEmitter.prototype.removeListener = function removeListener(event, fn, conte
 EventEmitter.prototype.removeAllListeners = function removeAllListeners(event) {
   if (!this._events) return this;
 
-  if (event) delete this._events['~'+ event];
-  else this._events = {};
+  if (event) delete this._events[prefix ? prefix + event : event];
+  else this._events = prefix ? {} : Object.create(null);
 
   return this;
 };
@@ -12996,6 +13008,11 @@ EventEmitter.prototype.addListener = EventEmitter.prototype.on;
 EventEmitter.prototype.setMaxListeners = function setMaxListeners() {
   return this;
 };
+
+//
+// Expose the prefix.
+//
+EventEmitter.prefixed = prefix;
 
 //
 // Expose the module.
@@ -13517,7 +13534,7 @@ module.exports = EventEmitter;
  * URI.js - Mutating URLs
  * IPv6 Support
  *
- * Version: 1.15.0
+ * Version: 1.15.1
  *
  * Author: Rodney Rehm
  * Web: http://medialize.github.io/URI.js/
@@ -13706,7 +13723,7 @@ module.exports = EventEmitter;
  * URI.js - Mutating URLs
  * Second Level Domain (SLD) Support
  *
- * Version: 1.15.0
+ * Version: 1.15.1
  *
  * Author: Rodney Rehm
  * Web: http://medialize.github.io/URI.js/
@@ -13947,7 +13964,7 @@ module.exports = EventEmitter;
 /*!
  * URI.js - Mutating URLs
  *
- * Version: 1.15.0
+ * Version: 1.15.1
  *
  * Author: Rodney Rehm
  * Web: http://medialize.github.io/URI.js/
@@ -13980,13 +13997,24 @@ module.exports = EventEmitter;
   var _URI = root && root.URI;
 
   function URI(url, base) {
+    var _urlSupplied = arguments.length >= 1;
+    var _baseSupplied = arguments.length >= 2;
+
     // Allow instantiation without the 'new' keyword
     if (!(this instanceof URI)) {
-      return new URI(url, base);
+      if (_urlSupplied) {
+        if (_baseSupplied) {
+          return new URI(url, base);
+        }
+
+        return new URI(url);
+      }
+
+      return new URI();
     }
 
     if (url === undefined) {
-      if (arguments.length) {
+      if (_urlSupplied) {
         throw new TypeError('undefined is not a valid argument for URI');
       }
 
@@ -14007,7 +14035,7 @@ module.exports = EventEmitter;
     return this;
   }
 
-  URI.version = '1.15.0';
+  URI.version = '1.15.1';
 
   var p = URI.prototype;
   var hasOwn = Object.prototype.hasOwnProperty;
@@ -14034,7 +14062,9 @@ module.exports = EventEmitter;
     var lookup = {};
     var i, length;
 
-    if (isArray(value)) {
+    if (getType(value) === 'RegExp') {
+      lookup = null;
+    } else if (isArray(value)) {
       for (i = 0, length = value.length; i < length; i++) {
         lookup[value[i]] = true;
       }
@@ -14043,7 +14073,11 @@ module.exports = EventEmitter;
     }
 
     for (i = 0, length = data.length; i < length; i++) {
-      if (lookup[data[i]] !== undefined) {
+      /*jshint laxbreak: true */
+      var _match = lookup && lookup[data[i]] !== undefined
+        || !lookup && value.test(data[i]);
+      /*jshint laxbreak: false */
+      if (_match) {
         data.splice(i, 1);
         length--;
         i--;
@@ -14679,6 +14713,12 @@ module.exports = EventEmitter;
       for (i = 0, length = name.length; i < length; i++) {
         data[name[i]] = undefined;
       }
+    } else if (getType(name) === 'RegExp') {
+      for (key in data) {
+        if (name.test(key)) {
+          data[key] = undefined;
+        }
+      }
     } else if (typeof name === 'object') {
       for (key in name) {
         if (hasOwn.call(name, key)) {
@@ -14687,7 +14727,13 @@ module.exports = EventEmitter;
       }
     } else if (typeof name === 'string') {
       if (value !== undefined) {
-        if (data[name] === value) {
+        if (getType(value) === 'RegExp') {
+          if (!isArray(data[name]) && value.test(data[name])) {
+            data[name] = undefined;
+          } else {
+            data[name] = filterArrayValues(data[name], value);
+          }
+        } else if (data[name] === value) {
           data[name] = undefined;
         } else if (isArray(data[name])) {
           data[name] = filterArrayValues(data[name], value);
@@ -14696,7 +14742,7 @@ module.exports = EventEmitter;
         data[name] = undefined;
       }
     } else {
-      throw new TypeError('URI.removeQuery() accepts an object, string as the first parameter');
+      throw new TypeError('URI.removeQuery() accepts an object, string, RegExp as the first parameter');
     }
   };
   URI.hasQuery = function(data, name, value, withinArray) {
@@ -17602,7 +17648,7 @@ module.exports = EventEmitter;
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define('globals',['underscore','eventEmitter'], function(_, EventEmitter) {
+define('readium_shared_js/globals',['underscore','eventEmitter'], function(_, EventEmitter) {
 /**
  * Top level ReadiumSDK namespace
  * @namespace
@@ -17748,20 +17794,20 @@ navigator.epubReadingSystem = {
     }
 };
 //  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
-//  
-//  Redistribution and use in source and binary forms, with or without modification, 
+//
+//  Redistribution and use in source and binary forms, with or without modification,
 //  are permitted provided that the following conditions are met:
-//  1. Redistributions of source code must retain the above copyright notice, this 
+//  1. Redistributions of source code must retain the above copyright notice, this
 //  list of conditions and the following disclaimer.
-//  2. Redistributions in binary form must reproduce the above copyright notice, 
-//  this list of conditions and the following disclaimer in the documentation and/or 
+//  2. Redistributions in binary form must reproduce the above copyright notice,
+//  this list of conditions and the following disclaimer in the documentation and/or
 //  other materials provided with the distribution.
-//  3. Neither the name of the organization nor the names of its contributors may be 
-//  used to endorse or promote products derived from this software without specific 
+//  3. Neither the name of the organization nor the names of its contributors may be
+//  used to endorse or promote products derived from this software without specific
 //  prior written permission.
 
 //'text!empty:'
-define('globalsSetup',['console_shim', 'eventEmitter', 'URIjs', 'epubCfi', 'globals'], function (console_shim, EventEmitter, URI, epubCfi, Globals) {
+define('readium_shared_js/globalsSetup',['console_shim', 'eventEmitter', 'URIjs', 'readium_cfi_js', './globals'], function (console_shim, EventEmitter, URI, epubCfi, Globals) {
 
     console.log("Globals...");
 
@@ -17772,8 +17818,8 @@ define('globalsSetup',['console_shim', 'eventEmitter', 'URIjs', 'epubCfi', 'glob
         console.log("ReadiumSDK set.");
         window.ReadiumSDK = Globals;
     }
-    
-    
+
+
     // TODO: refactor client code to use emit instead of trigger?
     EventEmitter.prototype.trigger = EventEmitter.prototype.emit;
 
@@ -17792,6 +17838,8 @@ define('globalsSetup',['console_shim', 'eventEmitter', 'URIjs', 'epubCfi', 'glob
         window.URL = window.webkitURL;
     }
 });
+
+define('readium_shared_js', ['readium_shared_js/globalsSetup'], function (main) { return main; });
 
 //
 //  Created by Juan Corona
@@ -17822,8 +17870,8 @@ define('globalsSetup',['console_shim', 'eventEmitter', 'URIjs', 'epubCfi', 'glob
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define('plugins-controller',["jquery", "underscore", "eventEmitter", "globals"], function ($, _, EventEmitter, Globals) {
-    
+define('readium_shared_js/plugins_controller',["jquery", "underscore", "eventEmitter", "readium_shared_js/globals"], function ($, _, EventEmitter, Globals) {
+
     /**
      * A  plugins controller used to easily add plugins from the host app, eg.
      * ReadiumSDK.Plugins.register("footnotes", function(api){ ... });
@@ -18021,7 +18069,7 @@ define('plugins-controller',["jquery", "underscore", "eventEmitter", "globals"],
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define('models/bookmark_data',[],function() {
+define('readium_shared_js/models/bookmark_data',[],function() {
 /**
  * @class Models.BookmarkData
  */
@@ -18073,7 +18121,7 @@ return BookmarkData;
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define('models/current_pages_info',[],function() {
+define('readium_shared_js/models/current_pages_info',[],function() {
 
 /**
  * Used to report pagination state back to the host application
@@ -18186,7 +18234,7 @@ return CurrentPagesInfo;
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define('models/fixed_page_spread',[],function() {
+define('readium_shared_js/models/fixed_page_spread',[],function() {
 /**
  *
  * @param {Models.Spine} spine
@@ -18477,7 +18525,7 @@ define("jquerySizes", ["jquery"], (function (global) {
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define('models/spine_item',[], function() {
+define('readium_shared_js/models/spine_item',[], function() {
 
 /**
  * Wrapper of the SpineItem object received from the host application
@@ -18722,7 +18770,7 @@ SpineItem.alternateSpread = function(spread) {
 //  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
-define('helpers',['underscore', "jquery", "jquerySizes", "./models/spine_item", "./globals"], function(_, $, JQuerySizes, SpineItem, Globals) {
+define('readium_shared_js/helpers',['underscore', "jquery", "jquerySizes", "./models/spine_item", "./globals"], function(_, $, JQuerySizes, SpineItem, Globals) {
 
 var Helpers = {};
 
@@ -19348,7 +19396,7 @@ return Helpers;
  *      - paginationInfo    Layout details, used by clientRect-based geometry
  * @constructor
  */
-define('views/cfi_navigation_logic',["jquery", "underscore", "../helpers", 'epubCfi'], function($, _, Helpers, epubCfi) {
+define('readium_shared_js/views/cfi_navigation_logic',["jquery", "underscore", "../helpers", 'readium_cfi_js'], function($, _, Helpers, epubCfi) {
 
 var CfiNavigationLogic = function($viewport, $iframe, options){
 
@@ -20116,7 +20164,7 @@ return CfiNavigationLogic;
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define('models/viewer_settings',[], function() {
+define('readium_shared_js/models/viewer_settings',[], function() {
 /**
  *
  * @param settingsData
@@ -20234,7 +20282,7 @@ var ViewerSettings = function(settingsData) {
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-define('views/one_page_view',["jquery", "underscore", "eventEmitter", "./cfi_navigation_logic", "../helpers", "../models/viewer_settings"],
+define('readium_shared_js/views/one_page_view',["jquery", "underscore", "eventEmitter", "./cfi_navigation_logic", "../helpers", "../models/viewer_settings"],
     function ($, _, EventEmitter, CfiNavigationLogic, Helpers, ViewerSettings) {
 
 /**
@@ -21149,7 +21197,7 @@ return OnePageView;
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define('models/page_open_request',[],function() {
+define('readium_shared_js/models/page_open_request',[],function() {
 /**
  * Representation of opening page request
  * Provides the spine item to be opened and one of the following properties:
@@ -21238,7 +21286,7 @@ return PageOpenRequest;
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define ('views/fixed_view',["jquery", "underscore", "eventEmitter", "../models/bookmark_data", "../models/current_pages_info",
+define ('readium_shared_js/views/fixed_view',["jquery", "underscore", "eventEmitter", "../models/bookmark_data", "../models/current_pages_info",
     "../models/fixed_page_spread", "./one_page_view", "../models/page_open_request", "../helpers", "../globals"],
     function($, _, EventEmitter, BookmarkData, CurrentPagesInfo,
              Spread, OnePageView, PageOpenRequest, Helpers, Globals) {
@@ -21919,7 +21967,7 @@ var FixedView = function(options, reader){
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define('views/iframe_loader',["jquery", "underscore"], function($, _) {
+define('readium_shared_js/views/iframe_loader',["jquery", "underscore"], function($, _) {
 /**
  *
  * @constructor
@@ -22027,7 +22075,7 @@ return IFrameLoader;
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define('views/internal_links_support',['jquery', '../helpers', 'epubCfi'], function($, Helpers, epubCfi) {
+define('readium_shared_js/views/internal_links_support',['jquery', '../helpers', 'readium_cfi_js'], function($, Helpers, epubCfi) {
 /**
  *
  * @param reader
@@ -22257,7 +22305,7 @@ return InternalLinksSupport;
 //  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
-define ('models/smil_iterator',["jquery", "../helpers"], function($, Helpers) {
+define ('readium_shared_js/models/smil_iterator',["jquery", "../helpers"], function($, Helpers) {
 /**
  *
  * @param smil
@@ -30322,7 +30370,7 @@ return core;
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define ('views/media_overlay_data_injector',["jquery", "underscore", "../helpers", "../models/smil_iterator", "rangy", 'epubCfi'], function($, _, Helpers, SmilIterator, rangy, epubCfi) {
+define ('readium_shared_js/views/media_overlay_data_injector',["jquery", "underscore", "../helpers", "../models/smil_iterator", "rangy", 'readium_cfi_js'], function($, _, Helpers, SmilIterator, rangy, epubCfi) {
 /**
  *
  * @param mediaOverlay
@@ -30891,7 +30939,7 @@ return MediaOverlayDataInjector;
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-define('views/audio_player',['jquery'],function($) {
+define('readium_shared_js/views/audio_player',['jquery'],function($) {
 
     var _iOS = navigator.userAgent.match(/(iPad|iPhone|iPod)/g) ? true : false;
     var _Android = navigator.userAgent.toLowerCase().indexOf('android') > -1;
@@ -31625,7 +31673,7 @@ define('views/audio_player',['jquery'],function($) {
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define('views/media_overlay_element_highlighter',['jquery', 'rangy', 'epubCfi'], function($, rangy, epubCfi) {
+define('readium_shared_js/views/media_overlay_element_highlighter',['jquery', 'rangy', 'readium_cfi_js'], function($, rangy, epubCfi) {
 /**
  *
  * @param reader
@@ -32145,7 +32193,7 @@ var MediaOverlayElementHighlighter = function(reader) {
 //  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
-define('views/scroll_view',["jquery", "underscore", "eventEmitter", "../models/bookmark_data", "../models/current_pages_info", "../helpers",
+define('readium_shared_js/views/scroll_view',["jquery", "underscore", "eventEmitter", "../models/bookmark_data", "../models/current_pages_info", "../helpers",
         "./one_page_view", "../models/page_open_request", "../globals", "../models/viewer_settings"],
     function ($, _, EventEmitter, BookmarkData, CurrentPagesInfo, Helpers,
               OnePageView, PageOpenRequest, Globals, ViewerSettings) {
@@ -33529,7 +33577,7 @@ return ScrollView;
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define('views/media_overlay_player',["jquery", "../helpers", "./audio_player", "./media_overlay_element_highlighter", "../globals", "../models/smil_iterator", "rangy", 'epubCfi', './scroll_view'],
+define('readium_shared_js/views/media_overlay_player',["jquery", "../helpers", "./audio_player", "./media_overlay_element_highlighter", "../globals", "../models/smil_iterator", "rangy", 'readium_cfi_js', './scroll_view'],
     function($, Helpers, AudioPlayer, MediaOverlayElementHighlighter, Globals, SmilIterator, rangy, epubCfi, ScrollView) {
 /**
  *
@@ -35658,7 +35706,7 @@ console.debug("textAbsoluteRef: " + textAbsoluteRef);
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define('models/spine',["./spine_item"], function(SpineItem) {
+define('readium_shared_js/models/spine',["./spine_item"], function(SpineItem) {
 /**
  *  Wrapper of the spine object received from hosting application
  *
@@ -35893,7 +35941,7 @@ var Spine = function(epubPackage, spineDTO) {
 //  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
-define ('models/smil_model',["../helpers"], function(Helpers) {
+define ('readium_shared_js/models/smil_model',["../helpers"], function(Helpers) {
 
 /**
  *
@@ -36653,7 +36701,7 @@ return SmilModel;
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define('models/media_overlay',["./smil_model"], function(SmilModel) {
+define('readium_shared_js/models/media_overlay',["./smil_model"], function(SmilModel) {
 /**
  *
  * @param package
@@ -36965,7 +37013,7 @@ return MediaOverlay;
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-define('models/package_data',[],function() {
+define('readium_shared_js/models/package_data',[],function() {
 /**
  * This object is not instantiated directly but provided by the host application to the DOMAccess layer in the
  * Views.ReaderView.openBook function
@@ -37035,7 +37083,7 @@ return PackageData;
 //  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
-define('models/package',['../helpers','./spine_item','./spine','./media_overlay', './package_data'], function (Helpers, SpineItem, Spine, MediaOverlay, PackageData) {
+define('readium_shared_js/models/package',['../helpers','./spine_item','./spine','./media_overlay', './package_data'], function (Helpers, SpineItem, Spine, MediaOverlay, PackageData) {
 /**
  *
  * @class Package
@@ -37154,7 +37202,7 @@ return Package;
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define('views/reflowable_view',["jquery", "underscore", "eventEmitter", "../models/bookmark_data", "./cfi_navigation_logic",
+define('readium_shared_js/views/reflowable_view',["jquery", "underscore", "eventEmitter", "../models/bookmark_data", "./cfi_navigation_logic",
     "../models/current_pages_info", "../helpers", "../models/page_open_request", "../globals",
     "../models/viewer_settings"],
     function($, _, EventEmitter, BookmarkData, CfiNavigationLogic,
@@ -38046,7 +38094,7 @@ var ReflowableView = function(options, reader){
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define('models/style',[], function() {
+define('readium_shared_js/models/style',[], function() {
 /**
  *
  * @param selector
@@ -38096,7 +38144,7 @@ var Style = function(selector, declarations) {
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define('models/style_collection',["./style"], function(Style) {
+define('readium_shared_js/models/style_collection',["./style"], function(Style) {
 /**
  *
  * @constructor
@@ -38201,7 +38249,7 @@ var StyleCollection = function() {
 //  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
-define('models/switches',["jquery", "underscore"], function($, _) {
+define('readium_shared_js/models/switches',["jquery", "underscore"], function($, _) {
 /**
  *
  * @constructor
@@ -38285,7 +38333,7 @@ Switches.apply = function(dom) {
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define('models/trigger',["jquery", "../helpers"], function($, Helpers) {
+define('readium_shared_js/models/trigger',["jquery", "../helpers"], function($, Helpers) {
 /**
  * Setter fot epub Triggers
  *
@@ -38376,7 +38424,7 @@ Trigger.prototype.execute = function(dom) {
 //  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 
-define('views/reader_view',["jquery", "underscore", "eventEmitter", "./fixed_view", "../helpers", "./iframe_loader", "./internal_links_support",
+define('readium_shared_js/views/reader_view',["jquery", "underscore", "eventEmitter", "./fixed_view", "../helpers", "./iframe_loader", "./internal_links_support",
         "./media_overlay_data_injector", "./media_overlay_player", "../models/package", "../models/page_open_request",
         "./reflowable_view", "./scroll_view", "../models/style_collection", "../models/switches", "../models/trigger",
         "../models/viewer_settings", "../globals"],
@@ -39796,23 +39844,23 @@ ReaderView.VIEW_TYPE_SCROLLED_CONTINUOUS = 4;
 return ReaderView;
 });
 //  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
-//  
-//  Redistribution and use in source and binary forms, with or without modification, 
+//
+//  Redistribution and use in source and binary forms, with or without modification,
 //  are permitted provided that the following conditions are met:
-//  1. Redistributions of source code must retain the above copyright notice, this 
+//  1. Redistributions of source code must retain the above copyright notice, this
 //  list of conditions and the following disclaimer.
-//  2. Redistributions in binary form must reproduce the above copyright notice, 
-//  this list of conditions and the following disclaimer in the documentation and/or 
+//  2. Redistributions in binary form must reproduce the above copyright notice,
+//  this list of conditions and the following disclaimer in the documentation and/or
 //  other materials provided with the distribution.
-//  3. Neither the name of the organization nor the names of its contributors may be 
-//  used to endorse or promote products derived from this software without specific 
+//  3. Neither the name of the organization nor the names of its contributors may be
+//  used to endorse or promote products derived from this software without specific
 //  prior written permission.
 
-define('readium-shared-js',['globalsSetup', 'plugins-controller', 'views/reader_view'], function (globalsSetup, PluginsController, ReaderView) {
+define('readium-shared-js',['readium_shared_js/globalsSetup', 'readium_shared_js/plugins_controller', 'readium_shared_js/views/reader_view'], function (globalsSetup, PluginsController, ReaderView) {
 //noop
 });
 
-define('plugin-example/example',['plugins-controller', 'jquery'], function (Plugins, $) {
+define('plugin_example/example',['readium_shared_js/plugins_controller', 'jquery'], function (Plugins, $) {
     var config = {
         backgroundColor: "yellow",
         borderColor: "red"
@@ -39829,7 +39877,7 @@ define('plugin-example/example',['plugins-controller', 'jquery'], function (Plug
                 self.emit("exampleEvent", api.reader.bookmarkCurrentPage());
             });
         });
-        
+
         $("body").css({border: '10px solid ' + config.borderColor});
 
         api.extendReader(self);
@@ -39837,33 +39885,39 @@ define('plugin-example/example',['plugins-controller', 'jquery'], function (Plug
 
     return config;
 });
-define('plugin-example', ['plugin-example/example'], function (main) { return main; });
+
+define('plugin_example', ['plugin_example/example'], function (main) { return main; });
 
 //  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
-//  
-//  Redistribution and use in source and binary forms, with or without modification, 
+//
+//  Redistribution and use in source and binary forms, with or without modification,
 //  are permitted provided that the following conditions are met:
-//  1. Redistributions of source code must retain the above copyright notice, this 
+//  1. Redistributions of source code must retain the above copyright notice, this
 //  list of conditions and the following disclaimer.
-//  2. Redistributions in binary form must reproduce the above copyright notice, 
-//  this list of conditions and the following disclaimer in the documentation and/or 
+//  2. Redistributions in binary form must reproduce the above copyright notice,
+//  this list of conditions and the following disclaimer in the documentation and/or
 //  other materials provided with the distribution.
-//  3. Neither the name of the organization nor the names of its contributors may be 
-//  used to endorse or promote products derived from this software without specific 
+//  3. Neither the name of the organization nor the names of its contributors may be
+//  used to endorse or promote products derived from this software without specific
 //  prior written permission.
 
-define('readium-plugin-example',['plugin-example'], function (pluginExampleConfig) {
+define('readium-plugin-example',['plugin_example'], function (pluginExampleConfig) {
 return pluginExampleConfig;
 });
 
-//     Backbone.js 1.1.2
+//     Backbone.js 1.2.0
 
-//     (c) 2010-2014 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+//     (c) 2010-2015 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
 //     Backbone may be freely distributed under the MIT license.
 //     For all details and documentation:
 //     http://backbonejs.org
 
-(function(root, factory) {
+(function(factory) {
+
+  // Establish the root object, `window` (`self`) in the browser, or `global` on the server.
+  // We use `self` instead of `window` for `WebWorker` support.
+  var root = (typeof self == 'object' && self.self == self && self) ||
+            (typeof global == 'object' && global.global == global && global);
 
   // Set up Backbone appropriately for the environment. Start with AMD.
   if (typeof define === 'function' && define.amd) {
@@ -39875,15 +39929,16 @@ return pluginExampleConfig;
 
   // Next for Node.js or CommonJS. jQuery may not be needed as a module.
   } else if (typeof exports !== 'undefined') {
-    var _ = require('underscore');
-    factory(root, exports, _);
+    var _ = require('underscore'), $;
+    try { $ = require('jquery'); } catch(e) {}
+    factory(root, exports, _, $);
 
   // Finally, as a browser global.
   } else {
     root.Backbone = factory(root, {}, root._, (root.jQuery || root.Zepto || root.ender || root.$));
   }
 
-}(this, function(root, Backbone, _, $) {
+}(function(root, Backbone, _, $) {
 
   // Initial Setup
   // -------------
@@ -39894,12 +39949,10 @@ return pluginExampleConfig;
 
   // Create local references to array methods we'll want to use later.
   var array = [];
-  var push = array.push;
   var slice = array.slice;
-  var splice = array.splice;
 
   // Current version of the library. Keep in sync with `package.json`.
-  Backbone.VERSION = '1.1.2';
+  Backbone.VERSION = '1.2.0';
 
   // For Backbone's purposes, jQuery, Zepto, Ender, or My Library (kidding) owns
   // the `$` variable.
@@ -39918,7 +39971,7 @@ return pluginExampleConfig;
   Backbone.emulateHTTP = false;
 
   // Turn on `emulateJSON` to support legacy servers that can't deal with direct
-  // `application/json` requests ... will encode the body as
+  // `application/json` requests ... this will encode the body as
   // `application/x-www-form-urlencoded` instead and will send the model in a
   // form param named `model`.
   Backbone.emulateJSON = false;
@@ -39936,123 +39989,235 @@ return pluginExampleConfig;
   //     object.on('expand', function(){ alert('expanded'); });
   //     object.trigger('expand');
   //
-  var Events = Backbone.Events = {
-
-    // Bind an event to a `callback` function. Passing `"all"` will bind
-    // the callback to all events fired.
-    on: function(name, callback, context) {
-      if (!eventsApi(this, 'on', name, [callback, context]) || !callback) return this;
-      this._events || (this._events = {});
-      var events = this._events[name] || (this._events[name] = []);
-      events.push({callback: callback, context: context, ctx: context || this});
-      return this;
-    },
-
-    // Bind an event to only be triggered a single time. After the first time
-    // the callback is invoked, it will be removed.
-    once: function(name, callback, context) {
-      if (!eventsApi(this, 'once', name, [callback, context]) || !callback) return this;
-      var self = this;
-      var once = _.once(function() {
-        self.off(name, once);
-        callback.apply(this, arguments);
-      });
-      once._callback = callback;
-      return this.on(name, once, context);
-    },
-
-    // Remove one or many callbacks. If `context` is null, removes all
-    // callbacks with that function. If `callback` is null, removes all
-    // callbacks for the event. If `name` is null, removes all bound
-    // callbacks for all events.
-    off: function(name, callback, context) {
-      var retain, ev, events, names, i, l, j, k;
-      if (!this._events || !eventsApi(this, 'off', name, [callback, context])) return this;
-      if (!name && !callback && !context) {
-        this._events = void 0;
-        return this;
-      }
-      names = name ? [name] : _.keys(this._events);
-      for (i = 0, l = names.length; i < l; i++) {
-        name = names[i];
-        if (events = this._events[name]) {
-          this._events[name] = retain = [];
-          if (callback || context) {
-            for (j = 0, k = events.length; j < k; j++) {
-              ev = events[j];
-              if ((callback && callback !== ev.callback && callback !== ev.callback._callback) ||
-                  (context && context !== ev.context)) {
-                retain.push(ev);
-              }
-            }
-          }
-          if (!retain.length) delete this._events[name];
-        }
-      }
-
-      return this;
-    },
-
-    // Trigger one or many events, firing all bound callbacks. Callbacks are
-    // passed the same arguments as `trigger` is, apart from the event name
-    // (unless you're listening on `"all"`, which will cause your callback to
-    // receive the true name of the event as the first argument).
-    trigger: function(name) {
-      if (!this._events) return this;
-      var args = slice.call(arguments, 1);
-      if (!eventsApi(this, 'trigger', name, args)) return this;
-      var events = this._events[name];
-      var allEvents = this._events.all;
-      if (events) triggerEvents(events, args);
-      if (allEvents) triggerEvents(allEvents, arguments);
-      return this;
-    },
-
-    // Tell this object to stop listening to either specific events ... or
-    // to every object it's currently listening to.
-    stopListening: function(obj, name, callback) {
-      var listeningTo = this._listeningTo;
-      if (!listeningTo) return this;
-      var remove = !name && !callback;
-      if (!callback && typeof name === 'object') callback = this;
-      if (obj) (listeningTo = {})[obj._listenId] = obj;
-      for (var id in listeningTo) {
-        obj = listeningTo[id];
-        obj.off(name, callback, this);
-        if (remove || _.isEmpty(obj._events)) delete this._listeningTo[id];
-      }
-      return this;
-    }
-
-  };
+  var Events = Backbone.Events = {};
 
   // Regular expression used to split event strings.
   var eventSplitter = /\s+/;
 
-  // Implement fancy features of the Events API such as multiple event
-  // names `"change blur"` and jQuery-style event maps `{change: action}`
-  // in terms of the existing API.
-  var eventsApi = function(obj, action, name, rest) {
-    if (!name) return true;
-
-    // Handle event maps.
-    if (typeof name === 'object') {
-      for (var key in name) {
-        obj[action].apply(obj, [key, name[key]].concat(rest));
+  // Iterates over the standard `event, callback` (as well as the fancy multiple
+  // space-separated events `"change blur", callback` and jQuery-style event
+  // maps `{event: callback}`), reducing them by manipulating `memo`.
+  // Passes a normalized single event name and callback, as well as any
+  // optional `opts`.
+  var eventsApi = function(iteratee, memo, name, callback, opts) {
+    var i = 0, names;
+    if (name && typeof name === 'object') {
+      // Handle event maps.
+      for (names = _.keys(name); i < names.length ; i++) {
+        memo = iteratee(memo, names[i], name[names[i]], opts);
       }
-      return false;
+    } else if (name && eventSplitter.test(name)) {
+      // Handle space separated event names.
+      for (names = name.split(eventSplitter); i < names.length; i++) {
+        memo = iteratee(memo, names[i], callback, opts);
+      }
+    } else {
+      memo = iteratee(memo, name, callback, opts);
+    }
+    return memo;
+  };
+
+  // Bind an event to a `callback` function. Passing `"all"` will bind
+  // the callback to all events fired.
+  Events.on = function(name, callback, context) {
+    return internalOn(this, name, callback, context);
+  };
+
+  // An internal use `on` function, used to guard the `listening` argument from
+  // the public API.
+  var internalOn = function(obj, name, callback, context, listening) {
+    obj._events = eventsApi(onApi, obj._events || {}, name, callback, {
+        context: context,
+        ctx: obj,
+        listening: listening
+    });
+
+    if (listening) {
+      var listeners = obj._listeners || (obj._listeners = {});
+      listeners[listening.id] = listening;
     }
 
-    // Handle space separated event names.
-    if (eventSplitter.test(name)) {
-      var names = name.split(eventSplitter);
-      for (var i = 0, l = names.length; i < l; i++) {
-        obj[action].apply(obj, [names[i]].concat(rest));
-      }
-      return false;
+    return obj;
+  };
+
+  // Inversion-of-control versions of `on`. Tell *this* object to listen to
+  // an event in another object... keeping track of what it's listening to.
+  Events.listenTo =  function(obj, name, callback) {
+    if (!obj) return this;
+    var id = obj._listenId || (obj._listenId = _.uniqueId('l'));
+    var listeningTo = this._listeningTo || (this._listeningTo = {});
+    var listening = listeningTo[id];
+
+    // This object is not listening to any other events on `obj` yet.
+    // Setup the necessary references to track the listening callbacks.
+    if (!listening) {
+      var thisId = this._listenId || (this._listenId = _.uniqueId('l'));
+      listening = listeningTo[id] = {obj: obj, objId: id, id: thisId, listeningTo: listeningTo, count: 0};
     }
 
-    return true;
+    // Bind callbacks on obj, and keep track of them on listening.
+    internalOn(obj, name, callback, this, listening);
+    return this;
+  };
+
+  // The reducing API that adds a callback to the `events` object.
+  var onApi = function(events, name, callback, options) {
+    if (callback) {
+      var handlers = events[name] || (events[name] = []);
+      var context = options.context, ctx = options.ctx, listening = options.listening;
+      if (listening) listening.count++;
+
+      handlers.push({ callback: callback, context: context, ctx: context || ctx, listening: listening });
+    }
+    return events;
+  };
+
+  // Remove one or many callbacks. If `context` is null, removes all
+  // callbacks with that function. If `callback` is null, removes all
+  // callbacks for the event. If `name` is null, removes all bound
+  // callbacks for all events.
+  Events.off =  function(name, callback, context) {
+    if (!this._events) return this;
+    this._events = eventsApi(offApi, this._events, name, callback, {
+        context: context,
+        listeners: this._listeners
+    });
+    return this;
+  };
+
+  // Tell this object to stop listening to either specific events ... or
+  // to every object it's currently listening to.
+  Events.stopListening =  function(obj, name, callback) {
+    var listeningTo = this._listeningTo;
+    if (!listeningTo) return this;
+
+    var ids = obj ? [obj._listenId] : _.keys(listeningTo);
+
+    for (var i = 0; i < ids.length; i++) {
+      var listening = listeningTo[ids[i]];
+
+      // If listening doesn't exist, this object is not currently
+      // listening to obj. Break out early.
+      if (!listening) break;
+
+      listening.obj.off(name, callback, this);
+    }
+    if (_.isEmpty(listeningTo)) this._listeningTo = void 0;
+
+    return this;
+  };
+
+  // The reducing API that removes a callback from the `events` object.
+  var offApi = function(events, name, callback, options) {
+    // No events to consider.
+    if (!events) return;
+
+    var i = 0, length, listening;
+    var context = options.context, listeners = options.listeners;
+
+    // Delete all events listeners and "drop" events.
+    if (!name && !callback && !context) {
+      var ids = _.keys(listeners);
+      for (; i < ids.length; i++) {
+        listening = listeners[ids[i]];
+        delete listeners[listening.id];
+        delete listening.listeningTo[listening.objId];
+      }
+      return;
+    }
+
+    var names = name ? [name] : _.keys(events);
+    for (; i < names.length; i++) {
+      name = names[i];
+      var handlers = events[name];
+
+      // Bail out if there are no events stored.
+      if (!handlers) break;
+
+      // Replace events if there are any remaining.  Otherwise, clean up.
+      var remaining = [];
+      for (var j = 0; j < handlers.length; j++) {
+        var handler = handlers[j];
+        if (
+          callback && callback !== handler.callback &&
+            callback !== handler.callback._callback ||
+              context && context !== handler.context
+        ) {
+          remaining.push(handler);
+        } else {
+          listening = handler.listening;
+          if (listening && --listening.count === 0) {
+            delete listeners[listening.id];
+            delete listening.listeningTo[listening.objId];
+          }
+        }
+      }
+
+      // Update tail event if the list has any events.  Otherwise, clean up.
+      if (remaining.length) {
+        events[name] = remaining;
+      } else {
+        delete events[name];
+      }
+    }
+    if (_.size(events)) return events;
+  };
+
+  // Bind an event to only be triggered a single time. After the first time
+  // the callback is invoked, it will be removed. When multiple events are
+  // passed in using the space-separated syntax, the event will fire once for every
+  // event you passed in, not once for a combination of all events
+  Events.once =  function(name, callback, context) {
+    // Map the event into a `{event: once}` object.
+    var events = eventsApi(onceMap, {}, name, callback, _.bind(this.off, this));
+    return this.on(events, void 0, context);
+  };
+
+  // Inversion-of-control versions of `once`.
+  Events.listenToOnce =  function(obj, name, callback) {
+    // Map the event into a `{event: once}` object.
+    var events = eventsApi(onceMap, {}, name, callback, _.bind(this.stopListening, this, obj));
+    return this.listenTo(obj, events);
+  };
+
+  // Reduces the event callbacks into a map of `{event: onceWrapper}`.
+  // `offer` unbinds the `onceWrapper` after it as been called.
+  var onceMap = function(map, name, callback, offer) {
+    if (callback) {
+      var once = map[name] = _.once(function() {
+        offer(name, once);
+        callback.apply(this, arguments);
+      });
+      once._callback = callback;
+    }
+    return map;
+  };
+
+  // Trigger one or many events, firing all bound callbacks. Callbacks are
+  // passed the same arguments as `trigger` is, apart from the event name
+  // (unless you're listening on `"all"`, which will cause your callback to
+  // receive the true name of the event as the first argument).
+  Events.trigger =  function(name) {
+    if (!this._events) return this;
+
+    var length = Math.max(0, arguments.length - 1);
+    var args = Array(length);
+    for (var i = 0; i < length; i++) args[i] = arguments[i + 1];
+
+    eventsApi(triggerApi, this._events, name, void 0, args);
+    return this;
+  };
+
+  // Handles triggering the appropriate event callbacks.
+  var triggerApi = function(objEvents, name, cb, args) {
+    if (objEvents) {
+      var events = objEvents[name];
+      var allEvents = objEvents.all;
+      if (events && allEvents) allEvents = allEvents.slice();
+      if (events) triggerEvents(events, args);
+      if (allEvents) triggerEvents(allEvents, [name].concat(args));
+    }
+    return objEvents;
   };
 
   // A difficult-to-believe, but optimized internal dispatch function for
@@ -40069,21 +40234,34 @@ return pluginExampleConfig;
     }
   };
 
-  var listenMethods = {listenTo: 'on', listenToOnce: 'once'};
-
-  // Inversion-of-control versions of `on` and `once`. Tell *this* object to
-  // listen to an event in another object ... keeping track of what it's
-  // listening to.
-  _.each(listenMethods, function(implementation, method) {
-    Events[method] = function(obj, name, callback) {
-      var listeningTo = this._listeningTo || (this._listeningTo = {});
-      var id = obj._listenId || (obj._listenId = _.uniqueId('l'));
-      listeningTo[id] = obj;
-      if (!callback && typeof name === 'object') callback = this;
-      obj[implementation](name, callback, this);
-      return this;
-    };
-  });
+  // Proxy Underscore methods to a Backbone class' prototype using a
+  // particular attribute as the data argument
+  var addMethod = function(length, method, attribute) {
+    switch (length) {
+      case 1: return function() {
+        return _[method](this[attribute]);
+      };
+      case 2: return function(value) {
+        return _[method](this[attribute], value);
+      };
+      case 3: return function(iteratee, context) {
+        return _[method](this[attribute], iteratee, context);
+      };
+      case 4: return function(iteratee, defaultVal, context) {
+        return _[method](this[attribute], iteratee, defaultVal, context);
+      };
+      default: return function() {
+        var args = slice.call(arguments);
+        args.unshift(this[attribute]);
+        return _[method].apply(_, args);
+      };
+    }
+  };
+  var addUnderscoreMethods = function(Class, methods, attribute) {
+    _.each(methods, function(length, method) {
+      if (_[method]) Class.prototype[method] = addMethod(length, method, attribute);
+    });
+  };
 
   // Aliases for backwards compatibility.
   Events.bind   = Events.on;
@@ -40106,7 +40284,7 @@ return pluginExampleConfig;
   var Model = Backbone.Model = function(attributes, options) {
     var attrs = attributes || {};
     options || (options = {});
-    this.cid = _.uniqueId('c');
+    this.cid = _.uniqueId(this.cidPrefix);
     this.attributes = {};
     if (options.collection) this.collection = options.collection;
     if (options.parse) attrs = this.parse(attrs, options) || {};
@@ -40128,6 +40306,10 @@ return pluginExampleConfig;
     // The default name for the JSON `id` attribute is `"id"`. MongoDB and
     // CouchDB users may want to set this to `"_id"`.
     idAttribute: 'id',
+
+    // The prefix is used to create the client id which is used to identify models locally.
+    // You may want to override this if you're experiencing name clashes with model ids.
+    cidPrefix: 'c',
 
     // Initialize is an empty function by default. Override it with your own
     // initialization logic.
@@ -40158,6 +40340,11 @@ return pluginExampleConfig;
     // or undefined.
     has: function(attr) {
       return this.get(attr) != null;
+    },
+
+    // Special-cased proxy to underscore's `_.matches` method.
+    matches: function(attrs) {
+      return !!_.iteratee(attrs, this)(this.attributes);
     },
 
     // Set a hash of model attributes on the object, firing `"change"`. This is
@@ -40211,7 +40398,7 @@ return pluginExampleConfig;
       // Trigger all relevant attribute changes.
       if (!silent) {
         if (changes.length) this._pending = options;
-        for (var i = 0, l = changes.length; i < l; i++) {
+        for (var i = 0; i < changes.length; i++) {
           this.trigger('change:' + changes[i], this, current[changes[i]], options);
         }
       }
@@ -40281,9 +40468,8 @@ return pluginExampleConfig;
       return _.clone(this._previousAttributes);
     },
 
-    // Fetch the model from the server. If the server's representation of the
-    // model differs from its current attributes, they will be overridden,
-    // triggering a `"change"` event.
+    // Fetch the model from the server, merging the response with the model's
+    // local attributes. Any changed attributes will trigger a "change" event.
     fetch: function(options) {
       options = options ? _.clone(options) : {};
       if (options.parse === void 0) options.parse = true;
@@ -40291,7 +40477,7 @@ return pluginExampleConfig;
       var success = options.success;
       options.success = function(resp) {
         if (!model.set(model.parse(resp, options), options)) return false;
-        if (success) success(model, resp, options);
+        if (success) success.call(options.context, model, resp, options);
         model.trigger('sync', model, resp, options);
       };
       wrapError(this, options);
@@ -40302,7 +40488,7 @@ return pluginExampleConfig;
     // If the server returns an attributes hash that differs, the model's
     // state will be `set` again.
     save: function(key, val, options) {
-      var attrs, method, xhr, attributes = this.attributes;
+      var attrs, method, xhr, attributes = this.attributes, wait;
 
       // Handle both `"key", value` and `{key: value}` -style arguments.
       if (key == null || typeof key === 'object') {
@@ -40313,18 +40499,19 @@ return pluginExampleConfig;
       }
 
       options = _.extend({validate: true}, options);
+      wait = options.wait;
 
       // If we're not waiting and attributes exist, save acts as
       // `set(attr).save(null, opts)` with validation. Otherwise, check if
       // the model will be valid when the attributes, if any, are set.
-      if (attrs && !options.wait) {
+      if (attrs && !wait) {
         if (!this.set(attrs, options)) return false;
       } else {
         if (!this._validate(attrs, options)) return false;
       }
 
       // Set temporary attributes if `{wait: true}`.
-      if (attrs && options.wait) {
+      if (attrs && wait) {
         this.attributes = _.extend({}, attributes, attrs);
       }
 
@@ -40336,22 +40523,22 @@ return pluginExampleConfig;
       options.success = function(resp) {
         // Ensure attributes are restored during synchronous saves.
         model.attributes = attributes;
-        var serverAttrs = model.parse(resp, options);
-        if (options.wait) serverAttrs = _.extend(attrs || {}, serverAttrs);
+        var serverAttrs = options.parse ? model.parse(resp, options) : resp;
+        if (wait) serverAttrs = _.extend(attrs || {}, serverAttrs);
         if (_.isObject(serverAttrs) && !model.set(serverAttrs, options)) {
           return false;
         }
-        if (success) success(model, resp, options);
+        if (success) success.call(options.context, model, resp, options);
         model.trigger('sync', model, resp, options);
       };
       wrapError(this, options);
 
       method = this.isNew() ? 'create' : (options.patch ? 'patch' : 'update');
-      if (method === 'patch') options.attrs = attrs;
+      if (method === 'patch' && !options.attrs) options.attrs = attrs;
       xhr = this.sync(method, this, options);
 
       // Restore attributes.
-      if (attrs && options.wait) this.attributes = attributes;
+      if (attrs && wait) this.attributes = attributes;
 
       return xhr;
     },
@@ -40363,25 +40550,27 @@ return pluginExampleConfig;
       options = options ? _.clone(options) : {};
       var model = this;
       var success = options.success;
+      var wait = options.wait;
 
       var destroy = function() {
+        model.stopListening();
         model.trigger('destroy', model, model.collection, options);
       };
 
       options.success = function(resp) {
-        if (options.wait || model.isNew()) destroy();
-        if (success) success(model, resp, options);
+        if (wait) destroy();
+        if (success) success.call(options.context, model, resp, options);
         if (!model.isNew()) model.trigger('sync', model, resp, options);
       };
 
+      var xhr = false;
       if (this.isNew()) {
-        options.success();
-        return false;
+        _.defer(options.success);
+      } else {
+        wrapError(this, options);
+        xhr = this.sync('delete', this, options);
       }
-      wrapError(this, options);
-
-      var xhr = this.sync('delete', this, options);
-      if (!options.wait) destroy();
+      if (!wait) destroy();
       return xhr;
     },
 
@@ -40394,7 +40583,8 @@ return pluginExampleConfig;
         _.result(this.collection, 'url') ||
         urlError();
       if (this.isNew()) return base;
-      return base.replace(/([^\/])$/, '$1/') + encodeURIComponent(this.id);
+      var id = this.id || this.attributes[this.idAttribute];
+      return base.replace(/([^\/])$/, '$1/') + encodeURIComponent(id);
     },
 
     // **parse** converts a response into the hash of attributes to be `set` on
@@ -40432,22 +40622,17 @@ return pluginExampleConfig;
   });
 
   // Underscore methods that we want to implement on the Model.
-  var modelMethods = ['keys', 'values', 'pairs', 'invert', 'pick', 'omit'];
+  var modelMethods = { keys: 1, values: 1, pairs: 1, invert: 1, pick: 0,
+      omit: 0, chain: 1, isEmpty: 1 };
 
   // Mix in each Underscore method as a proxy to `Model#attributes`.
-  _.each(modelMethods, function(method) {
-    Model.prototype[method] = function() {
-      var args = slice.call(arguments);
-      args.unshift(this.attributes);
-      return _[method].apply(_, args);
-    };
-  });
+  addUnderscoreMethods(Model, modelMethods, 'attributes');
 
   // Backbone.Collection
   // -------------------
 
   // If models tend to represent a single row of data, a Backbone Collection is
-  // more analagous to a table full of data ... or a small slice or page of that
+  // more analogous to a table full of data ... or a small slice or page of that
   // table, or a collection of rows that belong together for a particular reason
   // -- all of the messages in this particular folder, all of the documents
   // belonging to this particular author, and so on. Collections maintain
@@ -40498,24 +40683,11 @@ return pluginExampleConfig;
 
     // Remove a model, or a list of models from the set.
     remove: function(models, options) {
-      var singular = !_.isArray(models);
+      var singular = !_.isArray(models), removed;
       models = singular ? [models] : _.clone(models);
       options || (options = {});
-      var i, l, index, model;
-      for (i = 0, l = models.length; i < l; i++) {
-        model = models[i] = this.get(models[i]);
-        if (!model) continue;
-        delete this._byId[model.id];
-        delete this._byId[model.cid];
-        index = this.indexOf(model);
-        this.models.splice(index, 1);
-        this.length--;
-        if (!options.silent) {
-          options.index = index;
-          model.trigger('remove', model, this, options);
-        }
-        this._removeReference(model, options);
-      }
+      removed = this._removeModels(models, options);
+      if (!options.silent && removed) this.trigger('update', this, options);
       return singular ? models[0] : models;
     },
 
@@ -40527,32 +40699,29 @@ return pluginExampleConfig;
       options = _.defaults({}, options, setOptions);
       if (options.parse) models = this.parse(models, options);
       var singular = !_.isArray(models);
-      models = singular ? (models ? [models] : []) : _.clone(models);
-      var i, l, id, model, attrs, existing, sort;
+      models = singular ? (models ? [models] : []) : models.slice();
+      var id, model, attrs, existing, sort;
       var at = options.at;
-      var targetModel = this.model;
+      if (at != null) at = +at;
+      if (at < 0) at += this.length + 1;
       var sortable = this.comparator && (at == null) && options.sort !== false;
       var sortAttr = _.isString(this.comparator) ? this.comparator : null;
       var toAdd = [], toRemove = [], modelMap = {};
       var add = options.add, merge = options.merge, remove = options.remove;
       var order = !sortable && add && remove ? [] : false;
+      var orderChanged = false;
 
       // Turn bare objects into model references, and prevent invalid models
       // from being added.
-      for (i = 0, l = models.length; i < l; i++) {
-        attrs = models[i] || {};
-        if (attrs instanceof Model) {
-          id = model = attrs;
-        } else {
-          id = attrs[targetModel.prototype.idAttribute || 'id'];
-        }
+      for (var i = 0; i < models.length; i++) {
+        attrs = models[i];
 
         // If a duplicate is found, prevent it from being added and
         // optionally merge it into the existing model.
-        if (existing = this.get(id)) {
+        if (existing = this.get(attrs)) {
           if (remove) modelMap[existing.cid] = true;
-          if (merge) {
-            attrs = attrs === model ? model.attributes : attrs;
+          if (merge && attrs !== existing) {
+            attrs = this._isModel(attrs) ? attrs.attributes : attrs;
             if (options.parse) attrs = existing.parse(attrs, options);
             existing.set(attrs, options);
             if (sortable && !sort && existing.hasChanged(sortAttr)) sort = true;
@@ -40569,30 +40738,38 @@ return pluginExampleConfig;
 
         // Do not add multiple models with the same `id`.
         model = existing || model;
-        if (order && (model.isNew() || !modelMap[model.id])) order.push(model);
-        modelMap[model.id] = true;
+        if (!model) continue;
+        id = this.modelId(model.attributes);
+        if (order && (model.isNew() || !modelMap[id])) {
+          order.push(model);
+
+          // Check to see if this is actually a new model at this index.
+          orderChanged = orderChanged || !this.models[i] || model.cid !== this.models[i].cid;
+        }
+
+        modelMap[id] = true;
       }
 
       // Remove nonexistent models if appropriate.
       if (remove) {
-        for (i = 0, l = this.length; i < l; ++i) {
+        for (var i = 0; i < this.length; i++) {
           if (!modelMap[(model = this.models[i]).cid]) toRemove.push(model);
         }
-        if (toRemove.length) this.remove(toRemove, options);
+        if (toRemove.length) this._removeModels(toRemove, options);
       }
 
       // See if sorting is needed, update `length` and splice in new models.
-      if (toAdd.length || (order && order.length)) {
+      if (toAdd.length || orderChanged) {
         if (sortable) sort = true;
         this.length += toAdd.length;
         if (at != null) {
-          for (i = 0, l = toAdd.length; i < l; i++) {
+          for (var i = 0; i < toAdd.length; i++) {
             this.models.splice(at + i, 0, toAdd[i]);
           }
         } else {
           if (order) this.models.length = 0;
           var orderedModels = order || toAdd;
-          for (i = 0, l = orderedModels.length; i < l; i++) {
+          for (var i = 0; i < orderedModels.length; i++) {
             this.models.push(orderedModels[i]);
           }
         }
@@ -40603,10 +40780,13 @@ return pluginExampleConfig;
 
       // Unless silenced, it's time to fire all appropriate add/sort events.
       if (!options.silent) {
-        for (i = 0, l = toAdd.length; i < l; i++) {
-          (model = toAdd[i]).trigger('add', model, this, options);
+        var addOpts = at != null ? _.clone(options) : options;
+        for (var i = 0; i < toAdd.length; i++) {
+          if (at != null) addOpts.index = at + i;
+          (model = toAdd[i]).trigger('add', model, this, addOpts);
         }
-        if (sort || (order && order.length)) this.trigger('sort', this, options);
+        if (sort || orderChanged) this.trigger('sort', this, options);
+        if (toAdd.length || toRemove.length) this.trigger('update', this, options);
       }
 
       // Return the added (or merged) model (or models).
@@ -40618,8 +40798,8 @@ return pluginExampleConfig;
     // any granular `add` or `remove` events. Fires `reset` when finished.
     // Useful for bulk operations and optimizations.
     reset: function(models, options) {
-      options || (options = {});
-      for (var i = 0, l = this.models.length; i < l; i++) {
+      options = options ? _.clone(options) : {};
+      for (var i = 0; i < this.models.length; i++) {
         this._removeReference(this.models[i], options);
       }
       options.previousModels = this.models;
@@ -40661,23 +40841,22 @@ return pluginExampleConfig;
     // Get a model from the set by id.
     get: function(obj) {
       if (obj == null) return void 0;
-      return this._byId[obj] || this._byId[obj.id] || this._byId[obj.cid];
+      var id = this.modelId(this._isModel(obj) ? obj.attributes : obj);
+      return this._byId[obj] || this._byId[id] || this._byId[obj.cid];
     },
 
     // Get the model at the given index.
     at: function(index) {
+      if (index < 0) index += this.length;
       return this.models[index];
     },
 
     // Return models with matching attributes. Useful for simple cases of
     // `filter`.
     where: function(attrs, first) {
-      if (_.isEmpty(attrs)) return first ? void 0 : [];
+      var matches = _.matches(attrs);
       return this[first ? 'find' : 'filter'](function(model) {
-        for (var key in attrs) {
-          if (attrs[key] !== model.get(key)) return false;
-        }
-        return true;
+        return matches(model.attributes);
       });
     },
 
@@ -40721,7 +40900,7 @@ return pluginExampleConfig;
       options.success = function(resp) {
         var method = options.reset ? 'reset' : 'set';
         collection[method](resp, options);
-        if (success) success(collection, resp, options);
+        if (success) success.call(options.context, collection, resp, options);
         collection.trigger('sync', collection, resp, options);
       };
       wrapError(this, options);
@@ -40733,13 +40912,14 @@ return pluginExampleConfig;
     // wait for the server to agree.
     create: function(model, options) {
       options = options ? _.clone(options) : {};
+      var wait = options.wait;
       if (!(model = this._prepareModel(model, options))) return false;
-      if (!options.wait) this.add(model, options);
+      if (!wait) this.add(model, options);
       var collection = this;
       var success = options.success;
-      options.success = function(model, resp) {
-        if (options.wait) collection.add(model, options);
-        if (success) success(model, resp, options);
+      options.success = function(model, resp, callbackOpts) {
+        if (wait) collection.add(model, callbackOpts);
+        if (success) success.call(callbackOpts.context, model, resp, callbackOpts);
       };
       model.save(null, options);
       return model;
@@ -40753,7 +40933,15 @@ return pluginExampleConfig;
 
     // Create a new collection with an identical list of models as this one.
     clone: function() {
-      return new this.constructor(this.models);
+      return new this.constructor(this.models, {
+        model: this.model,
+        comparator: this.comparator
+      });
+    },
+
+    // Define how to uniquely identify models in the collection.
+    modelId: function (attrs) {
+      return attrs[this.model.prototype.idAttribute || 'id'];
     },
 
     // Private method to reset all internal state. Called when the collection
@@ -40767,7 +40955,10 @@ return pluginExampleConfig;
     // Prepare a hash of attributes (or other model) to be added to this
     // collection.
     _prepareModel: function(attrs, options) {
-      if (attrs instanceof Model) return attrs;
+      if (this._isModel(attrs)) {
+        if (!attrs.collection) attrs.collection = this;
+        return attrs;
+      }
       options = options ? _.clone(options) : {};
       options.collection = this;
       var model = new this.model(attrs, options);
@@ -40776,11 +40967,44 @@ return pluginExampleConfig;
       return false;
     },
 
+    // Internal method called by both remove and set. Does not trigger any
+    // additional events. Returns true if anything was actually removed.
+    _removeModels: function(models, options) {
+      var i, l, index, model, removed = false;
+      for (var i = 0, j = 0; i < models.length; i++) {
+        var model = models[i] = this.get(models[i]);
+        if (!model) continue;
+        var id = this.modelId(model.attributes);
+        if (id != null) delete this._byId[id];
+        delete this._byId[model.cid];
+        var index = this.indexOf(model);
+        this.models.splice(index, 1);
+        this.length--;
+        if (!options.silent) {
+          options.index = index;
+          model.trigger('remove', model, this, options);
+        }
+        models[j++] = model;
+        this._removeReference(model, options);
+        removed = true;
+      }
+      // We only need to slice if models array should be smaller, which is
+      // caused by some models not actually getting removed.
+      if (models.length !== j) models = models.slice(0, j);
+      return removed;
+    },
+
+    // Method for checking whether an object should be considered a model for
+    // the purposes of adding to the collection.
+    _isModel: function (model) {
+      return model instanceof Model;
+    },
+
     // Internal method to create a model's ties to a collection.
     _addReference: function(model, options) {
       this._byId[model.cid] = model;
-      if (model.id != null) this._byId[model.id] = model;
-      if (!model.collection) model.collection = this;
+      var id = this.modelId(model.attributes);
+      if (id != null) this._byId[id] = model;
       model.on('all', this._onModelEvent, this);
     },
 
@@ -40797,9 +41021,13 @@ return pluginExampleConfig;
     _onModelEvent: function(event, model, collection, options) {
       if ((event === 'add' || event === 'remove') && collection !== this) return;
       if (event === 'destroy') this.remove(model, options);
-      if (model && event === 'change:' + model.idAttribute) {
-        delete this._byId[model.previous(model.idAttribute)];
-        if (model.id != null) this._byId[model.id] = model;
+      if (event === 'change') {
+        var prevId = this.modelId(model.previousAttributes());
+        var id = this.modelId(model.attributes);
+        if (prevId !== id) {
+          if (prevId != null) delete this._byId[prevId];
+          if (id != null) this._byId[id] = model;
+        }
       }
       this.trigger.apply(this, arguments);
     }
@@ -40809,27 +41037,23 @@ return pluginExampleConfig;
   // Underscore methods that we want to implement on the Collection.
   // 90% of the core usefulness of Backbone Collections is actually implemented
   // right here:
-  var methods = ['forEach', 'each', 'map', 'collect', 'reduce', 'foldl',
-    'inject', 'reduceRight', 'foldr', 'find', 'detect', 'filter', 'select',
-    'reject', 'every', 'all', 'some', 'any', 'include', 'contains', 'invoke',
-    'max', 'min', 'toArray', 'size', 'first', 'head', 'take', 'initial', 'rest',
-    'tail', 'drop', 'last', 'without', 'difference', 'indexOf', 'shuffle',
-    'lastIndexOf', 'isEmpty', 'chain', 'sample'];
+  var collectionMethods = { forEach: 3, each: 3, map: 3, collect: 3, reduce: 4,
+      foldl: 4, inject: 4, reduceRight: 4, foldr: 4, find: 3, detect: 3, filter: 3,
+      select: 3, reject: 3, every: 3, all: 3, some: 3, any: 3, include: 2,
+      contains: 2, invoke: 2, max: 3, min: 3, toArray: 1, size: 1, first: 3,
+      head: 3, take: 3, initial: 3, rest: 3, tail: 3, drop: 3, last: 3,
+      without: 0, difference: 0, indexOf: 3, shuffle: 1, lastIndexOf: 3,
+      isEmpty: 1, chain: 1, sample: 3, partition: 3 };
 
   // Mix in each Underscore method as a proxy to `Collection#models`.
-  _.each(methods, function(method) {
-    Collection.prototype[method] = function() {
-      var args = slice.call(arguments);
-      args.unshift(this.models);
-      return _[method].apply(_, args);
-    };
-  });
+  addUnderscoreMethods(Collection, collectionMethods, 'models');
 
   // Underscore methods that take a property name as an argument.
   var attributeMethods = ['groupBy', 'countBy', 'sortBy', 'indexBy'];
 
   // Use attributes instead of properties.
   _.each(attributeMethods, function(method) {
+    if (!_[method]) return;
     Collection.prototype[method] = function(value, context) {
       var iterator = _.isFunction(value) ? value : function(model) {
         return model.get(value);
@@ -40857,7 +41081,6 @@ return pluginExampleConfig;
     _.extend(this, _.pick(options, viewOptions));
     this._ensureElement();
     this.initialize.apply(this, arguments);
-    this.delegateEvents();
   };
 
   // Cached regex to split keys for `delegate`.
@@ -40892,19 +41115,35 @@ return pluginExampleConfig;
     // Remove this view by taking the element out of the DOM, and removing any
     // applicable Backbone.Events listeners.
     remove: function() {
-      this.$el.remove();
+      this._removeElement();
       this.stopListening();
       return this;
     },
 
-    // Change the view's element (`this.el` property), including event
-    // re-delegation.
-    setElement: function(element, delegate) {
-      if (this.$el) this.undelegateEvents();
-      this.$el = element instanceof Backbone.$ ? element : Backbone.$(element);
-      this.el = this.$el[0];
-      if (delegate !== false) this.delegateEvents();
+    // Remove this view's element from the document and all event listeners
+    // attached to it. Exposed for subclasses using an alternative DOM
+    // manipulation API.
+    _removeElement: function() {
+      this.$el.remove();
+    },
+
+    // Change the view's element (`this.el` property) and re-delegate the
+    // view's events on the new element.
+    setElement: function(element) {
+      this.undelegateEvents();
+      this._setElement(element);
+      this.delegateEvents();
       return this;
+    },
+
+    // Creates the `this.el` and `this.$el` references for this view using the
+    // given `el`. `el` can be a CSS selector or an HTML string, a jQuery
+    // context or an element. Subclasses can override this to utilize an
+    // alternative DOM manipulation API and are only required to set the
+    // `this.el` property.
+    _setElement: function(el) {
+      this.$el = el instanceof Backbone.$ ? el : Backbone.$(el);
+      this.el = this.$el[0];
     },
 
     // Set callbacks, where `this.events` is a hash of
@@ -40920,8 +41159,6 @@ return pluginExampleConfig;
     // pairs. Callbacks will be bound to the view, with `this` set properly.
     // Uses event delegation for efficiency.
     // Omitting the selector binds the event to `this.el`.
-    // This only works for delegate-able events: not `focus`, `blur`, and
-    // not `change`, `submit`, and `reset` in Internet Explorer.
     delegateEvents: function(events) {
       if (!(events || (events = _.result(this, 'events')))) return this;
       this.undelegateEvents();
@@ -40929,26 +41166,37 @@ return pluginExampleConfig;
         var method = events[key];
         if (!_.isFunction(method)) method = this[events[key]];
         if (!method) continue;
-
         var match = key.match(delegateEventSplitter);
-        var eventName = match[1], selector = match[2];
-        method = _.bind(method, this);
-        eventName += '.delegateEvents' + this.cid;
-        if (selector === '') {
-          this.$el.on(eventName, method);
-        } else {
-          this.$el.on(eventName, selector, method);
-        }
+        this.delegate(match[1], match[2], _.bind(method, this));
       }
       return this;
     },
 
-    // Clears all callbacks previously bound to the view with `delegateEvents`.
+    // Add a single event listener to the view's element (or a child element
+    // using `selector`). This only works for delegate-able events: not `focus`,
+    // `blur`, and not `change`, `submit`, and `reset` in Internet Explorer.
+    delegate: function(eventName, selector, listener) {
+      this.$el.on(eventName + '.delegateEvents' + this.cid, selector, listener);
+    },
+
+    // Clears all callbacks previously bound to the view by `delegateEvents`.
     // You usually don't need to use this, but may wish to if you have multiple
     // Backbone views attached to the same DOM element.
     undelegateEvents: function() {
-      this.$el.off('.delegateEvents' + this.cid);
+      if (this.$el) this.$el.off('.delegateEvents' + this.cid);
       return this;
+    },
+
+    // A finer-grained `undelegateEvents` for removing a single delegated event.
+    // `selector` and `listener` are both optional.
+    undelegate: function(eventName, selector, listener) {
+      this.$el.off(eventName + '.delegateEvents' + this.cid, selector, listener);
+    },
+
+    // Produces a DOM element to be assigned to your view. Exposed for
+    // subclasses using an alternative DOM manipulation API.
+    _createElement: function(tagName) {
+      return document.createElement(tagName);
     },
 
     // Ensure that the View has a DOM element to render into.
@@ -40960,11 +41208,17 @@ return pluginExampleConfig;
         var attrs = _.extend({}, _.result(this, 'attributes'));
         if (this.id) attrs.id = _.result(this, 'id');
         if (this.className) attrs['class'] = _.result(this, 'className');
-        var $el = Backbone.$('<' + _.result(this, 'tagName') + '>').attr(attrs);
-        this.setElement($el, false);
+        this.setElement(this._createElement(_.result(this, 'tagName')));
+        this._setAttributes(attrs);
       } else {
-        this.setElement(_.result(this, 'el'), false);
+        this.setElement(_.result(this, 'el'));
       }
+    },
+
+    // Set attributes from a hash on this view's element.  Exposed for
+    // subclasses using an alternative DOM manipulation API.
+    _setAttributes: function(attributes) {
+      this.$el.attr(attributes);
     }
 
   });
@@ -41033,24 +41287,19 @@ return pluginExampleConfig;
       params.processData = false;
     }
 
-    // If we're sending a `PATCH` request, and we're in an old Internet Explorer
-    // that still has ActiveX enabled by default, override jQuery to use that
-    // for XHR instead. Remove this line when jQuery supports `PATCH` on IE8.
-    if (params.type === 'PATCH' && noXhrPatch) {
-      params.xhr = function() {
-        return new ActiveXObject("Microsoft.XMLHTTP");
-      };
-    }
+    // Pass along `textStatus` and `errorThrown` from jQuery.
+    var error = options.error;
+    options.error = function(xhr, textStatus, errorThrown) {
+      options.textStatus = textStatus;
+      options.errorThrown = errorThrown;
+      if (error) error.call(options.context, xhr, textStatus, errorThrown);
+    };
 
     // Make the request, allowing the user to override any Ajax options.
     var xhr = options.xhr = Backbone.ajax(_.extend(params, options));
     model.trigger('request', model, xhr, options);
     return xhr;
   };
-
-  var noXhrPatch =
-    typeof window !== 'undefined' && !!window.ActiveXObject &&
-      !(window.XMLHttpRequest && (new XMLHttpRequest).dispatchEvent);
 
   // Map from CRUD to HTTP for our default `Backbone.sync` implementation.
   var methodMap = {
@@ -41109,17 +41358,18 @@ return pluginExampleConfig;
       var router = this;
       Backbone.history.route(route, function(fragment) {
         var args = router._extractParameters(route, fragment);
-        router.execute(callback, args);
-        router.trigger.apply(router, ['route:' + name].concat(args));
-        router.trigger('route', name, args);
-        Backbone.history.trigger('route', router, name, args);
+        if (router.execute(callback, args, name) !== false) {
+          router.trigger.apply(router, ['route:' + name].concat(args));
+          router.trigger('route', name, args);
+          Backbone.history.trigger('route', router, name, args);
+        }
       });
       return this;
     },
 
     // Execute a route handler with the provided parameters.  This is an
     // excellent place to do pre-route setup or post-route cleanup.
-    execute: function(callback, args) {
+    execute: function(callback, args, name) {
       if (callback) callback.apply(this, args);
     },
 
@@ -41192,12 +41442,6 @@ return pluginExampleConfig;
   // Cached regex for stripping leading and trailing slashes.
   var rootStripper = /^\/+|\/+$/g;
 
-  // Cached regex for detecting MSIE.
-  var isExplorer = /msie [\w.]+/;
-
-  // Cached regex for removing a trailing slash.
-  var trailingSlash = /\/$/;
-
   // Cached regex for stripping urls of hash.
   var pathStripper = /#.*$/;
 
@@ -41213,7 +41457,29 @@ return pluginExampleConfig;
 
     // Are we at the app root?
     atRoot: function() {
-      return this.location.pathname.replace(/[^\/]$/, '$&/') === this.root;
+      var path = this.location.pathname.replace(/[^\/]$/, '$&/');
+      return path === this.root && !this.getSearch();
+    },
+
+    // Does the pathname match the root?
+    matchRoot: function() {
+      var path = this.decodeFragment(this.location.pathname);
+      var root = path.slice(0, this.root.length - 1) + '/';
+      return root === this.root;
+    },
+
+    // Unicode characters in `location.pathname` are percent encoded so they're
+    // decoded for comparison. `%25` should not be decoded since it may be part
+    // of an encoded parameter.
+    decodeFragment: function(fragment) {
+      return decodeURI(fragment.replace(/%25/g, '%2525'));
+    },
+
+    // In IE6, the hash fragment and search params are incorrect if the
+    // fragment contains `?`.
+    getSearch: function() {
+      var match = this.location.href.replace(/#.*/, '').match(/\?.+/);
+      return match ? match[0] : '';
     },
 
     // Gets the true hash value. Cannot use location.hash directly due to bug
@@ -41223,14 +41489,19 @@ return pluginExampleConfig;
       return match ? match[1] : '';
     },
 
-    // Get the cross-browser normalized URL fragment, either from the URL,
-    // the hash, or the override.
-    getFragment: function(fragment, forcePushState) {
+    // Get the pathname and search params, without the root.
+    getPath: function() {
+      var path = this.decodeFragment(
+        this.location.pathname + this.getSearch()
+      ).slice(this.root.length - 1);
+      return path.charAt(0) === '/' ? path.slice(1) : path;
+    },
+
+    // Get the cross-browser normalized URL fragment from the path or hash.
+    getFragment: function(fragment) {
       if (fragment == null) {
-        if (this._hasPushState || !this._wantsHashChange || forcePushState) {
-          fragment = decodeURI(this.location.pathname + this.location.search);
-          var root = this.root.replace(trailingSlash, '');
-          if (!fragment.indexOf(root)) fragment = fragment.slice(root.length);
+        if (this._usePushState || !this._wantsHashChange) {
+          fragment = this.getPath();
         } else {
           fragment = this.getHash();
         }
@@ -41241,7 +41512,7 @@ return pluginExampleConfig;
     // Start the hash change handling, returning `true` if the current URL matches
     // an existing route, and `false` otherwise.
     start: function(options) {
-      if (History.started) throw new Error("Backbone.history has already been started");
+      if (History.started) throw new Error('Backbone.history has already been started');
       History.started = true;
 
       // Figure out the initial configuration. Do we need an iframe?
@@ -41249,35 +41520,15 @@ return pluginExampleConfig;
       this.options          = _.extend({root: '/'}, this.options, options);
       this.root             = this.options.root;
       this._wantsHashChange = this.options.hashChange !== false;
+      this._hasHashChange   = 'onhashchange' in window;
+      this._useHashChange   = this._wantsHashChange && this._hasHashChange;
       this._wantsPushState  = !!this.options.pushState;
-      this._hasPushState    = !!(this.options.pushState && this.history && this.history.pushState);
-      var fragment          = this.getFragment();
-      var docMode           = document.documentMode;
-      var oldIE             = (isExplorer.exec(navigator.userAgent.toLowerCase()) && (!docMode || docMode <= 7));
+      this._hasPushState    = !!(this.history && this.history.pushState);
+      this._usePushState    = this._wantsPushState && this._hasPushState;
+      this.fragment         = this.getFragment();
 
       // Normalize root to always include a leading and trailing slash.
       this.root = ('/' + this.root + '/').replace(rootStripper, '/');
-
-      if (oldIE && this._wantsHashChange) {
-        var frame = Backbone.$('<iframe src="javascript:0" tabindex="-1">');
-        this.iframe = frame.hide().appendTo('body')[0].contentWindow;
-        this.navigate(fragment);
-      }
-
-      // Depending on whether we're using pushState or hashes, and whether
-      // 'onhashchange' is supported, determine how we check the URL state.
-      if (this._hasPushState) {
-        Backbone.$(window).on('popstate', this.checkUrl);
-      } else if (this._wantsHashChange && ('onhashchange' in window) && !oldIE) {
-        Backbone.$(window).on('hashchange', this.checkUrl);
-      } else if (this._wantsHashChange) {
-        this._checkUrlInterval = setInterval(this.checkUrl, this.interval);
-      }
-
-      // Determine if we need to change the base url, for a pushState link
-      // opened by a non-pushState browser.
-      this.fragment = fragment;
-      var loc = this.location;
 
       // Transition from hashChange to pushState or vice versa if both are
       // requested.
@@ -41286,18 +41537,47 @@ return pluginExampleConfig;
         // If we've started off with a route from a `pushState`-enabled
         // browser, but we're currently in a browser that doesn't support it...
         if (!this._hasPushState && !this.atRoot()) {
-          this.fragment = this.getFragment(null, true);
-          this.location.replace(this.root + '#' + this.fragment);
+          var root = this.root.slice(0, -1) || '/';
+          this.location.replace(root + '#' + this.getPath());
           // Return immediately as browser will do redirect to new url
           return true;
 
         // Or if we've started out with a hash-based route, but we're currently
         // in a browser where it could be `pushState`-based instead...
-        } else if (this._hasPushState && this.atRoot() && loc.hash) {
-          this.fragment = this.getHash().replace(routeStripper, '');
-          this.history.replaceState({}, document.title, this.root + this.fragment);
+        } else if (this._hasPushState && this.atRoot()) {
+          this.navigate(this.getHash(), {replace: true});
         }
 
+      }
+
+      // Proxy an iframe to handle location events if the browser doesn't
+      // support the `hashchange` event, HTML5 history, or the user wants
+      // `hashChange` but not `pushState`.
+      if (!this._hasHashChange && this._wantsHashChange && !this._usePushState) {
+        var iframe = document.createElement('iframe');
+        iframe.src = 'javascript:0';
+        iframe.style.display = 'none';
+        iframe.tabIndex = -1;
+        var body = document.body;
+        // Using `appendChild` will throw on IE < 9 if the document is not ready.
+        this.iframe = body.insertBefore(iframe, body.firstChild).contentWindow;
+        this.iframe.document.open().close();
+        this.iframe.location.hash = '#' + this.fragment;
+      }
+
+      // Add a cross-platform `addEventListener` shim for older browsers.
+      var addEventListener = window.addEventListener || function (eventName, listener) {
+        return attachEvent('on' + eventName, listener);
+      };
+
+      // Depending on whether we're using pushState or hashes, and whether
+      // 'onhashchange' is supported, determine how we check the URL state.
+      if (this._usePushState) {
+        addEventListener('popstate', this.checkUrl, false);
+      } else if (this._useHashChange && !this.iframe) {
+        addEventListener('hashchange', this.checkUrl, false);
+      } else if (this._wantsHashChange) {
+        this._checkUrlInterval = setInterval(this.checkUrl, this.interval);
       }
 
       if (!this.options.silent) return this.loadUrl();
@@ -41306,7 +41586,25 @@ return pluginExampleConfig;
     // Disable Backbone.history, perhaps temporarily. Not useful in a real app,
     // but possibly useful for unit testing Routers.
     stop: function() {
-      Backbone.$(window).off('popstate', this.checkUrl).off('hashchange', this.checkUrl);
+      // Add a cross-platform `removeEventListener` shim for older browsers.
+      var removeEventListener = window.removeEventListener || function (eventName, listener) {
+        return detachEvent('on' + eventName, listener);
+      };
+
+      // Remove window listeners.
+      if (this._usePushState) {
+        removeEventListener('popstate', this.checkUrl, false);
+      } else if (this._useHashChange && !this.iframe) {
+        removeEventListener('hashchange', this.checkUrl, false);
+      }
+
+      // Clean up the iframe if necessary.
+      if (this.iframe) {
+        document.body.removeChild(this.iframe.frameElement);
+        this.iframe = null;
+      }
+
+      // Some environments will throw when clearing an undefined interval.
       if (this._checkUrlInterval) clearInterval(this._checkUrlInterval);
       History.started = false;
     },
@@ -41321,9 +41619,13 @@ return pluginExampleConfig;
     // calls `loadUrl`, normalizing across the hidden iframe.
     checkUrl: function(e) {
       var current = this.getFragment();
+
+      // If the user pressed the back button, the iframe's hash will have
+      // changed and we should use that for comparison.
       if (current === this.fragment && this.iframe) {
-        current = this.getFragment(this.getHash(this.iframe));
+        current = this.getHash(this.iframe);
       }
+
       if (current === this.fragment) return false;
       if (this.iframe) this.navigate(current);
       this.loadUrl();
@@ -41333,6 +41635,8 @@ return pluginExampleConfig;
     // match, returns `true`. If no defined routes matches the fragment,
     // returns `false`.
     loadUrl: function(fragment) {
+      // If the root doesn't match, no routes can match either.
+      if (!this.matchRoot()) return false;
       fragment = this.fragment = this.getFragment(fragment);
       return _.any(this.handlers, function(handler) {
         if (handler.route.test(fragment)) {
@@ -41353,30 +41657,35 @@ return pluginExampleConfig;
       if (!History.started) return false;
       if (!options || options === true) options = {trigger: !!options};
 
-      var url = this.root + (fragment = this.getFragment(fragment || ''));
+      // Normalize the fragment.
+      fragment = this.getFragment(fragment || '');
 
-      // Strip the hash for matching.
-      fragment = fragment.replace(pathStripper, '');
+      // Don't include a trailing slash on the root.
+      var root = this.root;
+      if (fragment === '' || fragment.charAt(0) === '?') {
+        root = root.slice(0, -1) || '/';
+      }
+      var url = root + fragment;
+
+      // Strip the hash and decode for matching.
+      fragment = this.decodeFragment(fragment.replace(pathStripper, ''));
 
       if (this.fragment === fragment) return;
       this.fragment = fragment;
 
-      // Don't include a trailing slash on the root.
-      if (fragment === '' && url !== '/') url = url.slice(0, -1);
-
       // If pushState is available, we use it to set the fragment as a real URL.
-      if (this._hasPushState) {
+      if (this._usePushState) {
         this.history[options.replace ? 'replaceState' : 'pushState']({}, document.title, url);
 
       // If hash changes haven't been explicitly disabled, update the hash
       // fragment to store history.
       } else if (this._wantsHashChange) {
         this._updateHash(this.location, fragment, options.replace);
-        if (this.iframe && (fragment !== this.getFragment(this.getHash(this.iframe)))) {
+        if (this.iframe && (fragment !== this.getHash(this.iframe))) {
           // Opening and closing the iframe tricks IE7 and earlier to push a
           // history entry on hash-tag change.  When replace is true, we don't
           // want this.
-          if(!options.replace) this.iframe.document.open().close();
+          if (!options.replace) this.iframe.document.open().close();
           this._updateHash(this.iframe.location, fragment, options.replace);
         }
 
@@ -41408,7 +41717,7 @@ return pluginExampleConfig;
   // Helpers
   // -------
 
-  // Helper function to correctly set up the prototype chain, for subclasses.
+  // Helper function to correctly set up the prototype chain for subclasses.
   // Similar to `goog.inherits`, but uses a hash of prototype properties and
   // class properties to be extended.
   var extend = function(protoProps, staticProps) {
@@ -41417,7 +41726,7 @@ return pluginExampleConfig;
 
     // The constructor function for the new subclass is either defined by you
     // (the "constructor" property in your `extend` definition), or defaulted
-    // by us to simply call the parent's constructor.
+    // by us to simply call the parent constructor.
     if (protoProps && _.has(protoProps, 'constructor')) {
       child = protoProps.constructor;
     } else {
@@ -41428,7 +41737,7 @@ return pluginExampleConfig;
     _.extend(child, parent, staticProps);
 
     // Set the prototype chain to inherit from `parent`, without calling
-    // `parent`'s constructor function.
+    // `parent` constructor function.
     var Surrogate = function(){ this.constructor = child; };
     Surrogate.prototype = parent.prototype;
     child.prototype = new Surrogate;
@@ -41456,7 +41765,7 @@ return pluginExampleConfig;
   var wrapError = function(model, options) {
     var error = options.error;
     options.error = function(resp) {
-      if (error) error(model, resp, options);
+      if (error) error.call(options.context, model, resp, options);
       model.trigger('error', model, resp, options);
     };
   };
@@ -41465,7 +41774,7 @@ return pluginExampleConfig;
 
 }));
 
-define('plugin-annotations/annotations_module',['backbone'], function(Backbone) {
+define('plugin_annotations/annotations_module',['backbone'], function(Backbone) {
 var EpubAnnotationsModule = function (contentDocumentDOM, bbPageSetView, annotationCSSUrl) {
     
     var EpubAnnotations = {};
@@ -43246,7 +43555,7 @@ Then when the user clicks on the highlight the following will show up in the con
 	
 
 */
-define('plugin-annotations/annotations_manager',['jquery', 'underscore', 'eventEmitter', './annotations_module'], function($, _, EventEmitter, EpubAnnotationsModule) {
+define('plugin_annotations/annotations_manager',['jquery', 'underscore', 'eventEmitter', './annotations_module'], function($, _, EventEmitter, EpubAnnotationsModule) {
 /**
  *
  * @param proxyObj
@@ -43384,7 +43693,7 @@ console.debug(args);
 
 return AnnotationsManager;
 });
-define('plugin-annotations/main',['plugins-controller', './annotations_manager'], function (Plugins, AnnotationsManager) {
+define('plugin_annotations/main',['readium_shared_js/plugins_controller', './annotations_manager'], function (Plugins, AnnotationsManager) {
     var config = {};
 
     Plugins.register("annotations", function (api) {
@@ -43504,28 +43813,29 @@ define('plugin-annotations/main',['plugins-controller', './annotations_manager']
 
     return config;
 });
-define('plugin-annotations', ['plugin-annotations/main'], function (main) { return main; });
+
+define('plugin_annotations', ['plugin_annotations/main'], function (main) { return main; });
 
 //  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
-//  
-//  Redistribution and use in source and binary forms, with or without modification, 
+//
+//  Redistribution and use in source and binary forms, with or without modification,
 //  are permitted provided that the following conditions are met:
-//  1. Redistributions of source code must retain the above copyright notice, this 
+//  1. Redistributions of source code must retain the above copyright notice, this
 //  list of conditions and the following disclaimer.
-//  2. Redistributions in binary form must reproduce the above copyright notice, 
-//  this list of conditions and the following disclaimer in the documentation and/or 
+//  2. Redistributions in binary form must reproduce the above copyright notice,
+//  this list of conditions and the following disclaimer in the documentation and/or
 //  other materials provided with the distribution.
-//  3. Neither the name of the organization nor the names of its contributors may be 
-//  used to endorse or promote products derived from this software without specific 
+//  3. Neither the name of the organization nor the names of its contributors may be
+//  used to endorse or promote products derived from this software without specific
 //  prior written permission.
 
-define('readium-plugin-annotations',['plugin-annotations'], function (pluginAnnotationsConfig) {
+define('readium-plugin-annotations',['plugin_annotations'], function (pluginAnnotationsConfig) {
 return pluginAnnotationsConfig;
 });
 
 define('text',{load: function(id){throw new Error("Dynamic load not allowed: " + id);}});
 
-define('text!version.json',[],function () { return '{"readiumJs":{"sha":"2cad164030a15bf2936bb5e33d684d556759f9b7","clean":false,"version":"0.19.0-alpha","chromeVersion":"2.19.0-alpha","tag":"0.15-134-g2cad164","branch":"feature/pluginsX","release":false,"timestamp":1430830233991},"readiumSharedJs":{"sha":"257b1238d20da742c39066701d19171a1eec7526","clean":false,"version":"0.19.0-alpha","tag":"0.16-120-g257b123","branch":"feature/pluginsX","release":false,"timestamp":1430830234261},"readiumCfiJs":{"sha":"0698ab8b5b206bf08c8a8b79be51a60fa7f35647","clean":false,"version":"0.19.0-alpha","tag":"0.1.4-90-g0698ab8","branch":"feature/plugins","release":false,"timestamp":1430830234483}}';});
+define('text!version.json',[],function () { return '{"readiumJs":{"sha":"42f9cce30bb6741164c78468482a056a937a93fe","clean":false,"version":"0.19.0-alpha","chromeVersion":"2.19.0-alpha","tag":"0.15-135-g42f9cce","branch":"feature/pluginsX","release":false,"timestamp":1431680189700},"readiumSharedJs":{"sha":"c710b8b445c8da5359e1ad06158d6a2201d9fb42","clean":false,"version":"0.19.0-alpha","tag":"0.16-121-gc710b8b","branch":"feature/pluginsX","release":false,"timestamp":1431680189965},"readiumCfiJs":{"sha":"f88600405d6dfaa72f32b3a5e09450070c5ff0e9","clean":false,"version":"0.19.0-alpha","tag":"0.1.4-93-gf886004","branch":"feature/plugins","release":false,"timestamp":1431680190201}}';});
 
 //  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
 //  
@@ -43540,7 +43850,7 @@ define('text!version.json',[],function () { return '{"readiumJs":{"sha":"2cad164
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define('epub-fetch/markup_parser',[],
+define('epub_fetch/markup_parser',[],
     function () {
 
         var MarkupParser = function (){
@@ -43574,7 +43884,7 @@ define('epub-fetch/markup_parser',[],
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define('epub-fetch/discover_content_type',['jquery', 'URIjs'], function ($, URI) {
+define('epub_fetch/discover_content_type',['jquery', 'URIjs'], function ($, URI) {
 
     var _instance = undefined;
 
@@ -43647,7 +43957,7 @@ define('epub-fetch/discover_content_type',['jquery', 'URIjs'], function ($, URI)
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define('epub-fetch/plain_resource_fetcher',['jquery', 'URIjs', './discover_content_type'], function ($, URI, ContentTypeDiscovery) {
+define('epub_fetch/plain_resource_fetcher',['jquery', 'URIjs', './discover_content_type'], function ($, URI, ContentTypeDiscovery) {
 
     var PlainResourceFetcher = function(parentFetcher, baseUrl){
 
@@ -46561,7 +46871,7 @@ define("zip-ext", ["zip-fs"], (function (global) {
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define('epub-fetch/zip_resource_fetcher',['jquery', 'URIjs', './discover_content_type', 'zip-ext'], function ($, URI, ContentTypeDiscovery, zip) {
+define('epub_fetch/zip_resource_fetcher',['jquery', 'URIjs', './discover_content_type', 'zip-ext'], function ($, URI, ContentTypeDiscovery, zip) {
 
     var ZipResourceFetcher = function(parentFetcher, baseUrl, libDir) {
 
@@ -46681,7 +46991,7 @@ define('epub-fetch/zip_resource_fetcher',['jquery', 'URIjs', './discover_content
 //  prior written permission.
 
 define(
-    'epub-fetch/content_document_fetcher',['jquery', 'underscore', 'URIjs', './discover_content_type'],
+    'epub_fetch/content_document_fetcher',['jquery', 'underscore', 'URIjs', './discover_content_type'],
     function ($, _, URI, ContentTypeDiscovery) {
 
 
@@ -47019,7 +47329,7 @@ define(
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define('epub-fetch/resource_cache',['underscore'], function (_) {
+define('epub_fetch/resource_cache',['underscore'], function (_) {
 
         var ResourceCache = function(sourceWindow, configuredCacheSizeEvictThreshold) {
 
@@ -48102,7 +48412,7 @@ define('cryptoJs', ['cryptoJs/core'], function (main) { return main; });
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define('epub-fetch/encryption_handler',['cryptoJs/sha1'], function (SHA1) {
+define('epub_fetch/encryption_handler',['cryptoJs/sha1'], function (SHA1) {
 
     var EncryptionHandler = function (encryptionData) {
         var self = this;
@@ -48243,7 +48553,7 @@ define('epub-fetch/encryption_handler',['cryptoJs/sha1'], function (SHA1) {
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define('epub-fetch/publication_fetcher',['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip_resource_fetcher',
+define('epub_fetch/publication_fetcher',['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip_resource_fetcher',
     './content_document_fetcher', './resource_cache', './encryption_handler'],
     function ($, URI, MarkupParser, PlainResourceFetcher, ZipResourceFetcher, ContentDocumentFetcher,
               ResourceCache, EncryptionHandler) {
@@ -48523,7 +48833,7 @@ define('epub-fetch/publication_fetcher',['jquery', 'URIjs', './markup_parser', '
 
 });
 
-define('epub-fetch', ['epub-fetch/publication_fetcher'], function (main) { return main; });
+define('epub_fetch', ['epub_fetch/publication_fetcher'], function (main) { return main; });
 
 //  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
 //  
@@ -48538,7 +48848,7 @@ define('epub-fetch', ['epub-fetch/publication_fetcher'], function (main) { retur
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define('epub-model/package_document',['jquery', 'underscore', 'URIjs'],
+define('epub_model/package_document',['jquery', 'underscore', 'URIjs'],
     function ($, _, URI) {
 
     // Description: This model provides an interface for navigating an EPUB's package document
@@ -48742,7 +49052,7 @@ define('epub-model/package_document',['jquery', 'underscore', 'URIjs'],
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define('epub-model/smil_document_parser',['jquery', 'underscore'], function ($, _) {
+define('epub_model/smil_document_parser',['jquery', 'underscore'], function ($, _) {
 
     // `SmilDocumentParser` is used to parse the xml of an epub package
     // document and build a javascript object. The constructor accepts an
@@ -48991,7 +49301,7 @@ define('epub-model/smil_document_parser',['jquery', 'underscore'], function ($, 
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define('epub-model/metadata',['underscore'],
+define('epub_model/metadata',['underscore'],
     function (_) {
 
         var Metadata = function () {
@@ -49052,7 +49362,7 @@ define('epub-model/metadata',['underscore'],
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define('epub-model/manifest',['underscore'],
+define('epub_model/manifest',['underscore'],
     function (_) {
 
         var Manifest = function (manifestJson) {
@@ -49096,19 +49406,19 @@ define('epub-model/manifest',['underscore'],
         return Manifest;
     });
 //  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
-//  
-//  Redistribution and use in source and binary forms, with or without modification, 
+//
+//  Redistribution and use in source and binary forms, with or without modification,
 //  are permitted provided that the following conditions are met:
-//  1. Redistributions of source code must retain the above copyright notice, this 
+//  1. Redistributions of source code must retain the above copyright notice, this
 //  list of conditions and the following disclaimer.
-//  2. Redistributions in binary form must reproduce the above copyright notice, 
-//  this list of conditions and the following disclaimer in the documentation and/or 
+//  2. Redistributions in binary form must reproduce the above copyright notice,
+//  this list of conditions and the following disclaimer in the documentation and/or
 //  other materials provided with the distribution.
-//  3. Neither the name of the organization nor the names of its contributors may be 
-//  used to endorse or promote products derived from this software without specific 
+//  3. Neither the name of the organization nor the names of its contributors may be
+//  used to endorse or promote products derived from this software without specific
 //  prior written permission.
 
-define('epub-model/package_document_parser',['jquery', 'underscore', 'epub-fetch/markup_parser', 'URIjs', './package_document',
+define('epub_model/package_document_parser',['jquery', 'underscore', 'epub_fetch/markup_parser', 'URIjs', './package_document',
         './smil_document_parser', './metadata', './manifest'],
     function($, _, MarkupParser, URI, PackageDocument, SmilDocumentParser, Metadata,
              Manifest) {
@@ -49343,7 +49653,7 @@ define('epub-model/package_document_parser',['jquery', 'underscore', 'epub-fetch
 
 
             //http://www.idpf.org/epub/301/spec/epub-publications.html#fxl-property-viewport
-            
+
             //metadata.rendition_viewport = getMetaElemPropertyText(metadataElem, "rendition:viewport");
             metadata.rendition_viewport = getElemText(metadataElem, "meta", function (element) {
                 return element.getAttribute("property") === "rendition:viewport" && !element.hasAttribute("refines")
@@ -49364,21 +49674,21 @@ define('epub-model/package_document_parser',['jquery', 'underscore', 'epub-fetch
                     }
                     id = id.trim();
                 }
-                
+
                 var vp = {
                   refines: id,
                   viewport: currItem.textContent
                 };
                 viewports.push(vp);
             });
-            
+
             metadata.rendition_viewports = viewports;
 
-            
-            
-            
-            
-            
+
+
+
+
+
             // Media part
             metadata.mediaItems = [];
 
@@ -49436,7 +49746,7 @@ define('epub-model/package_document_parser',['jquery', 'underscore', 'epub-fetch
                     media_type: $currManifestElement.attr("media-type") ? $currManifestElement.attr("media-type") : "",
                     properties: $currManifestElement.attr("properties") ? $currManifestElement.attr("properties") : ""
                 };
-                // console.log('pushing manifest item to JSON manifest. currManifestElementHref: [' + currManifestElementHref + 
+                // console.log('pushing manifest item to JSON manifest. currManifestElementHref: [' + currManifestElementHref +
                 //     '], manifestItem.href: [' + manifestItem.href +
                 //     '], manifestItem:');
                 // console.log(manifestItem);
@@ -49583,29 +49893,29 @@ define('epub-model/package_document_parser',['jquery', 'underscore', 'epub-fetch
     return PackageDocumentParser;
 });
 
-define('epub-model', ['epub-model/package_document_parser'], function (main) { return main; });
+define('epub_model', ['epub_model/package_document_parser'], function (main) { return main; });
 
 //  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
-//  
-//  Redistribution and use in source and binary forms, with or without modification, 
+//
+//  Redistribution and use in source and binary forms, with or without modification,
 //  are permitted provided that the following conditions are met:
-//  1. Redistributions of source code must retain the above copyright notice, this 
+//  1. Redistributions of source code must retain the above copyright notice, this
 //  list of conditions and the following disclaimer.
-//  2. Redistributions in binary form must reproduce the above copyright notice, 
-//  this list of conditions and the following disclaimer in the documentation and/or 
+//  2. Redistributions in binary form must reproduce the above copyright notice,
+//  this list of conditions and the following disclaimer in the documentation and/or
 //  other materials provided with the distribution.
-//  3. Neither the name of the organization nor the names of its contributors may be 
-//  used to endorse or promote products derived from this software without specific 
+//  3. Neither the name of the organization nor the names of its contributors may be
+//  used to endorse or promote products derived from this software without specific
 //  prior written permission.
 
-define('epub-fetch/iframe_zip_loader',['URIjs', 'views/iframe_loader', 'underscore'], function(URI, IFrameLoader, _){
+define('epub_fetch/iframe_zip_loader',['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore'], function(URI, IFrameLoader, _){
 
     var zipIframeLoader = function( getCurrentResourceFetcher, contentDocumentTextPreprocessor) {
 
         var basicIframeLoader = new IFrameLoader();
 
         var self = this;
-        
+
         var _contentDocumentTextPreprocessor = contentDocumentTextPreprocessor;
 
         this.addIFrameEventListener = function (eventName, callback, context) {
@@ -49615,7 +49925,7 @@ define('epub-fetch/iframe_zip_loader',['URIjs', 'views/iframe_loader', 'undersco
         this.updateIframeEvents = function (iframe) {
             basicIframeLoader.updateIframeEvents(iframe);
         };
-        
+
         this.loadIframe = function(iframe, src, callback, caller, attachedData) {
 
             if (!iframe.baseURI) {
@@ -49624,7 +49934,7 @@ define('epub-fetch/iframe_zip_loader',['URIjs', 'views/iframe_loader', 'undersco
                 }
                 console.log("!iframe.baseURI => " + iframe.baseURI);
             }
-                
+
             iframe.setAttribute("data-baseUri", iframe.baseURI);
             iframe.setAttribute("data-src", src);
 
@@ -49676,7 +49986,7 @@ define('epub-fetch/iframe_zip_loader',['URIjs', 'views/iframe_loader', 'undersco
                 // TODO: Currently using the document.write() approach only for IE, as it breaks CSS selectors
                 // with namespaces for some reason (e.g. the childrens-media-query sample EPUB)
                 iframe.contentWindow.document.open();
-                
+
                 // Currently not handled automatically by winstore-jscompat,
                 // so we're doing it manually. See:
                 // https://github.com/MSOpenTech/winstore-jscompat/
@@ -49757,21 +50067,21 @@ define('epub-fetch/iframe_zip_loader',['URIjs', 'views/iframe_loader', 'undersco
 });
 
 //  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
-//  
-//  Redistribution and use in source and binary forms, with or without modification, 
+//
+//  Redistribution and use in source and binary forms, with or without modification,
 //  are permitted provided that the following conditions are met:
-//  1. Redistributions of source code must retain the above copyright notice, this 
+//  1. Redistributions of source code must retain the above copyright notice, this
 //  list of conditions and the following disclaimer.
-//  2. Redistributions in binary form must reproduce the above copyright notice, 
-//  this list of conditions and the following disclaimer in the documentation and/or 
+//  2. Redistributions in binary form must reproduce the above copyright notice,
+//  this list of conditions and the following disclaimer in the documentation and/or
 //  other materials provided with the distribution.
-//  3. Neither the name of the organization nor the names of its contributors may be 
-//  used to endorse or promote products derived from this software without specific 
+//  3. Neither the name of the organization nor the names of its contributors may be
+//  used to endorse or promote products derived from this software without specific
 //  prior written permission.
 
 
-define('Readium',['text!version.json', 'jquery', 'underscore', 'views/reader_view', 'epub-fetch',
-        'epub-model/package_document_parser', 'epub-fetch/iframe_zip_loader', 'views/iframe_loader',
+define('Readium',['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/reader_view', 'epub_fetch',
+        'epub_model/package_document_parser', 'epub_fetch/iframe_zip_loader', 'readium_shared_js/views/iframe_loader'
         ],
     function (versionText, $, _, ReaderView, PublicationFetcher,
               PackageParser, IframeZipLoader, IframeLoader) {
@@ -49795,14 +50105,14 @@ define('Readium',['text!version.json', 'jquery', 'underscore', 'views/reader_vie
             var base = "<base href=\"" + sourceParts.join("/") + "/" + "\"/>";
 
             var scripts = "<script type=\"text/javascript\">(" + injectedScript.toString() + ")()<\/script>";
-            
+
             if (_options && _options.mathJaxUrl && contentDocumentHtml.indexOf("<math") >= 0) {
                 scripts += "<script type=\"text/javascript\" src=\"" + _options.mathJaxUrl + "\"><\/script>";
             }
 
             return contentDocumentHtml.replace(/(<head.*?>)/, "$1" + base + scripts);
         };
-        
+
         var self = this;
 
         var _currentPublicationFetcher;
@@ -49815,10 +50125,10 @@ define('Readium',['text!version.json', 'jquery', 'underscore', 'views/reader_vie
         else{
             readerOptions.iframeLoader = new IframeLoader();
         }
-       
+
         // is false by default, but just making this initialisation setting more explicit here.
         readerOptions.needsFixedLayoutScalerWorkAround = false;
-        
+
         this.reader = new ReaderView(readerOptions);
         ReadiumSDK.reader = this.reader;
 
@@ -49868,7 +50178,7 @@ define('Readium',['text!version.json', 'jquery', 'underscore', 'views/reader_vie
 
         ReadiumSDK.emit(ReadiumSDK.Events.READER_INITIALIZED, ReadiumSDK.reader);
     };
-    
+
     Readium.version = JSON.parse(versionText);
 
     return Readium;
@@ -49893,6 +50203,6 @@ define('readium-js',['Readium'], function (Readium) {
 });
 
 
-require(["readium-cfi-js", "globalsSetup", "readium-plugin-annotations"]);
+require(["readium-cfi-js", "readium_shared_js/globalsSetup", "readium-plugin-annotations"]);
 
 //# sourceMappingURL=readium-js_all.js.map

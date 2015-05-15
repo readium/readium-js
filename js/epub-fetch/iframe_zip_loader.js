@@ -1,24 +1,24 @@
 //  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
-//  
-//  Redistribution and use in source and binary forms, with or without modification, 
+//
+//  Redistribution and use in source and binary forms, with or without modification,
 //  are permitted provided that the following conditions are met:
-//  1. Redistributions of source code must retain the above copyright notice, this 
+//  1. Redistributions of source code must retain the above copyright notice, this
 //  list of conditions and the following disclaimer.
-//  2. Redistributions in binary form must reproduce the above copyright notice, 
-//  this list of conditions and the following disclaimer in the documentation and/or 
+//  2. Redistributions in binary form must reproduce the above copyright notice,
+//  this list of conditions and the following disclaimer in the documentation and/or
 //  other materials provided with the distribution.
-//  3. Neither the name of the organization nor the names of its contributors may be 
-//  used to endorse or promote products derived from this software without specific 
+//  3. Neither the name of the organization nor the names of its contributors may be
+//  used to endorse or promote products derived from this software without specific
 //  prior written permission.
 
-define(['URIjs', 'views/iframe_loader', 'underscore'], function(URI, IFrameLoader, _){
+define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore'], function(URI, IFrameLoader, _){
 
     var zipIframeLoader = function( getCurrentResourceFetcher, contentDocumentTextPreprocessor) {
 
         var basicIframeLoader = new IFrameLoader();
 
         var self = this;
-        
+
         var _contentDocumentTextPreprocessor = contentDocumentTextPreprocessor;
 
         this.addIFrameEventListener = function (eventName, callback, context) {
@@ -28,7 +28,7 @@ define(['URIjs', 'views/iframe_loader', 'underscore'], function(URI, IFrameLoade
         this.updateIframeEvents = function (iframe) {
             basicIframeLoader.updateIframeEvents(iframe);
         };
-        
+
         this.loadIframe = function(iframe, src, callback, caller, attachedData) {
 
             if (!iframe.baseURI) {
@@ -37,7 +37,7 @@ define(['URIjs', 'views/iframe_loader', 'underscore'], function(URI, IFrameLoade
                 }
                 console.log("!iframe.baseURI => " + iframe.baseURI);
             }
-                
+
             iframe.setAttribute("data-baseUri", iframe.baseURI);
             iframe.setAttribute("data-src", src);
 
@@ -89,7 +89,7 @@ define(['URIjs', 'views/iframe_loader', 'underscore'], function(URI, IFrameLoade
                 // TODO: Currently using the document.write() approach only for IE, as it breaks CSS selectors
                 // with namespaces for some reason (e.g. the childrens-media-query sample EPUB)
                 iframe.contentWindow.document.open();
-                
+
                 // Currently not handled automatically by winstore-jscompat,
                 // so we're doing it manually. See:
                 // https://github.com/MSOpenTech/winstore-jscompat/

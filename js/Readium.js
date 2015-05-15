@@ -1,19 +1,19 @@
 //  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
-//  
-//  Redistribution and use in source and binary forms, with or without modification, 
+//
+//  Redistribution and use in source and binary forms, with or without modification,
 //  are permitted provided that the following conditions are met:
-//  1. Redistributions of source code must retain the above copyright notice, this 
+//  1. Redistributions of source code must retain the above copyright notice, this
 //  list of conditions and the following disclaimer.
-//  2. Redistributions in binary form must reproduce the above copyright notice, 
-//  this list of conditions and the following disclaimer in the documentation and/or 
+//  2. Redistributions in binary form must reproduce the above copyright notice,
+//  this list of conditions and the following disclaimer in the documentation and/or
 //  other materials provided with the distribution.
-//  3. Neither the name of the organization nor the names of its contributors may be 
-//  used to endorse or promote products derived from this software without specific 
+//  3. Neither the name of the organization nor the names of its contributors may be
+//  used to endorse or promote products derived from this software without specific
 //  prior written permission.
 
 
-define(['text!version.json', 'jquery', 'underscore', 'views/reader_view', 'epub-fetch',
-        'epub-model/package_document_parser', 'epub-fetch/iframe_zip_loader', 'views/iframe_loader',
+define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/reader_view', 'epub_fetch',
+        'epub_model/package_document_parser', 'epub_fetch/iframe_zip_loader', 'readium_shared_js/views/iframe_loader'
         ],
     function (versionText, $, _, ReaderView, PublicationFetcher,
               PackageParser, IframeZipLoader, IframeLoader) {
@@ -37,14 +37,14 @@ define(['text!version.json', 'jquery', 'underscore', 'views/reader_view', 'epub-
             var base = "<base href=\"" + sourceParts.join("/") + "/" + "\"/>";
 
             var scripts = "<script type=\"text/javascript\">(" + injectedScript.toString() + ")()<\/script>";
-            
+
             if (_options && _options.mathJaxUrl && contentDocumentHtml.indexOf("<math") >= 0) {
                 scripts += "<script type=\"text/javascript\" src=\"" + _options.mathJaxUrl + "\"><\/script>";
             }
 
             return contentDocumentHtml.replace(/(<head.*?>)/, "$1" + base + scripts);
         };
-        
+
         var self = this;
 
         var _currentPublicationFetcher;
@@ -57,10 +57,10 @@ define(['text!version.json', 'jquery', 'underscore', 'views/reader_view', 'epub-
         else{
             readerOptions.iframeLoader = new IframeLoader();
         }
-       
+
         // is false by default, but just making this initialisation setting more explicit here.
         readerOptions.needsFixedLayoutScalerWorkAround = false;
-        
+
         this.reader = new ReaderView(readerOptions);
         ReadiumSDK.reader = this.reader;
 
@@ -110,7 +110,7 @@ define(['text!version.json', 'jquery', 'underscore', 'views/reader_view', 'epub-
 
         ReadiumSDK.emit(ReadiumSDK.Events.READER_INITIALIZED, ReadiumSDK.reader);
     };
-    
+
     Readium.version = JSON.parse(versionText);
 
     return Readium;

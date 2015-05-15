@@ -13,14 +13,26 @@
 
 require.config({
 
-    baseUrl: process._RJS_baseUrl(2),
+    /* http://requirejs.org/docs/api.html#config-waitSeconds */
+    waitSeconds: 1,
+
+    baseUrl: '..',
+
+
+    //    map:
+    //    {
+    //        '*': {
+    //            "readium_cfi_js":
+    //                '../js'
+    //        }
+    //    },
 
     packages: [
 
         {
             name: 'epub_fetch',
             location:
-                process._RJS_rootDir(2) + '/js/epub-fetch',
+                readium_js_PATH_PREFIX + 'js/epub-fetch',
 
             main: 'publication_fetcher'
         },
@@ -28,7 +40,7 @@ require.config({
         {
             name: 'epub_model',
             location:
-                process._RJS_rootDir(2) + '/js/epub-model',
+                readium_js_PATH_PREFIX + 'js/epub-model',
 
             main: 'package_document_parser'
         },
@@ -36,7 +48,7 @@ require.config({
         {
             name: 'cryptoJs',
             location:
-                process._RJS_rootDir(2) + '/node_modules/crypto-js',
+                readium_js_PATH_PREFIX + 'node_modules/crypto-js',
 
             main: 'core'
         }
@@ -44,37 +56,40 @@ require.config({
 
     paths:
     {
+        "version":
+            readium_js_PATH_PREFIX + 'build-output/version',
+
         "readium-js":
-            process._RJS_rootDir(2) + '/build-config/readium-js',
+            readium_js_PATH_PREFIX + 'build-config/readium-js',
 
         "Readium":
-            process._RJS_rootDir(2) + '/js/Readium',
+            readium_js_PATH_PREFIX + 'js/Readium',
 
         // ------ NPM MODULEs
 
         text:
-            process._RJS_rootDir(2) + '/node_modules/requirejs-text/text',
+            readium_js_PATH_PREFIX + 'node_modules/requirejs-text/text',
 
         zip:
-            process._RJS_rootDir(2) + '/node_modules/zip-js/WebContent/zip',
+            readium_js_PATH_PREFIX + 'node_modules/zip-js/WebContent/zip',
 
         'mime-types':
-            process._RJS_rootDir(2) + '/node_modules/zip-js/WebContent/mime-types',
+            readium_js_PATH_PREFIX + 'node_modules/zip-js/WebContent/mime-types',
 
         'zip-fs':
-            process._RJS_rootDir(2) + '/node_modules/zip-js/WebContent/zip-fs',
+            readium_js_PATH_PREFIX + 'node_modules/zip-js/WebContent/zip-fs',
 
         'zip-ext':
-            process._RJS_rootDir(2) + '/node_modules/zip-js/WebContent/zip-ext',
+            readium_js_PATH_PREFIX + 'node_modules/zip-js/WebContent/zip-ext',
 
         // deflate:
-            // process._RJS_rootDir(2) + '/node_modules/zip-js/WebContent/deflate',
+            // readium_js_PATH_PREFIX + 'node_modules/zip-js/WebContent/deflate',
 
         // inflate:
-            // process._RJS_rootDir(2) + '/node_modules/zip-js/WebContent/inflate',
+            // readium_js_PATH_PREFIX + 'node_modules/zip-js/WebContent/inflate',
 
         // 'z-worker':
-            // process._RJS_rootDir(2) + '/node_modules/zip-js/WebContent/z-worker'
+            // readium_js_PATH_PREFIX + 'node_modules/zip-js/WebContent/z-worker'
     },
 
 

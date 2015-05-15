@@ -1,32 +1,32 @@
 
-require(["globalsSetup", "readium-plugin-annotations"], function () {
+require(["readium_shared_js/globalsSetup", "readium-plugin-annotations"], function () {
 
     //require(['jquery', 'Readium'], function ($, Readium) {
     require(['jquery', 'Readium', 'readium-plugin-example'], function ($, Readium, examplePluginConfig) {
-        
+
         var readium = undefined;
         var altBook = false;
-        
+
         if (examplePluginConfig) {
             examplePluginConfig.borderColor = "blue";
             examplePluginConfig.backgroundColor = "cyan";
         }
-        
+
         console.log(Readium.version);
 
         window.navigator.epubReadingSystem.name = "readium-js-example";
         window.navigator.epubReadingSystem.version = Readium.version.readiumJs.version;
-        
+
         window.navigator.epubReadingSystem.readium = {};
-        
+
         window.navigator.epubReadingSystem.readium.buildInfo = {};
-        
+
         window.navigator.epubReadingSystem.readium.buildInfo.dateTime = Readium.version.readiumJs.timestamp;
         window.navigator.epubReadingSystem.readium.buildInfo.version = Readium.version.readiumJs.version;
         window.navigator.epubReadingSystem.readium.buildInfo.chromeVersion = Readium.version.readiumJs.chromeVersion;
-        
+
         window.navigator.epubReadingSystem.readium.buildInfo.gitRepositories = [];
-        
+
         // var repo1 = {};
         // repo1.name = "readium-js-viewer";
         // repo1.sha = version.viewer.sha;
@@ -34,7 +34,7 @@ require(["globalsSetup", "readium-plugin-annotations"], function () {
         // repo1.clean = version.viewer.clean;
         // repo1.url = "https://github.com/readium/" + repo1.name + "/tree/" + repo1.sha;
         // window.navigator.epubReadingSystem.readium.buildInfo.gitRepositories.push(repo1);
-        
+
         var repo2 = {};
         repo2.name = "readium-js";
         repo2.sha = Readium.version.readiumJs.sha;
@@ -46,7 +46,7 @@ require(["globalsSetup", "readium-plugin-annotations"], function () {
         repo2.timestamp = Readium.version.readiumJs.timestamp;
         repo2.url = "https://github.com/readium/" + repo2.name + "/tree/" + repo2.sha;
         window.navigator.epubReadingSystem.readium.buildInfo.gitRepositories.push(repo2);
-        
+
         var repo3 = {};
         repo3.name = "readium-shared-js";
         repo3.sha = Readium.version.readiumSharedJs.sha;
@@ -76,7 +76,7 @@ require(["globalsSetup", "readium-plugin-annotations"], function () {
 
         // Debug check:
         //console.debug(JSON.stringify(window.navigator.epubReadingSystem, undefined, 2));
-        
+
         var readiumOptions =
         {
             jsLibRoot: "../build-output/",
@@ -84,19 +84,19 @@ require(["globalsSetup", "readium-plugin-annotations"], function () {
             useSimpleLoader: false, // false so we can load ZIP'ed EPUBs
             openBookOptions: {}
         };
-        
+
         var prefix = (self.location && self.location.origin && self.location.pathname) ? (self.location.origin + self.location.pathname + "/..") : "";
-        
-        var readerOptions = 
+
+        var readerOptions =
         {
             needsFixedLayoutScalerWorkAround: false,
             el:"#viewport",
             annotationCSSUrl: prefix + "/annotations.css",
             mathJaxUrl: "/MathJax.js"
         };
-        
+
         ReadiumSDK.on(ReadiumSDK.Events.PLUGINS_LOADED, function(reader) {
-        
+
             // readium built-in (should have been require()'d outside this scope)
             console.log(reader.plugins.annotations);
             reader.plugins.annotations.initialize({annotationCSSUrl: readerOptions.annotationCSSUrl});
@@ -112,17 +112,17 @@ require(["globalsSetup", "readium-plugin-annotations"], function () {
             // external (require()'d via Dependency Injection, see examplePluginConfig function parameter passed above)
             console.log(reader.plugins.example);
             if (reader.plugins.example) {
-                
+
                 reader.plugins.example.on("exampleEvent", function(message) {
                     console.log("Example plugin: \n" + message);
-                    
+
                     var altBook_ = altBook;
                     altBook = !altBook;
-                    
+
                     setTimeout(function(){
-                        
+
                     var openPageRequest = undefined; //{idref: bookmark.idref, elementCfi: bookmark.contentCFI};
-                    
+
                     readium.openPackageDocument(
                         altBook_ ? "EPUB/epubReadingSystem" : "EPUB/internal_link.epub",
                         function(packageDocument, options) {
@@ -131,18 +131,18 @@ require(["globalsSetup", "readium-plugin-annotations"], function () {
                         },
                         openPageRequest
                     );
-                    
+
                     }, 200);
                 });
             }
         });
-        
+
         $(document).ready(function () {
-            
+
             readium = new Readium(readiumOptions, readerOptions);
 
             var openPageRequest = undefined; //{idref: bookmark.idref, elementCfi: bookmark.contentCFI};
-            
+
             readium.openPackageDocument(
                 "EPUB/epubReadingSystem",
                 function(packageDocument, options) {
