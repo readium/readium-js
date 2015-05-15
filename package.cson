@@ -222,7 +222,7 @@ scripts:
     lint: '
 
         node
-            build-tools/jshint_glob.js
+            readium-shared-js/readium-cfi-js/readium-build-tools/jshint_glob.js
             js/**.js
     '
 
@@ -277,7 +277,7 @@ scripts:
     'build:scripts:multiple': '
         node readium-shared-js/readium-cfi-js/node_modules/requirejs/bin/r.js
              -o
-             readium-shared-js/readium-cfi-js/build-config/RequireJS_config.js
+             readium-shared-js/readium-cfi-js/readium-build-tools/RequireJS_config.js
              --rjs_bundle=multiple
     '
 
@@ -285,7 +285,7 @@ scripts:
     'build:scripts:single': '
         node readium-shared-js/readium-cfi-js/node_modules/requirejs/bin/r.js
              -o
-             readium-shared-js/readium-cfi-js/build-config/RequireJS_config.js
+             readium-shared-js/readium-cfi-js/readium-build-tools/RequireJS_config.js
              --rjs_bundle=single
     '
 
@@ -344,7 +344,7 @@ scripts:
     'watch:build': '
         watch
             \"npm run build
-                && node build-tools/webbrowser.js
+                && node readium-shared-js/readium-cfi-js/readium-build-tools/webbrowser.js
                 && npm run webbrowser
                 && rimraf open_webbrowser.js\"
             build-output-usage-example/
@@ -353,7 +353,7 @@ scripts:
     #    -w build-output-usage-example/
     #    --ext \".\"
     #    --exec \"npm run build
-    #            && node build-tools/webbrowser.js
+    #            && node readium-shared-js/readium-cfi-js/readium-build-tools/webbrowser.js
     #            && npm run webbrowser
     #            && rimraf open_webbrowser.js\"
 
@@ -364,7 +364,7 @@ scripts:
 #    node node_modules/httpserver/httpserver.js 9090 127.0.0.1
 #    http-server -p 9090 ./
 #    node  .\node_modules\node-http-server\server\http.js root=. port=9090 launch=now verbose=true
-#    node build-tools/http-server.js
+#    node readium-shared-js/readium-cfi-js/readium-build-tools/http-server.js
 
 #=====================
     'live-reload': '
