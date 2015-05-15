@@ -27,10 +27,10 @@ require.config({
 
     paths:
     {
-        "readium-js_all":
-            process._RJS_rootDir(2) + '/readium-shared-js/readium-cfi-js/node_modules/almond/almond',
-
         "version":
-            process._RJS_rootDir(2) + '/build-output/version'
+            process._RJS_rootDir(2) + '/build-output/version',
+
+        "readium-js_all":
+            process._RJS_rootDir(2) + '/readium-shared-js/readium-cfi-js/node_modules/almond/almond'
     }
 });
