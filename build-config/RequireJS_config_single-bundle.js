@@ -22,7 +22,7 @@ require.config({
     out: "../build-output/_single-bundle/readium-js_all.js",
 
     include: [
-        "readium-js"
+        "readium_js/Readium"
     ],
 
     paths:

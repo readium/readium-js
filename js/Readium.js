@@ -12,8 +12,8 @@
 //  prior written permission.
 
 
-define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/reader_view', 'epub_fetch',
-        'epub_model/package_document_parser', 'epub_fetch/iframe_zip_loader', 'readium_shared_js/views/iframe_loader'
+define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/reader_view', 'readium_js/epub-fetch/publication_fetcher',
+        'readium_js/epub-model/package_document_parser', 'readium_js/epub-fetch/iframe_zip_loader', 'readium_shared_js/views/iframe_loader'
         ],
     function (versionText, $, _, ReaderView, PublicationFetcher,
               PackageParser, IframeZipLoader, IframeLoader) {

@@ -11,104 +11,27 @@
 //  used to endorse or promote products derived from this software without specific
 //  prior written permission.
 
+window.process = {};
+
+window.process._RJS_baseUrl = function(n)
+{
+    return "..";
+};
+
+window.process._RJS_rootDir = function(n)
+{
+    if (n == 2) return ".";
+    if (n == 1) return "readium-shared-js";
+    if (n == 0) return "readium-shared-js/readium-cfi-js";
+};
+
 require.config({
 
     /* http://requirejs.org/docs/api.html#config-waitSeconds */
     waitSeconds: 1,
 
-    baseUrl: '..',
-
-
-    //    map:
-    //    {
-    //        '*': {
-    //            "readium_cfi_js":
-    //                '../js'
-    //        }
-    //    },
-
-    packages: [
-
-        {
-            name: 'epub_fetch',
-            location:
-                readium_js_PATH_PREFIX + 'js/epub-fetch',
-
-            main: 'publication_fetcher'
-        },
-
-        {
-            name: 'epub_model',
-            location:
-                readium_js_PATH_PREFIX + 'js/epub-model',
-
-            main: 'package_document_parser'
-        },
-
-        {
-            name: 'cryptoJs',
-            location:
-                readium_js_PATH_PREFIX + 'node_modules/crypto-js',
-
-            main: 'core'
-        }
-    ],
-
     paths:
     {
-        "version":
-            readium_js_PATH_PREFIX + 'build-output/version',
-
-        "readium-js":
-            readium_js_PATH_PREFIX + 'build-config/readium-js',
-
-        "Readium":
-            readium_js_PATH_PREFIX + 'js/Readium',
-
-        // ------ NPM MODULEs
-
-        text:
-            readium_js_PATH_PREFIX + 'node_modules/requirejs-text/text',
-
-        zip:
-            readium_js_PATH_PREFIX + 'node_modules/zip-js/WebContent/zip',
-
-        'mime-types':
-            readium_js_PATH_PREFIX + 'node_modules/zip-js/WebContent/mime-types',
-
-        'zip-fs':
-            readium_js_PATH_PREFIX + 'node_modules/zip-js/WebContent/zip-fs',
-
-        'zip-ext':
-            readium_js_PATH_PREFIX + 'node_modules/zip-js/WebContent/zip-ext',
-
-        // deflate:
-            // readium_js_PATH_PREFIX + 'node_modules/zip-js/WebContent/deflate',
-
-        // inflate:
-            // readium_js_PATH_PREFIX + 'node_modules/zip-js/WebContent/inflate',
-
-        // 'z-worker':
-            // readium_js_PATH_PREFIX + 'node_modules/zip-js/WebContent/z-worker'
-    },
-
-
-    shim:
-    {
-        zip : {
-            exports: 'zip'
-        },
-        'mime-types' : {
-            deps: ['zip'],
-            exports: 'zip'
-        },
-        'zip-fs' : {
-            deps: ['mime-types'],
-            exports: 'zip'
-        },
-        'zip-ext' : {
-            deps: ['zip-fs'],
-            exports: 'zip'
-        }
+        "version": './build-output/version'
     }
 });

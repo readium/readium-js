@@ -1867,7 +1867,7 @@
 
 }));
 
-define('plugin_annotations/annotations_module',['backbone'], function(Backbone) {
+define('readium_plugin_annotations/annotations_module',['backbone'], function(Backbone) {
 var EpubAnnotationsModule = function (contentDocumentDOM, bbPageSetView, annotationCSSUrl) {
     
     var EpubAnnotations = {};
@@ -3648,7 +3648,7 @@ Then when the user clicks on the highlight the following will show up in the con
 	
 
 */
-define('plugin_annotations/annotations_manager',['jquery', 'underscore', 'eventEmitter', './annotations_module'], function($, _, EventEmitter, EpubAnnotationsModule) {
+define('readium_plugin_annotations/annotations_manager',['jquery', 'underscore', 'eventEmitter', './annotations_module'], function($, _, EventEmitter, EpubAnnotationsModule) {
 /**
  *
  * @param proxyObj
@@ -3786,7 +3786,7 @@ console.debug(args);
 
 return AnnotationsManager;
 });
-define('plugin_annotations/main',['readium_shared_js/plugins_controller', './annotations_manager'], function (Plugins, AnnotationsManager) {
+define('readium_plugin_annotations/main',['readium_shared_js/plugins_controller', './annotations_manager'], function (Plugins, AnnotationsManager) {
     var config = {};
 
     Plugins.register("annotations", function (api) {
@@ -3907,26 +3907,11 @@ define('plugin_annotations/main',['readium_shared_js/plugins_controller', './ann
     return config;
 });
 
-define('plugin_annotations', ['plugin_annotations/main'], function (main) { return main; });
-
-//  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
-//
-//  Redistribution and use in source and binary forms, with or without modification,
-//  are permitted provided that the following conditions are met:
-//  1. Redistributions of source code must retain the above copyright notice, this
-//  list of conditions and the following disclaimer.
-//  2. Redistributions in binary form must reproduce the above copyright notice,
-//  this list of conditions and the following disclaimer in the documentation and/or
-//  other materials provided with the distribution.
-//  3. Neither the name of the organization nor the names of its contributors may be
-//  used to endorse or promote products derived from this software without specific
-//  prior written permission.
-
-define('readium-plugin-annotations',['plugin_annotations'], function (pluginAnnotationsConfig) {
-return pluginAnnotationsConfig;
-});
+define('readium_plugin_annotations', ['readium_plugin_annotations/main'], function (main) { return main; });
 
 
-require(["readium-plugin-annotations"]);
+define("readium-plugin-annotations", function(){});
+
+require(["readium_plugin_annotations"]);
 
 //# sourceMappingURL=readium-plugin-annotations.js.map

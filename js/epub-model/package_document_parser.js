@@ -11,7 +11,7 @@
 //  used to endorse or promote products derived from this software without specific
 //  prior written permission.
 
-define(['jquery', 'underscore', 'epub_fetch/markup_parser', 'URIjs', './package_document',
+define(['jquery', 'underscore', '../epub-fetch/markup_parser', 'URIjs', './package_document',
         './smil_document_parser', './metadata', './manifest'],
     function($, _, MarkupParser, URI, PackageDocument, SmilDocumentParser, Metadata,
              Manifest) {

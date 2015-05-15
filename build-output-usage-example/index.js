@@ -1,8 +1,8 @@
 
-require(["readium_shared_js/globalsSetup", "readium-plugin-annotations"], function () {
+require(["readium_shared_js/globalsSetup", "readium_plugin_annotations"], function () {
 
     //require(['jquery', 'Readium'], function ($, Readium) {
-    require(['jquery', 'Readium', 'readium-plugin-example'], function ($, Readium, examplePluginConfig) {
+    require(['jquery', 'readium_js/Readium', 'readium_plugin_example'], function ($, Readium, examplePluginConfig) {
 
         var readium = undefined;
         var altBook = false;
@@ -14,7 +14,7 @@ require(["readium_shared_js/globalsSetup", "readium-plugin-annotations"], functi
 
         console.log(Readium.version);
 
-        window.navigator.epubReadingSystem.name = "readium-js-example";
+        window.navigator.epubReadingSystem.name = "readium-js test example demo";
         window.navigator.epubReadingSystem.version = Readium.version.readiumJs.version;
 
         window.navigator.epubReadingSystem.readium = {};

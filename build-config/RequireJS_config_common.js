@@ -18,20 +18,28 @@ require.config({
     packages: [
 
         {
-            name: 'epub_fetch',
+            name: 'readium_js',
             location:
-                process._RJS_rootDir(2) + '/js/epub-fetch',
+                process._RJS_rootDir(2) + '/js',
 
-            main: 'publication_fetcher'
+            main: 'Readium'
         },
 
-        {
-            name: 'epub_model',
-            location:
-                process._RJS_rootDir(2) + '/js/epub-model',
-
-            main: 'package_document_parser'
-        },
+        // {
+        //     name: 'epub_fetch',
+        //     location:
+        //         process._RJS_rootDir(2) + '/js/epub-fetch',
+        //
+        //     main: 'publication_fetcher'
+        // },
+        //
+        // {
+        //     name: 'epub_model',
+        //     location:
+        //         process._RJS_rootDir(2) + '/js/epub-model',
+        //
+        //     main: 'package_document_parser'
+        // },
 
         {
             name: 'cryptoJs',
@@ -44,12 +52,6 @@ require.config({
 
     paths:
     {
-        "readium-js":
-            process._RJS_rootDir(2) + '/build-config/readium-js',
-
-        "Readium":
-            process._RJS_rootDir(2) + '/js/Readium',
-
         // ------ NPM MODULEs
 
         text:

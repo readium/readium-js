@@ -11,10 +11,9 @@
 //  used to endorse or promote products derived from this software without specific
 //  prior written permission.
 
-
 require.config({
 
-    baseUrl: process._RJS_baseUrl(2),
+    baseUrl: process._RJS_baseUrl(1),
 
     // relative to this config file (not baseUrl)
     dir: "../build-output/_multiple-bundles",
@@ -22,18 +21,13 @@ require.config({
     modules:
     [
         {
-            name: "readium-js",
+            name: "readium-external-libs",
             create: true,
-            include: ["readium_js/Readium"],
-            exclude: ["readium-external-libs", "readium-shared-js", "readium-cfi-js", "readium-plugin-example", "readium-plugin-annotations"]
+            include: ["mime-types", "zip", "zip-ext", "zip-fs", "cryptoJs/sha1", "cryptoJs/core",
+            'jquery',
+            'underscore', 'URIjs', 'punycode', 'SecondLevelDomains', 'IPv6',
+            'jquerySizes', 'domReady', 'eventEmitter', 'console_shim',
+            'rangy', 'rangy-core', 'rangy-textrange', 'rangy-highlighter', 'rangy-cssclassapplier', 'rangy-position']
         }
     ]
-
-    //,
-    // unlike with single-bundle, this does not work! :(
-    // paths:
-    // {
-    //     "version":
-    //         process._RJS_rootDir(2) + '/build-output/version',
-    // }
 });
