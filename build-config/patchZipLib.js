@@ -11,15 +11,21 @@ console.log(process.cwd());
 var fs = require("fs");
 
 var filePath = process.cwd() + "/node_modules/zip-js/WebContent/zip-ext.js";
-        
+
 fs.readFile(
     filePath,
     {encoding: 'utf-8'},
     function(err, fileContents) {
         if (!err) {
-            
-            fileContents = fileContents.replace('request.getResponseHeader("Accept-Ranges")', 'true || request.getResponseHeader("Accept-Ranges")');
-            
+
+            fileContents = fileContents.replace(
+                '(request.getResponseHeader("Accept-Ranges")',
+                '(true || request.getResponseHeader("Accept-Ranges")');
+
+            // fileContents = fileContents.replace(
+            //     'request.send();',
+            //     'request.setRequestHeader(); request.send();');
+
             fs.writeFile(
                 filePath,
                 fileContents,
@@ -32,4 +38,3 @@ fs.readFile(
         }
     }
 );
-

@@ -234,14 +234,18 @@ scripts:
 #    '
 
 #=====================
-    'versioning': '
+    'preversioning': '
+
         mkdirp build-output/_multiple-bundles
         &&
         mkdirp build-output/_single-bundle
         &&
-        node build-config/versioning.js build-output/version.json
-        &&
         mkdirp build-output/XXX
+    '
+
+#=====================
+    'versioning': '
+        node build-config/versioning.js build-output/version.json
         &&
         cp build-output/version.json build-output/XXX/
     '
