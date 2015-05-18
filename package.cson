@@ -161,9 +161,6 @@ scripts:
         &&
         npm run
             prepare:dependencies
-        &&
-        npm run
-            prepare:patch
     '
 
 #=====================
@@ -184,12 +181,6 @@ scripts:
         cd ..
         &&
         ls
-    '
-
-#=====================
-    'prepare:patch': '
-
-        node build-config/patchZipLib.js
     '
 
 #=====================
