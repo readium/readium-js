@@ -43732,7 +43732,7 @@ define('readium_plugin_annotations', ['readium_plugin_annotations/main'], functi
 
 define('text',{load: function(id){throw new Error("Dynamic load not allowed: " + id);}});
 
-define('text!version.json',[],function () { return '{"readiumJs":{"sha":"983ade9ae383c32cb405fcb83a9807078b1324e8","clean":false,"version":"0.20.0-alpha","chromeVersion":"2.20.0-alpha","tag":"0.15-146-g983ade9","branch":"feature/pluginsX","release":false,"timestamp":1432026879688},"readiumSharedJs":{"sha":"97274befa78900a2419ad40e7faf52f05d2ce3e6","clean":true,"version":"0.20.0-alpha","tag":"0.16-133-g97274be","branch":"feature/pluginsX","release":false,"timestamp":1432026879953},"readiumCfiJs":{"sha":"2d4a3b8a6905e487413f0a23bedee68e5d913aea","clean":true,"version":"0.20.0-alpha","tag":"0.1.4-106-g2d4a3b8","branch":"feature/plugins","release":false,"timestamp":1432026880181}}';});
+define('text!version.json',[],function () { return '{"readiumJs":{"sha":"ff197d048c89346479a2e83909faa15d363448e4","clean":false,"version":"0.20.0-alpha","chromeVersion":"2.20.0-alpha","tag":"0.15-147-gff197d0","branch":"feature/pluginsX","release":false,"timestamp":1432026950202},"readiumSharedJs":{"sha":"97274befa78900a2419ad40e7faf52f05d2ce3e6","clean":true,"version":"0.20.0-alpha","tag":"0.16-133-g97274be","branch":"feature/pluginsX","release":false,"timestamp":1432026950483},"readiumCfiJs":{"sha":"2d4a3b8a6905e487413f0a23bedee68e5d913aea","clean":true,"version":"0.20.0-alpha","tag":"0.1.4-106-g2d4a3b8","branch":"feature/plugins","release":false,"timestamp":1432026950704}}';});
 
 //  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
 //  
