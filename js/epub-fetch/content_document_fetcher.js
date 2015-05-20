@@ -1,14 +1,14 @@
 //  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
-//  
-//  Redistribution and use in source and binary forms, with or without modification, 
+//
+//  Redistribution and use in source and binary forms, with or without modification,
 //  are permitted provided that the following conditions are met:
-//  1. Redistributions of source code must retain the above copyright notice, this 
+//  1. Redistributions of source code must retain the above copyright notice, this
 //  list of conditions and the following disclaimer.
-//  2. Redistributions in binary form must reproduce the above copyright notice, 
-//  this list of conditions and the following disclaimer in the documentation and/or 
+//  2. Redistributions in binary form must reproduce the above copyright notice,
+//  this list of conditions and the following disclaimer in the documentation and/or
 //  other materials provided with the distribution.
-//  3. Neither the name of the organization nor the names of its contributors may be 
-//  used to endorse or promote products derived from this software without specific 
+//  3. Neither the name of the organization nor the names of its contributors may be
+//  used to endorse or promote products derived from this software without specific
 //  prior written permission.
 
 define(
@@ -54,9 +54,13 @@ define(
                     resolveDocumentAudios(resolutionDeferreds, onerror);
                     resolveDocumentVideos(resolutionDeferreds, onerror);
                 }
+
                 // TODO: recursive fetching, parsing and DOM construction of documents in IFRAMEs,
                 // with CSS preprocessing and obfuscated font handling
+                // DANIEL: yep, that's essential for embedded widgets / EPUB scriptable components
+                // See https://github.com/readium/readium-js/issues/105
                 resolveDocumentIframes(resolutionDeferreds, onerror);
+
                 // TODO: resolution (e.g. using DOM mutation events) of scripts loaded dynamically by scripts
                 resolveDocumentScripts(resolutionDeferreds, onerror);
                 resolveDocumentLinkStylesheets(resolutionDeferreds, onerror);
@@ -97,15 +101,42 @@ define(
 
             function fetchResourceForElement(resolvedElem, refAttrOrigVal, refAttr, fetchMode, resolutionDeferreds,
                                              onerror, resourceDataPreprocessing) {
-                var resourceUriRelativeToPackageDocument = (new URI(refAttrOrigVal)).absoluteTo(_contentDocumentPathRelativeToPackage).toString();
 
-                var cachedResourceUrl = _publicationResourcesCache.getResourceURL(resourceUriRelativeToPackageDocument);
+                 function replaceRefAttrInElem(newResourceUrl) {
+                     // Store original refAttrVal in a special attribute to provide access to the original href:
+                     $(resolvedElem).data('epubZipOrigHref', refAttrOrigVal);
+                     $(resolvedElem).attr(refAttr, newResourceUrl);
+                 }
 
-                function replaceRefAttrInElem(newResourceUrl) {
-                    // Store original refAttrVal in a special attribute to provide access to the original href:
-                    $(resolvedElem).data('epubZipOrigHref', refAttrOrigVal);
-                    $(resolvedElem).attr(refAttr, newResourceUrl);
+                var refAttrUri = new URI(refAttrOrigVal);
+                if (refAttrUri.scheme() !== '') {
+                    console.log("HTTP / absolute scheme res: " + refAttrOrigVal);
+
+                    return;
+
+                } else if (refAttrOrigVal.indexOf("/") == 0) {
+                    console.log("Absolute path res: " + refAttrOrigVal);
+
+                    var HTTPServerRootFolder =
+                    window.location ? (
+                      window.location.protocol
+                      + "//"
+                      + window.location.hostname
+                      + (window.location.port ? (':' + window.location.port) : '')
+                      ) : ''
+                    ;
+
+                    replaceRefAttrInElem(HTTPServerRootFolder + refAttrOrigVal);
+
+                    return;
                 }
+
+                var contentDocumentPathRelativeToBase = _publicationFetcher.convertPathRelativeToPackageToRelativeToBase(_contentDocumentPathRelativeToPackage);
+
+                var resourceUriRelativeToBase = "/" + (new URI(refAttrOrigVal)).absoluteTo(contentDocumentPathRelativeToBase).toString();
+
+
+                var cachedResourceUrl = _publicationResourcesCache.getResourceURL(resourceUriRelativeToBase);
 
                 if (cachedResourceUrl) {
                     replaceRefAttrInElem(cachedResourceUrl);
@@ -113,7 +144,7 @@ define(
                     var resolutionDeferred = $.Deferred();
                     resolutionDeferreds.push(resolutionDeferred);
 
-                    _publicationFetcher.relativeToPackageFetchFileContents(resourceUriRelativeToPackageDocument,
+                    _publicationFetcher.relativeToPackageFetchFileContents(resourceUriRelativeToBase,
                         fetchMode,
                         function (resourceData) {
 
@@ -123,7 +154,7 @@ define(
                             var replaceResourceURL = function (finalResourceData) {
                                 // Creating an object URL requires a Blob object, so resource data fetched in text mode needs to be wrapped in a Blob:
                                 if (fetchMode === 'text') {
-                                    var textResourceContentType = ContentTypeDiscovery.identifyContentTypeFromFileName(resourceUriRelativeToPackageDocument);
+                                    var textResourceContentType = ContentTypeDiscovery.identifyContentTypeFromFileName(resourceUriRelativeToBase);
                                     var declaredType = $(resolvedElem).attr('type');
                                     if (declaredType) {
                                         textResourceContentType = declaredType;
@@ -132,7 +163,7 @@ define(
                                 }
                                 //noinspection JSUnresolvedVariable,JSUnresolvedFunction
                                 var resourceObjectURL = window.URL.createObjectURL(finalResourceData);
-                                _publicationResourcesCache.putResource(resourceUriRelativeToPackageDocument,
+                                _publicationResourcesCache.putResource(resourceUriRelativeToBase,
                                     resourceObjectURL, finalResourceData);
                                 // TODO: take care of releasing object URLs when no longer needed
                                 replaceRefAttrInElem(resourceObjectURL);
@@ -140,7 +171,7 @@ define(
                             };
 
                             if (resourceDataPreprocessing) {
-                                resourceDataPreprocessing(resourceData, resourceUriRelativeToPackageDocument,
+                                resourceDataPreprocessing(resourceData, resourceUriRelativeToBase,
                                     replaceResourceURL);
                             } else {
                                 replaceResourceURL(resourceData);
@@ -163,9 +194,19 @@ define(
                     // Absolute URLs don't need programmatic fetching
                     return;
                 }
-                var resourceUriRelativeToPackageDocument = (new URI(extractedUrl)).absoluteTo(styleSheetUriRelativeToPackageDocument).toString();
 
-                var cachedResourceURL = _publicationResourcesCache.getResourceURL(resourceUriRelativeToPackageDocument);
+                var styleSheetUriRelativeToBase = _publicationFetcher.convertPathRelativeToPackageToRelativeToBase(styleSheetUriRelativeToPackageDocument);
+
+                // fetchResourceForCssUrlMatch() is potentially recursive,
+                // so styleSheetUriRelativeToPackageDocument may already be relative to base (i.e. absolute),
+                // See preprocessCssStyleSheetData() below
+                if (styleSheetUriRelativeToBase.charAt(0) === '/') {
+                    styleSheetUriRelativeToBase = styleSheetUriRelativeToBase.substr(1);
+                }
+
+                var resourceUriRelativeToBase = "/" + (new URI(extractedUrl)).absoluteTo(styleSheetUriRelativeToBase).toString();
+
+                var cachedResourceURL = _publicationResourcesCache.getResourceURL(resourceUriRelativeToBase);
 
 
                 if (cachedResourceURL) {
@@ -184,7 +225,7 @@ define(
                             isStyleSheetResource: isStyleSheetResource,
                             resourceObjectURL: resourceObjectURL
                         };
-                        _publicationResourcesCache.putResource(resourceUriRelativeToPackageDocument,
+                        _publicationResourcesCache.putResource(resourceUriRelativeToBase,
                             resourceObjectURL, resourceDataBlob);
                         cssUrlFetchDeferred.resolve();
                     };
@@ -199,7 +240,7 @@ define(
                         // TODO: test whether recursion works for nested @import rules with arbitrary indirection depth.
                         fetchMode = 'text';
                         fetchCallback = function (styleSheetResourceData) {
-                            preprocessCssStyleSheetData(styleSheetResourceData, resourceUriRelativeToPackageDocument,
+                            preprocessCssStyleSheetData(styleSheetResourceData, resourceUriRelativeToBase,
                                 function (preprocessedStyleSheetData) {
                                     var resourceDataBlob = new Blob([preprocessedStyleSheetData], {type: 'text/css'});
                                     processedBlobCallback(resourceDataBlob);
@@ -210,7 +251,7 @@ define(
                         fetchCallback = processedBlobCallback;
                     }
 
-                    _publicationFetcher.relativeToPackageFetchFileContents(resourceUriRelativeToPackageDocument,
+                    _publicationFetcher.relativeToPackageFetchFileContents(resourceUriRelativeToBase,
                         fetchMode,
                         fetchCallback, fetchErrorCallback);
                 }
@@ -278,14 +319,9 @@ define(
 
                 resolvedElems.each(function (index, resolvedElem) {
                     var refAttrOrigVal = $(resolvedElem).attr(refAttr);
-                    var refAttrUri = new URI(refAttrOrigVal);
 
-                    if (refAttrUri.scheme() === '') {
-                        // Relative URI, fetch from packed EPUB archive:
-
-                        fetchResourceForElement(resolvedElem, refAttrOrigVal, refAttr, fetchMode, resolutionDeferreds,
-                            onerror, resourceDataPreprocessing);
-                    }
+                    fetchResourceForElement(resolvedElem, refAttrOrigVal, refAttr, fetchMode, resolutionDeferreds,
+                        onerror, resourceDataPreprocessing);
                 });
             }
 
@@ -308,7 +344,15 @@ define(
             }
 
             function resolveDocumentIframes(resolutionDeferreds, onerror) {
-                resolveResourceElements('iframe', 'src', 'blob', resolutionDeferreds, onerror);
+
+                resolveResourceElements('iframe', 'src', 'blob', resolutionDeferreds, onerror,
+                function(data, uri, callback) {
+
+                    callback(data);
+                });
+
+                // See https://github.com/readium/readium-js/issues/105
+                // for an experiment with nested Blob URI iframes
             }
 
             function resolveDocumentLinkStylesheets(resolutionDeferreds, onerror) {

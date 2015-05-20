@@ -1,14 +1,14 @@
 //  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
-//  
-//  Redistribution and use in source and binary forms, with or without modification, 
+//
+//  Redistribution and use in source and binary forms, with or without modification,
 //  are permitted provided that the following conditions are met:
-//  1. Redistributions of source code must retain the above copyright notice, this 
+//  1. Redistributions of source code must retain the above copyright notice, this
 //  list of conditions and the following disclaimer.
-//  2. Redistributions in binary form must reproduce the above copyright notice, 
-//  this list of conditions and the following disclaimer in the documentation and/or 
+//  2. Redistributions in binary form must reproduce the above copyright notice,
+//  this list of conditions and the following disclaimer in the documentation and/or
 //  other materials provided with the distribution.
-//  3. Neither the name of the organization nor the names of its contributors may be 
-//  used to endorse or promote products derived from this software without specific 
+//  3. Neither the name of the organization nor the names of its contributors may be
+//  used to endorse or promote products derived from this software without specific
 //  prior written permission.
 
 define(['jquery', 'URIjs', './discover_content_type', 'zip-ext'], function ($, URI, ContentTypeDiscovery, zip) {
@@ -34,7 +34,7 @@ define(['jquery', 'URIjs', './discover_content_type', 'zip-ext'], function ($, U
                 // The Web Worker requires standalone z-worker/inflate/deflate.js files in libDir (i.e. cannot be aggregated/minified/optimised in the final generated single-file build)
                 zip.useWebWorkers = true; // (true by default)
                 zip.workerScriptsPath = libDir;
-                
+
                 _zipFs = new zip.fs.FS();
                 _zipFs.importHttpContent(
                     baseUrl,
@@ -56,7 +56,7 @@ define(['jquery', 'URIjs', './discover_content_type', 'zip-ext'], function ($, U
             withZipFsPerform(
                 function (zipFs, onerror) {
                     var entry = zipFs.find(relativePathRelativeToPackageRoot);
-                    
+
                     if (typeof entry === 'undefined' || entry === null) {
                         onerror(new Error('Entry ' + relativePathRelativeToPackageRoot + ' not found in zip ' + baseUrl));
                     } else {
