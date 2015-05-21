@@ -390,7 +390,7 @@ define('text',['module'], function (module) {
 });
 
 
-define('text!version.json',[],function () { return '{"readiumJs":{"sha":"ec8b508099ff11e06426ac741348fc2bfeba7c4e","clean":false,"version":"0.20.0-alpha","chromeVersion":"2.20.0-alpha","tag":"0.15-148-gec8b508","branch":"feature/pluginsX","release":false,"timestamp":1432143410411},"readiumSharedJs":{"sha":"97274befa78900a2419ad40e7faf52f05d2ce3e6","clean":true,"version":"0.20.0-alpha","tag":"0.16-133-g97274be","branch":"feature/pluginsX","release":false,"timestamp":1432143410692},"readiumCfiJs":{"sha":"2d4a3b8a6905e487413f0a23bedee68e5d913aea","clean":true,"version":"0.20.0-alpha","tag":"0.1.4-106-g2d4a3b8","branch":"feature/plugins","release":false,"timestamp":1432143410920}}';});
+define('text!version.json',[],function () { return '{"readiumJs":{"sha":"7653dfdf09a34960c0d7aea05a98f94c87dc8986","clean":false,"version":"0.20.0-alpha","chromeVersion":"2.20.0-alpha","tag":"0.17-111-g7653dfd","branch":"feature/pluginsX","release":false,"timestamp":1432216229327},"readiumSharedJs":{"sha":"b2c63ec15da589d0a2e3e9e2a90851ae0f3d67b2","clean":true,"version":"0.20.0-alpha","tag":"0.16-137-gb2c63ec","branch":"feature/pluginsX","release":false,"timestamp":1432216229598},"readiumCfiJs":{"sha":"1a6dc5832ba4a4fddab8ff8141cf903e995482ce","clean":true,"version":"0.20.0-alpha","tag":"0.1.4-108-g1a6dc58","branch":"feature/plugins","release":false,"timestamp":1432216229817}}';});
 
 //  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
 //  
@@ -3133,12 +3133,15 @@ define('readium_js/Readium',['text!version.json', 'jquery', 'underscore', 'readi
             readerOptions.iframeLoader = new IframeLoader();
         }
 
-        // is false by default, but just making this initialisation setting more explicit here.
-        readerOptions.needsFixedLayoutScalerWorkAround = false;
+        // Chrome extension and cross-browser cloud reader build configuration uses this scaling method across the board (no browser sniffing for Chrome)
+        // See https://github.com/readium/readium-js-viewer/issues/313#issuecomment-101578284
+        // true means: apply CSS scale transform to the root HTML element of spine item documents (fixed layout / pre-paginated)
+        // and to any spine items in scroll view (both continuous and document modes). Scroll view layout includes reflowable spine items, but the zoom level is 1x so there is no impact.
+        readerOptions.needsFixedLayoutScalerWorkAround = true;
 
         this.reader = new ReaderView(readerOptions);
         ReadiumSDK.reader = this.reader;
-
+  
         this.openPackageDocument = function(bookRoot, callback, openPageRequest)  {
             if (_currentPublicationFetcher) {
                 _currentPublicationFetcher.flushCache();
