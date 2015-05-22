@@ -20745,7 +20745,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
             var css1 = Helpers.CSSTransformString({scale: scale, enable3D: enable3D});
             _$epubHtml.css(css1);
 
-            var css2 = ReadiumSDK.Helpers.CSSTransformString({scale : 1, enable3D: enable3D});
+            var css2 = Helpers.CSSTransformString({scale : 1, enable3D: enable3D});
             css2["width"] = _meta_size.width * scale;
             css2["height"] = _meta_size.height * scale;
 
@@ -43733,7 +43733,7 @@ define('readium_plugin_annotations', ['readium_plugin_annotations/main'], functi
 
 define('text',{load: function(id){throw new Error("Dynamic load not allowed: " + id);}});
 
-define('text!version.json',[],function () { return '{"readiumJs":{"sha":"7653dfdf09a34960c0d7aea05a98f94c87dc8986","clean":false,"version":"0.20.0-alpha","chromeVersion":"2.20.0-alpha","tag":"0.17-111-g7653dfd","branch":"feature/pluginsX","release":false,"timestamp":1432216229327},"readiumSharedJs":{"sha":"b2c63ec15da589d0a2e3e9e2a90851ae0f3d67b2","clean":true,"version":"0.20.0-alpha","tag":"0.16-137-gb2c63ec","branch":"feature/pluginsX","release":false,"timestamp":1432216229598},"readiumCfiJs":{"sha":"1a6dc5832ba4a4fddab8ff8141cf903e995482ce","clean":true,"version":"0.20.0-alpha","tag":"0.1.4-108-g1a6dc58","branch":"feature/plugins","release":false,"timestamp":1432216229817}}';});
+define('text!version.json',[],function () { return '{"readiumJs":{"sha":"c8df493db5dbf053a6559596424eecef547bea2c","clean":false,"version":"0.20.0-alpha","chromeVersion":"2.20.0-alpha","tag":"0.17-112-gc8df493","branch":"feature/pluginsX","release":false,"timestamp":1432288193368},"readiumSharedJs":{"sha":"e5b12ca8d86bdf043884c7f777d929a3a35a3d41","clean":true,"version":"0.20.0-alpha","tag":"0.16-139-ge5b12ca","branch":"feature/pluginsX","release":false,"timestamp":1432288193618},"readiumCfiJs":{"sha":"b2ee78304f30ae90a8494a513e0f83a10231e86a","clean":true,"version":"0.20.0-alpha","tag":"0.1.4-109-gb2ee783","branch":"feature/plugins","release":false,"timestamp":1432288193840}}';});
 
 //  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
 //  

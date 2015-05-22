@@ -3090,7 +3090,7 @@ var OnePageView = function (options, classes, enableBookStyleOverrides, reader) 
             var css1 = Helpers.CSSTransformString({scale: scale, enable3D: enable3D});
             _$epubHtml.css(css1);
 
-            var css2 = ReadiumSDK.Helpers.CSSTransformString({scale : 1, enable3D: enable3D});
+            var css2 = Helpers.CSSTransformString({scale : 1, enable3D: enable3D});
             css2["width"] = _meta_size.width * scale;
             css2["height"] = _meta_size.height * scale;
 

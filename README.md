@@ -41,8 +41,8 @@ Note that the above command executes the following:
 
 * Hack away! (mostly the source code in the `js` folder)
 * `npm run build` (to update the RequireJS bundles in the build output folder)
-* `npm run example:dev` (to launch an http server with live-reload, automatically opens a web browser instance to the HTML files in the `build-output-usage-example` folder)
-* `npm run example` (same as above, but without watching for file changes (no automatic rebuild))
+* `npm run http:dev` (to launch an http server with live-reload, automatically opens a web browser instance to the HTML files in the `dev` folder)
+* `npm run http` (same as above, but without watching for file changes (no automatic rebuild))
 
 Optionally:
 
@@ -58,7 +58,7 @@ This explains why Browserify ( http://browserify.org ) is not used by this Readi
 More information at http://requirejs.org/docs/commonjs.html and http://requirejs.org/docs/node.html
 
 * Make sure `npm install readium-js` completes successfully ( https://www.npmjs.com/package/readium-js )
-* Execute `npm run example`, which opens a web browser to a basic RequireJS bootstrapper located in the `build-output-usage-example` folder (this is *not* a fully-functioning application!)
+* Execute `npm run http`, which opens a web browser to a basic RequireJS bootstrapper located in the `dev` folder (this is *not* a fully-functioning application!)
 * To see an actual application that uses this "readium-js" component, try "readium-js-viewer" ( https://www.npmjs.com/package/readium-js-viewer )
 
 Note: the `--dev` option after `npm install readium-js` can be used to force the download of development dependencies,
@@ -77,7 +77,7 @@ which aggregates all the required code (external library dependencies included, 
 as well as the "Almond" lightweight AMD loader ( https://github.com/jrburke/almond ).
 
 This means that the full RequireJS library ( http://requirejs.org ) is not actually needed to bootstrap the AMD modules at runtime,
-as demonstrated by the HTML file in the `build-output-usage-example` folder (trimmed for brevity):
+as demonstrated by the HTML file in the `dev` folder (trimmed for brevity):
 
 ```html
 <html>
@@ -112,7 +112,7 @@ The `_multiple-bundles` folder contains several Javascript bundles (and their re
 
 In addition, the folder contains the full `RequireJS.js` library ( http://requirejs.org ), as the above bundles do no include the lightweight "Almond" AMD loader ( https://github.com/jrburke/almond ).
 
-Usage is demonstrated by the HTML file in the `build-output-usage-example` folder (trimmed for brevity):
+Usage is demonstrated by the HTML file in the `dev` folder (trimmed for brevity):
 
 ```html
 <html>
@@ -202,4 +202,3 @@ For more complex build processes, Grunt / Gulp can be used, but these build syst
 
 Downside: DO NOT invoke `npm init` or `npm install --save` `--save-dev` `--save-optional`,
 as this would overwrite / update the JSON, not the master CSON!
-
