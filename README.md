@@ -41,7 +41,7 @@ Note that the above command executes the following:
 
 * Hack away! (mostly the source code in the `js` folder)
 * `npm run build` (to update the RequireJS bundles in the build output folder)
-* `npm run http:dev` (to launch an http server with live-reload, automatically opens a web browser instance to the HTML files in the `dev` folder)
+* `npm run http:watch` (to launch an http server with live-reload, automatically opens a web browser instance to the HTML files in the `dev` folder)
 * `npm run http` (same as above, but without watching for file changes (no automatic rebuild))
 
 Optionally:
