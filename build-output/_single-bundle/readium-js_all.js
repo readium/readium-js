@@ -15849,6 +15849,28 @@ module.exports = EventEmitter;
       base = new URI(base);
     }
 
+    // << Readium patch
+    // "filesystem:chrome-extension:"
+    //
+    if (this._parts.protocol == 'filesystem') {
+
+      return resolved;
+    }
+
+    if (base._parts.protocol == 'filesystem') {
+
+      var uri = this.absoluteTo(base._parts.path);
+
+      if (base._parts.path.indexOf("chrome-extension:") !== -1) {
+
+          return new URI('filesystem:' + uri.toString());
+      }
+
+      return uri;
+    }
+    //
+    // Readium patch >>
+
     if (!resolved._parts.protocol) {
       resolved._parts.protocol = base._parts.protocol;
     }
@@ -18696,27 +18718,27 @@ SpineItem.alternateSpread = function(spread) {
 //
 //  Created by Boris Schneiderman.
 //  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
-//  
-//  Redistribution and use in source and binary forms, with or without modification, 
+//
+//  Redistribution and use in source and binary forms, with or without modification,
 //  are permitted provided that the following conditions are met:
-//  1. Redistributions of source code must retain the above copyright notice, this 
+//  1. Redistributions of source code must retain the above copyright notice, this
 //  list of conditions and the following disclaimer.
-//  2. Redistributions in binary form must reproduce the above copyright notice, 
-//  this list of conditions and the following disclaimer in the documentation and/or 
+//  2. Redistributions in binary form must reproduce the above copyright notice,
+//  this list of conditions and the following disclaimer in the documentation and/or
 //  other materials provided with the distribution.
-//  3. Neither the name of the organization nor the names of its contributors may be 
-//  used to endorse or promote products derived from this software without specific 
+//  3. Neither the name of the organization nor the names of its contributors may be
+//  used to endorse or promote products derived from this software without specific
 //  prior written permission.
-//  
-//  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
-//  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED 
-//  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
-//  IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, 
-//  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
-//  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, 
-//  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-//  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE 
-//  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED 
+//
+//  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+//  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+//  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+//  IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+//  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+//  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+//  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+//  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+//  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 //  OF THE POSSIBILITY OF SUCH DAMAGE.
 define('readium_shared_js/helpers',['underscore', "jquery", "jquerySizes", "./models/spine_item", "./globals"], function(_, $, JQuerySizes, SpineItem, Globals) {
 
@@ -18966,8 +18988,14 @@ Helpers.triggerLayout = function ($iframe) {
             ss = style.sheet;
         }
 
-        if (ss)
-            ss.insertRule('body:first-child::before {content:\'READIUM\';color: red;font-weight: bold;}', ss.cssRules.length);
+        if (ss) {
+            var cssRule = 'body:first-child::before {content:\'READIUM\';color: red;font-weight: bold;}';
+            if (ss.cssRules) {
+                ss.insertRule(cssRule, ss.cssRules.length);
+            } else {
+                ss.insertRule(cssRule, 0);
+            }
+        }
     }
     catch (ex) {
         console.error(ex);
@@ -18979,8 +19007,13 @@ Helpers.triggerLayout = function ($iframe) {
         doc.body.appendChild(el);
         doc.body.removeChild(el);
 
-        if (ss)
-            ss.deleteRule(ss.cssRules.length - 1);
+        if (ss) {
+            if (ss.cssRules) {
+                ss.deleteRule(ss.cssRules.length - 1);
+            } else {
+                ss.deleteRule(0);
+            }
+        }
     }
     catch (ex) {
         console.error(ex);
@@ -19307,6 +19340,7 @@ Helpers.escapeJQuerySelector = function (sel) {
 
 return Helpers;
 });
+
 //  LauncherOSX
 //
 //  Created by Boris Schneiderman.
@@ -43733,7 +43767,7 @@ define('readium_plugin_annotations', ['readium_plugin_annotations/main'], functi
 
 define('text',{load: function(id){throw new Error("Dynamic load not allowed: " + id);}});
 
-define('text!version.json',[],function () { return '{"readiumJs":{"sha":"c8df493db5dbf053a6559596424eecef547bea2c","clean":false,"version":"0.20.0-alpha","chromeVersion":"2.20.0-alpha","tag":"0.17-112-gc8df493","branch":"feature/pluginsX","release":false,"timestamp":1432288193368},"readiumSharedJs":{"sha":"e5b12ca8d86bdf043884c7f777d929a3a35a3d41","clean":true,"version":"0.20.0-alpha","tag":"0.16-139-ge5b12ca","branch":"feature/pluginsX","release":false,"timestamp":1432288193618},"readiumCfiJs":{"sha":"b2ee78304f30ae90a8494a513e0f83a10231e86a","clean":true,"version":"0.20.0-alpha","tag":"0.1.4-109-gb2ee783","branch":"feature/plugins","release":false,"timestamp":1432288193840}}';});
+define('text!version.json',[],function () { return '{"readiumJs":{"sha":"ff90406a2cc623cf2b3b0727f8bca324217210bb","clean":false,"version":"0.20.0-alpha","chromeVersion":"2.20.0-alpha","tag":"0.17-115-gff90406","branch":"feature/pluginsX","release":false,"timestamp":1432587435478},"readiumSharedJs":{"sha":"1a82a9d44e55fd08740a449b116ec0e59a305349","clean":true,"version":"0.20.0-alpha","tag":"0.16-143-g1a82a9d","branch":"feature/pluginsX","release":false,"timestamp":1432587435744},"readiumCfiJs":{"sha":"027b424014bb4a5c986e1529c87fb31859156c97","clean":true,"version":"0.20.0-alpha","tag":"0.1.4-110-g027b424","branch":"feature/plugins","release":false,"timestamp":1432587435972}}';});
 
 //  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
 //  

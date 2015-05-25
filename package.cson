@@ -234,6 +234,15 @@ scripts:
         &&
         node readium-shared-js/readium-cfi-js/node_modules/rimraf/bin.js
             build-output/_multiple-bundles/version.json
+        &&
+        node readium-shared-js/readium-cfi-js/node_modules/rimraf/bin.js
+            build-output/_multiple-bundles/deflate.js
+        &&
+        node readium-shared-js/readium-cfi-js/node_modules/rimraf/bin.js
+            build-output/_multiple-bundles/inflate.js
+        &&
+        node readium-shared-js/readium-cfi-js/node_modules/rimraf/bin.js
+            build-output/_multiple-bundles/z-worker.js
     '
 
 #=====================

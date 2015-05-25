@@ -69,14 +69,14 @@ require.config({
         'zip-ext':
             process._RJS_rootDir(2) + '/node_modules/zip-js/WebContent/zip-ext',
 
-        // deflate:
-            // process._RJS_rootDir(2) + '/node_modules/zip-js/WebContent/deflate',
+        'inflate':
+            process._RJS_rootDir(2) + '/node_modules/zip-js/WebContent/inflate',
 
-        // inflate:
-            // process._RJS_rootDir(2) + '/node_modules/zip-js/WebContent/inflate',
+        'deflate':
+            process._RJS_rootDir(2) + '/node_modules/zip-js/WebContent/deflate',
 
-        // 'z-worker':
-            // process._RJS_rootDir(2) + '/node_modules/zip-js/WebContent/z-worker'
+        'z-worker':
+            process._RJS_rootDir(2) + '/node_modules/zip-js/WebContent/z-worker'
     },
 
 
@@ -95,6 +95,12 @@ require.config({
         },
         'zip-ext' : {
             deps: ['zip-fs'],
+            exports: 'zip'
+        },
+        'inflate' : {
+            exports: 'zip'
+        },
+        'deflate' : {
             exports: 'zip'
         }
     }
