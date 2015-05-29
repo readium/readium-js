@@ -3004,14 +3004,11 @@ define("zip-ext", ["zip-fs"], (function (global) {
 	                    var thatByte = (thatWords[i >>> 2] >>> (24 - (i % 4) * 8)) & 0xff;
 	                    thisWords[(thisSigBytes + i) >>> 2] |= thatByte << (24 - ((thisSigBytes + i) % 4) * 8);
 	                }
-	            } else if (thatWords.length > 0xffff) {
+	            } else {
 	                // Copy one word at a time
 	                for (var i = 0; i < thatSigBytes; i += 4) {
 	                    thisWords[(thisSigBytes + i) >>> 2] = thatWords[i >>> 2];
 	                }
-	            } else {
-	                // Copy all words at once
-	                thisWords.push.apply(thisWords, thatWords);
 	            }
 	            this.sigBytes += thatSigBytes;
 
@@ -17306,10 +17303,6 @@ return jQuery;
     var properties = ['protocol', 'username', 'password', 'hostname', 'port'];
     var basedir, i, p;
 
-    if (this._parts.urn) {
-      throw new Error('URNs do not have any generally defined hierarchical components');
-    }
-
     if (!(base instanceof URI)) {
       base = new URI(base);
     }
@@ -17317,6 +17310,7 @@ return jQuery;
     // << Readium patch
     // "filesystem:chrome-extension:"
     //
+    
     if (this._parts.protocol == 'filesystem') {
 
       return resolved;
@@ -17328,11 +17322,16 @@ return jQuery;
 
       if (base._parts.path.indexOf("chrome-extension:") !== -1) {
 
-          return new URI('filesystem:' + uri.toString());
+        return new URI('filesystem:' + uri.toString());
       }
 
       return uri;
     }
+
+    if (this._parts.urn) {
+      throw new Error('URNs do not have any generally defined hierarchical components');
+    }
+
     //
     // Readium patch >>
 

@@ -15841,10 +15841,6 @@ module.exports = EventEmitter;
     var properties = ['protocol', 'username', 'password', 'hostname', 'port'];
     var basedir, i, p;
 
-    if (this._parts.urn) {
-      throw new Error('URNs do not have any generally defined hierarchical components');
-    }
-
     if (!(base instanceof URI)) {
       base = new URI(base);
     }
@@ -15852,6 +15848,7 @@ module.exports = EventEmitter;
     // << Readium patch
     // "filesystem:chrome-extension:"
     //
+    
     if (this._parts.protocol == 'filesystem') {
 
       return resolved;
@@ -15863,11 +15860,16 @@ module.exports = EventEmitter;
 
       if (base._parts.path.indexOf("chrome-extension:") !== -1) {
 
-          return new URI('filesystem:' + uri.toString());
+        return new URI('filesystem:' + uri.toString());
       }
 
       return uri;
     }
+
+    if (this._parts.urn) {
+      throw new Error('URNs do not have any generally defined hierarchical components');
+    }
+
     //
     // Readium patch >>
 
@@ -43767,7 +43769,7 @@ define('readium_plugin_annotations', ['readium_plugin_annotations/main'], functi
 
 define('text',{load: function(id){throw new Error("Dynamic load not allowed: " + id);}});
 
-define('text!version.json',[],function () { return '{"readiumJs":{"sha":"4432f6c2701ae066f2af7256bf643fb43f79f966","clean":false,"version":"0.20.0-alpha","chromeVersion":"2.20.0-alpha","tag":"0.17-116-g4432f6c","branch":"feature/pluginsX","release":false,"timestamp":1432590982964},"readiumSharedJs":{"sha":"d0fcda4491dfa01cc0ec74905c4b006d0342bf87","clean":true,"version":"0.20.0-alpha","tag":"0.16-144-gd0fcda4","branch":"feature/pluginsX","release":false,"timestamp":1432590983236},"readiumCfiJs":{"sha":"f8142b38004abaf88ac085a6dca9beff6647512b","clean":true,"version":"0.20.0-alpha","tag":"0.1.4-111-gf8142b3","branch":"feature/plugins","release":false,"timestamp":1432590983461}}';});
+define('text!version.json',[],function () { return '{"readiumJs":{"sha":"57dd6c64b3979336d9de1a718ec2708695ab8ecd","clean":false,"version":"0.20.0-alpha","chromeVersion":"2.20.0-alpha","tag":"0.17-119-g57dd6c6","branch":"feature/pluginsX","release":false,"timestamp":1432939706222},"readiumSharedJs":{"sha":"c9ff8077f8eb8eb19de46b023d1352129fdac2f7","clean":true,"version":"0.20.0-alpha","tag":"0.16-147-gc9ff807","branch":"feature/pluginsX","release":false,"timestamp":1432939706503},"readiumCfiJs":{"sha":"ec276f8ff27b958fd62b15c1b77be12dd7ae519c","clean":true,"version":"0.20.0-alpha","tag":"0.1.4-114-gec276f8","branch":"feature/plugins","release":false,"timestamp":1432939706737}}';});
 
 //  Copyright (c) 2014 Readium Foundation and/or its licensees. All rights reserved.
 //  
@@ -47713,14 +47715,11 @@ define('readium_js/epub-fetch/resource_cache',['underscore'], function (_) {
 	                    var thatByte = (thatWords[i >>> 2] >>> (24 - (i % 4) * 8)) & 0xff;
 	                    thisWords[(thisSigBytes + i) >>> 2] |= thatByte << (24 - ((thisSigBytes + i) % 4) * 8);
 	                }
-	            } else if (thatWords.length > 0xffff) {
+	            } else {
 	                // Copy one word at a time
 	                for (var i = 0; i < thatSigBytes; i += 4) {
 	                    thisWords[(thisSigBytes + i) >>> 2] = thatWords[i >>> 2];
 	                }
-	            } else {
-	                // Copy all words at once
-	                thisWords.push.apply(thisWords, thatWords);
 	            }
 	            this.sigBytes += thatSigBytes;
 
