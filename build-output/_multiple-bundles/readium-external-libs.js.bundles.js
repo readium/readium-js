@@ -1,1 +1,0 @@
-require.config({bundles: {"readium-external-libs":["IPv6","SecondLevelDomains","URIjs","console_shim","cryptoJs/core","cryptoJs/sha1","domReady","eventEmitter","jquery","jquerySizes","mime-types","punycode","rangy","rangy-core","rangy-cssclassapplier","rangy-highlighter","rangy-position","rangy-textrange","underscore","zip","zip-ext","zip-fs"]}});
