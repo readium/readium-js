@@ -1,16 +1,11 @@
 
-require(["readium_shared_js/globalsSetup", "readium_plugin_annotations"], function () {
+require(["readium_shared_js/globalsSetup"], function () {
 
     //require(['jquery', 'Readium'], function ($, Readium) {
-    require(['jquery', 'readium_js/Readium', 'readium_plugin_example'], function ($, Readium, examplePluginConfig) {
+    require(['jquery', 'readium_js/Readium'], function ($, Readium) {
 
         var readium = undefined;
         var altBook = false;
-
-        if (examplePluginConfig) {
-            examplePluginConfig.borderColor = "blue";
-            examplePluginConfig.backgroundColor = "cyan";
-        }
 
         console.log(Readium.version);
 
