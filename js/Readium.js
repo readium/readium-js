@@ -66,7 +66,7 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
 
         this.reader = new ReaderView(readerOptions);
         ReadiumSDK.reader = this.reader;
-  
+
         this.openPackageDocument = function(bookRoot, callback, openPageRequest)  {
             if (_currentPublicationFetcher) {
                 _currentPublicationFetcher.flushCache();
@@ -116,6 +116,171 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
 
     Readium.version = JSON.parse(versionText);
 
-    return Readium;
+    Readium.getVersion = function(callback) {
 
+        var version = Readium.version;
+
+        if (version.needsPopulating) {
+
+            console.log("version.json needsPopulating ...");
+
+            var nextRepo = function(i) {
+                if (i >= version.repos.length) {
+                    delete version.needsPopulating;
+                    delete version.repos;
+
+                    console.log("version");
+                    console.debug(version);
+
+                    Readium.version = version;
+                    callback(version);
+                    return;
+                }
+
+                var repo = version.repos[i];
+
+                console.log("##########################");
+
+                console.log("repo.name");
+                console.debug(repo.name);
+
+                console.log("repo.path");
+                console.debug(repo.path);
+
+                version[repo.name] = {};
+                version[repo.name].timestamp = new Date().getTime();
+
+                  //
+                  // "readiumJs":
+                  // {
+                  //   "sha":"xxx",
+                  //   "clean":false,
+                  //   "version":"yyy",
+                  //   "chromeVersion":"yyy",
+                  //   "tag":"zzz",
+                  //   "branch":"fff",
+                  //   "release":false,
+                  //   "timestamp":000
+                  // }
+
+                $.getJSON(repo.path + '/package.json', function(data) {
+
+                    console.log("version");
+                    console.debug(data.version);
+
+                    version[repo.name].version = data.version;
+                    version[repo.name].chromeVersion = '2.' + data.version.substring(2);
+
+                    var getRef = function(gitFolder, repo, ref) {
+                        var url = gitFolder + '/' + ref;
+
+                        console.log("getRef");
+                        console.debug(url);
+
+                        $.get(url, function(data) {
+
+                            console.log("getRef OKAY");
+                            console.debug(url);
+
+                            console.log(data);
+
+                            version[repo.name].branch = ref;
+                            console.log("branch");
+                            console.debug(ref);
+
+                            var sha = data.substring(0, data.length - 1);
+                            version[repo.name].sha = sha;
+                            console.log("sha");
+                            console.debug(sha);
+
+                            nextRepo(++i);
+
+                        }).fail(function(err) {
+
+                            console.log("getRef ERROR");
+                            console.debug(url);
+
+                            nextRepo(++i);
+                        });
+                    };
+
+                    var getGit = function(repo) {
+                        var url = repo.path + '/.git';
+
+                        console.log("getGit");
+                        console.debug(url);
+
+                        $.get(url, function(data) {
+
+                            console.log("getGit OKAY");
+                            console.debug(url);
+
+                            console.log(data);
+
+                            if (data.indexOf('gitdir: ') == 0) {
+
+                                var gitDir = repo.path + "/" + data.substring('gitdir: '.length).trim();
+
+                                console.log("gitdir: OKAY");
+                                console.log(gitDir);
+
+                                getHead(gitDir, repo);
+
+                            } else {
+                                console.log("gitdir: ERROR");
+
+                                nextRepo(++i);
+                            }
+
+                        }).fail(function(err) {
+
+                            console.log("getGit ERROR");
+                            console.debug(url);
+
+                            nextRepo(++i);
+                        });
+                    };
+
+                    var getHead = function(gitFolder, repo, first) {
+                        var url = gitFolder + "/HEAD";
+
+                        console.log("getHead");
+                        console.debug(url);
+
+                        $.get(url, function(data) {
+
+                            console.log("getHead OKAY");
+                            console.debug(url);
+
+                            console.log(data);
+
+                            var ref = data.substring(5, data.length - 1);
+                            getRef(gitFolder, repo, ref);
+
+                        }).fail(function(err) {
+
+                            console.log("getHead ERROR");
+                            console.debug(url);
+
+                            if (first) {
+                                getGit(repo);
+                            } else {
+                                console.log("getHead ABORT");
+                                nextRepo(++i);
+                            }
+                        });
+                    };
+
+                    getHead(repo.path + '/.git', repo, true);
+
+                }).fail(function(err) { nextRepo(++i); });
+            };
+
+
+            nextRepo(0);
+
+        } else { callback(version); }
+    };
+
+    return Readium;
 });
