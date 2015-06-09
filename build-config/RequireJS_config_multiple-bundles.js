@@ -25,7 +25,7 @@ require.config({
             name: "readium-js",
             create: true,
             include: ["readium_js/Readium"],
-            exclude: ["readium-external-libs", "readium-shared-js", "readium-cfi-js", "readium-plugin-example", "readium-plugin-annotations"]
+            exclude: ["readium-external-libs", "readium-shared-js", "readium-cfi-js"]
         }
     ]
 
