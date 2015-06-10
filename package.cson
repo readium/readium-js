@@ -202,6 +202,15 @@ scripts:
     '
 
 #=====================
+    'genPluginsConfig': '
+        cd readium-shared-js/
+        &&
+        node readium-cfi-js/readium-build-tools/pluginsConfigMaker.js
+        &&
+        cd ..
+    '
+
+#=====================
     'prebuild:scripts': '
 
         npm run genPluginsConfig
@@ -308,7 +317,7 @@ scripts:
 
 #=====================
     'build:scripts:multiple': '
-    
+
         npm run rjs
              --rjs_bundle=multiple
     '
@@ -392,13 +401,6 @@ scripts:
     #            && npm run webbrowser
     #            && npm run rimraf
     #                  open_webbrowser.js\"
-
-#=====================
-    'genPluginsConfig': '
-        cd readium-shared-js/
-        &&
-        node readium-cfi-js/readium-build-tools/pluginsConfigMaker.js
-    '
 
 #=====================
     'httpServe': '
