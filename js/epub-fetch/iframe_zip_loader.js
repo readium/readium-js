@@ -11,7 +11,7 @@
 //  used to endorse or promote products derived from this software without specific
 //  prior written permission.
 
-define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore'], function(URI, IFrameLoader, _){
+define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore', './discover_content_type'], function(URI, IFrameLoader, _, ContentTypeDiscovery){
 
     var zipIframeLoader = function( getCurrentResourceFetcher, contentDocumentTextPreprocessor) {
 
@@ -35,9 +35,14 @@ define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore'], functio
                 if (typeof location !== 'undefined') {
                     iframe.baseURI = location.href + "";
                 }
-                console.log("!iframe.baseURI => " + iframe.baseURI);
+                console.error("!iframe.baseURI => " + iframe.baseURI);
             }
-
+            
+            console.log("EPUB doc iframe src:");
+            console.log(src);
+            console.log("EPUB doc iframe base URI:");
+            console.log(iframe.baseURI);
+        
             iframe.setAttribute("data-baseUri", iframe.baseURI);
             iframe.setAttribute("data-src", src);
 
@@ -103,9 +108,70 @@ define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore'], functio
             }
 
             iframe.onload = function () {
+                var doc = iframe.contentDocument || iframe.contentWindow.document;
 
+                // $('iframe', doc).each(function(i, child_iframe){
+                //     console.debug(child_iframe);
+                //     console.log(child_iframe.attr("data-src"));
+                // });
+                
+                if (iframe.contentWindow.frames) {
+                    for (var i = 0; i < iframe.contentWindow.frames.length; i++) {
+                        var child_iframe = iframe.contentWindow.frames[i];
+                        // console.debug(child_iframe);
+                        
+                        // console.log(child_iframe.frameElement.baseURI);
+                        
+                        // console.log(child_iframe.location);
+                        
+                        var childSrc = child_iframe.frameElement.getAttribute("data-src");
+                        // console.log(childSrc);
+                            
+                        // console.debug(attachedData);
+                        var contentDocumentPathRelativeToPackage = attachedData.spineItem.href; 
+                            
+                        var publicationFetcher = getCurrentResourceFetcher();
+                            
+                        var contentDocumentPathRelativeToBase = publicationFetcher.convertPathRelativeToPackageToRelativeToBase(contentDocumentPathRelativeToPackage);
+                        // console.log("contentDocumentPathRelativeToBase: " + contentDocumentPathRelativeToBase);
+    
+                        var refAttrOrigVal_RelativeToBase = (new URI(childSrc)).absoluteTo(contentDocumentPathRelativeToBase).toString();
+                        // console.log("refAttrOrigVal_RelativeToBase: " + refAttrOrigVal_RelativeToBase);
+    
+                        var packageFullPath = publicationFetcher.getPackageFullPathRelativeToBase();
+                        // console.log("packageFullPath: " + packageFullPath);
+    
+    
+                        var refAttrOrigVal_RelativeToPackage = (new URI("/"+refAttrOrigVal_RelativeToBase)).relativeTo("/"+packageFullPath).toString();
+                        // console.log("refAttrOrigVal_RelativeToPackage: " + refAttrOrigVal_RelativeToPackage);
+
+                        var mimetype = ContentTypeDiscovery.identifyContentTypeFromFileName(refAttrOrigVal_RelativeToPackage);
+                        
+                        var childIframeLoader = new zipIframeLoader(getCurrentResourceFetcher, contentDocumentTextPreprocessor);
+                        childIframeLoader.loadIframe(
+                            child_iframe.frameElement,
+                            childSrc,
+                            function() {
+                                console.log("CHILD IFRAME LOADED.");
+                            },
+                            self,
+                            {
+                                spineItem:
+                                {
+                                  media_type: mimetype, //attachedData.spineItem.media_type,
+                                  href: refAttrOrigVal_RelativeToPackage
+                                }
+                            }
+                        );
+                    }
+                }
+                
+                $('svg', doc).load(function(){
+                    console.log('SVG loaded');
+                });
+                
                 self.updateIframeEvents(iframe);
-
+                
                 var mathJax = iframe.contentWindow.MathJax;
                 if (mathJax) {
                     // If MathJax is being used, delay the callback until it has completed rendering

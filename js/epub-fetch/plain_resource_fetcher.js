@@ -16,8 +16,6 @@ define(['jquery', 'URIjs', './discover_content_type'], function ($, URI, Content
     var PlainResourceFetcher = function(parentFetcher, baseUrl){
 
         var self = this;
-        var _packageDocumentAbsoluteUrl;
-        var _packageDocumentRelativePath;
 
         // INTERNAL FUNCTIONS
 
@@ -43,29 +41,8 @@ define(['jquery', 'URIjs', './discover_content_type'], function ($, URI, Content
 
         // PUBLIC API
 
-        this.initialize = function(callback) {
-
-            parentFetcher.getXmlFileDom('META-INF/container.xml', function (containerXmlDom) {
-                _packageDocumentRelativePath = parentFetcher.getRootFile(containerXmlDom);
-                _packageDocumentAbsoluteUrl = self.resolveURI(_packageDocumentRelativePath);
-
-                callback();
-
-            }, function(error) {
-                console.error("unable to find package document: " + error);
-                _packageDocumentAbsoluteUrl = baseUrl;
-
-                callback();
-            });
-        };
-
         this.resolveURI = function (pathRelativeToPackageRoot) {
             return baseUrl + "/" + pathRelativeToPackageRoot;
-        };
-
-
-        this.getPackageUrl = function() {
-            return _packageDocumentAbsoluteUrl;
         };
 
         this.fetchFileContentsText = function(pathRelativeToPackageRoot, fetchCallback, onerror) {
@@ -128,14 +105,6 @@ define(['jquery', 'URIjs', './discover_content_type'], function ($, URI, Content
                 fetchCallback(blob);
             }, onerror);
         };
-
-        this.getPackageDom = function (callback, onerror) {
-            self.fetchFileContentsText(_packageDocumentRelativePath, function (packageXml) {
-                var packageDom = parentFetcher.markupParser.parseXml(packageXml);
-                callback(packageDom);
-            }, onerror);
-        };
-
     };
 
     return PlainResourceFetcher;

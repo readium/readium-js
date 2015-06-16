@@ -30,6 +30,7 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
         var _resourceFetcher;
         var _encryptionHandler;
         var _packageFullPath;
+        var _packageDocumentAbsoluteUrl;
         var _packageDom;
         var _packageDomInitializationDeferred;
         var _publicationResourcesCache = new ResourceCache(sourceWindow, cacheSizeEvictThreshold);
@@ -44,7 +45,23 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
 
             // Non exploded EPUBs (i.e. zipped .epub documents) should be fetched in a programmatical manner:
             _shouldConstructDomProgrammatically = !isEpubExploded;
-            createResourceFetcher(isEpubExploded, callback);
+            
+            createResourceFetcher(isEpubExploded, function(resourceFetcher) {
+    
+                self.getPackageFullPath(
+                    function(packageDocumentRelativePath) {
+                        _packageFullPath = packageDocumentRelativePath;
+                        _packageDocumentAbsoluteUrl = resourceFetcher.resolveURI(packageDocumentRelativePath);
+                        
+                        callback(resourceFetcher);
+                    },
+                    function(error) {
+                        console.error("unable to find package document: " + error);
+        
+                        callback(resourceFetcher);
+                    }
+                );
+            });
         };
 
 
@@ -73,10 +90,7 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
             if (isExploded) {
                 console.log('using new PlainResourceFetcher');
                 _resourceFetcher = new PlainResourceFetcher(self, bookRoot);
-                _resourceFetcher.initialize(function () {
-                    callback(_resourceFetcher);
-                });
-                return;
+                callback(_resourceFetcher);
             } else {
                 console.log('using new ZipResourceFetcher');
                 _resourceFetcher = new ZipResourceFetcher(self, bookRoot, jsLibRoot);
@@ -84,6 +98,7 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
             }
         }
 
+        
         // PUBLIC API
 
         /**
@@ -124,8 +139,13 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
             _publicationResourcesCache.flushCache();
         };
 
+
         this.getPackageUrl = function() {
-            return _resourceFetcher.getPackageUrl();
+            return _packageDocumentAbsoluteUrl;
+        };
+        
+        this.getPackageFullPathRelativeToBase = function() {
+              return _packageFullPath;
         };
 
         this.fetchContentDocument = function (attachedData, loadedDocumentUri, contentDocumentResolvedCallback, errorCallback) {
@@ -185,7 +205,7 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
                     _packageDomInitializationDeferred = $.Deferred();
                     _packageDomInitializationDeferred.done(callback);
                     self.getPackageFullPath(function (packageFullPath) {
-                        _packageFullPath = packageFullPath;
+                        
                         self.getXmlFileDom(packageFullPath, function (packageDom) {
                             _packageDom = packageDom;
                             _packageDomInitializationDeferred.resolve(packageDom);

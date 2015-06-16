@@ -32,9 +32,12 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
             }
 
             var sourceParts = src.split("/");
-            sourceParts.pop(); //remove source file name
-
-            var base = "<base href=\"" + sourceParts.join("/") + "/" + "\"/>";
+            //sourceParts.pop(); //remove source file name
+            var baseHref = sourceParts.join("/"); // + "/";
+            
+            console.log("EPUB doc base href:");
+            console.log(baseHref);
+            var base = "<base href=\"" + baseHref + "\"/>";
 
             var scripts = "<script type=\"text/javascript\">(" + injectedScript.toString() + ")()<\/script>";
 
@@ -42,7 +45,12 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
                 scripts += "<script type=\"text/javascript\" src=\"" + _options.mathJaxUrl + "\"><\/script>";
             }
 
-            return contentDocumentHtml.replace(/(<head.*?>)/, "$1" + base + scripts);
+            contentDocumentHtml = contentDocumentHtml.replace(/(<head.*?>)/, "$1" + base + scripts);
+                        
+            contentDocumentHtml = contentDocumentHtml.replace(/(<iframe[^>]+)src\s*=\s*(["'])([^"']+)(["'])(.*?>)/g, '$1data-src=$2$3$4$5');
+            //console.debug(contentDocumentHtml);
+            
+            return contentDocumentHtml;
         };
 
         var self = this;
@@ -79,7 +87,7 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
 
             _currentPublicationFetcher = new PublicationFetcher(bookRoot, jsLibRoot, window, cacheSizeEvictThreshold, _contentDocumentTextPreprocessor);
 
-            _currentPublicationFetcher.initialize(function() {
+            _currentPublicationFetcher.initialize(function(resourceFetcher) {
 
                 var _packageParser = new PackageParser(bookRoot, _currentPublicationFetcher);
 
@@ -93,7 +101,6 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
                     self.reader.openBook(openBookData);
 
                     var options = {
-                        packageDocumentUrl : _currentPublicationFetcher.getPackageUrl(),
                         metadata: packageDocument.getMetadata()
                     };
 

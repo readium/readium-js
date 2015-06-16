@@ -78,8 +78,8 @@ define(['jquery', 'URIjs', './discover_content_type', 'zip-ext'], function ($, U
 
         // PUBLIC API
 
-        this.getPackageUrl = function() {
-            return baseUrl;
+        this.resolveURI = function (pathRelativeToPackageRoot) {
+            return baseUrl + "/" + pathRelativeToPackageRoot;
         };
 
         this.fetchFileContentsText = function(relativePathRelativeToPackageRoot, fetchCallback, onerror) {
