@@ -68,7 +68,7 @@ readium.reader.on(ReadiumSDK.Events.CONTENT_DOCUMENT_LOADED, function ($iframe, 
 });
 ```
 
-### Development and contributing
+## Development and contributing
 
 If you're interested in contributing here on Github, here are some resources to get started: 
 
