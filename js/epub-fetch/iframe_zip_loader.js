@@ -15,6 +15,8 @@ define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore', './disco
 
     var zipIframeLoader = function( getCurrentResourceFetcher, contentDocumentTextPreprocessor) {
 
+        var isIE = (window.navigator.userAgent.indexOf("Trident") > 0);
+            
         var basicIframeLoader = new IFrameLoader();
 
         var self = this;
@@ -32,9 +34,20 @@ define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore', './disco
         this.loadIframe = function(iframe, src, callback, caller, attachedData) {
 
             if (!iframe.baseURI) {
-                if (typeof location !== 'undefined') {
+                
+                if (isIE && iframe.ownerDocument.defaultView.frameElement) {
+                    
+                    //console.debug(iframe.ownerDocument.defaultView.location);
+                    iframe.baseURI = iframe.ownerDocument.defaultView.frameElement.getAttribute("data-src");
+                    
+                    console.log("EPUB doc iframe src (BEFORE):");
+                    console.log(src);
+                    src = new URI(src).absoluteTo(iframe.baseURI).search('').hash('').toString();
+                }
+                else if (typeof location !== 'undefined') {
                     iframe.baseURI = location.href + "";
                 }
+                
                 console.error("!iframe.baseURI => " + iframe.baseURI);
             }
             
@@ -48,6 +61,9 @@ define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore', './disco
 
             var loadedDocumentUri = new URI(src).absoluteTo(iframe.baseURI).search('').hash('').toString();
 
+            console.log("EPUB doc iframe LOAD URI:");
+            console.log(loadedDocumentUri);
+            
             var shouldConstructDomProgrammatically = getCurrentResourceFetcher().shouldConstructDomProgrammatically();
             if (shouldConstructDomProgrammatically) {
 
@@ -79,7 +95,6 @@ define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore', './disco
 
         this._loadIframeWithDocument = function (iframe, attachedData, contentDocumentData, callback) {
 
-            var isIE = (window.navigator.userAgent.indexOf("Trident") > 0);
             if (!isIE) {
                 var contentType = 'text/html';
                 if (attachedData.spineItem.media_type && attachedData.spineItem.media_type.length) {

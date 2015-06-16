@@ -42,13 +42,13 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
             var scripts = "<script type=\"text/javascript\">(" + injectedScript.toString() + ")()<\/script>";
 
             if (_options && _options.mathJaxUrl && contentDocumentHtml.indexOf("<math") >= 0) {
-                scripts += "<script type=\"text/javascript\" src=\"" + _options.mathJaxUrl + "\"><\/script>";
+                scripts += "<script type=\"text/javascript\" src=\"" + _options.mathJaxUrl + "\"> <\/script>";
             }
 
             contentDocumentHtml = contentDocumentHtml.replace(/(<head[\s\S]*?>)/, "$1" + base + scripts);
                         
             contentDocumentHtml = contentDocumentHtml.replace(/(<iframe[\s\S]+?)src[\s\S]*?=[\s\S]*?(["'])([^"']+?)(["'])([\s\S]*?>)/g, '$1data-src=$2$3$4$5');
-            //console.debug(contentDocumentHtml);
+//console.debug(contentDocumentHtml);
             
             return contentDocumentHtml;
         };
