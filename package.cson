@@ -367,7 +367,7 @@ scripts:
         echo > open_webbrowser.js
         &&
         parallelshell
-            \"npm run watcher\"
+            \"npm run dowatch\"
             \"npm run httpServe\"
     '
 #    \"npm run live-reload\"
@@ -383,7 +383,7 @@ scripts:
 
 #=====================
 #### BLOCKING! (CTRL-C) [watch or nodemon]
-    'watcher': '
+    'dowatch': '
 
         npm run watch
             \"npm run build
