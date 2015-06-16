@@ -55,10 +55,6 @@ define(
                     resolveDocumentVideos(resolutionDeferreds, onerror);
                 }
 
-                // TODO: recursive fetching, parsing and DOM construction of documents in IFRAMEs,
-                // with CSS preprocessing and obfuscated font handling
-                // DANIEL: yep, that's essential for embedded widgets / EPUB scriptable components
-                // See https://github.com/readium/readium-js/issues/105
                 resolveDocumentIframes(resolutionDeferreds, onerror);
 
                 // TODO: resolution (e.g. using DOM mutation events) of scripts loaded dynamically by scripts
@@ -345,14 +341,82 @@ define(
 
             function resolveDocumentIframes(resolutionDeferreds, onerror) {
 
-                resolveResourceElements('iframe', 'src', 'blob', resolutionDeferreds, onerror,
-                function(data, uri, callback) {
+                // resolveResourceElements('iframe', 'src', 'blob', resolutionDeferreds, onerror,
+                // function(data, uri, callback) {
 
-                    callback(data);
-                });
+                //     callback(data);
+                // });
 
+                // The code below is not needed since fix for https://github.com/readium/readium-js/issues/107
                 // See https://github.com/readium/readium-js/issues/105
-                // for an experiment with nested Blob URI iframes
+
+//                 var elemName = 'iframe';
+//                 var refAttr = 'src';
+//                 var fetchMode = 'blob';
+
+//                 var resolvedElems = $(elemName + '[' + refAttr.replace(':', '\\:') + ']', _contentDocumentDom);
+
+//                 resolvedElems.each(function (index, resolvedElem) {
+//                     var refAttrOrigVal = $(resolvedElem).attr(refAttr);
+//                     console.log("refAttrOrigVal: " + refAttrOrigVal);
+//                     alert(refAttrOrigVal);
+
+//                     var baseUri = $(resolvedElem)[0].baseURI;
+//                     console.log("baseUri: " + baseUri);
+
+//                     console.log("_contentDocumentPathRelativeToPackage: " + _contentDocumentPathRelativeToPackage);
+
+//                     // var refAttrOrigVal_RelativeToPackage = (new URI(refAttrOrigVal)).absoluteTo(_contentDocumentPathRelativeToPackage).toString();
+//                     // console.log("refAttrOrigVal_RelativeToPackage: " + refAttrOrigVal_RelativeToPackage);
+
+//                     var contentDocumentPathRelativeToBase = _publicationFetcher.convertPathRelativeToPackageToRelativeToBase(_contentDocumentPathRelativeToPackage);
+//                     console.log("contentDocumentPathRelativeToBase: " + contentDocumentPathRelativeToBase);
+
+//                     var refAttrOrigVal_RelativeToBase = (new URI(refAttrOrigVal)).absoluteTo(contentDocumentPathRelativeToBase).toString();
+//                     console.log("refAttrOrigVal_RelativeToBase: " + refAttrOrigVal_RelativeToBase);
+
+//                     var packageFullPath = _publicationFetcher.getPackageFullPathRelativeToBase();
+//                     console.log("packageFullPath: " + packageFullPath);
+
+
+//                     var refAttrOrigVal_RelativeToPackage = (new URI("/"+refAttrOrigVal_RelativeToBase)).relativeTo("/"+packageFullPath).toString();
+//                     console.log("refAttrOrigVal_RelativeToPackage: " + refAttrOrigVal_RelativeToPackage);
+
+
+//                     var textResourceContentType = ContentTypeDiscovery.identifyContentTypeFromFileName(refAttrOrigVal);
+
+//                     // var loadedDocumentUri = new URI(refAttrOrigVal).absoluteTo($(resolvedElem)[0].baseURI).search('').hash('').toString();
+//                     //
+//                     // var resourceUriRelativeToBase = "/" + (new URI(refAttrOrigVal)).absoluteTo(contentDocumentPathRelativeToBase).toString();
+
+// console.log("contentWindow");
+// console.debug($(resolvedElem)[0].contentWindow);
+
+//                     var iframeloader = new iFrameZipLoader(
+//                       function(){return _publicationFetcher; },
+//                       _contentDocumentTextPreprocessor);
+
+//                     //iframe, src, callback, caller, attachedData
+//                     iframeloader.loadIframe(
+//                       $(resolvedElem)[0],
+//                       refAttrOrigVal,
+//                       function(caller, b, attData) {
+// console.log("LOADED! " + refAttrOrigVal);
+
+//                           $(resolvedElem).data('epubZipOrigHref', refAttrOrigVal);
+//                       },
+//                       self,
+//                       {
+//                         spineItem:
+//                         {
+//                           media_type: textResourceContentType, //"application/xhtml+xml",
+//                           href: refAttrOrigVal_RelativeToPackage
+//                         }
+//                       }
+//                     );
+
+//                     //fetchResourceForElement(resolvedElem, refAttrOrigVal, refAttr, fetchMode, resolutionDeferreds, onerror, resourceDataPreprocessing);
+//                 });
             }
 
             function resolveDocumentLinkStylesheets(resolutionDeferreds, onerror) {
