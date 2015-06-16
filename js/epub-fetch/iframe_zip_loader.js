@@ -38,7 +38,7 @@ define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore', './disco
                 if (isIE && iframe.ownerDocument.defaultView.frameElement) {
                     
                     //console.debug(iframe.ownerDocument.defaultView.location);
-                    iframe.baseURI = iframe.ownerDocument.defaultView.frameElement.getAttribute("data-src");
+                    iframe.baseURI = iframe.ownerDocument.defaultView.frameElement.getAttribute("data-loadUri");
                     
                     console.log("EPUB doc iframe src (BEFORE):");
                     console.log(src);
@@ -53,16 +53,18 @@ define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore', './disco
             
             console.log("EPUB doc iframe src:");
             console.log(src);
+            iframe.setAttribute("data-src", src);
+            
             console.log("EPUB doc iframe base URI:");
             console.log(iframe.baseURI);
-        
             iframe.setAttribute("data-baseUri", iframe.baseURI);
-            iframe.setAttribute("data-src", src);
+            
 
             var loadedDocumentUri = new URI(src).absoluteTo(iframe.baseURI).search('').hash('').toString();
 
             console.log("EPUB doc iframe LOAD URI:");
             console.log(loadedDocumentUri);
+            iframe.setAttribute("data-loadUri", loadedDocumentUri);
             
             var shouldConstructDomProgrammatically = getCurrentResourceFetcher().shouldConstructDomProgrammatically();
             if (shouldConstructDomProgrammatically) {
