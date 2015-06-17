@@ -27,8 +27,6 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
             function injectedScript() {
 
                 navigator.epubReadingSystem = window.parent.navigator.epubReadingSystem;
-                window.parent = window.self;
-                window.top = window.self;
             }
 
             var sourceParts = src.split("/");
