@@ -11,7 +11,6 @@ You can try Readium here:
 * Online "cloud reader" demo: http://readium-cloudreader.divshot.io
 * Chrome extension (can be used offline): https://chrome.google.com/webstore/detail/readium/fepbnnnkkadjhjahcafoaglimekefifl
 
-
 ## License
 
 **BSD-3-Clause** ( http://opensource.org/licenses/BSD-3-Clause )
