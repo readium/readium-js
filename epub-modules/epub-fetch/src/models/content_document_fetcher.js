@@ -62,6 +62,8 @@ define(
                 resolveDocumentLinkStylesheets(resolutionDeferreds, onerror);
                 resolveDocumentEmbeddedStylesheets(resolutionDeferreds, onerror);
 
+                fixSelfClosingTags(resolutionDeferreds);
+
                 $.when.apply($, resolutionDeferreds).done(function () {
                     resolvedDocumentCallback(_contentDocumentDom);
                 });
@@ -328,6 +330,20 @@ define(
                             resolutionDeferred.resolve();
                         });
                 });
+            }
+
+            function fixSelfClosingTags(resolutionDeferreds) {
+                var resolutionDeferred = $.Deferred();
+                resolutionDeferreds.push(resolutionDeferred);
+
+                var resolvedElems = $('title', _contentDocumentDom);
+                resolvedElems.each(function (index, element) {
+                    if (element.textContent === "") {
+                        element.textContent = " ";
+                    }
+                });
+
+                resolutionDeferred.resolve();
             }
 
         };
