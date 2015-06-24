@@ -1,14 +1,15 @@
 
 require(["readium_shared_js/globalsSetup"], function () {
 
-
-          // Just for testing :)
           require(['readium_plugin_annotations'], function (annotationPluginConfig) {
-
+                console.log("readium_plugin_annotations:");
+                console.debug(annotationPluginConfig);
           });
-          // Just for testing :)
+          
           require(['readium_plugin_example'], function (examplePluginConfig) {
-
+                console.log("readium_plugin_example:");
+                console.debug(examplePluginConfig);
+              
                 examplePluginConfig.borderColor = "blue";
                 examplePluginConfig.backgroundColor = "cyan";
           });
@@ -16,8 +17,6 @@ require(["readium_shared_js/globalsSetup"], function () {
 
     //require(['jquery', 'Readium'], function ($, Readium) {
     require(['jquery', 'readium_js/Readium'], function ($, Readium) {
-
-
 
         var readium = undefined;
         var altBook = false;
