@@ -2,7 +2,7 @@
   "name": "Readium.js",
   "title": "Readium Web Components",
   "description": "Readium is an open-source ePub reader.",
-  "version": "0.1.0",
+  "version": "0.20.1-alpha",
   "devDependencies": {
     "connect": "~2.9.0",
     "gift": "^0.4.2",
