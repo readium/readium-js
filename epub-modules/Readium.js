@@ -27,6 +27,10 @@ define(['require', 'text!version.json', 'console_shim', 'jquery', 'underscore', 
         window.URL = window.webkitURL;
     }
 
+    //polyfill to support old versions of some browsers
+    window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder || window.MSBlobBuilder;
+
+
     var Readium = function(readiumOptions, readerOptions){
 
         var _options = { mathJaxUrl: readerOptions.mathJaxUrl };
