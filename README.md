@@ -8,7 +8,7 @@ Please see https://github.com/readium/readium-shared-js for more information abo
 
 You can try Readium here:
 
-* Online "cloud reader" demo: http://readium-cloudreader.divshot.io
+* Online "cloud reader" demo: http://development.readium.divshot.io
 * Chrome extension (can be used offline): https://chrome.google.com/webstore/detail/readium/fepbnnnkkadjhjahcafoaglimekefifl
 
 ## License
