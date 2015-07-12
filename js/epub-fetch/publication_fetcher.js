@@ -502,7 +502,7 @@ console.log("######################################");
 		
 		var _multipleRenditions = undefined;
 		
-        getPackageFullPath = function(callback, onerror) {
+        this.getPackageFullPath = function(callback, onerror) {
 			if (_packageFullPath) {
 				callback(_packageFullPath, _multipleRenditions);
 				return;

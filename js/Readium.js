@@ -73,7 +73,7 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
         this.reader = new ReaderView(readerOptions);
         ReadiumSDK.reader = this.reader;
 
-        this.openPackageDocument = function(bookRoot, callback, openPageRequest)  {
+        this.openPackageDocument = function(bookRoot, callback, openPageRequest, renditionSelection)  {
             if (_currentPublicationFetcher) {
                 _currentPublicationFetcher.flushCache();
             }
@@ -83,15 +83,16 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
                 cacheSizeEvictThreshold = readiumOptions.cacheSizeEvictThreshold;
             }
 
-            _currentPublicationFetcher = new PublicationFetcher(bookRoot, jsLibRoot, window, cacheSizeEvictThreshold, _contentDocumentTextPreprocessor);
+            _currentPublicationFetcher = new PublicationFetcher(bookRoot, jsLibRoot, window, cacheSizeEvictThreshold, _contentDocumentTextPreprocessor, renditionSelection);
 
-            _currentPublicationFetcher.initialize(function(resourceFetcher) {
+            _currentPublicationFetcher.initialize(function(resourceFetcher, multipleRenditions) {
 
                 var _packageParser = new PackageParser(bookRoot, _currentPublicationFetcher);
 
                 _packageParser.parse(function(packageDocument){
                     var openBookOptions = readiumOptions.openBookOptions || {};
                     var openBookData = $.extend(packageDocument.getSharedJsPackageData(), openBookOptions);
+                    openBookData = $.extend(openBookData, {multipleRenditions: multipleRenditions});
 
                     if (openPageRequest) {
                         openBookData.openPageRequest = openPageRequest;

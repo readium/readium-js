@@ -20,7 +20,7 @@ define(['jquery', 'URIjs', './discover_content_type'], function ($, URI, Content
         // INTERNAL FUNCTIONS
 
         function fetchFileContents(pathRelativeToPackageRoot, readCallback, onerror) {
-            var fileUrl = resolveURI(pathRelativeToPackageRoot);
+            var fileUrl = self.resolveURI(pathRelativeToPackageRoot);
 
             if (typeof pathRelativeToPackageRoot === 'undefined') {
                 throw 'Fetched file relative path is undefined!';
@@ -45,7 +45,7 @@ define(['jquery', 'URIjs', './discover_content_type'], function ($, URI, Content
         };
 
         this.fetchFileContentsText = function(pathRelativeToPackageRoot, fetchCallback, onerror) {
-            var fileUrl = resolveURI(pathRelativeToPackageRoot);
+            var fileUrl = self.resolveURI(pathRelativeToPackageRoot);
 
             if (typeof fileUrl === 'undefined') {
                 throw 'Fetched file URL is undefined!';
