@@ -1,3 +1,3 @@
-[submodule "epub-modules/epub-renderer/src/readium-shared-js"]
-	path = epub-modules/epub-renderer/src/readium-shared-js
+[submodule "readium-shared-js"]
+	path = readium-shared-js
 	url = https://github.com/readium/readium-shared-js

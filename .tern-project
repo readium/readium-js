@@ -1,0 +1,25 @@
+{
+  "libs": [
+    "browser",
+    "ecma5",
+    "ecma6",
+    "jquery"
+  ],
+  "loadEagerly": [
+    "js/**/*.js",
+    "readium-shared-js/js/**/*.js"
+  ],
+  "plugins": {
+    "complete_strings": {},
+    "lint": {},
+    "requirejs": {
+      "paths": {
+        "readium_shared_js": "readium-shared-js/js",
+        "readium_js": "js/"
+      }
+    },
+    "doc_comment": {
+     "fullDocs": true
+    }
+  }
+}
