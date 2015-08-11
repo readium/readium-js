@@ -110,15 +110,17 @@ require(["readium_shared_js/globalsSetup"], function () {
 
                 // readium built-in (should have been require()'d outside this scope)
                 console.log(reader.plugins.annotations);
-                reader.plugins.annotations.initialize({annotationCSSUrl: readerOptions.annotationCSSUrl});
-                reader.plugins.annotations.on("annotationClicked", function(type, idref, cfi, id) {
-                    console.log("ANNOTATION CLICK: " + id);
-                    reader.plugins.annotations.removeHighlight(id);
-                });
-                reader.plugins.annotations.on("textSelectionEvent", function() {
-                    console.log("ANNOTATION SELECT");
-                    reader.plugins.annotations.addSelectionHighlight(Math.floor((Math.random()*1000000)), "highlight");
-                });
+                if (reader.plugins.annotations) {
+                    reader.plugins.annotations.initialize({annotationCSSUrl: readerOptions.annotationCSSUrl});
+                    reader.plugins.annotations.on("annotationClicked", function(type, idref, cfi, id) {
+                        console.log("ANNOTATION CLICK: " + id);
+                        reader.plugins.annotations.removeHighlight(id);
+                    });
+                    reader.plugins.annotations.on("textSelectionEvent", function() {
+                        console.log("ANNOTATION SELECT");
+                        reader.plugins.annotations.addSelectionHighlight(Math.floor((Math.random()*1000000)), "highlight");
+                    });
+                }
 
                 // external (require()'d via Dependency Injection, see examplePluginConfig function parameter passed above)
                 console.log(reader.plugins.example);
