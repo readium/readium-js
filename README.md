@@ -48,6 +48,9 @@ Note that the above command executes the following:
 
 When invoking the `npm run build` command, the generated `build-output` folder contains RequireJS module bundles that include the default plugins specified in `readium-js-shared/plugins/plugins.cson` (see the `readium-js-shared/PLUGINS.md` documentation). Developers can override the default plugins configuration by using an additional file called `plugins-override.cson`. This file is git-ignored (not persistent in the Git repository), which means that Readium's default plugins configuration is never at risk of being mistakenly overridden by developers, whilst giving developers the possibility of creating custom builds on their local machines.
 
+For example, the `annotations` plugin can be activated by adding it to the `include` section in `readium-js-shared/plugins/plugins-override.cson`.
+This way, after invoking `npm run http`, the `./dev/index*.html` demo apps can be used to create / remove highlighted selections in the web browser.   
+
 ## NPM (Node Package Manager)
 
 All packages "owned" and maintained by the Readium Foundation are listed here: https://www.npmjs.com/~readium
