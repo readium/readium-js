@@ -1,6 +1,6 @@
 ## Readium-JS API
 
-To get started, please read the README first ( https://github.com/readium/readium-js/blob/develop/README.md ).
+To get started, please read the [README](./README.md) first.
 
 For a full working example, see `./dev/index.js`. Invoke the `npm run http` command line task to launch a web browser demonstration. 
 
