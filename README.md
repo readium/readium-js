@@ -29,7 +29,7 @@ See [license.txt](./license.txt).
 **Initial setup:**
 
 * `git submodule update --init --recursive` to ensure that the readium-js chain of dependencies is initialised (readium-shared-js and readium-cfi-js)
-* `git checkout BRANCH_NAME && git submodule foreach --recursive 'git checkout BRANCH_NAME'` to switch to the desired BRANCH_NAME
+* `git checkout BRANCH_NAME && git submodule foreach --recursive "git checkout BRANCH_NAME"` to switch to the desired BRANCH_NAME
 * `npm run prepare` (to perform required preliminary tasks, like patching code before building)
 
 Note that the above command executes the following:
@@ -39,9 +39,16 @@ Note that the above command executes the following:
 
 **Typical workflow:**
 
-* Hack away! (mostly the source code in the `js` folder)
+No RequireJS optimization:
+
+* `npm run http` (to launch an http server. This automatically opens a web browser instance to the HTML files in the `dev` folder, choose `index_RequireJS_no-optimize.html`, or the `*LITE.html` variant which do include only the reader view, not the ebook library view)
+* Hack away! (e.g. source code in the `src/js` folder)
+* Press F5 (refresh / reload) in the web browser
+
+Or to use optimized Javascript bundles (single or multiple):
+
 * `npm run build` (to update the RequireJS bundles in the build output folder)
-* `npm run http:watch` (to launch an http server with live-reload, automatically opens a web browser instance to the HTML files in the `dev` folder)
+* `npm run http:watch` (to launch an http server. This automatically opens a web browser instance to the HTML files in the `dev` folder, choose `index_RequireJS_single-bundle.html` or `index_RequireJS_multiple-bundles.html`, or the `*LITE.html` variants which do include only the reader view, not the ebook library view)
 * `npm run http` (same as above, but without watching for file changes (no automatic rebuild))
 
 **Plugins integration:**
