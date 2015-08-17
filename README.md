@@ -15,7 +15,7 @@ You can try Readium here:
 
 **BSD-3-Clause** ( http://opensource.org/licenses/BSD-3-Clause )
 
-See license.txt ( https://github.com/readium/readium-js/blob/develop/license.txt )
+See [license.txt](./license.txt).
 
 
 ## Prerequisites
@@ -209,4 +209,4 @@ as this would overwrite / update the JSON, not the master CSON!
 
 ## API
 
-See https://github.com/readium/readium-js/blob/develop/API.md
+See separate [API doc](./API.md).
