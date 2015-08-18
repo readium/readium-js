@@ -1,11 +1,16 @@
 
 require(["readium_shared_js/globalsSetup"], function () {
+        
+    if (require.specified('readium_plugin_annotations')) {
+        
+        require(['readium_plugin_annotations'], function (annotationPluginConfig) {
+            console.log("readium_plugin_annotations:");
+            console.debug(annotationPluginConfig);
+        });   
+    }
 
-          require(['readium_plugin_annotations'], function (annotationPluginConfig) {
-                console.log("readium_plugin_annotations:");
-                console.debug(annotationPluginConfig);
-          });
-          
+    if (require.specified('readium_plugin_example')) {
+        
           require(['readium_plugin_example'], function (examplePluginConfig) {
                 console.log("readium_plugin_example:");
                 console.debug(examplePluginConfig);
@@ -13,6 +18,8 @@ require(["readium_shared_js/globalsSetup"], function () {
                 examplePluginConfig.borderColor = "blue";
                 examplePluginConfig.backgroundColor = "cyan";
           });
+    }
+
 
 
     //require(['jquery', 'Readium'], function ($, Readium) {
