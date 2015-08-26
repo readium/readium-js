@@ -71,7 +71,7 @@
     "prebuild:styles": "node ./readium-shared-js/readium-cfi-js/node_modules/mkdirp/bin/cmd.js build-output/css/",
     "build:styles": "node ./readium-shared-js/readium-cfi-js/node_modules/cpy/cli.js readium-shared-js/static/sdk.css build-output/css/",
     "http:watch": "echo > open_webbrowser.js && parallelshell \"npm run dowatch\" \"npm run httpServe\"",
-    "http": "parallelshell \"npm run httpServe\" \"npm run webBrowser\"",
+    "http": "npm run genPluginsConfig && parallelshell \"npm run httpServe\" \"npm run webBrowser\"",
     "dowatch": "node ./readium-shared-js/readium-cfi-js/node_modules/watch/cli.js \"npm run build && node readium-shared-js/readium-cfi-js/readium-build-tools/webbrowser.js && npm run webBrowser && node ./readium-shared-js/readium-cfi-js/node_modules/rimraf/bin.js open_webbrowser.js\" dev/ js/ readium-shared-js/js/ readium-shared-js/plugins/ readium-shared-js/readium-cfi-js/js/",
     "httpServe": "http-server -p 9090 --cors ./",
     "webBrowser": "opener http://127.0.0.1:9090/dev/"

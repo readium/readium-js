@@ -375,7 +375,8 @@ scripts:
 #=====================
 #### BLOCKING! (CTRL-C) [http]
     'http': '
-
+        npm run genPluginsConfig
+        &&
         parallelshell
             \"npm run httpServe\"
             \"npm run webBrowser\"

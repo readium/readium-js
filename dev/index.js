@@ -1,11 +1,34 @@
 
 require(["readium_shared_js/globalsSetup"], function () {
+    
+    
+    // TODO: unfortunately this is not a reliable method to discover AMD module availability with RequireJS, because:
+    // 1) Almond does not implement .specified() and/or .defined()
+    // 2) Package names always return false?
+    // PS: not a blocking issue, just something to consider improving
+    if (!require.specified) {
+        console.log("!require.specified => using RequireJS-Almond as AMD loader?");
+    }
+    if (!require.defined) {
+        console.log("!require.defined => using RequireJS-Almond as AMD loader?");
+    }
+    
+    if (require.specified && require.specified('readium_plugin_annotations')) {    
+    //if (require.specified && require.specified('readium_plugin_annotations/main')) {
+    //if (require.specified && require.specified('readium_shared_js/plugins/annotations/main') {
+    
+        //alert("readium_plugin_annotations");
+        require(['readium_plugin_annotations'], function (annotationPluginConfig) {
+            console.log("readium_plugin_annotations:");
+            console.debug(annotationPluginConfig);
+        });   
+    }
 
-          require(['readium_plugin_annotations'], function (annotationPluginConfig) {
-                console.log("readium_plugin_annotations:");
-                console.debug(annotationPluginConfig);
-          });
-          
+    if (require.specified && require.specified('readium_plugin_example')) {
+    //if (require.specified && require.specified('readium_plugin_example/main')) {
+    //if (require.specified && require.specified('readium_shared_js/plugins/example/main')) {
+    
+        //alert("readium_plugin_example");
           require(['readium_plugin_example'], function (examplePluginConfig) {
                 console.log("readium_plugin_example:");
                 console.debug(examplePluginConfig);
@@ -13,6 +36,8 @@ require(["readium_shared_js/globalsSetup"], function () {
                 examplePluginConfig.borderColor = "blue";
                 examplePluginConfig.backgroundColor = "cyan";
           });
+    }
+
 
 
     //require(['jquery', 'Readium'], function ($, Readium) {
