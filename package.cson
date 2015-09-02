@@ -33,7 +33,7 @@
 
 name: "readium-js"
 
-version: "0.20.0-alpha"
+version: "0.22.0-alpha"
 
 description: "Readium - core javascript module"
 
