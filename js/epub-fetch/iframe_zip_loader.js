@@ -191,9 +191,19 @@ define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore', './disco
                 
                 var mathJax = iframe.contentWindow.MathJax;
                 if (mathJax) {
+                    
+                    mathJax.Hub.Config({SVG:{useFontCache:!mathJax.Hub.Browser.isFirefox}});
+                    
                     // If MathJax is being used, delay the callback until it has completed rendering
                     var mathJaxCallback = _.once(callback);
-                    mathJax.Hub.Queue(mathJaxCallback);
+                    
+                    try {
+                        mathJax.Hub.Queue(mathJaxCallback);
+                    } catch (err) {
+                        console.error("MathJax fail!");
+                        callback();
+                    }
+                    
                     // Or at an 8 second timeout, which ever comes first
                     // window.setTimeout(mathJaxCallback, 8000);
                 } else {
