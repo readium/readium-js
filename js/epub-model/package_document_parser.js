@@ -160,7 +160,7 @@ define(['jquery', 'underscore', '../epub-fetch/markup_parser', 'URIjs', './packa
                 };
 
                 var parsedProperties = parsePropertiesString(spineItem.properties);
-                _.extend(spineItem, parsedProperties);
+                $.extend(spineItem, parsedProperties);
 
                 jsonSpine.push(spineItem);
             });
