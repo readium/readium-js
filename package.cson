@@ -377,9 +377,7 @@ scripts:
     'http': '
         npm run genPluginsConfig
         &&
-        parallelshell
-            \"npm run httpServe\"
-            \"npm run webBrowser\"
+        npm run httpServe
     '
 
 #=====================
@@ -389,7 +387,6 @@ scripts:
         npm run watch
             \"npm run build
                 && node readium-shared-js/readium-cfi-js/readium-build-tools/webbrowser.js
-                && npm run webBrowser
                 && npm run rimraf
                     open_webbrowser.js\"
             dev/ js/ readium-shared-js/js/ readium-shared-js/plugins/ readium-shared-js/readium-cfi-js/js/
@@ -397,16 +394,24 @@ scripts:
     #    nodemon -q
     #    -w dev/
     #    --ext \".\"
-    #    --exec \"npm run build
-    #            && node readium-shared-js/readium-cfi-js/readium-build-tools/webbrowser.js
-    #            && npm run webbrowser
-    #            && npm run rimraf
-    #                  open_webbrowser.js\"
+    #    --exec \" ... \"
 
 #=====================
     'httpServe': '
 
-        http-server -p 9090 --cors ./
+        node
+            readium-shared-js/readium-cfi-js/readium-build-tools/http-server.js
+            
+            -LOGFILE
+            http.log
+            
+            -OPEN
+            /dev/
+            
+            -a 127.0.0.1
+            -p 9090
+            --cors
+            .
     '
 
 #=====================
@@ -414,9 +419,3 @@ scripts:
 #
 #        live-reload --port 9091 --delay 1000 build-output/
 #    '
-
-#=====================
-    'webBrowser': '
-
-        opener http://127.0.0.1:9090/dev/
-    '
