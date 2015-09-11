@@ -15,13 +15,13 @@ You can try Readium here:
 
 **BSD-3-Clause** ( http://opensource.org/licenses/BSD-3-Clause )
 
-See license.txt ( https://github.com/readium/readium-js/blob/develop/license.txt )
+See [license.txt](./license.txt).
 
 
 ## Prerequisites
 
 * A decent terminal. On Windows, GitShell works great ( http://git-scm.com ), GitBash works too ( https://msysgit.github.io ), and Cygwin adds useful commands ( https://www.cygwin.com ).
-* NodeJS ( https://nodejs.org )
+* NodeJS ( https://nodejs.org ) **v0.12** or higher
 
 
 ## Development
@@ -29,8 +29,10 @@ See license.txt ( https://github.com/readium/readium-js/blob/develop/license.txt
 **Initial setup:**
 
 * `git submodule update --init --recursive` to ensure that the readium-js chain of dependencies is initialised (readium-shared-js and readium-cfi-js)
-* `git checkout BRANCH_NAME && git submodule foreach --recursive 'git checkout BRANCH_NAME'` to switch to the desired BRANCH_NAME
+* `git checkout BRANCH_NAME && git submodule foreach --recursive "git checkout BRANCH_NAME"` to switch to the desired BRANCH_NAME
 * `npm run prepare` (to perform required preliminary tasks, like patching code before building)
+
+Note that in some cases, administrator rights may be needed in order to install dependencies, because of NPM-related file access permissions (the console log would clearly show the error). Should this be the case, running `sudo npm run prepare` usually solves this.
 
 Note that the above command executes the following:
 
@@ -39,14 +41,24 @@ Note that the above command executes the following:
 
 **Typical workflow:**
 
-* Hack away! (mostly the source code in the `js` folder)
+No RequireJS optimization:
+
+* `npm run http` (to launch an http server. This automatically opens a web browser instance to the HTML files in the `dev` folder, choose `index_RequireJS_no-optimize.html`, or the `*LITE.html` variant which do include only the reader view, not the ebook library view)
+* Hack away! (e.g. source code in the `src/js` folder)
+* Press F5 (refresh / reload) in the web browser
+
+Or to use optimized Javascript bundles (single or multiple):
+
 * `npm run build` (to update the RequireJS bundles in the build output folder)
-* `npm run http:watch` (to launch an http server with live-reload, automatically opens a web browser instance to the HTML files in the `dev` folder)
+* `npm run http:watch` (to launch an http server. This automatically opens a web browser instance to the HTML files in the `dev` folder, choose `index_RequireJS_single-bundle.html` or `index_RequireJS_multiple-bundles.html`, or the `*LITE.html` variants which do include only the reader view, not the ebook library view)
 * `npm run http` (same as above, but without watching for file changes (no automatic rebuild))
 
 **Plugins integration:**
 
 When invoking the `npm run build` command, the generated `build-output` folder contains RequireJS module bundles that include the default plugins specified in `readium-js-shared/plugins/plugins.cson` (see the `readium-js-shared/PLUGINS.md` documentation). Developers can override the default plugins configuration by using an additional file called `plugins-override.cson`. This file is git-ignored (not persistent in the Git repository), which means that Readium's default plugins configuration is never at risk of being mistakenly overridden by developers, whilst giving developers the possibility of creating custom builds on their local machines.
+
+For example, the `annotations` plugin can be activated by adding it to the `include` section in `readium-js-shared/plugins/plugins-override.cson`.
+This way, after invoking `npm run http`, the `./dev/index*.html` demo apps can be used to create / remove highlighted selections in the web browser.   
 
 ## NPM (Node Package Manager)
 
@@ -206,63 +218,4 @@ as this would overwrite / update the JSON, not the master CSON!
 
 ## API
 
-For a full working example, see `./dev/index.js`. Invoke the `npm run http` command line task to launch a web browser demonstration. 
-
-ReadiumJS has a simple API for initializing an EPUB reader. First, you create the Readium object using its constructor. 
-
-### Step 1. Create a Readium object
-```javascript
-var readium = new Readium(readiumOptions, readerOptions);
-```
-The constructor takes two arguments: readiumOptions and readerOptions. These arguments are objects that contain various properties used by Readium. 
-
-**readiumOptions' properties**
-* useSimpleLoader - A boolean. If true, readium js will load the book with no content transformations. Requires an exploded epub. 
-* jsLibRoot - A string that specifies the relative root url containing worker scripts used by ReadiumJS. Specifically inflate.js and deflate.js. Not necessary when useSimpleLoader is true.
-* openBookOptions - Contains options that can be used to specify default settings to use when an epub is opened for reading.
-
-**readerOptions' properties**
-* el - A string that is a css selector for the html element that will host the readium iframe. This iframe hosts the epub's content. 
-* annotationCSSUrl - relative url for the [annotations.css](https://github.com/readium/readium-js-viewer/blob/master/css/annotations.css) file. This is required if your application supports highlighting using readium-shared-js's implementation. 
-* mathJaxUrl - relative url for the MathJax javascript file. Not required if useSimpleLoader is true in readiumOptions.
-
-A working example can be found in the readium-js-viewer project in the [EpubReader.js source code](https://github.com/readium/readium-js-viewer/blob/8abe97ce4457d176ef2f117e32e0b374cf903c49/lib/EpubReader.js#L696). 
-
-### Step 2. Open an EPUB
-
-The next step is to open an epub for reading using the `openPackageDocument` function. 
-
-```javascript
-readium.openPackageDocument(packageDocumentURL, openCallback, openPageRequest);
-```
-This function takes three arguments. 
-* packageDocumentURL - The url string of the book to open. This can be an epub file or the root path of an exploded epub archive.
-* openCallback - A callback that gets called once the book's metadata has been successfully loaded by readium. 
-* openPageRequest - This can be used to specify the location to open the book at. It is an object that contains an elementCFI property that represents a CFI location in the book. `{elementCFI: elementCFI}`. Typically, you would retrieve a reader's location in the book using `readium.reader.bookmarkCurrentPage()`.
-
-**openCallback**
-The openCallback function should look something like this
-```javascript
-function(packageDocument, options){
-//do something here
-}
-```
-* packageDocument - this represents the parsed metadata for the opened epub. See the [source code](https://github.com/readium/readium-js/blob/master/epub-modules/epub/src/models/package_document.js) for this object for more information. 
-* options - Contains additional info
- * metadata - raw metadata info
- * packageDocumentUrl - url of the epub's package xml file. 
-
-
-A working example of calling the openPackageDocument function is in the [EpubReader.js source code](https://github.com/readium/readium-js-viewer/blob/8abe97ce4457d176ef2f117e32e0b374cf903c49/lib/EpubReader.js#L59) in the readium-js-viewer project. 
-
-### Step 3. Use the readium-shared-js sdk to interact with Readium.
-
-You can use the Readium.reader property to interact with the actual epub reader. This is a readium-shared-js ReaderView object. You can find the documentation [here](https://dl.dropboxusercontent.com/u/18642964/Readium/Shared-JS%20JSDoc/ReadiumSDK.Views.ReaderView.html).
-
-This is the API that allows you to change book styles and settings. It also allows you to listen for various events in the book's lifecycle. For example, an important event is the CONTENT_DOCUMENT_LOADED event. This event is triggered when a new xhtml file has been successfully loaded into the reader. An example of registering for this event
-
-```javascript
-readium.reader.on(ReadiumSDK.Events.CONTENT_DOCUMENT_LOADED, function ($iframe, spineItem) {
-// do something
-});
-```
+See separate [API doc](./API.md).
