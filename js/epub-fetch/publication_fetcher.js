@@ -12,11 +12,11 @@
 //  prior written permission.
 
 define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip_resource_fetcher',
-    './content_document_fetcher', './resource_cache', './encryption_handler', './discover_content_type'],
+    './content_document_fetcher', './resource_cache', './encryption_handler', './discover_content_type', 'readium_shared_js/helpers'],
     function ($, URI, MarkupParser, PlainResourceFetcher, ZipResourceFetcher, ContentDocumentFetcher,
-              ResourceCache, EncryptionHandler, ContentTypeDiscovery) {
+              ResourceCache, EncryptionHandler, ContentTypeDiscovery, Helpers) {
 
-    var PublicationFetcher = function(bookRoot, jsLibRoot, sourceWindow, cacheSizeEvictThreshold, contentDocumentTextPreprocessor) {
+    var PublicationFetcher = function(ebookURL, jsLibRoot, sourceWindow, cacheSizeEvictThreshold, contentDocumentTextPreprocessor) {
 
         var self = this;
 
@@ -82,18 +82,19 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
 
         function isExploded() {
 
-            var ext = ".epub";
-            return bookRoot.indexOf(ext, bookRoot.length - ext.length) === -1;
+            // var ext = ".epub";
+            // return ebookURL.indexOf(ext, ebookURL.length - ext.length) === -1;
+            return !(ebookURL instanceof Blob) && !(/\.epub$/.test(ebookURL));
         }
 
         function createResourceFetcher(isExploded, callback) {
             if (isExploded) {
                 console.log('using new PlainResourceFetcher');
-                _resourceFetcher = new PlainResourceFetcher(self, bookRoot);
+                _resourceFetcher = new PlainResourceFetcher(self);
                 callback(_resourceFetcher);
             } else {
                 console.log('using new ZipResourceFetcher');
-                _resourceFetcher = new ZipResourceFetcher(self, bookRoot, jsLibRoot);
+                _resourceFetcher = new ZipResourceFetcher(self, jsLibRoot);
                 callback(_resourceFetcher);
             }
         }
@@ -127,10 +128,15 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
             return _shouldConstructDomProgrammatically && !isExploded();
         };
 
-        this.getBookRoot = function() {
-            return bookRoot;
+        this.getEbookURL = function() {
+            return ebookURL;
         };
 
+        this.getEbookURL_FilePath = function() {
+            
+            return Helpers.getEbookUrlFilePath(ebookURL);
+        };
+        
         this.getJsLibRoot = function() {
             return jsLibRoot;
         };
