@@ -117,6 +117,7 @@ define(['jquery', 'URIjs', './discover_content_type', 'zip-ext', 'readium_shared
                                 ebookURL = this.response;
                                 //ebookURL_filepath = Helpers.getEbookUrlFilePath(ebookURL);
                                 //console.log(ebookURL_filepath);
+                                _zipFs = undefined;
                                 fetchFileContents(relativePathRelativeToPackageRoot, readCallback, onerror);
                                 return;
                             }
