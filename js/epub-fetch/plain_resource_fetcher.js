@@ -15,7 +15,8 @@ define(['jquery', 'URIjs', './discover_content_type'], function ($, URI, Content
 
     var PlainResourceFetcher = function(parentFetcher){
 
-        var baseUrl = parentFetcher.getEbookURL();
+        var ebookURL = parentFetcher.getEbookURL();
+        var ebookURL_filepath = parentFetcher.getEbookURL_FilePath();
 
         var self = this;
 
@@ -44,7 +45,7 @@ define(['jquery', 'URIjs', './discover_content_type'], function ($, URI, Content
         // PUBLIC API
 
         this.resolveURI = function (pathRelativeToPackageRoot) {
-            return baseUrl + "/" + pathRelativeToPackageRoot;
+            return ebookURL_filepath + "/" + pathRelativeToPackageRoot;
         };
 
         this.fetchFileContentsText = function(pathRelativeToPackageRoot, fetchCallback, onerror) {
