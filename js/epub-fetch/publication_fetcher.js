@@ -81,7 +81,11 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
         }
 
         function isExploded() {
-
+            
+            if (navigator.serviceWorker) {
+                return true;
+            }
+            
             // var ext = ".epub";
             // return ebookURL.indexOf(ext, ebookURL.length - ext.length) === -1;
             return !(ebookURL instanceof Blob) && !(/\.epub$/.test(ebookURL));

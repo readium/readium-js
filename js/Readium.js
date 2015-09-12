@@ -18,6 +18,43 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
     function (versionText, $, _, ReaderView, PublicationFetcher,
               PackageParser, IframeZipLoader, IframeLoader) {
 
+if (navigator.serviceWorker) {
+    
+    navigator.serviceWorker.register("/service_worker.js", {scope: "/"})
+          .then(function(reg) {
+              console.error("navigator.serviceWorker: ");
+              console.log(reg);
+              console.debug(reg.scope);
+              
+            if (reg.installing) {
+              reg.installing.onstatechange = function(e) {
+                
+                console.error("navigator.serviceWorker installing.onstatechange: ");
+                console.log(e);
+              };
+            } else {
+                
+            }
+          }, function(err) {
+            console.error("navigator.serviceWorker registration fail: " + err);
+          });
+          
+          // setTimeout(
+            //   function() {
+            
+            //     $.get("/service_worker.js", function(data) {
+
+            //         console.error(data);
+
+            //     }).fail(function(err) {
+
+            //         console.error(url);
+            //     });
+            //   },
+            //   1000
+          // );
+}
+
     var Readium = function(readiumOptions, readerOptions){
 
         var _options = { mathJaxUrl: readerOptions.mathJaxUrl };
