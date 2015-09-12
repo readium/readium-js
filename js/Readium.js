@@ -73,7 +73,7 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
         this.reader = new ReaderView(readerOptions);
         ReadiumSDK.reader = this.reader;
 
-        this.openPackageDocument = function(bookRoot, callback, openPageRequest)  {
+        this.openPackageDocument = function(ebookURL, callback, openPageRequest)  {
             if (_currentPublicationFetcher) {
                 _currentPublicationFetcher.flushCache();
             }
@@ -83,11 +83,11 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
                 cacheSizeEvictThreshold = readiumOptions.cacheSizeEvictThreshold;
             }
 
-            _currentPublicationFetcher = new PublicationFetcher(bookRoot, jsLibRoot, window, cacheSizeEvictThreshold, _contentDocumentTextPreprocessor);
+            _currentPublicationFetcher = new PublicationFetcher(ebookURL, jsLibRoot, window, cacheSizeEvictThreshold, _contentDocumentTextPreprocessor);
 
             _currentPublicationFetcher.initialize(function(resourceFetcher) {
 
-                var _packageParser = new PackageParser(bookRoot, _currentPublicationFetcher);
+                var _packageParser = new PackageParser(_currentPublicationFetcher);
 
                 _packageParser.parse(function(packageDocument){
                     var openBookOptions = readiumOptions.openBookOptions || {};

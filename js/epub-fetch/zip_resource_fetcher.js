@@ -13,8 +13,11 @@
 
 define(['jquery', 'URIjs', './discover_content_type', 'zip-ext'], function ($, URI, ContentTypeDiscovery, zip) {
 
-    var ZipResourceFetcher = function(parentFetcher, baseUrl, libDir) {
+    var ZipResourceFetcher = function(parentFetcher, libDir) {
 
+        var ebookURL = parentFetcher.getEbookURL();
+        var ebookURL_filepath = parentFetcher.getEbookURL_FilePath();
+        
         var _checkCrc32 = false;
         var _zipFs;
 
@@ -31,19 +34,40 @@ define(['jquery', 'URIjs', './discover_content_type', 'zip-ext'], function ($, U
 
             } else {
 
-                // The Web Worker requires standalone z-worker/inflate/deflate.js files in libDir (i.e. cannot be aggregated/minified/optimised in the final generated single-file build)
-                zip.useWebWorkers = true; // (true by default)
-                zip.workerScriptsPath = libDir;
+                if (libDir) {
+                        
+                    // The Web Worker requires standalone z-worker/inflate/deflate.js files in libDir (i.e. cannot be aggregated/minified/optimised in the final generated single-file build)
+                    zip.useWebWorkers = true; // (true by default)
+                    zip.workerScriptsPath = libDir;
+
+                } else {
+                    
+                    zip.useWebWorkers = false; // (true by default)
+                }
 
                 _zipFs = new zip.fs.FS();
-                _zipFs.importHttpContent(
-                    baseUrl,
-                    true,
-                    function () {
-                        callback(_zipFs, onerror);
-                    },
-                    onerror
-                );
+                
+                if (ebookURL instanceof Blob) {
+                    
+                    _zipFs.importBlob(
+                        ebookURL,
+                        function () {  
+                            callback(_zipFs, onerror);  
+                        },
+                        onerror
+                    );  
+
+                } else {
+                        
+                    _zipFs.importHttpContent(
+                        ebookURL,
+                        true,
+                        function () {
+                            callback(_zipFs, onerror);
+                        },
+                        onerror
+                    );
+                }
             }
         }
 
@@ -58,7 +82,7 @@ define(['jquery', 'URIjs', './discover_content_type', 'zip-ext'], function ($, U
                     var entry = zipFs.find(relativePathRelativeToPackageRoot);
 
                     if (typeof entry === 'undefined' || entry === null) {
-                        onerror(new Error('Entry ' + relativePathRelativeToPackageRoot + ' not found in zip ' + baseUrl));
+                        onerror(new Error('Entry ' + relativePathRelativeToPackageRoot + ' not found in zip ' + ebookURL_filepath));
                     } else {
                         if (entry.directory) {
                             onerror(new Error('Entry ' + relativePathRelativeToPackageRoot + ' is a directory while a file has been expected'));
@@ -79,7 +103,7 @@ define(['jquery', 'URIjs', './discover_content_type', 'zip-ext'], function ($, U
         // PUBLIC API
 
         this.resolveURI = function (pathRelativeToPackageRoot) {
-            return baseUrl + "/" + pathRelativeToPackageRoot;
+            return ebookURL_filepath + "/" + pathRelativeToPackageRoot;
         };
 
         this.fetchFileContentsText = function(relativePathRelativeToPackageRoot, fetchCallback, onerror) {

@@ -161,8 +161,10 @@ require(["readium_shared_js/globalsSetup"], function () {
 
                         var openPageRequest = undefined; //{idref: bookmark.idref, elementCfi: bookmark.contentCFI};
 
+                        var ebookURL = altBook_ ? "EPUB/epubReadingSystem" : "EPUB/internal_link.epub";
+
                         readium.openPackageDocument(
-                            altBook_ ? "EPUB/epubReadingSystem" : "EPUB/internal_link.epub",
+                            ebookURL,
                             function(packageDocument, options) {
                                 console.log(options.metadata.title);
                                 $('#title').text(options.metadata.title);
@@ -181,8 +183,10 @@ require(["readium_shared_js/globalsSetup"], function () {
 
                 var openPageRequest = undefined; //{idref: bookmark.idref, elementCfi: bookmark.contentCFI};
 
+                var ebookURL = "EPUB/epubReadingSystem"; 
+
                 readium.openPackageDocument(
-                    "EPUB/epubReadingSystem",
+                    ebookURL,
                     function(packageDocument, options) {
                         console.log(options.metadata.title);
                         $('#title').text(options.metadata.title);

@@ -13,7 +13,9 @@
 
 define(['jquery', 'URIjs', './discover_content_type'], function ($, URI, ContentTypeDiscovery) {
 
-    var PlainResourceFetcher = function(parentFetcher, baseUrl){
+    var PlainResourceFetcher = function(parentFetcher){
+
+        var baseUrl = parentFetcher.getEbookURL();
 
         var self = this;
 
