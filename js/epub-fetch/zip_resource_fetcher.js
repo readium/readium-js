@@ -11,7 +11,7 @@
 //  used to endorse or promote products derived from this software without specific
 //  prior written permission.
 
-define(['jquery', 'URIjs', './discover_content_type', 'zip-ext'], function ($, URI, ContentTypeDiscovery, zip) {
+define(['jquery', 'URIjs', './discover_content_type', 'zip-ext', 'readium_shared_js/helpers'], function ($, URI, ContentTypeDiscovery, zip, Helpers) {
 
     var ZipResourceFetcher = function(parentFetcher, libDir) {
 
@@ -28,6 +28,10 @@ define(['jquery', 'URIjs', './discover_content_type', 'zip-ext'], function ($, U
         // However, the last one to be set on the model object will prevail and others would be garbage collected later.
         function withZipFsPerform(callback, onerror) {
 
+                    // if (!(ebookURL instanceof Blob)) 
+                    // {onerror("SIMULATING ZIP LIB ERROR...");
+                    // return;}
+                    
             if (_zipFs) {
 
                 callback(_zipFs, onerror);
@@ -79,6 +83,7 @@ define(['jquery', 'URIjs', './discover_content_type', 'zip-ext'], function ($, U
 
             withZipFsPerform(
                 function (zipFs, onerror) {
+                    
                     var entry = zipFs.find(relativePathRelativeToPackageRoot);
 
                     if (typeof entry === 'undefined' || entry === null) {
@@ -94,7 +99,48 @@ define(['jquery', 'URIjs', './discover_content_type', 'zip-ext'], function ($, U
                 function() {
                     console.log("ERROR");
                     console.log(arguments);
-                    onerror(arguments);
+                    
+                    if (!(ebookURL instanceof Blob)) {
+                        console.log("Zip lib failed to load zipped EPUB via HTTP, trying alternative HTTP fetch... (" + ebookURL + ")");
+                        
+                        var xhr = new XMLHttpRequest();
+                        
+                        //xhr.addEventListener('load', function(){});
+                        
+                        xhr.onreadystatechange = function(){
+                            
+                            //console.log("XMLHttpRequest readyState: " + this.readyState);
+                            if (this.readyState != 4) return;
+                            
+                            var success = xhr.status >= 200 && xhr.status < 300 || xhr.status === 304;
+                            if (success) {
+                                ebookURL = this.response;
+                                //ebookURL_filepath = Helpers.getEbookUrlFilePath(ebookURL);
+                                //console.log(ebookURL_filepath);
+                                fetchFileContents(relativePathRelativeToPackageRoot, readCallback, onerror);
+                                return;
+                            }
+                            
+                            onerror(xhr.statusText);
+                        }
+                        xhr.open('GET', ebookURL, true);
+                        xhr.responseType = 'blob';
+                        xhr.send(null); 
+
+    //                     $.get(ebookURL, function(data) {
+    // console.log(typeof data);
+    //                         ebookURL_filepath = Helpers.getEbookUrlFilePath(ebookURL);
+    //                         //fetchFileContents(relativePathRelativeToPackageRoot, readCallback, onerror);
+
+    //                     }).fail(function(err) {
+
+    //                         console.log(err);
+    //                         onerror(arguments);
+    //                     });
+                        
+                    } else {
+                        onerror(arguments);
+                    }
                 }
             );
         }
