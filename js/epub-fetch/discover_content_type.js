@@ -11,7 +11,13 @@
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define(['jquery', 'URIjs'], function ($, URI) {
+define([
+    //'jquery'
+//, 'URIjs'
+], function (
+    //$
+//, URI
+) {
 
     var _instance = undefined;
 
@@ -34,7 +40,15 @@ define(['jquery', 'URIjs'], function ($, URI) {
         };
 
         this.identifyContentTypeFromFileName = function(contentUrl) {
-            var contentUrlSuffix = URI(contentUrl).suffix();
+            
+            //var contentUrlSuffix = URI(contentUrl).suffix();
+            
+            var iDot = contentUrl.lastIndexOf('.');
+            var iQuestion = contentUrl.indexOf('?');
+            var iHash = contentUrl.indexOf('#');
+            var fileExtension = contentUrl.substr(iDot + 1);
+            contentUrlSuffix = fileExtension.trim().toLowerCase();
+            
             var contentType = 'application/octet-stream';
             if (typeof ContentTypeDiscovery.suffixContentTypeMap[contentUrlSuffix] !== 'undefined') {
                 contentType = ContentTypeDiscovery.suffixContentTypeMap[contentUrlSuffix];
@@ -42,24 +56,24 @@ define(['jquery', 'URIjs'], function ($, URI) {
             return contentType;
         };
 
-        this.identifyContentType = function (contentUrl) {
-            // TODO: Make the call asynchronous (which would require a callback and would probably make sense
-            // when calling functions are also remodelled for async).
+        // this.identifyContentType = function (contentUrl) {
+        //     // TODO: Make the call asynchronous (which would require a callback and would probably make sense
+        //     // when calling functions are also remodelled for async).
 
-            var contentType = $.ajax({
-                type: "HEAD",
-                url: contentUrl,
-                async: false
-            }).getResponseHeader('Content-Type');
-            if (contentType === null) {
-                contentType = self.identifyContentTypeFromFileName(contentUrl);
-                console.log('guessed contentType [' + contentType + '] from URI [' + contentUrl +
-                    ']. Configuring the web server to provide the content type is recommended.');
+        //     var contentType = $.ajax({
+        //         type: "HEAD",
+        //         url: contentUrl,
+        //         async: false
+        //     }).getResponseHeader('Content-Type');
+        //     if (contentType === null) {
+        //         contentType = self.identifyContentTypeFromFileName(contentUrl);
+        //         console.log('guessed contentType [' + contentType + '] from URI [' + contentUrl +
+        //             ']. Configuring the web server to provide the content type is recommended.');
 
-            }
+        //     }
 
-            return contentType;
-        }
+        //     return contentType;
+        // }
 
     };
 

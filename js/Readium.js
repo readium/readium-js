@@ -18,9 +18,10 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
     function (versionText, $, _, ReaderView, PublicationFetcher,
               PackageParser, IframeZipLoader, IframeLoader) {
 
-if (navigator.serviceWorker) {
+if ((typeof navigator.serviceWorker) !== "undefined") {
     
-    navigator.serviceWorker.register("/service_worker.js", {scope: "/"})
+    // TODO: define service worker script location and scope in RequireJS module config (see readium-js-viewer for examples) 
+    navigator.serviceWorker.register("/readium-js_SERVICEWORKER.js", {scope: "/"})
           .then(function(reg) {
               console.error("navigator.serviceWorker: ");
               console.log(reg);
@@ -94,10 +95,12 @@ if (navigator.serviceWorker) {
 
         var jsLibRoot = readiumOptions.jsLibRoot;
 
-        if (!readiumOptions.useSimpleLoader){
+        if (
+            (typeof navigator.serviceWorker) === "undefined" &&
+            !readiumOptions.useSimpleLoader) {
             readerOptions.iframeLoader = new IframeZipLoader(function() { return _currentPublicationFetcher; }, _contentDocumentTextPreprocessor);
         }
-        else{
+        else {
             readerOptions.iframeLoader = new IframeLoader();
         }
 

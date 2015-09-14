@@ -32,7 +32,17 @@ define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore', './disco
         };
 
         this.loadIframe = function(iframe, src, callback, caller, attachedData) {
-
+    
+            // var delim = ".epub/";
+            // var i = src.indexOf(delim);
+            // var isEPUB = i > 0;
+            // if (isEPUB) {
+            //     console.log("zipped EPUB loading with ServiceWorker ... skipping zipIframeLoader (fallback to basic IFrameLoader) " + src);
+            //     basicIframeLoader.loadIframe(iframe, src, callback, caller, attachedData);
+            //     return;
+            // }
+            
+            
             if (!iframe.baseURI) {
                 
                 if (isIE && iframe.ownerDocument.defaultView.frameElement) {

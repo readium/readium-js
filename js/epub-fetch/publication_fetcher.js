@@ -82,9 +82,9 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
 
         function isExploded() {
             
-            if (navigator.serviceWorker) {
-                return true;
-            }
+            // if ((typeof navigator.serviceWorker) !== "undefined") {
+            //     return true;
+            // }
             
             // var ext = ".epub";
             // return ebookURL.indexOf(ext, ebookURL.length - ext.length) === -1;

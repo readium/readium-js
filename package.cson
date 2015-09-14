@@ -345,6 +345,27 @@ scripts:
              --rjs_bundle=single
     '
 
+
+#=====================
+    'build:scripts:SERVICEWORKER': '
+
+        npm run build:scripts:single:SERVICEWORKER
+             --readium-js:RJS_UGLY=no
+    '
+
+#=====================
+    'build:scripts:single:SERVICEWORKER': '
+
+        npm run rjs
+             --rjs_bundle=single
+             --rjs_configOverrideTarget=_SERVICEWORKER
+              
+        &&
+        npm run cpy
+            build-output/readium-js_SERVICEWORKER.js
+            ./
+    '
+
 #=====================
     'prebuild:styles': '
 
