@@ -21,6 +21,8 @@ define(['jquery', 'URIjs', './discover_content_type', 'zip-ext', 'readium_shared
         var _checkCrc32 = false;
         var _zipFs;
 
+        var READIUM_ERROR_PREFIX = "READIUM -- ";
+
         // INTERNAL FUNCTIONS
 
         // Description: perform a function with an initialized zip filesystem, making sure that such filesystem is initialized.
@@ -58,7 +60,10 @@ define(['jquery', 'URIjs', './discover_content_type', 'zip-ext', 'readium_shared
                         function () {  
                             callback(_zipFs, onerror);  
                         },
-                        onerror
+                        function () {
+                            console.error("ZIP ERROR");
+                            onerror(arguments);
+                        }
                     );  
 
                 } else {
@@ -69,7 +74,10 @@ define(['jquery', 'URIjs', './discover_content_type', 'zip-ext', 'readium_shared
                         function () {
                             callback(_zipFs, onerror);
                         },
-                        onerror
+                        function () {
+                            console.error("ZIP ERROR");
+                            onerror(arguments);
+                        }
                     );
                 }
             }
@@ -87,20 +95,23 @@ define(['jquery', 'URIjs', './discover_content_type', 'zip-ext', 'readium_shared
                     var entry = zipFs.find(relativePathRelativeToPackageRoot);
 
                     if (typeof entry === 'undefined' || entry === null) {
-                        onerror(new Error('Entry ' + relativePathRelativeToPackageRoot + ' not found in zip ' + ebookURL_filepath));
+                        onerror(new Error(READIUM_ERROR_PREFIX + 'Entry ' + relativePathRelativeToPackageRoot + ' not found in zip ' + ebookURL_filepath));
                     } else {
                         if (entry.directory) {
-                            onerror(new Error('Entry ' + relativePathRelativeToPackageRoot + ' is a directory while a file has been expected'));
+                            onerror(new Error(READIUM_ERROR_PREFIX + 'Entry ' + relativePathRelativeToPackageRoot + ' is a directory while a file has been expected'));
                         } else {
                             readCallback(entry);
                         }
                     }
                 },
                 function() {
-                    console.log("ERROR");
-                    console.log(arguments);
+                    if (arguments && arguments.length) {
+                        console.log(arguments.length == 1 ? arguments[0] : arguments);
+                    }
                     
-                    if (!(ebookURL instanceof Blob)) {
+                    var isReadiumError = arguments && arguments.length && (arguments[0] instanceof Error) && arguments[0].message.startsWith(READIUM_ERROR_PREFIX);
+                    // we fallback to Blobl for all other types of errors (not just those emanating from the zip lib, but also from the readCallback())
+                    if (!isReadiumError && !(ebookURL instanceof Blob)) {
                         console.log("Zip lib failed to load zipped EPUB via HTTP, trying alternative HTTP fetch... (" + ebookURL + ")");
                         
                         var xhr = new XMLHttpRequest();
@@ -117,8 +128,16 @@ define(['jquery', 'URIjs', './discover_content_type', 'zip-ext', 'readium_shared
                                 ebookURL = this.response;
                                 //ebookURL_filepath = Helpers.getEbookUrlFilePath(ebookURL);
                                 //console.log(ebookURL_filepath);
+                                
                                 _zipFs = undefined;
-                                fetchFileContents(relativePathRelativeToPackageRoot, readCallback, onerror);
+                                
+                                if (ebookURL instanceof Blob) {
+                                    fetchFileContents(relativePathRelativeToPackageRoot, readCallback, onerror);
+                                }
+                                else {
+                                    onerror(new Error("XMLHttpRequest response not Blob!?"));
+                                }
+                                
                                 return;
                             }
                             
