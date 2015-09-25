@@ -117,29 +117,27 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
                         
             if (!(ebookURL instanceof Blob) && (ebookURL.startsWith("http://") || ebookURL.startsWith("https://"))) {
             
-                //console.error(ebookURL);
-            
                 var xhr = new XMLHttpRequest();
-                
-                //xhr.addEventListener('load', function(){});
-                
                 xhr.onreadystatechange = function(){
-                    
-                    //console.log("XMLHttpRequest readyState: " + this.readyState);
-                    // console.error(xhr.status);
-                    // console.log(xhr.statusText);
-                    // console.debug(xhr.responseURL);
                     
                     if (this.readyState != 4) return;
                     
                     var success = xhr.status >= 200 && xhr.status < 300 || xhr.status === 304;
                     if (success) {
+
+                        var responseURL = xhr.responseURL;
+                        if (!responseURL) {
+                            
+                            if (xhr.getAllResponseHeaders && xhr.getAllResponseHeaders().indexOf("Location") > 0) {
+                                responseURL = xhr.getResponseHeader("Location");
+                            }                         
+                        }
                         
-                        if (xhr.responseURL && xhr.responseURL !== ebookURL) {
+                        if (responseURL !== ebookURL) {
                             
-                            console.log("REDIRECT: " + ebookURL + " ==> " + xhr.responseURL);
-                            
-                            ebookURL = xhr.responseURL;
+                            console.log("REDIRECT: " + ebookURL + " ==> " + responseURL);
+
+                            ebookURL = responseURL;
                         }
                     }
                     
