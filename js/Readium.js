@@ -75,7 +75,7 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
         this.reader = new ReaderView(readerOptions);
         ReadiumSDK.reader = this.reader;
 
-        var openPackageDocument_ = function(ebookURL, callback, openPageRequest)  {
+        var openPackageDocument_ = function(ebookURL, callback, openPageRequest, contentType)  {
             if (_currentPublicationFetcher) {
                 _currentPublicationFetcher.flushCache();
             }
@@ -85,7 +85,7 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
                 cacheSizeEvictThreshold = readiumOptions.cacheSizeEvictThreshold;
             }
 
-            _currentPublicationFetcher = new PublicationFetcher(ebookURL, jsLibRoot, window, cacheSizeEvictThreshold, _contentDocumentTextPreprocessor);
+            _currentPublicationFetcher = new PublicationFetcher(ebookURL, jsLibRoot, window, cacheSizeEvictThreshold, _contentDocumentTextPreprocessor, contentType);
 
             _currentPublicationFetcher.initialize(function(resourceFetcher) {
 
@@ -122,26 +122,37 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
                     
                     if (this.readyState != 4) return;
                     
+                    var contentType = undefined;
+                    
                     var success = xhr.status >= 200 && xhr.status < 300 || xhr.status === 304;
                     if (success) {
-
+                        
+                        var allResponseHeaders = '';
+                        if (xhr.getAllResponseHeaders) {
+                            allResponseHeaders = xhr.getAllResponseHeaders();
+                        }
+                        
                         var responseURL = xhr.responseURL;
                         if (!responseURL) {
                             
-                            if (xhr.getAllResponseHeaders && xhr.getAllResponseHeaders().indexOf("Location") > 0) {
+                            if (allResponseHeaders.indexOf("Location") > 0) {
                                 responseURL = xhr.getResponseHeader("Location");
-                            }                         
+                            }
                         }
                         
-                        if (responseURL !== ebookURL) {
+                        if (responseURL && responseURL !== ebookURL) {
                             
                             console.log("REDIRECT: " + ebookURL + " ==> " + responseURL);
 
                             ebookURL = responseURL;
                         }
+                        
+                        if (allResponseHeaders.indexOf("Content-Type") > 0) {
+                            contentType = xhr.getResponseHeader("Content-Type");
+                        }
                     }
                     
-                    openPackageDocument_(ebookURL, callback, openPageRequest);
+                    openPackageDocument_(ebookURL, callback, openPageRequest, contentType);
                 };
                 xhr.open('HEAD', ebookURL, true);
                 //xhr.responseType = 'blob';

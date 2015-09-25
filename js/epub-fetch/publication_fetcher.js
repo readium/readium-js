@@ -16,7 +16,7 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
     function ($, URI, MarkupParser, PlainResourceFetcher, ZipResourceFetcher, ContentDocumentFetcher,
               ResourceCache, EncryptionHandler, ContentTypeDiscovery, Helpers) {
 
-    var PublicationFetcher = function(ebookURL, jsLibRoot, sourceWindow, cacheSizeEvictThreshold, contentDocumentTextPreprocessor) {
+    var PublicationFetcher = function(ebookURL, jsLibRoot, sourceWindow, cacheSizeEvictThreshold, contentDocumentTextPreprocessor, contentType) {
 
         var self = this;
 
@@ -36,6 +36,7 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
         var _publicationResourcesCache = new ResourceCache(sourceWindow, cacheSizeEvictThreshold);
 
         var _contentDocumentTextPreprocessor = contentDocumentTextPreprocessor;
+        var _contentType = contentType;
 
         this.markupParser = new MarkupParser();
 
@@ -83,6 +84,8 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
         function isExploded() {
             // binary object means packed EPUB
             if (ebookURL instanceof Blob) return false;
+            
+            if (_contentType && _contentType == "application/epub+zip") return false;
             
             var uriTrimmed = ebookURL;
             
