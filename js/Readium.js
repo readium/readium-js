@@ -73,7 +73,7 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
         this.reader = new ReaderView(readerOptions);
         ReadiumSDK.reader = this.reader;
 
-        this.openPackageDocument = function(ebookURL, callback, openPageRequest)  {
+        var openPackageDocument_ = function(ebookURL, callback, openPageRequest)  {
             if (_currentPublicationFetcher) {
                 _currentPublicationFetcher.flushCache();
             }
@@ -110,6 +110,49 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
             });
         };
 
+
+        this.openPackageDocument = function(ebookURL, callback, openPageRequest)  {
+                        
+            if (!(ebookURL instanceof Blob) && (ebookURL.startsWith("http://") || ebookURL.startsWith("https://"))) {
+            
+                //console.error(ebookURL);
+            
+                var xhr = new XMLHttpRequest();
+                
+                //xhr.addEventListener('load', function(){});
+                
+                xhr.onreadystatechange = function(){
+                    
+                    //console.log("XMLHttpRequest readyState: " + this.readyState);
+                    // console.error(xhr.status);
+                    // console.log(xhr.statusText);
+                    // console.debug(xhr.responseURL);
+                    
+                    if (this.readyState != 4) return;
+                    
+                    var success = xhr.status >= 200 && xhr.status < 300 || xhr.status === 304;
+                    if (success) {
+                        
+                        if (xhr.responseURL && xhr.responseURL !== ebookURL) {
+                            
+                            console.log("REDIRECT: " + ebookURL + " ==> " + xhr.responseURL);
+                            
+                            ebookURL = xhr.responseURL;
+                        }
+                    }
+                    
+                    openPackageDocument_(ebookURL, callback, openPageRequest);
+                };
+                xhr.open('HEAD', ebookURL, true);
+                //xhr.responseType = 'blob';
+                xhr.send(null); 
+            
+                return;
+            }
+                    
+            openPackageDocument_(ebookURL, callback, openPageRequest);
+        };
+        
         this.closePackageDocument = function() {
             if (_currentPublicationFetcher) {
                 _currentPublicationFetcher.flushCache();

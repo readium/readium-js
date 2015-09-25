@@ -81,10 +81,24 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
         }
 
         function isExploded() {
-
+            // binary object means packed EPUB
+            if (ebookURL instanceof Blob) return false;
+            
+            var uriTrimmed = ebookURL;
+            
+            try {
+                //.absoluteTo("http://readium.org/epub")
+                uriTrimmed = new URI(uriTrimmed).search('').hash('').toString();
+            } catch(err) {
+                console.error(err);
+                console.log(ebookURL);
+            }
+            
+            // dumb test: ends with ".epub" file extension
+            return  !(/\.epub$/.test(uriTrimmed));
+            
             // var ext = ".epub";
             // return ebookURL.indexOf(ext, ebookURL.length - ext.length) === -1;
-            return !(ebookURL instanceof Blob) && !(/\.epub$/.test(ebookURL));
         }
 
         function createResourceFetcher(isExploded, callback) {

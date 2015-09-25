@@ -142,7 +142,7 @@ define(['jquery', 'URIjs', './discover_content_type', 'zip-ext', 'readium_shared
                             }
                             
                             onerror(xhr.statusText);
-                        }
+                        };
                         xhr.open('GET', ebookURL, true);
                         xhr.responseType = 'blob';
                         xhr.send(null); 
