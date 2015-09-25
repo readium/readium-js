@@ -18,6 +18,8 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
     function (versionText, $, _, ReaderView, PublicationFetcher,
               PackageParser, IframeZipLoader, IframeLoader) {
 
+    var DEBUG_VERSION_GIT = false; 
+
     var Readium = function(readiumOptions, readerOptions){
 
         var _options = { mathJaxUrl: readerOptions.mathJaxUrl };
@@ -170,15 +172,19 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
 
         if (version.needsPopulating) {
 
-            console.log("version.json needsPopulating ...");
+            if (DEBUG_VERSION_GIT) {
+                console.log("version.json needsPopulating ...");
+            }
 
             var nextRepo = function(i) {
                 if (i >= version.repos.length) {
                     delete version.needsPopulating;
                     delete version.repos;
 
-                    console.log("version");
-                    console.debug(version);
+                    if (DEBUG_VERSION_GIT) {
+                        console.log("version");
+                        console.debug(version);
+                    }
 
                     Readium.version = version;
                     callback(version);
@@ -187,13 +193,16 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
 
                 var repo = version.repos[i];
 
-                console.log("##########################");
-
-                console.log("repo.name");
-                console.debug(repo.name);
-
-                console.log("repo.path");
-                console.debug(repo.path);
+                if (DEBUG_VERSION_GIT) {
+                
+                    console.log("##########################");
+    
+                    console.log("repo.name");
+                    console.debug(repo.name);
+    
+                    console.log("repo.path");
+                    console.debug(repo.path);
+                }
 
                 version[repo.name] = {};
                 version[repo.name].timestamp = new Date().getTime();
@@ -213,8 +222,10 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
 
                 $.getJSON(repo.path + '/package.json', function(data) {
 
-                    console.log("version");
-                    console.debug(data.version);
+                    if (DEBUG_VERSION_GIT) {
+                        console.log("version");
+                        console.debug(data.version);
+                    }
 
                     version[repo.name].version = data.version;
                     version[repo.name].chromeVersion = '2.' + data.version.substring(2);
@@ -222,31 +233,39 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
                     var getRef = function(gitFolder, repo, ref) {
                         var url = gitFolder + '/' + ref;
 
-                        console.log("getRef");
-                        console.debug(url);
+                        if (DEBUG_VERSION_GIT) {
+                            console.log("getRef");
+                            console.debug(url);
+                        }
 
                         $.get(url, function(data) {
 
-                            console.log("getRef OKAY");
-                            console.debug(url);
-
-                            console.log(data);
-
                             version[repo.name].branch = ref;
-                            console.log("branch");
-                            console.debug(ref);
-
+                            
                             var sha = data.substring(0, data.length - 1);
                             version[repo.name].sha = sha;
-                            console.log("sha");
-                            console.debug(sha);
+                            
+                            if (DEBUG_VERSION_GIT) {
+                                console.log("getRef OKAY");
+                                console.debug(url);
+    
+                                console.log(data);
+    
+                                console.log("branch");
+                                console.debug(ref);
+                                
+                                console.log("sha");
+                                console.debug(sha);
+                            }
 
                             nextRepo(++i);
 
                         }).fail(function(err) {
 
-                            console.log("getRef ERROR");
-                            console.debug(url);
+                            if (DEBUG_VERSION_GIT) {
+                                console.log("getRef ERROR");
+                                console.debug(url);
+                            }
 
                             nextRepo(++i);
                         });
@@ -255,35 +274,45 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
                     var getGit = function(repo) {
                         var url = repo.path + '/.git';
 
-                        console.log("getGit");
-                        console.debug(url);
+                        if (DEBUG_VERSION_GIT) {
+                            console.log("getGit");
+                            console.debug(url);
+                        }
 
                         $.get(url, function(data) {
-
-                            console.log("getGit OKAY");
-                            console.debug(url);
-
-                            console.log(data);
-
+                            
+                            if (DEBUG_VERSION_GIT) {
+                                console.log("getGit OKAY");
+                                console.debug(url);
+                                
+                                console.log(data);
+                            }
+                            
                             if (data.indexOf('gitdir: ') == 0) {
 
                                 var gitDir = repo.path + "/" + data.substring('gitdir: '.length).trim();
 
-                                console.log("gitdir: OKAY");
-                                console.log(gitDir);
+                                if (DEBUG_VERSION_GIT) {
+                                    console.log("gitdir: OKAY");
+                                    console.log(gitDir);
+                                }
 
                                 getHead(gitDir, repo);
 
                             } else {
-                                console.log("gitdir: ERROR");
+                                if (DEBUG_VERSION_GIT) {
+                                    console.log("gitdir: ERROR");
+                                }
 
                                 nextRepo(++i);
                             }
 
                         }).fail(function(err) {
 
-                            console.log("getGit ERROR");
-                            console.debug(url);
+                            if (DEBUG_VERSION_GIT) {
+                                console.log("getGit ERROR");
+                                console.debug(url);
+                            }
 
                             nextRepo(++i);
                         });
@@ -292,28 +321,36 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
                     var getHead = function(gitFolder, repo, first) {
                         var url = gitFolder + "/HEAD";
 
-                        console.log("getHead");
-                        console.debug(url);
+                        if (DEBUG_VERSION_GIT) {
+                            console.log("getHead");
+                            console.debug(url);
+                        }
 
                         $.get(url, function(data) {
 
-                            console.log("getHead OKAY");
-                            console.debug(url);
-
-                            console.log(data);
+                            if (DEBUG_VERSION_GIT) {
+                                console.log("getHead OKAY");
+                                console.debug(url);
+                            
+                                console.log(data);
+                            }
 
                             var ref = data.substring(5, data.length - 1);
                             getRef(gitFolder, repo, ref);
 
                         }).fail(function(err) {
 
-                            console.log("getHead ERROR");
-                            console.debug(url);
+                            if (DEBUG_VERSION_GIT) {
+                                console.log("getHead ERROR");
+                                console.debug(url);
+                            }
 
                             if (first) {
                                 getGit(repo);
                             } else {
-                                console.log("getHead ABORT");
+                                if (DEBUG_VERSION_GIT) {
+                                    console.log("getHead ABORT");
+                                }
                                 nextRepo(++i);
                             }
                         });
