@@ -115,50 +115,82 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
 
         this.openPackageDocument = function(ebookURL, callback, openPageRequest)  {
                         
-            if (!(ebookURL instanceof Blob) && (ebookURL.indexOf("http://") == 0 || ebookURL.indexOf("https://") == 0)) {
+            if (!(ebookURL instanceof Blob)
+                // && ebookURL.indexOf("file://") != 0
+                // && ebookURL.indexOf("filesystem://") != 0
+                // && ebookURL.indexOf("filesystem:chrome-extension://") != 0
+            ) {
             
-                var xhr = new XMLHttpRequest();
-                xhr.onreadystatechange = function(){
-                    
-                    if (this.readyState != 4) return;
-                    
-                    var contentType = undefined;
-                    
-                    var success = xhr.status >= 200 && xhr.status < 300 || xhr.status === 304;
-                    if (success) {
+                console.debug("-------------------------------");
+                
+                var thisRootUrl = window.location.origin + window.location.pathname;
+                
+                console.debug("BASE URL: " + thisRootUrl);
+                console.debug("RELATIVE URL: " + ebookURL);
+                
+                try {
+                    ebookURL = new URI(ebookURL).absoluteTo(thisRootUrl).toString();
+                } catch(err) {
+                    console.error(err);
+                    console.log(ebookURL);
+                }
+                
+                console.debug("==>");
+                console.debug("ABSOLUTE URL: " + ebookURL);
+                
+                console.debug("-------------------------------");
+                
+                
+                if (ebookURL.indexOf("http://") == 0 || ebookURL.indexOf("https://") == 0) {
                         
-                        var allResponseHeaders = '';
-                        if (xhr.getAllResponseHeaders) {
-                            allResponseHeaders = xhr.getAllResponseHeaders();
-                        }
+                    var xhr = new XMLHttpRequest();
+                    xhr.onreadystatechange = function(){
                         
-                        var responseURL = xhr.responseURL;
-                        if (!responseURL) {
+                        if (this.readyState != 4) return;
+                        
+                        var contentType = undefined;
+                        
+                        var success = xhr.status >= 200 && xhr.status < 300 || xhr.status === 304;
+                        if (success) {
                             
-                            if (allResponseHeaders.indexOf("Location") > 0) {
-                                responseURL = xhr.getResponseHeader("Location");
+                            var allResponseHeaders = '';
+                            if (xhr.getAllResponseHeaders) {
+                                allResponseHeaders = xhr.getAllResponseHeaders();
+                                if (allResponseHeaders) {
+                                    allResponseHeaders = allResponseHeaders.toLowerCase();
+                                } else allResponseHeaders ='';
+                                //console.debug(allResponseHeaders);
+                            }
+                            
+                            if (allResponseHeaders.indexOf("content-type") > 0) {
+                                contentType = xhr.getResponseHeader("Content-Type") || xhr.getResponseHeader("content-type");
+                                if (!contentType) contentType = undefined;
+                                
+                                console.debug("CONTENT-TYPE: " + ebookURL + " ==> " + contentType);
+                            }
+                            
+                            var responseURL = xhr.responseURL;
+                            if (!responseURL) {
+                                if (allResponseHeaders.indexOf("location") > 0) {
+                                    responseURL = xhr.getResponseHeader("Location") || xhr.getResponseHeader("location");
+                                }
+                            }
+                            
+                            if (responseURL && responseURL !== ebookURL) {
+                                console.debug("REDIRECT: " + ebookURL + " ==> " + responseURL);
+    
+                                ebookURL = responseURL;
                             }
                         }
                         
-                        if (responseURL && responseURL !== ebookURL) {
-                            
-                            console.log("REDIRECT: " + ebookURL + " ==> " + responseURL);
-
-                            ebookURL = responseURL;
-                        }
-                        
-                        if (allResponseHeaders.indexOf("Content-Type") > 0) {
-                            contentType = xhr.getResponseHeader("Content-Type");
-                        }
-                    }
-                    
-                    openPackageDocument_(ebookURL, callback, openPageRequest, contentType);
-                };
-                xhr.open('HEAD', ebookURL, true);
-                //xhr.responseType = 'blob';
-                xhr.send(null); 
-            
-                return;
+                        openPackageDocument_(ebookURL, callback, openPageRequest, contentType);
+                    };
+                    xhr.open('HEAD', ebookURL, true);
+                    //xhr.responseType = 'blob';
+                    xhr.send(null); 
+                
+                    return;
+                }
             }
                     
             openPackageDocument_(ebookURL, callback, openPageRequest);

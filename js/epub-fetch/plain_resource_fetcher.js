@@ -56,7 +56,7 @@ define(['jquery', 'URIjs', './discover_content_type'], function ($, URI, Content
                 console.log(url);
             }
             
-            return url + "/" + pathRelativeToPackageRoot;
+            return url + (url.charAt(url.length-1) == '/' ? "" : "/") + pathRelativeToPackageRoot;
         };
 
         this.fetchFileContentsText = function(pathRelativeToPackageRoot, fetchCallback, onerror) {

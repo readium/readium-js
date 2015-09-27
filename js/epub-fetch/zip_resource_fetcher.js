@@ -180,7 +180,7 @@ define(['jquery', 'URIjs', './discover_content_type', 'zip-ext', 'readium_shared
                 console.log(url);
             }
             
-            return url + "/" + pathRelativeToPackageRoot;
+            return url + (url.charAt(url.length-1) == '/' ? "" : "/") + pathRelativeToPackageRoot;
         };
 
         this.fetchFileContentsText = function(relativePathRelativeToPackageRoot, fetchCallback, onerror) {
