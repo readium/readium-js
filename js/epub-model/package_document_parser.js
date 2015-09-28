@@ -19,7 +19,7 @@ define(['jquery', 'underscore', '../epub-fetch/markup_parser', 'URIjs', './packa
         // `PackageDocumentParser` is used to parse the xml of an epub package
     // document and build a javascript object. The constructor accepts an
     // instance of `URI` that is used to resolve paths during the process
-    var PackageDocumentParser = function(bookRoot, publicationFetcher) {
+    var PackageDocumentParser = function(publicationFetcher) {
 
         var _deferredXmlDom = $.Deferred();
         var _xmlDom;

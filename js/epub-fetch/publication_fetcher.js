@@ -12,11 +12,11 @@
 //  prior written permission.
 
 define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip_resource_fetcher',
-    './content_document_fetcher', './resource_cache', './encryption_handler', './discover_content_type'],
+    './content_document_fetcher', './resource_cache', './encryption_handler', './discover_content_type', 'readium_shared_js/helpers'],
     function ($, URI, MarkupParser, PlainResourceFetcher, ZipResourceFetcher, ContentDocumentFetcher,
-              ResourceCache, EncryptionHandler, ContentTypeDiscovery) {
+              ResourceCache, EncryptionHandler, ContentTypeDiscovery, Helpers) {
 
-    var PublicationFetcher = function(bookRoot, jsLibRoot, sourceWindow, cacheSizeEvictThreshold, contentDocumentTextPreprocessor, renditionSelection) {
+    var PublicationFetcher = function(ebookURL, jsLibRoot, sourceWindow, cacheSizeEvictThreshold, contentDocumentTextPreprocessor, contentType, renditionSelection) {
 
         var self = this;
 
@@ -41,14 +41,34 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
 		var _mediaQueryEventCallback = undefined;
 		
         var _contentDocumentTextPreprocessor = contentDocumentTextPreprocessor;
+
+        var _contentType = contentType;
+
 		var _renditionSelection = renditionSelection;
 
         this.markupParser = new MarkupParser();
 
         function isExploded() {
-
-            var ext = ".epub";
-            return bookRoot.indexOf(ext, bookRoot.length - ext.length) === -1;
+            // binary object means packed EPUB
+            if (ebookURL instanceof Blob) return false;
+            
+            if (_contentType && _contentType.indexOf("application/epub+zip") >= 0) return false;
+            
+            var uriTrimmed = ebookURL;
+            
+            try {
+                //.absoluteTo("http://readium.org/epub")
+                uriTrimmed = new URI(uriTrimmed).search('').hash('').toString();
+            } catch(err) {
+                console.error(err);
+                console.log(ebookURL);
+            }
+            
+            // dumb test: ends with ".epub" file extension
+            return  !(/\.epub$/.test(uriTrimmed));
+            
+            // var ext = ".epub";
+            // return ebookURL.indexOf(ext, ebookURL.length - ext.length) === -1;
         }
 		
         this.initialize =  function(callback) {
@@ -90,7 +110,6 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
             }
             console.error(err);
         }
-
 
 		var buildRenditionMapping = function(callback, multipleRenditions, containerXmlDom, packageFullPath, cacheOpfDom) {
 
@@ -557,18 +576,17 @@ console.log("######################################");
                         });
                     });
                 }
-
             });
         };
 		
         function createResourceFetcher(isExploded, callback) {
             if (isExploded) {
                 console.log('using new PlainResourceFetcher');
-                _resourceFetcher = new PlainResourceFetcher(self, bookRoot);
+                _resourceFetcher = new PlainResourceFetcher(self);
                 callback(_resourceFetcher);
             } else {
                 console.log('using new ZipResourceFetcher');
-                _resourceFetcher = new ZipResourceFetcher(self, bookRoot, jsLibRoot);
+                _resourceFetcher = new ZipResourceFetcher(self, jsLibRoot);
                 callback(_resourceFetcher);
             }
         }
@@ -602,10 +620,15 @@ console.log("######################################");
             return _shouldConstructDomProgrammatically && !isExploded();
         };
 
-        this.getBookRoot = function() {
-            return bookRoot;
+        this.getEbookURL = function() {
+            return ebookURL;
         };
 
+        this.getEbookURL_FilePath = function() {
+            
+            return Helpers.getEbookUrlFilePath(ebookURL);
+        };
+        
         this.getJsLibRoot = function() {
             return jsLibRoot;
         };
