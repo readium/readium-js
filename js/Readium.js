@@ -41,7 +41,7 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
 
             var scripts = "<script type=\"text/javascript\">(" + injectedScript.toString() + ")()<\/script>";
 
-            if (_options && _options.mathJaxUrl && contentDocumentHtml.indexOf("<math") >= 0) {
+            if (_options && _options.mathJaxUrl && contentDocumentHtml.search(/<(.*)(?=math)/) >= 0) {
                 scripts += "<script type=\"text/javascript\" src=\"" + _options.mathJaxUrl + "\"> <\/script>";
             }
 
