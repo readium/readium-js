@@ -115,7 +115,7 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
         };
 
 
-        this.openPackageDocument = function(ebookURL, callback, openPageRequest)  {
+        this.openPackageDocument = function(ebookURL, callback, openPageRequest, renditionSelection)  {
                         
             if (!(ebookURL instanceof Blob)
                 // && ebookURL.indexOf("file://") != 0
@@ -185,7 +185,7 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
                             }
                         }
                         
-                        openPackageDocument_(ebookURL, callback, openPageRequest, contentType);
+                        openPackageDocument_(ebookURL, callback, openPageRequest, contentType, renditionSelection);
                     };
                     xhr.open('HEAD', ebookURL, true);
                     //xhr.responseType = 'blob';
@@ -195,7 +195,7 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
                 }
             }
                     
-            openPackageDocument_(ebookURL, callback, openPageRequest);
+            openPackageDocument_(ebookURL, callback, openPageRequest, undefined, renditionSelection);
         };
         
         this.closePackageDocument = function() {
