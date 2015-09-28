@@ -109,7 +109,7 @@ define(['jquery', 'URIjs', './discover_content_type', 'zip-ext', 'readium_shared
                         console.log(arguments.length == 1 ? arguments[0] : arguments);
                     }
                     
-                    var isReadiumError = arguments && arguments.length && (arguments[0] instanceof Error) && arguments[0].message.startsWith(READIUM_ERROR_PREFIX);
+                    var isReadiumError = arguments && arguments.length && (arguments[0] instanceof Error) && arguments[0].message.indexOf(READIUM_ERROR_PREFIX) == 0;
                     // we fallback to Blobl for all other types of errors (not just those emanating from the zip lib, but also from the readCallback())
                     if (!isReadiumError && !(ebookURL instanceof Blob)) {
                         console.log("Zip lib failed to load zipped EPUB via HTTP, trying alternative HTTP fetch... (" + ebookURL + ")");
@@ -142,7 +142,7 @@ define(['jquery', 'URIjs', './discover_content_type', 'zip-ext', 'readium_shared
                             }
                             
                             onerror(xhr.statusText);
-                        }
+                        };
                         xhr.open('GET', ebookURL, true);
                         xhr.responseType = 'blob';
                         xhr.send(null); 
@@ -169,7 +169,18 @@ define(['jquery', 'URIjs', './discover_content_type', 'zip-ext', 'readium_shared
         // PUBLIC API
 
         this.resolveURI = function (pathRelativeToPackageRoot) {
-            return ebookURL_filepath + "/" + pathRelativeToPackageRoot;
+            
+            var url = ebookURL_filepath;
+            
+            try {
+                //url = new URI(relativeUrl).absoluteTo(url).search('').hash('').toString();
+                url = new URI(url).search('').hash('').toString();
+            } catch(err) {
+                console.error(err);
+                console.log(url);
+            }
+            
+            return url + (url.charAt(url.length-1) == '/' ? "" : "/") + pathRelativeToPackageRoot;
         };
 
         this.fetchFileContentsText = function(relativePathRelativeToPackageRoot, fetchCallback, onerror) {

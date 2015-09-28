@@ -16,7 +16,7 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
     function ($, URI, MarkupParser, PlainResourceFetcher, ZipResourceFetcher, ContentDocumentFetcher,
               ResourceCache, EncryptionHandler, ContentTypeDiscovery, Helpers) {
 
-    var PublicationFetcher = function(ebookURL, jsLibRoot, sourceWindow, cacheSizeEvictThreshold, contentDocumentTextPreprocessor) {
+    var PublicationFetcher = function(ebookURL, jsLibRoot, sourceWindow, cacheSizeEvictThreshold, contentDocumentTextPreprocessor, contentType) {
 
         var self = this;
 
@@ -36,6 +36,7 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
         var _publicationResourcesCache = new ResourceCache(sourceWindow, cacheSizeEvictThreshold);
 
         var _contentDocumentTextPreprocessor = contentDocumentTextPreprocessor;
+        var _contentType = contentType;
 
         this.markupParser = new MarkupParser();
 
@@ -81,10 +82,26 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
         }
 
         function isExploded() {
-
+            // binary object means packed EPUB
+            if (ebookURL instanceof Blob) return false;
+            
+            if (_contentType && _contentType.indexOf("application/epub+zip") >= 0) return false;
+            
+            var uriTrimmed = ebookURL;
+            
+            try {
+                //.absoluteTo("http://readium.org/epub")
+                uriTrimmed = new URI(uriTrimmed).search('').hash('').toString();
+            } catch(err) {
+                console.error(err);
+                console.log(ebookURL);
+            }
+            
+            // dumb test: ends with ".epub" file extension
+            return  !(/\.epub$/.test(uriTrimmed));
+            
             // var ext = ".epub";
             // return ebookURL.indexOf(ext, ebookURL.length - ext.length) === -1;
-            return !(ebookURL instanceof Blob) && !(/\.epub$/.test(ebookURL));
         }
 
         function createResourceFetcher(isExploded, callback) {

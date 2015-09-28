@@ -45,7 +45,18 @@ define(['jquery', 'URIjs', './discover_content_type'], function ($, URI, Content
         // PUBLIC API
 
         this.resolveURI = function (pathRelativeToPackageRoot) {
-            return ebookURL_filepath + "/" + pathRelativeToPackageRoot;
+            
+            var url = ebookURL_filepath;
+            
+            try {
+                //url = new URI(relativeUrl).absoluteTo(url).search('').hash('').toString();
+                url = new URI(url).search('').hash('').toString();
+            } catch(err) {
+                console.error(err);
+                console.log(url);
+            }
+            
+            return url + (url.charAt(url.length-1) == '/' ? "" : "/") + pathRelativeToPackageRoot;
         };
 
         this.fetchFileContentsText = function(pathRelativeToPackageRoot, fetchCallback, onerror) {
