@@ -65,6 +65,7 @@ define(
                 resolveDocumentEmbeddedStylesheets(resolutionDeferreds, onerror);
 
                 $.when.apply($, resolutionDeferreds).done(function () {
+                    console.log("DOM BLOB URi DONE: " + loadedDocumentUri);
                     resolvedDocumentCallback(_contentDocumentDom);
                 });
 
@@ -85,24 +86,13 @@ define(
                 baseElem.setAttribute('href', baseURI);
             }
 
-            function _handleError(err) {
-                if (err) {
-                    if (err.message) {
-                        console.error(err.message);
-                    }
-                    if (err.stack) {
-                        console.error(err.stack);
-                    }
-                }
-                console.error(err);
-            }
-
             function fetchResourceForElement(resolvedElem, refAttrOrigVal, refAttr, fetchMode, resolutionDeferreds,
                                              onerror, resourceDataPreprocessing) {
 
                  function replaceRefAttrInElem(newResourceUrl) {
                      // Store original refAttrVal in a special attribute to provide access to the original href:
-                     $(resolvedElem).data('epubZipOrigHref', refAttrOrigVal);
+                     //$(resolvedElem).data('epubZipOrigHref', refAttrOrigVal);
+                     $(resolvedElem).attr('data-epubZipOrigHref', refAttrOrigVal);
                      $(resolvedElem).attr(refAttr, newResourceUrl);
                  }
 
@@ -174,7 +164,10 @@ define(
                             } else {
                                 replaceResourceURL(resourceData);
                             }
-                        }, onerror);
+                        }, function() {
+                            resolutionDeferred.resolve();
+                            onerror.apply(this, arguments);
+                        });
                 }
             }
 
@@ -228,7 +221,6 @@ define(
                         cssUrlFetchDeferred.resolve();
                     };
                     var fetchErrorCallback = function (error) {
-                        _handleError(error);
                         cssUrlFetchDeferred.resolve();
                     };
 
