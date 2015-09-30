@@ -53,6 +53,8 @@ define(
                     resolveDocumentImages(resolutionDeferreds, onerror);
                     resolveDocumentAudios(resolutionDeferreds, onerror);
                     resolveDocumentVideos(resolutionDeferreds, onerror);
+                    
+                    resolveResourceElements('object', 'data', 'blob', resolutionDeferreds, onerror);
                 }
 
                 resolveDocumentIframes(resolutionDeferreds, onerror);
