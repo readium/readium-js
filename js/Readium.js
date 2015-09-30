@@ -89,9 +89,22 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
 
             _currentPublicationFetcher.initialize(function(resourceFetcher) {
 
+                if (!resourceFetcher) {
+                    
+                    callback(undefined);
+                    return;
+                }
+                
                 var _packageParser = new PackageParser(_currentPublicationFetcher);
 
                 _packageParser.parse(function(packageDocument){
+                    
+                    if (!packageDocument) {
+                        
+                        callback(undefined);
+                        return;
+                    }
+                    
                     var openBookOptions = readiumOptions.openBookOptions || {};
                     var openBookData = $.extend(packageDocument.getSharedJsPackageData(), openBookOptions);
 
@@ -104,10 +117,7 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
                         metadata: packageDocument.getMetadata()
                     };
 
-                    if (callback){
-                        // gives caller access to document metadata like the table of contents
-                        callback(packageDocument, options);
-                    }
+                    callback(packageDocument, options);
                 });
             });
         };

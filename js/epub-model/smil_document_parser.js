@@ -201,7 +201,6 @@ define(['jquery', 'underscore'], function ($, _) {
             $.when.apply($, parsingDeferreds).done(function() {
                 packageDocument.getMetadata().setMoMap(mo_map);
                 if (allFakeSmil) {
-                    console.log("No Media Overlays");
                     packageDocument.getMetadata().setMoMap([]);
                 }
                 callback();
