@@ -143,11 +143,12 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
             _publicationResourcesCache.flushCache();
         };
 
-
+        // full absolute URL (typically: HTTP) to the OPF file
         this.getPackageUrl = function() {
             return _packageDocumentAbsoluteUrl;
         };
         
+        // OPF path relative to the base of the EPUB container, without leading forward slash (typically, exactly the file path in container.xml)
         this.getPackageFullPathRelativeToBase = function() {
               return _packageFullPath;
         };
@@ -164,6 +165,7 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
             contentDocumentFetcher.fetchContentDocumentAndResolveDom(contentDocumentResolvedCallback, errorCallback);
         };
 
+        // passed path (filePathRelativeToPackageRoot) is relative to OPF (leading forward slash is discarded automatically, if any)
         this.getFileContentsFromPackage = function(filePathRelativeToPackageRoot, callback, onerror) {
             
             // AVOID INVOKING fetchFileContentsText() directly, use relativeToPackageFetchFileContents() wrapper instead so that additional checks are performed.
@@ -185,7 +187,7 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
         };
 
 
-
+        // passed path (xmlFilePathRelativeToPackageRoot) is relative to OPF (leading forward slash is discarded automatically, if any)
         this.getXmlFileDom = function (xmlFilePathRelativeToPackageRoot, callback, onerror) {
             self.getFileContentsFromPackage(xmlFilePathRelativeToPackageRoot, function (xmlFileContents) {
                 var fileDom = self.markupParser.parseXml(xmlFileContents);
@@ -193,52 +195,46 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
             }, onerror);
         };
 
-        this.getPackageFullPath = function(callback, onerror) {
-            self.getXmlFileDom('/META-INF/container.xml', function (containerXmlDom) {
-                var packageFullPath = self.getRootFile(containerXmlDom);
-                callback(packageFullPath);
-            }, onerror);
-        };
-
-        this.getRootFile = function(containerXmlDom) {
-            var rootFile = $('rootfile', containerXmlDom);
-            var packageFullPath = rootFile.attr('full-path');
-            return packageFullPath;
-        };
-
         this.getPackageDom = function (callback, onerror) {
             if (_packageDom) {
                 callback(_packageDom);
-            } else {
-                // TODO: use jQuery's Deferred
-                // Register all callbacks interested in initialized packageDom, launch its instantiation only once
-                // and broadcast to all callbacks registered during the initialization once it's done:
-                if (_packageDomInitializationDeferred) {
-                    _packageDomInitializationDeferred.done(callback);
-                } else {
-                    _packageDomInitializationDeferred = $.Deferred();
-                    _packageDomInitializationDeferred.done(callback);
-                    self.getPackageFullPath(function (packageFullPath) {
-                                
-                        _packageFullPath = packageFullPath;
-                        _packageDocumentAbsoluteUrl = _resourceFetcher.resolveURI(_packageFullPath);
-                        
-                        console.debug("PACKAGE: ");
-                        console.log(_packageFullPath);
-                        console.log(_packageDocumentAbsoluteUrl);
-                        
-                        if (packageFullPath && packageFullPath.charAt(0) != '/') {
-                            packageFullPath = '/' + packageFullPath;
-                        }
-                        
-                        self.getXmlFileDom(packageFullPath, function (packageDom) {
-                            _packageDom = packageDom;
-                            _packageDomInitializationDeferred.resolve(packageDom);
-                            _packageDomInitializationDeferred = undefined;
-                        })
-                    }, onerror);
-                }
+                return;
+            } 
+            
+            if (_packageDomInitializationDeferred) {
+                _packageDomInitializationDeferred.done(callback);
+                return;
             }
+        
+            _packageDomInitializationDeferred = $.Deferred();
+            _packageDomInitializationDeferred.done(callback);
+            
+            self.getXmlFileDom('/META-INF/container.xml', function (containerXmlDom) {
+            
+                var rootFile = $('rootfile', containerXmlDom);
+                var packageFullPath = rootFile.attr('full-path');
+                        
+                if (packageFullPath.charAt(0) == '/') {
+                    packageFullPath = packageFullPath.substr(1);
+                }
+                
+                _packageFullPath = packageFullPath;
+                _packageDocumentAbsoluteUrl = _resourceFetcher.resolveURI(_packageFullPath);
+                
+                console.debug("### PACKAGE: ");
+                console.log(_packageFullPath);
+                console.log(_packageDocumentAbsoluteUrl);
+                
+                if (packageFullPath && packageFullPath.charAt(0) != '/') {
+                    packageFullPath = '/' + packageFullPath;
+                }
+                
+                self.getXmlFileDom(packageFullPath, function (packageDom) {
+                    _packageDom = packageDom;
+                    _packageDomInitializationDeferred.resolve(packageDom);
+                    _packageDomInitializationDeferred = undefined;
+                })
+            }, onerror);
         };
 
         // Note that if the relativeToPackagePath parameter is in fact absolute
@@ -251,7 +247,7 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
 
         // Note that the relativeToPackagePath parameter can in fact be absolute
         // (starting with "/", already relative to the EPUB archive's base folder)
-        // For example: /META-INF/
+        // For example: /META-INF/*.*
         this.relativeToPackageFetchFileContents = function(relativeToPackagePath, fetchMode, fetchCallback, errorCallback) {
 
             var pathRelativeToEpubRoot = decodeURIComponent(self.convertPathRelativeToPackageToRelativeToBase(relativeToPackagePath));
@@ -356,11 +352,6 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
             fetchFunction.call(_resourceFetcher, pathRelativeToEpubRoot, fetchCallback, onerror);
         };
 
-
-
-        this.getRelativeXmlFileDom = function (filePath, callback, errorCallback) {
-            self.getXmlFileDom(self.convertPathRelativeToPackageToRelativeToBase(filePath), callback, errorCallback);
-        };
 
         // TODO: this function seems unused, and the callback parameter seems to be onError 
         function readEncriptionData(callback) {

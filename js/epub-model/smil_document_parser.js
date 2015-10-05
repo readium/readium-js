@@ -21,7 +21,15 @@ define(['jquery', 'underscore'], function ($, _) {
         // Parse a media overlay manifest item XML
         this.parse = function(spineItem, manifestItemSMIL, smilJson, deferred, callback, errorCallback) {
             var that = this;
-            publicationFetcher.getRelativeXmlFileDom(manifestItemSMIL.href, function(xmlDom) {
+            
+            var href = manifestItemSMIL.href;
+            // href = publicationFetcher.convertPathRelativeToPackageToRelativeToBase(href);
+            // if (href.charAt(0) != '/') {
+            //     href = '/' + href;
+            // }
+            
+            // href is relative to OPF (leading forward slash is discarded automatically, if any) 
+            publicationFetcher.getXmlFileDom(href, function(xmlDom) {
 
                 var smil = $("smil", xmlDom)[0];
                 smilJson.smilVersion = smil.getAttribute('version');
