@@ -133,7 +133,11 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
             
                 console.debug("-------------------------------");
                 
-                var thisRootUrl = window.location.origin + window.location.pathname;
+                var origin = window.location.origin; 
+                if (!origin) {
+                    origin = window.location.protocol + '//' + window.location.host;
+                }
+                var thisRootUrl = origin + window.location.pathname;
                 
                 console.debug("BASE URL: " + thisRootUrl);
                 console.debug("RELATIVE URL: " + ebookURL);
