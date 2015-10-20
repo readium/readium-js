@@ -45,7 +45,20 @@ define(['jquery', 'URIjs', './discover_content_type'], function ($, URI, Content
         // PUBLIC API
 
         this.resolveURI = function (pathRelativeToPackageRoot) {
-            
+    
+            var urlScheme = undefined;
+            try{
+                urlScheme = (new URI(pathRelativeToPackageRoot)).scheme();
+            } catch (err) {
+                console.error(err);
+                console.log(pathRelativeToPackageRoot);
+            }  
+            // Check absolute URL
+            //if (pathRelativeToPackageRoot.indexOf("http://") == 0 || pathRelativeToPackageRoot.indexOf("https://") == 0) {
+            if (urlScheme) {
+                return pathRelativeToPackageRoot;
+            }
+
             var url = ebookURL_filepath;
             
             try {
