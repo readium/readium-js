@@ -176,7 +176,7 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
                                 //console.debug(allResponseHeaders);
                             }
                             
-                            if (allResponseHeaders.indexOf("content-type") > 0) {
+                            if (allResponseHeaders.indexOf("content-type") >= 0) {
                                 contentType = xhr.getResponseHeader("Content-Type") || xhr.getResponseHeader("content-type");
                                 if (!contentType) contentType = undefined;
                                 
@@ -185,7 +185,7 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
                             
                             var responseURL = xhr.responseURL;
                             if (!responseURL) {
-                                if (allResponseHeaders.indexOf("location") > 0) {
+                                if (allResponseHeaders.indexOf("location") >= 0) {
                                     responseURL = xhr.getResponseHeader("Location") || xhr.getResponseHeader("location");
                                 }
                             }
