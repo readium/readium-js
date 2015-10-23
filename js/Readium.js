@@ -12,10 +12,10 @@
 //  prior written permission.
 
 
-define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/reader_view', 'readium_js/epub-fetch/publication_fetcher',
+define(['text!version.json', 'jquery', 'underscore', 'URIjs', 'readium_shared_js/views/reader_view', 'readium_js/epub-fetch/publication_fetcher',
         'readium_js/epub-model/package_document_parser', 'readium_js/epub-fetch/iframe_zip_loader', 'readium_shared_js/views/iframe_loader'
         ],
-    function (versionText, $, _, ReaderView, PublicationFetcher,
+    function (versionText, $, _, URI, ReaderView, PublicationFetcher,
               PackageParser, IframeZipLoader, IframeLoader) {
 
     var DEBUG_VERSION_GIT = false; 
@@ -42,7 +42,11 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
             var scripts = "<script type=\"text/javascript\">(" + injectedScript.toString() + ")()<\/script>";
 
             if (_options && _options.mathJaxUrl && contentDocumentHtml.indexOf("<math") >= 0) {
-                scripts += "<script type=\"text/javascript\" src=\"" + _options.mathJaxUrl + "\"> <\/script>";
+                var mathJaxUrl = _options.mathJaxUrl;
+                if (URI(mathJaxUrl).is('relative')) {
+                    mathJaxUrl = URI(mathJaxUrl).absoluteTo(document.location.toString());
+                }
+                scripts += "<script type=\"text/javascript\" src=\"" + mathJaxUrl + "\"> <\/script>";
             }
 
             contentDocumentHtml = contentDocumentHtml.replace(/(<head[\s\S]*?>)/, "$1" + base + scripts);
