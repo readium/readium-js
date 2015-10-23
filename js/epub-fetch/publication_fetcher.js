@@ -66,7 +66,15 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
             // binary object means packed EPUB
             if (ebookURL instanceof Blob) return false;
             
-            if (_contentType && _contentType.indexOf("application/epub+zip") >= 0) return false;
+            if (_contentType &&
+                (
+                    _contentType.indexOf("application/epub+zip") >= 0
+                    ||
+                    _contentType.indexOf("application/zip") >= 0
+                    ||
+                    _contentType.indexOf("application/octet-stream") >= 0
+                )
+               ) return false;
             
             var uriTrimmed = ebookURL;
             
