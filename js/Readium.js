@@ -154,7 +154,7 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
                 
                 console.debug("-------------------------------");
                 
-                
+                // We don't use URI.is("absolute") here, as we really need HTTP(S) (excludes e.g. "data:" URLs)
                 if (ebookURL.indexOf("http://") == 0 || ebookURL.indexOf("https://") == 0) {
                         
                     var xhr = new XMLHttpRequest();
