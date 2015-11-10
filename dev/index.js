@@ -54,7 +54,7 @@ require(["readium_shared_js/globalsSetup"], function () {
             openBookOptions: {}
         };
 
-  			Readium.getVersion(function(version){
+              Readium.getVersion(function(version){
 
             console.log(version);
 
