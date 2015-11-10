@@ -64,8 +64,8 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
 
         function isExploded() {
             // binary object means packed EPUB
-            if (ebookURL instanceof Blob) return false;
-            
+            if (ebookURL instanceof Blob || ebookURL instanceof File) return false;
+
             if (_contentType &&
                 (
                     _contentType.indexOf("application/epub+zip") >= 0
