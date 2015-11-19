@@ -54,7 +54,7 @@ require(["readium_shared_js/globalsSetup"], function () {
             openBookOptions: {}
         };
 
-  			Readium.getVersion(function(version){
+              Readium.getVersion(function(version){
 
             console.log(version);
 
@@ -121,7 +121,11 @@ require(["readium_shared_js/globalsSetup"], function () {
             // Debug check:
             //console.debug(JSON.stringify(window.navigator.epubReadingSystem, undefined, 2));
 
-            var prefix = (self.location && self.location.origin && self.location.pathname) ? (self.location.origin + self.location.pathname + "/..") : "";
+            var origin = window.location.origin;
+            if (!origin) {
+                origin = window.location.protocol + '//' + window.location.host;
+            }
+            var prefix = (self.location && self.location.pathname && origin) ? (origin + self.location.pathname + "/..") : "";
 
             var readerOptions =
             {
