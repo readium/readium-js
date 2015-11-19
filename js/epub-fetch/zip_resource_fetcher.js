@@ -201,7 +201,7 @@ define(['jquery', 'URIjs', './discover_content_type', 'zip-ext', 'readium_shared
             
             return url + (url.charAt(url.length-1) == '/' ? "" : "/") + pathRelativeToPackageRoot;
         };
-        
+
         this.fetchFileContentsText = function(relativePathRelativeToPackageRoot, fetchCallback, onerror) {
 
             fetchFileContents(relativePathRelativeToPackageRoot, function (entry) {
