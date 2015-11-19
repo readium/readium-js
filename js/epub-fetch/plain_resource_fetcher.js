@@ -19,7 +19,7 @@ define(['jquery', 'URIjs', './discover_content_type'], function ($, URI, Content
         var ebookURL_filepath = parentFetcher.getEbookURL_FilePath();
 
         var self = this;
-        
+
         // INTERNAL FUNCTIONS
 
         function fetchFileContents(pathRelativeToPackageRoot, readCallback, onerror) {
@@ -40,6 +40,7 @@ define(['jquery', 'URIjs', './discover_content_type'], function ($, URI, Content
 
             xhr.send();
         }
+
 
         // PUBLIC API
 
