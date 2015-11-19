@@ -322,6 +322,150 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
             
         };
         
+        var _packageFullPathFromContainerXml = undefined;
+        var _multipleRenditions = undefined;
+        
+        this.cleanup = function() {
+            self.flushCache();
+
+            if (_mediaQueryEventCallback) {
+                _mediaQuery.removeListener(_mediaQueryEventCallback);
+                _mediaQueryEventCallback = undefined;
+            }
+        };
+
+        function createResourceFetcher(isExploded, callback) {
+            if (isExploded) {
+                console.log(' --- using PlainResourceFetcher');
+                _resourceFetcher = new PlainResourceFetcher(self);
+                callback(_resourceFetcher);
+            } else {
+                console.log(' --- using ZipResourceFetcher');
+                _resourceFetcher = new ZipResourceFetcher(self, jsLibRoot);
+                callback(_resourceFetcher);
+            }
+        }
+
+        
+        // PUBLIC API
+
+        /**
+         * Determine whether the documents fetched using this fetcher require special programmatic handling.
+         * (resolving of internal resource references).
+         * @returns {*} true if documents fetched using this fetcher require special programmatic handling
+         * (resolving of internal resource references). Typically needed for zipped EPUBs or exploded EPUBs that contain
+         * encrypted resources specified in META-INF/encryption.xml.
+         *
+         * false if documents can be fed directly into a window or iframe by src URL without using special fetching logic.
+         */
+        this.shouldConstructDomProgrammatically = function (){
+            return _shouldConstructDomProgrammatically;
+        };
+
+        /**
+         * Determine whether the media assets (audio, video, images) within content documents require special
+         * programmatic handling.
+         * @returns {*} true if content documents fetched using this fetcher require programmatic fetching
+         * of media assets. Typically needed for zipped EPUBs.
+         *
+         * false if paths to media assets are accessible directly for the browser through their paths relative to
+         * the base URI of their content document.
+         */
+        this.shouldFetchMediaAssetsProgrammatically = function() {
+            return _shouldConstructDomProgrammatically && !isExploded();
+        };
+
+        this.getEbookURL = function() {
+            return ebookURL;
+        };
+
+        this.getEbookURL_FilePath = function() {
+            
+            return Helpers.getEbookUrlFilePath(ebookURL);
+        };
+        
+        this.getJsLibRoot = function() {
+            return jsLibRoot;
+        };
+
+        this.flushCache = function() {
+            _publicationResourcesCache.flushCache();
+        };
+
+        this.getPackageUrl = function() {
+            return _packageDocumentAbsoluteUrl;
+        };
+        
+        this.getPackageFullPathRelativeToBase = function() {
+              return _packageFullPath;
+        };
+
+        this.fetchContentDocument = function (attachedData, loadedDocumentUri, contentDocumentResolvedCallback, errorCallback) {
+
+            // Resources loaded for previously fetched document no longer need to be pinned:
+            // DANIEL: what about 2-page synthetic spread of fixed layout documents / spine items?
+            // See https://github.com/readium/readium-js/issues/104
+            _publicationResourcesCache.unPinResources();
+
+
+            var contentDocumentFetcher = new ContentDocumentFetcher(self, attachedData.spineItem, loadedDocumentUri, _publicationResourcesCache, _contentDocumentTextPreprocessor);
+            contentDocumentFetcher.fetchContentDocumentAndResolveDom(contentDocumentResolvedCallback, errorCallback);
+        };
+
+        this.getFileContentsFromPackage = function(filePathRelativeToPackageRoot, callback, onerror) {
+            
+            // AVOID INVOKING fetchFileContentsText() directly, use relativeToPackageFetchFileContents() wrapper instead so that additional checks are performed.
+            
+            // META-INF/container.xml initial fetch, see this.initialize()
+            if (!_packageFullPath) {
+                console.debug("FETCHING (INIT) ... " + filePathRelativeToPackageRoot);
+                if (filePathRelativeToPackageRoot && filePathRelativeToPackageRoot.charAt(0) == '/') {
+                    filePathRelativeToPackageRoot = filePathRelativeToPackageRoot.substr(1);
+                }
+                _resourceFetcher.fetchFileContentsText(filePathRelativeToPackageRoot, function (fileContents) {
+                    callback(fileContents);
+                }, onerror);
+            } else {
+                self.relativeToPackageFetchFileContents(filePathRelativeToPackageRoot, 'text', function (fileContents) {
+                    callback(fileContents);
+                }, onerror);
+            }
+        };
+
+
+
+        this.getXmlFileDom = function (xmlFilePathRelativeToPackageRoot, callback, onerror) {
+            self.getFileContentsFromPackage(xmlFilePathRelativeToPackageRoot, function (xmlFileContents) {
+                var fileDom = self.markupParser.parseXml(xmlFileContents);
+                callback(fileDom);
+            }, onerror);
+        };
+
+        var getPackageFullPathFromContainerXml = function(callback, onerror) {
+            if (_packageFullPathFromContainerXml) {
+                callback(_packageFullPathFromContainerXml, _multipleRenditions);
+                return;
+            }
+            
+            self.getXmlFileDom('META-INF/container.xml', function(containerXmlDom) {
+                
+                _multipleRenditions = {};
+            
+                _packageFullPathFromContainerXml = getRootFile(containerXmlDom, _multipleRenditions);
+                
+                var cacheOpfDom = {};
+
+                if (_multipleRenditions.renditions.length) {
+                    populateCacheOpfDom(0, _multipleRenditions, cacheOpfDom, function() {
+                        buildRenditionMapping(callback, _multipleRenditions, containerXmlDom, _packageFullPathFromContainerXml, cacheOpfDom);
+                    });
+                } else {
+                    buildRenditionMapping(callback, _multipleRenditions, containerXmlDom, _packageFullPathFromContainerXml, cacheOpfDom);
+                }
+                
+            }, onerror);
+        };
+        
         var getRootFile = function(containerXmlDom, multipleRenditions) {
             //console.debug(containerXmlDom.documentElement.innerHTML);
             
@@ -508,150 +652,6 @@ console.log("######################################");
             return packageFullPath;
         };
         
-        var _packageFullPathFromContainerXml = undefined;
-        var _multipleRenditions = undefined;
-        
-        var getPackageFullPathFromContainerXml = function(callback, onerror) {
-            if (_packageFullPathFromContainerXml) {
-                callback(_packageFullPathFromContainerXml, _multipleRenditions);
-                return;
-            }
-            
-            self.getXmlFileDom('META-INF/container.xml', function(containerXmlDom) {
-                
-                _multipleRenditions = {};
-            
-                _packageFullPathFromContainerXml = getRootFile(containerXmlDom, _multipleRenditions);
-                
-                var cacheOpfDom = {};
-
-                if (_multipleRenditions.renditions.length) {
-                    populateCacheOpfDom(0, _multipleRenditions, cacheOpfDom, function() {
-                        buildRenditionMapping(callback, _multipleRenditions, containerXmlDom, _packageFullPathFromContainerXml, cacheOpfDom);
-                    });
-                } else {
-                    buildRenditionMapping(callback, _multipleRenditions, containerXmlDom, _packageFullPathFromContainerXml, cacheOpfDom);
-                }
-                
-            }, onerror);
-        };
-        
-        this.cleanup = function() {
-            self.flushCache();
-
-            if (_mediaQueryEventCallback) {
-                _mediaQuery.removeListener(_mediaQueryEventCallback);
-                _mediaQueryEventCallback = undefined;
-            }
-        };
-
-        function createResourceFetcher(isExploded, callback) {
-            if (isExploded) {
-                console.log(' --- using PlainResourceFetcher');
-                _resourceFetcher = new PlainResourceFetcher(self);
-                callback(_resourceFetcher);
-            } else {
-                console.log(' --- using ZipResourceFetcher');
-                _resourceFetcher = new ZipResourceFetcher(self, jsLibRoot);
-                callback(_resourceFetcher);
-            }
-        }
-
-        
-        // PUBLIC API
-
-        /**
-         * Determine whether the documents fetched using this fetcher require special programmatic handling.
-         * (resolving of internal resource references).
-         * @returns {*} true if documents fetched using this fetcher require special programmatic handling
-         * (resolving of internal resource references). Typically needed for zipped EPUBs or exploded EPUBs that contain
-         * encrypted resources specified in META-INF/encryption.xml.
-         *
-         * false if documents can be fed directly into a window or iframe by src URL without using special fetching logic.
-         */
-        this.shouldConstructDomProgrammatically = function (){
-            return _shouldConstructDomProgrammatically;
-        };
-
-        /**
-         * Determine whether the media assets (audio, video, images) within content documents require special
-         * programmatic handling.
-         * @returns {*} true if content documents fetched using this fetcher require programmatic fetching
-         * of media assets. Typically needed for zipped EPUBs.
-         *
-         * false if paths to media assets are accessible directly for the browser through their paths relative to
-         * the base URI of their content document.
-         */
-        this.shouldFetchMediaAssetsProgrammatically = function() {
-            return _shouldConstructDomProgrammatically && !isExploded();
-        };
-
-        this.getEbookURL = function() {
-            return ebookURL;
-        };
-
-        this.getEbookURL_FilePath = function() {
-            
-            return Helpers.getEbookUrlFilePath(ebookURL);
-        };
-        
-        this.getJsLibRoot = function() {
-            return jsLibRoot;
-        };
-
-        this.flushCache = function() {
-            _publicationResourcesCache.flushCache();
-        };
-
-        this.getPackageUrl = function() {
-            return _packageDocumentAbsoluteUrl;
-        };
-        
-        this.getPackageFullPathRelativeToBase = function() {
-              return _packageFullPath;
-        };
-
-        this.fetchContentDocument = function (attachedData, loadedDocumentUri, contentDocumentResolvedCallback, errorCallback) {
-
-            // Resources loaded for previously fetched document no longer need to be pinned:
-            // DANIEL: what about 2-page synthetic spread of fixed layout documents / spine items?
-            // See https://github.com/readium/readium-js/issues/104
-            _publicationResourcesCache.unPinResources();
-
-
-            var contentDocumentFetcher = new ContentDocumentFetcher(self, attachedData.spineItem, loadedDocumentUri, _publicationResourcesCache, _contentDocumentTextPreprocessor);
-            contentDocumentFetcher.fetchContentDocumentAndResolveDom(contentDocumentResolvedCallback, errorCallback);
-        };
-
-        this.getFileContentsFromPackage = function(filePathRelativeToPackageRoot, callback, onerror) {
-            
-            // AVOID INVOKING fetchFileContentsText() directly, use relativeToPackageFetchFileContents() wrapper instead so that additional checks are performed.
-            
-            // META-INF/container.xml initial fetch, see this.initialize()
-            if (!_packageFullPath) {
-                console.debug("FETCHING (INIT) ... " + filePathRelativeToPackageRoot);
-                if (filePathRelativeToPackageRoot && filePathRelativeToPackageRoot.charAt(0) == '/') {
-                    filePathRelativeToPackageRoot = filePathRelativeToPackageRoot.substr(1);
-                }
-                _resourceFetcher.fetchFileContentsText(filePathRelativeToPackageRoot, function (fileContents) {
-                    callback(fileContents);
-                }, onerror);
-            } else {
-                self.relativeToPackageFetchFileContents(filePathRelativeToPackageRoot, 'text', function (fileContents) {
-                    callback(fileContents);
-                }, onerror);
-            }
-        };
-
-
-
-        this.getXmlFileDom = function (xmlFilePathRelativeToPackageRoot, callback, onerror) {
-            self.getFileContentsFromPackage(xmlFilePathRelativeToPackageRoot, function (xmlFileContents) {
-                var fileDom = self.markupParser.parseXml(xmlFileContents);
-                callback(fileDom);
-            }, onerror);
-        };
-
         this.getPackageDom = function (callback, onerror) {
             if (_packageDom) {
                 callback(_packageDom, _multipleRenditions);
