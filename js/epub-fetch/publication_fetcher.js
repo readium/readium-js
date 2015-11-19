@@ -56,10 +56,7 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
                 //NOTE: _resourceFetcher == resourceFetcher
                 
                 self.getPackageDom(
-                    function(packageDocumentRelativePath, multipleRenditions) {
-                        _packageFullPath = packageDocumentRelativePath;
-                        _packageDocumentAbsoluteUrl = resourceFetcher.resolveURI(packageDocumentRelativePath);
-                        
+                    function(packageDocument, multipleRenditions) {
                         callback(resourceFetcher, multipleRenditions);
                     },
                     function(error) {
@@ -511,12 +508,12 @@ console.log("######################################");
             return packageFullPath;
         };
         
-        
+        var _packageFullPathFromContainerXml = undefined;
         var _multipleRenditions = undefined;
         
-        this.getPackageFullPath = function(callback, onerror) {
-            if (_packageFullPath) {
-                callback(_packageFullPath, _multipleRenditions);
+        var getPackageFullPathFromContainerXml = function(callback, onerror) {
+            if (_packageFullPathFromContainerXml) {
+                callback(_packageFullPathFromContainerXml, _multipleRenditions);
                 return;
             }
             
@@ -524,21 +521,21 @@ console.log("######################################");
                 
                 _multipleRenditions = {};
             
-                _packageFullPath = getRootFile(containerXmlDom, _multipleRenditions);
+                _packageFullPathFromContainerXml = getRootFile(containerXmlDom, _multipleRenditions);
                 
                 var cacheOpfDom = {};
 
                 if (_multipleRenditions.renditions.length) {
                     populateCacheOpfDom(0, _multipleRenditions, cacheOpfDom, function() {
-                        buildRenditionMapping(callback, _multipleRenditions, containerXmlDom, _packageFullPath, cacheOpfDom);
+                        buildRenditionMapping(callback, _multipleRenditions, containerXmlDom, _packageFullPathFromContainerXml, cacheOpfDom);
                     });
                 } else {
-                    buildRenditionMapping(callback, _multipleRenditions, containerXmlDom, _packageFullPath, cacheOpfDom);
+                    buildRenditionMapping(callback, _multipleRenditions, containerXmlDom, _packageFullPathFromContainerXml, cacheOpfDom);
                 }
                 
             }, onerror);
         };
-
+        
         this.cleanup = function() {
             self.flushCache();
 
@@ -655,22 +652,9 @@ console.log("######################################");
             }, onerror);
         };
 
-        this.getPackageFullPath = function(callback, onerror) {
-            self.getXmlFileDom('/META-INF/container.xml', function (containerXmlDom) {
-                var packageFullPath = self.getRootFile(containerXmlDom);
-                callback(packageFullPath);
-            }, onerror);
-        };
-
-        this.getRootFile = function(containerXmlDom) {
-            var rootFile = $('rootfile', containerXmlDom);
-            var packageFullPath = rootFile.attr('full-path');
-            return packageFullPath;
-        };
-
         this.getPackageDom = function (callback, onerror) {
             if (_packageDom) {
-                callback(_packageDom);
+                callback(_packageDom, _multipleRenditions);
             } else {
                 // TODO: use jQuery's Deferred
                 // Register all callbacks interested in initialized packageDom, launch its instantiation only once
@@ -681,7 +665,7 @@ console.log("######################################");
                     _packageDomInitializationDeferred = $.Deferred();
                     _packageDomInitializationDeferred.done(callback);
 
-                    self.getPackageFullPath(function (packageFullPath, multipleRenditions) {
+                    getPackageFullPathFromContainerXml(function (packageFullPath, multipleRenditions) {
                                 
                         _packageFullPath = packageFullPath;
                         _packageDocumentAbsoluteUrl = _resourceFetcher.resolveURI(_packageFullPath);
@@ -696,7 +680,7 @@ console.log("######################################");
                         
                         self.getXmlFileDom(packageFullPath, function (packageDom) {
                             _packageDom = packageDom;
-                            _packageDomInitializationDeferred.resolve(packageDom);
+                            _packageDomInitializationDeferred.resolve(packageDom, _multipleRenditions);
                             _packageDomInitializationDeferred = undefined;
                         })
                     }, onerror);
