@@ -84,6 +84,11 @@ define(['jquery', 'underscore', 'URIjs'],
 
         this.getTocText = function(callback) {
             var toc = this.getToc();
+            if (!toc) {
+                console.error("No TOC?!");
+                callback(undefined);
+                return;
+            }
 
             resourceFetcher.relativeToPackageFetchFileContents(toc, 'text', function (tocDocumentText) {
                 callback(tocDocumentText)

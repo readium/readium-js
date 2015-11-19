@@ -29,6 +29,7 @@ define(['jquery', 'underscore'], function ($, _) {
             // }
             
             // href is relative to OPF (leading forward slash is discarded automatically, if any) 
+
             publicationFetcher.getXmlFileDom(href, function(xmlDom) {
 
                 var smil = $("smil", xmlDom)[0];

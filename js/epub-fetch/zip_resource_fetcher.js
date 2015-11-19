@@ -52,9 +52,9 @@ define(['jquery', 'URIjs', './discover_content_type', 'zip-ext', 'readium_shared
                 }
 
                 _zipFs = new zip.fs.FS();
-                
-                if (ebookURL instanceof Blob) {
-                    
+
+                if (ebookURL instanceof Blob || ebookURL instanceof File) {
+
                     _zipFs.importBlob(
                         ebookURL,
                         function () {  
@@ -120,7 +120,7 @@ define(['jquery', 'URIjs', './discover_content_type', 'zip-ext', 'readium_shared
                     var isReadiumError = error ? (error.message.indexOf(READIUM_ERROR_PREFIX) == 0) : false;
                     
                     // we fallback to Blobl for all other types of errors (not just those emanating from the zip lib, but also from the readCallback())
-                    if (!isReadiumError && !(ebookURL instanceof Blob)) {
+                    if (!isReadiumError && !(ebookURL instanceof Blob) && !(ebookURL instanceof File)) {
                         console.log("Zip lib failed to load zipped EPUB via HTTP, trying alternative HTTP fetch... (" + ebookURL + ")");
                         
                         var xhr = new XMLHttpRequest();
@@ -139,8 +139,8 @@ define(['jquery', 'URIjs', './discover_content_type', 'zip-ext', 'readium_shared
                                 //console.log(ebookURL_filepath);
                                 
                                 _zipFs = undefined;
-                                
-                                if (ebookURL instanceof Blob) {
+
+                                if (ebookURL instanceof Blob || ebookURL instanceof File) {
                                     fetchFileContents(relativePathRelativeToPackageRoot, readCallback, onerror);
                                 }
                                 else {
@@ -178,7 +178,17 @@ define(['jquery', 'URIjs', './discover_content_type', 'zip-ext', 'readium_shared
         // PUBLIC API
 
         this.resolveURI = function (pathRelativeToPackageRoot) {
-            
+                
+            var pathRelativeToPackageRootUri = undefined;
+            try {
+                pathRelativeToPackageRootUri = new URI(pathRelativeToPackageRoot);
+            } catch(err) {
+                console.error(err);
+                console.log(pathRelativeToPackageRoot);
+            }
+            if (pathRelativeToPackageRootUri && pathRelativeToPackageRootUri.is("absolute")) return pathRelativeToPackageRoot; //pathRelativeToPackageRootUri.scheme() == "http://", "https://", "data:", etc.
+
+
             var url = ebookURL_filepath;
             
             try {
