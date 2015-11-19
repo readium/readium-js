@@ -322,9 +322,6 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
             
         };
         
-        var _packageFullPathFromContainerXml = undefined;
-        var _multipleRenditions = undefined;
-        
         this.cleanup = function() {
             self.flushCache();
 
@@ -441,6 +438,10 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
             }, onerror);
         };
 
+
+        var _packageFullPathFromContainerXml = undefined;
+        var _multipleRenditions = undefined;
+        
         var getPackageFullPathFromContainerXml = function(callback, onerror) {
             if (_packageFullPathFromContainerXml) {
                 callback(_packageFullPathFromContainerXml, _multipleRenditions);
