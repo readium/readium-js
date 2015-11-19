@@ -41,12 +41,37 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
         var _mediaQueryEventCallback = undefined;
         
         var _contentDocumentTextPreprocessor = contentDocumentTextPreprocessor;
-
         var _contentType = contentType;
 
-        var _renditionSelection = renditionSelection;
-
         this.markupParser = new MarkupParser();
+
+        this.initialize =  function(callback) {
+            var isEpubExploded = isExploded();
+
+            // Non exploded EPUBs (i.e. zipped .epub documents) should be fetched in a programmatical manner:
+            _shouldConstructDomProgrammatically = !isEpubExploded;
+
+            createResourceFetcher(isEpubExploded, function(resourceFetcher) {
+    
+                //NOTE: _resourceFetcher == resourceFetcher
+                
+                self.getPackageDom(
+                    function(packageDocumentRelativePath, multipleRenditions) {
+                        _packageFullPath = packageDocumentRelativePath;
+                        _packageDocumentAbsoluteUrl = resourceFetcher.resolveURI(packageDocumentRelativePath);
+                        
+                        callback(resourceFetcher, multipleRenditions);
+                    },
+                    function(error) {
+                        console.error("unable to find package document: " + error);
+        
+                        callback(resourceFetcher, undefined);
+                    }
+                );
+            });
+        };
+
+        var _renditionSelection = renditionSelection;
 
         function isExploded() {
             // binary object means packed EPUB
@@ -79,33 +104,6 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
             // return ebookURL.indexOf(ext, ebookURL.length - ext.length) === -1;
         }
         
-        this.initialize =  function(callback) {
-            var isEpubExploded = isExploded();
-
-            // Non exploded EPUBs (i.e. zipped .epub documents) should be fetched in a programmatical manner:
-            _shouldConstructDomProgrammatically = !isEpubExploded;
-
-            createResourceFetcher(isEpubExploded, function(resourceFetcher) {
-    
-                //NOTE: _resourceFetcher == resourceFetcher
-                
-                self.getPackageDom(
-                    function(packageDocumentRelativePath, multipleRenditions) {
-                        _packageFullPath = packageDocumentRelativePath;
-                        _packageDocumentAbsoluteUrl = resourceFetcher.resolveURI(packageDocumentRelativePath);
-                        
-                        callback(resourceFetcher, multipleRenditions);
-                    },
-                    function(error) {
-                        console.error("unable to find package document: " + error);
-        
-                        callback(resourceFetcher, undefined);
-                    }
-                );
-            });
-        };
-
-
 
         // INTERNAL FUNCTIONS
 
