@@ -40,6 +40,7 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
 
         this.markupParser = new MarkupParser();
 
+        var _renditionSelection = renditionSelection;
         var _mediaQuery = undefined;
         var _mediaQueryEventCallback = undefined;
         
@@ -69,9 +70,6 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
                 );
             });
         };
-
-        var _renditionSelection = renditionSelection;
-        
 
         // INTERNAL FUNCTIONS
 
