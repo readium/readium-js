@@ -35,14 +35,14 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
         var _packageDomInitializationDeferred;
         var _publicationResourcesCache = new ResourceCache(sourceWindow, cacheSizeEvictThreshold);
 
-        var _mediaQuery = undefined;
-        var _mediaQueryEventCallback = undefined;
-        
         var _contentDocumentTextPreprocessor = contentDocumentTextPreprocessor;
         var _contentType = contentType;
 
         this.markupParser = new MarkupParser();
 
+        var _mediaQuery = undefined;
+        var _mediaQueryEventCallback = undefined;
+        
         this.initialize =  function(callback) {
 
             var isEpubExploded = isExploded();
