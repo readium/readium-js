@@ -29,10 +29,8 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
         var _shouldConstructDomProgrammatically;
         var _resourceFetcher;
         var _encryptionHandler;
-
         var _packageFullPath;
         var _packageDocumentAbsoluteUrl;
-        
         var _packageDom;
         var _packageDomInitializationDeferred;
         var _publicationResourcesCache = new ResourceCache(sourceWindow, cacheSizeEvictThreshold);
@@ -46,11 +44,12 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
         this.markupParser = new MarkupParser();
 
         this.initialize =  function(callback) {
+
             var isEpubExploded = isExploded();
 
             // Non exploded EPUBs (i.e. zipped .epub documents) should be fetched in a programmatical manner:
             _shouldConstructDomProgrammatically = !isEpubExploded;
-
+            
             createResourceFetcher(isEpubExploded, function(resourceFetcher) {
     
                 //NOTE: _resourceFetcher == resourceFetcher
@@ -72,6 +71,9 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
         };
 
         var _renditionSelection = renditionSelection;
+        
+
+        // INTERNAL FUNCTIONS
 
         function isExploded() {
             // binary object means packed EPUB
@@ -103,9 +105,6 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
             // var ext = ".epub";
             // return ebookURL.indexOf(ext, ebookURL.length - ext.length) === -1;
         }
-        
-
-        // INTERNAL FUNCTIONS
 
         var buildRenditionMapping = function(callback, multipleRenditions, containerXmlDom, packageFullPath, cacheOpfDom) {
 
@@ -542,6 +541,15 @@ console.log("######################################");
             }, onerror);
         };
 
+        this.cleanup = function() {
+            self.flushCache();
+
+            if (_mediaQueryEventCallback) {
+                _mediaQuery.removeListener(_mediaQueryEventCallback);
+                _mediaQueryEventCallback = undefined;
+            }
+        };
+
         function createResourceFetcher(isExploded, callback) {
             if (isExploded) {
                 console.log(' --- using PlainResourceFetcher');
@@ -598,15 +606,6 @@ console.log("######################################");
 
         this.flushCache = function() {
             _publicationResourcesCache.flushCache();
-        };
-
-        this.cleanup = function() {
-            self.flushCache();
-
-            if (_mediaQueryEventCallback) {
-                _mediaQuery.removeListener(_mediaQueryEventCallback);
-                _mediaQueryEventCallback = undefined;
-            }
         };
 
         this.getPackageUrl = function() {
@@ -711,6 +710,7 @@ console.log("######################################");
         // (starting with "/", already relative to the EPUB archive's base folder)
         // then the returned value is relativeToPackagePath.
         this.convertPathRelativeToPackageToRelativeToBase = function (relativeToPackagePath) {
+
             return new URI(relativeToPackagePath).absoluteTo(_packageFullPath).toString();
         };
 
