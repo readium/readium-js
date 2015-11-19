@@ -143,6 +143,13 @@ define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore', './disco
                         
                         var childSrc = child_iframe.frameElement.getAttribute("data-src");
                         // console.log(childSrc);
+                        
+                        if (!childSrc) {
+                            if (child_iframe.frameElement.localName == "iframe") {
+                                console.error("IFRAME data-src missing?!");
+                            }
+                            continue;
+                        }
                             
                         // console.debug(attachedData);
                         var contentDocumentPathRelativeToPackage = attachedData.spineItem.href; 
