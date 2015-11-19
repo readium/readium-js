@@ -49,18 +49,11 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
             
             createResourceFetcher(isEpubExploded, function(resourceFetcher) {
     
-                self.getPackageFullPath(
-                    function(packageDocumentRelativePath) {
-                        _packageFullPath = packageDocumentRelativePath;
-                        _packageDocumentAbsoluteUrl = resourceFetcher.resolveURI(packageDocumentRelativePath);
-                        
-                        callback(resourceFetcher);
-                    },
-                    function(error) {
-                        console.error("unable to find package document: " + error);
-        
-                        callback(resourceFetcher);
-                    }
+                //NOTE: _resourceFetcher == resourceFetcher
+                
+                self.getPackageDom(
+                    function() {callback(resourceFetcher);},
+                    function(error) {console.error("unable to find package document: " + error); callback(undefined);}
                 );
             });
         };
@@ -69,23 +62,19 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
 
         // INTERNAL FUNCTIONS
 
-        function _handleError(err) {
-            if (err) {
-                if (err.message) {
-                    console.error(err.message);
-                }
-                if (err.stack) {
-                    console.error(err.stack);
-                }
-            }
-            console.error(err);
-        }
-
         function isExploded() {
             // binary object means packed EPUB
-            if (ebookURL instanceof Blob) return false;
-            
-            if (_contentType && _contentType.indexOf("application/epub+zip") >= 0) return false;
+            if (ebookURL instanceof Blob || ebookURL instanceof File) return false;
+
+            if (_contentType &&
+                (
+                    _contentType.indexOf("application/epub+zip") >= 0
+                    ||
+                    _contentType.indexOf("application/zip") >= 0
+                    ||
+                    _contentType.indexOf("application/octet-stream") >= 0
+                )
+               ) return false;
             
             var uriTrimmed = ebookURL;
             
@@ -106,11 +95,11 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
 
         function createResourceFetcher(isExploded, callback) {
             if (isExploded) {
-                console.log('using new PlainResourceFetcher');
+                console.log(' --- using PlainResourceFetcher');
                 _resourceFetcher = new PlainResourceFetcher(self);
                 callback(_resourceFetcher);
             } else {
-                console.log('using new ZipResourceFetcher');
+                console.log(' --- using ZipResourceFetcher');
                 _resourceFetcher = new ZipResourceFetcher(self, jsLibRoot);
                 callback(_resourceFetcher);
             }
@@ -180,17 +169,27 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
 
 
             var contentDocumentFetcher = new ContentDocumentFetcher(self, attachedData.spineItem, loadedDocumentUri, _publicationResourcesCache, _contentDocumentTextPreprocessor);
-            contentDocumentFetcher.fetchContentDocumentAndResolveDom(contentDocumentResolvedCallback, function (err) {
-                _handleError(err);
-                errorCallback(err);
-            });
+            contentDocumentFetcher.fetchContentDocumentAndResolveDom(contentDocumentResolvedCallback, errorCallback);
         };
 
         this.getFileContentsFromPackage = function(filePathRelativeToPackageRoot, callback, onerror) {
-
-            _resourceFetcher.fetchFileContentsText(filePathRelativeToPackageRoot, function (fileContents) {
-                callback(fileContents);
-            }, onerror);
+            
+            // AVOID INVOKING fetchFileContentsText() directly, use relativeToPackageFetchFileContents() wrapper instead so that additional checks are performed.
+            
+            // META-INF/container.xml initial fetch, see this.initialize()
+            if (!_packageFullPath) {
+                console.debug("FETCHING (INIT) ... " + filePathRelativeToPackageRoot);
+                if (filePathRelativeToPackageRoot && filePathRelativeToPackageRoot.charAt(0) == '/') {
+                    filePathRelativeToPackageRoot = filePathRelativeToPackageRoot.substr(1);
+                }
+                _resourceFetcher.fetchFileContentsText(filePathRelativeToPackageRoot, function (fileContents) {
+                    callback(fileContents);
+                }, onerror);
+            } else {
+                self.relativeToPackageFetchFileContents(filePathRelativeToPackageRoot, 'text', function (fileContents) {
+                    callback(fileContents);
+                }, onerror);
+            }
         };
 
 
@@ -203,7 +202,7 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
         };
 
         this.getPackageFullPath = function(callback, onerror) {
-            self.getXmlFileDom('META-INF/container.xml', function (containerXmlDom) {
+            self.getXmlFileDom('/META-INF/container.xml', function (containerXmlDom) {
                 var packageFullPath = self.getRootFile(containerXmlDom);
                 callback(packageFullPath);
             }, onerror);
@@ -228,6 +227,17 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
                     _packageDomInitializationDeferred = $.Deferred();
                     _packageDomInitializationDeferred.done(callback);
                     self.getPackageFullPath(function (packageFullPath) {
+                                
+                        _packageFullPath = packageFullPath;
+                        _packageDocumentAbsoluteUrl = _resourceFetcher.resolveURI(_packageFullPath);
+                        
+                        console.debug("PACKAGE: ");
+                        console.log(_packageFullPath);
+                        console.log(_packageDocumentAbsoluteUrl);
+                        
+                        if (packageFullPath && packageFullPath.charAt(0) != '/') {
+                            packageFullPath = '/' + packageFullPath;
+                        }
                         
                         self.getXmlFileDom(packageFullPath, function (packageDom) {
                             _packageDom = packageDom;
@@ -250,11 +260,49 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
         // Note that the relativeToPackagePath parameter can in fact be absolute
         // (starting with "/", already relative to the EPUB archive's base folder)
         // For example: /META-INF/
-        this.relativeToPackageFetchFileContents = function(relativeToPackagePath, fetchMode, fetchCallback, onerror) {
+        this.relativeToPackageFetchFileContents = function(relativeToPackagePath, fetchMode, fetchCallback, errorCallback) {
 
-            if (! onerror) {
-                onerror = _handleError;
+            var pathRelativeToEpubRoot = decodeURIComponent(self.convertPathRelativeToPackageToRelativeToBase(relativeToPackagePath));
+
+            console.debug("FETCHING ... " + pathRelativeToEpubRoot);
+
+            // In case we received an absolute path, convert it to relative form or the fetch will fail:
+            if (pathRelativeToEpubRoot.charAt(0) === '/') {
+                pathRelativeToEpubRoot = pathRelativeToEpubRoot.substr(1);
             }
+
+            var onerror = function() {
+                
+                var err = arguments ?
+                    (
+                        (arguments.length && (arguments[0] instanceof Error)) ?
+                        arguments[0]
+                        : ((arguments instanceof Error) ? arguments : undefined)
+                    )
+                    : undefined;
+                
+                // hacky! :(
+                // (we need to filter these out from the console output, as they are in fact false positives)
+                var optionalFetch = (pathRelativeToEpubRoot.indexOf("META-INF/com.apple.ibooks.display-options.xml") == 0)
+                || (pathRelativeToEpubRoot.indexOf("META-INF/encryption.xml") == 0);
+                    
+                console.log("MISSING: " + pathRelativeToEpubRoot);
+                    
+                if (!optionalFetch) {
+                    if (err) {
+                        console.error(err);
+                        
+                        if (err.message) {
+                            console.debug(err.message);
+                        }
+                        if (err.stack) {
+                            console.log(err.stack);
+                        }
+                    }
+                }
+                
+                if (errorCallback) errorCallback.apply(this, arguments);
+            };
 
             // ZIP resource fetcher does not support absolute URLs outside of the EPUB archive
             // (e.g. MathJax.js and annotations.css)
@@ -297,38 +345,14 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
                               fetchCallback(result);
                           },
                           error: function (xhr, status, errorThrown) {
-                              console.error('Error when AJAX fetching ' + relativeToPackagePath);
-                              console.error(status);
-                              console.error(errorThrown);
-
-                              // // isLocal = false with custom URI scheme / protocol results in false fail on Firefox (Chrome okay)
-                              // if (status === "error" && (!errorThrown || !errorThrown.length) && xhr.responseText && xhr.responseText.length)
-                              // {
-                              //     console.error(xhr);
-                              //     if (typeof xhr.getResponseHeader !== "undefined") console.error(xhr.getResponseHeader("Content-Type"));
-                              //     if (typeof xhr.getAllResponseHeaders !== "undefined") console.error(xhr.getAllResponseHeaders());
-                              //     if (typeof xhr.responseText !== "undefined") console.error(xhr.responseText);
-                              //
-                              //     // success
-                              //     fetchCallback(xhr.responseText);
-                              //     return;
-                              // }
-
-                              onerror(errorThrown);
+                              onerror(new Error(errorThrown));
                           }
                     });
                 }
 
                 return;
             }
-
-            var pathRelativeToEpubRoot = decodeURIComponent(self.convertPathRelativeToPackageToRelativeToBase(relativeToPackagePath));
-
-            // In case we received an absolute path, convert it to relative form or the fetch will fail:
-            if (pathRelativeToEpubRoot.charAt(0) === '/') {
-                pathRelativeToEpubRoot = pathRelativeToEpubRoot.substr(1);
-            }
-
+            
             var fetchFunction = _resourceFetcher.fetchFileContentsText;
             if (fetchMode === 'blob') {
                 fetchFunction = _resourceFetcher.fetchFileContentsBlob;
@@ -336,6 +360,7 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
                 console.error("data64uri??");
                 fetchFunction = _resourceFetcher.fetchFileContentsData64Uri;
             }
+
             fetchFunction.call(_resourceFetcher, pathRelativeToEpubRoot, fetchCallback, onerror);
         };
 
@@ -345,12 +370,12 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
             self.getXmlFileDom(self.convertPathRelativeToPackageToRelativeToBase(filePath), callback, errorCallback);
         };
 
+        // TODO: this function seems unused, and the callback parameter seems to be onError 
         function readEncriptionData(callback) {
-            self.getXmlFileDom('META-INF/encryption.xml', function (encryptionDom, error) {
+            self.getXmlFileDom('/META-INF/encryption.xml', function (encryptionDom, error) {
 
                 if(error) {
-                    console.log(error);
-                    console.log("Document doesn't make use of encryption.");
+                    
                     _encryptionHandler = new EncryptionHandler(undefined);
                     callback();
                 }
@@ -382,7 +407,7 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
         // Currently needed for deobfuscating fonts
         this.setPackageMetadata = function(packageMetadata, settingFinishedCallback) {
 
-            self.getXmlFileDom('META-INF/encryption.xml', function (encryptionDom) {
+            self.getXmlFileDom('/META-INF/encryption.xml', function (encryptionDom) {
 
                 var encryptionData = EncryptionHandler.CreateEncryptionData(packageMetadata.id, encryptionDom);
 
@@ -398,7 +423,6 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
 
             }, function(error){
 
-                console.log("Document doesn't make use of encryption.");
                 _encryptionHandler = new EncryptionHandler(undefined);
 
                 settingFinishedCallback();

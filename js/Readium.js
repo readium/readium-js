@@ -41,7 +41,7 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
 
             var scripts = "<script type=\"text/javascript\">(" + injectedScript.toString() + ")()<\/script>";
 
-            if (_options && _options.mathJaxUrl && contentDocumentHtml.indexOf("<math") >= 0) {
+            if (_options && _options.mathJaxUrl && contentDocumentHtml.search(/<(\w+:|)(?=math)/) >= 0) {
                 scripts += "<script type=\"text/javascript\" src=\"" + _options.mathJaxUrl + "\"> <\/script>";
             }
 
@@ -89,9 +89,22 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
 
             _currentPublicationFetcher.initialize(function(resourceFetcher) {
 
+                if (!resourceFetcher) {
+                    
+                    callback(undefined);
+                    return;
+                }
+                
                 var _packageParser = new PackageParser(_currentPublicationFetcher);
 
                 _packageParser.parse(function(packageDocument){
+                    
+                    if (!packageDocument) {
+                        
+                        callback(undefined);
+                        return;
+                    }
+                    
                     var openBookOptions = readiumOptions.openBookOptions || {};
                     var openBookData = $.extend(packageDocument.getSharedJsPackageData(), openBookOptions);
 
@@ -104,10 +117,7 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
                         metadata: packageDocument.getMetadata()
                     };
 
-                    if (callback){
-                        // gives caller access to document metadata like the table of contents
-                        callback(packageDocument, options);
-                    }
+                    callback(packageDocument, options);
                 });
             });
         };
@@ -116,6 +126,7 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
         this.openPackageDocument = function(ebookURL, callback, openPageRequest)  {
                         
             if (!(ebookURL instanceof Blob)
+                && !(ebookURL instanceof File)
                 // && ebookURL.indexOf("file://") != 0
                 // && ebookURL.indexOf("filesystem://") != 0
                 // && ebookURL.indexOf("filesystem:chrome-extension://") != 0
@@ -123,7 +134,11 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
             
                 console.debug("-------------------------------");
                 
-                var thisRootUrl = window.location.origin + window.location.pathname;
+                var origin = window.location.origin; 
+                if (!origin) {
+                    origin = window.location.protocol + '//' + window.location.host;
+                }
+                var thisRootUrl = origin + window.location.pathname;
                 
                 console.debug("BASE URL: " + thisRootUrl);
                 console.debug("RELATIVE URL: " + ebookURL);
@@ -140,7 +155,7 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
                 
                 console.debug("-------------------------------");
                 
-                
+                // We don't use URI.is("absolute") here, as we really need HTTP(S) (excludes e.g. "data:" URLs)
                 if (ebookURL.indexOf("http://") == 0 || ebookURL.indexOf("https://") == 0) {
                         
                     var xhr = new XMLHttpRequest();
@@ -162,7 +177,7 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
                                 //console.debug(allResponseHeaders);
                             }
                             
-                            if (allResponseHeaders.indexOf("content-type") > 0) {
+                            if (allResponseHeaders.indexOf("content-type") >= 0) {
                                 contentType = xhr.getResponseHeader("Content-Type") || xhr.getResponseHeader("content-type");
                                 if (!contentType) contentType = undefined;
                                 
@@ -171,7 +186,7 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
                             
                             var responseURL = xhr.responseURL;
                             if (!responseURL) {
-                                if (allResponseHeaders.indexOf("location") > 0) {
+                                if (allResponseHeaders.indexOf("location") >= 0) {
                                     responseURL = xhr.getResponseHeader("Location") || xhr.getResponseHeader("location");
                                 }
                             }
