@@ -122,7 +122,7 @@ define(['jquery', 'underscore', 'URIjs'],
                         $ncxOrderedList = getNcxOrderedList($("navMap", tocDom));
                         callback($ncxOrderedList[0]);
                     } else {
-						var packageDocumentURL = publicationFetcher.getPackageUrl();
+                        var packageDocumentURL = publicationFetcher.getPackageUrl();
                         var packageDocumentAbsoluteURL = new URI(packageDocumentURL).absoluteTo(document.URL);
                         var tocDocumentAbsoluteURL = new URI(that.getToc()).absoluteTo(packageDocumentAbsoluteURL);
                         // add a BASE tag to change the TOC document's baseURI.
