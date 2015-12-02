@@ -1,5 +1,5 @@
 
-require(["readium_shared_js/globalsSetup"], function () {
+require(["readium_shared_js/globalsSetup", "readium_shared_js/globals"], function (GlobalsSetup, Globals) {
     
     
     // TODO: unfortunately this is not a reliable method to discover AMD module availability with RequireJS, because:
@@ -137,6 +137,8 @@ require(["readium_shared_js/globalsSetup"], function () {
 
             ReadiumSDK.on(ReadiumSDK.Events.PLUGINS_LOADED, function(reader) {
 
+                Globals.logEvent("ReadiumSDK.Events.PLUGINS_LOADED - ON - dev/index.js");
+                
                 // readium built-in (should have been require()'d outside this scope)
                 console.log(reader.plugins.annotations);
                 if (reader.plugins.annotations) {
