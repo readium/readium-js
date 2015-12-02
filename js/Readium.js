@@ -217,7 +217,7 @@ define(['readium_shared_js/globals', 'text!version.json', 'jquery', 'underscore'
             }
         };
 
-        Globals.logEvent("ReadiumSDK.Events.READER_INITIALIZED - EMIT - Readium.js");
+        Globals.logEvent("READER_INITIALIZED", "EMIT", "Readium.js");
         ReadiumSDK.emit(ReadiumSDK.Events.READER_INITIALIZED, ReadiumSDK.reader);
     };
 

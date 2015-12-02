@@ -137,7 +137,7 @@ require(["readium_shared_js/globalsSetup", "readium_shared_js/globals"], functio
 
             ReadiumSDK.on(ReadiumSDK.Events.PLUGINS_LOADED, function(reader) {
 
-                Globals.logEvent("ReadiumSDK.Events.PLUGINS_LOADED - ON - dev/index.js");
+                Globals.logEvent("PLUGINS_LOADED", "ON", "dev/index.js");
                 
                 // readium built-in (should have been require()'d outside this scope)
                 console.log(reader.plugins.annotations);
