@@ -13,7 +13,10 @@
 
 define(['jquery', 'URIjs', './discover_content_type'], function ($, URI, ContentTypeDiscovery) {
 
-    var PlainResourceFetcher = function(parentFetcher, baseUrl){
+    var PlainResourceFetcher = function(parentFetcher){
+
+        var ebookURL = parentFetcher.getEbookURL();
+        var ebookURL_filepath = parentFetcher.getEbookURL_FilePath();
 
         var self = this;
 
@@ -42,7 +45,28 @@ define(['jquery', 'URIjs', './discover_content_type'], function ($, URI, Content
         // PUBLIC API
 
         this.resolveURI = function (pathRelativeToPackageRoot) {
-            return baseUrl + "/" + pathRelativeToPackageRoot;
+    
+            var pathRelativeToPackageRootUri = undefined;
+            try {
+                pathRelativeToPackageRootUri = new URI(pathRelativeToPackageRoot);
+            } catch(err) {
+                console.error(err);
+                console.log(pathRelativeToPackageRoot);
+            }
+            if (pathRelativeToPackageRootUri && pathRelativeToPackageRootUri.is("absolute")) return pathRelativeToPackageRoot; //pathRelativeToPackageRootUri.scheme() == "http://", "https://", "data:", etc.
+
+
+            var url = ebookURL_filepath;
+            
+            try {
+                //url = new URI(relativeUrl).absoluteTo(url).search('').hash('').toString();
+                url = new URI(url).search('').hash('').toString();
+            } catch(err) {
+                console.error(err);
+                console.log(url);
+            }
+            
+            return url + (url.charAt(url.length-1) == '/' ? "" : "/") + pathRelativeToPackageRoot;
         };
 
         this.fetchFileContentsText = function(pathRelativeToPackageRoot, fetchCallback, onerror) {
@@ -65,24 +89,7 @@ define(['jquery', 'URIjs', './discover_content_type'], function ($, URI, Content
                     fetchCallback(result);
                 },
                 error: function (xhr, status, errorThrown) {
-                    console.error('Error when AJAX fetching ' + fileUrl);
-                    console.error(status);
-                    console.error(errorThrown);
-
-                    // // isLocal = false with custom URI scheme / protocol results in false fail on Firefox (Chrome okay)
-                    // if (status === "error" && (!errorThrown || !errorThrown.length) && xhr.responseText && xhr.responseText.length)
-                    // {
-                    //     console.error(xhr);
-                    //     if (typeof xhr.getResponseHeader !== "undefined") console.error(xhr.getResponseHeader("Content-Type"));
-                    //     if (typeof xhr.getAllResponseHeaders !== "undefined") console.error(xhr.getAllResponseHeaders());
-                    //     if (typeof xhr.responseText !== "undefined") console.error(xhr.responseText);
-                    //     
-                    //     // success
-                    //     fetchCallback(xhr.responseText);
-                    //     return;
-                    // }
-                    
-                    onerror(errorThrown);
+                    onerror(new Error(errorThrown));
                 }
             });
         };

@@ -19,27 +19,18 @@ define(['jquery', 'underscore', '../epub-fetch/markup_parser', 'URIjs', './packa
         // `PackageDocumentParser` is used to parse the xml of an epub package
     // document and build a javascript object. The constructor accepts an
     // instance of `URI` that is used to resolve paths during the process
-    var PackageDocumentParser = function(bookRoot, publicationFetcher) {
+    var PackageDocumentParser = function(publicationFetcher) {
 
         var _packageFetcher = publicationFetcher;
         var _deferredXmlDom = $.Deferred();
         var _xmlDom;
 
-        function onError(error) {
-            if (error) {
-                if (error.message) {
-                    console.error(error.message);
-                }
-                if (error.stack) {
-                    console.error(error.stack);
-                }
-            }
-        }
-
         publicationFetcher.getPackageDom(function(packageDom){
             _xmlDom = packageDom;
             _deferredXmlDom.resolve(packageDom);
-        }, onError);
+        }, function() {
+            _deferredXmlDom.resolve(undefined);
+        });
 
         function fillSmilData(packageDocument, callback) {
 
@@ -57,6 +48,11 @@ define(['jquery', 'underscore', '../epub-fetch/markup_parser', 'URIjs', './packa
         this.parse = function(callback) {
 
             _deferredXmlDom.done(function (xmlDom) {
+                if (!xmlDom) {
+                    callback(undefined);
+                    return;
+                }
+                
                 var metadata = getMetadata(xmlDom);
 
                 var spineElem = xmlDom.getElementsByTagNameNS("*", "spine")[0];
@@ -115,7 +111,7 @@ define(['jquery', 'underscore', '../epub-fetch/markup_parser', 'URIjs', './packa
 
                 }, function (err) {
 
-                    console.log("com.apple.ibooks.display-options.xml not found");
+                    //console.log("com.apple.ibooks.display-options.xml not found");
                     dff.resolve();
                 });
             }
@@ -160,7 +156,7 @@ define(['jquery', 'underscore', '../epub-fetch/markup_parser', 'URIjs', './packa
                 };
 
                 var parsedProperties = parsePropertiesString(spineItem.properties);
-                _.extend(spineItem, parsedProperties);
+                $.extend(spineItem, parsedProperties);
 
                 jsonSpine.push(spineItem);
             });
