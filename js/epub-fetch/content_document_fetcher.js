@@ -50,6 +50,9 @@ define(
                 var resolutionDeferreds = [];
 
                 if (_publicationFetcher.shouldFetchMediaAssetsProgrammatically()) {
+                    
+                    console.log("fetchMediaAssetsProgrammatically ...");
+            
                     resolveDocumentImages(resolutionDeferreds, onerror);
                     resolveDocumentAudios(resolutionDeferreds, onerror);
                     resolveDocumentVideos(resolutionDeferreds, onerror);
