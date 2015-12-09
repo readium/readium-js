@@ -68,19 +68,21 @@ define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore', './disco
             
             var shouldConstructDomProgrammatically = getCurrentResourceFetcher().shouldConstructDomProgrammatically();
             if (shouldConstructDomProgrammatically) {
+                
+                console.log("shouldConstructDomProgrammatically...");
 
-                    getCurrentResourceFetcher().fetchContentDocument(attachedData, loadedDocumentUri,
-                        function (resolvedContentDocumentDom) {
-                            self._loadIframeWithDocument(iframe,
-                                attachedData,
-                                resolvedContentDocumentDom.documentElement.outerHTML,
-                                function () {
-                                    callback.call(caller, true, attachedData);
-                                });
-                        }, function (err) {
-                            callback.call(caller, false, attachedData);
-                        }
-                    );
+                getCurrentResourceFetcher().fetchContentDocument(attachedData, loadedDocumentUri,
+                    function (resolvedContentDocumentDom) {
+                        self._loadIframeWithDocument(iframe,
+                            attachedData,
+                            resolvedContentDocumentDom.documentElement.outerHTML,
+                            function () {
+                                callback.call(caller, true, attachedData);
+                            });
+                    }, function (err) {
+                        callback.call(caller, false, attachedData);
+                    }
+                );
             } else {
                 fetchContentDocument(loadedDocumentUri, function (contentDocumentHtml) {
                       if (!contentDocumentHtml) {
