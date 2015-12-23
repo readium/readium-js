@@ -46,9 +46,10 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
             }
 
             contentDocumentHtml = contentDocumentHtml.replace(/(<head[\s\S]*?>)/, "$1" + base + scripts);
-                        
-            contentDocumentHtml = contentDocumentHtml.replace(/(<iframe[\s\S]+?)src[\s\S]*?=[\s\S]*?(["'])([^"']+?)(["'])([\s\S]*?>)/g, '$1data-src=$2$3$4$5');
-//console.debug(contentDocumentHtml);
+
+            contentDocumentHtml = contentDocumentHtml.replace(/(<iframe[\s\S]+?)src[\s]*=[\s]*(["'])[\s]*(.*)[\s]*(["'])([\s\S]*?>)/g, '$1data-src=$2$3$4$5');
+
+            contentDocumentHtml = contentDocumentHtml.replace(/(<iframe[\s\S]+?)data-src[\s]*=[\s]*(["'])[\s]*(http[s]?:\/\/.*)[\s]*(["'])([\s\S]*?>)/g, '$1src=$2$3$4$5');
             
             return contentDocumentHtml;
         };

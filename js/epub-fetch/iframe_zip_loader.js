@@ -143,7 +143,15 @@ define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore', './disco
                         
                         // console.log(child_iframe.location);
                         
-                        var childSrc = child_iframe.frameElement.getAttribute("data-src");
+                        var childSrc = undefined;
+                        
+                        try{
+                            childSrc = child_iframe.frameElement.getAttribute("data-src");
+                        } catch(err) {
+                            // HTTP(S) cross-origin access?
+                            console.warn(err);
+                            continue;
+                        }
                         // console.log(childSrc);
                         
                         if (!childSrc) {
