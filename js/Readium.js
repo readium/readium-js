@@ -51,6 +51,10 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
 
             contentDocumentHtml = contentDocumentHtml.replace(/(<iframe[\s\S]+?)data-src[\s]*=[\s]*(["'])[\s]*(http[s]?:\/\/.*)[\s]*(["'])([\s\S]*?>)/g, '$1src=$2$3$4$5');
             
+            // Empty title in Internet Explorer blows the XHTML parser (document.open/write/close instead of BlobURI)
+            contentDocumentHtml = contentDocumentHtml.replace(/<title>[\s]*<\/title>/g, '<title>TITLE</title>');
+            contentDocumentHtml = contentDocumentHtml.replace(/<title[\s]*\/>/g, '<title>TITLE</title>');
+            
             return contentDocumentHtml;
         };
 
