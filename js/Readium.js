@@ -12,10 +12,10 @@
 //  prior written permission.
 
 
-define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/reader_view', 'readium_js/epub-fetch/publication_fetcher',
+define(['readium_shared_js/globals', 'text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/reader_view', 'readium_js/epub-fetch/publication_fetcher',
         'readium_js/epub-model/package_document_parser', 'readium_js/epub-fetch/iframe_zip_loader', 'readium_shared_js/views/iframe_loader'
         ],
-    function (versionText, $, _, ReaderView, PublicationFetcher,
+    function (Globals, versionText, $, _, ReaderView, PublicationFetcher,
               PackageParser, IframeZipLoader, IframeLoader) {
 
     var DEBUG_VERSION_GIT = false; 
@@ -222,6 +222,7 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
             }
         };
 
+        Globals.logEvent("READER_INITIALIZED", "EMIT", "Readium.js");
         ReadiumSDK.emit(ReadiumSDK.Events.READER_INITIALIZED, ReadiumSDK.reader);
     };
 
