@@ -78,19 +78,21 @@ define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore', './disco
             
             var shouldConstructDomProgrammatically = getCurrentResourceFetcher().shouldConstructDomProgrammatically();
             if (shouldConstructDomProgrammatically) {
+                
+                console.log("shouldConstructDomProgrammatically...");
 
-                    getCurrentResourceFetcher().fetchContentDocument(attachedData, loadedDocumentUri,
-                        function (resolvedContentDocumentDom) {
-                            self._loadIframeWithDocument(iframe,
-                                attachedData,
-                                resolvedContentDocumentDom.documentElement.outerHTML,
-                                function () {
-                                    callback.call(caller, true, attachedData);
-                                });
-                        }, function (err) {
-                            callback.call(caller, false, attachedData);
-                        }
-                    );
+                getCurrentResourceFetcher().fetchContentDocument(attachedData, loadedDocumentUri,
+                    function (resolvedContentDocumentDom) {
+                        self._loadIframeWithDocument(iframe,
+                            attachedData,
+                            resolvedContentDocumentDom.documentElement.outerHTML,
+                            function () {
+                                callback.call(caller, true, attachedData);
+                            });
+                    }, function (err) {
+                        callback.call(caller, false, attachedData);
+                    }
+                );
             } else {
                 fetchContentDocument(loadedDocumentUri, function (contentDocumentHtml) {
                       if (!contentDocumentHtml) {
@@ -151,7 +153,15 @@ define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore', './disco
                         
                         // console.log(child_iframe.location);
                         
-                        var childSrc = child_iframe.frameElement.getAttribute("data-src");
+                        var childSrc = undefined;
+                        
+                        try{
+                            childSrc = child_iframe.frameElement.getAttribute("data-src");
+                        } catch(err) {
+                            // HTTP(S) cross-origin access?
+                            console.warn(err);
+                            continue;
+                        }
                         // console.log(childSrc);
                         
                         if (!childSrc) {
