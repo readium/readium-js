@@ -26,6 +26,16 @@ define(['readium_shared_js/globals', 'text!version.json', 'jquery', 'underscore'
 
         var _contentDocumentTextPreprocessor = function(src, contentDocumentHtml) {
 
+            function escapeXML(txt) {
+                return txt
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                //.replace(/"/g, "&quot;")
+                //.replace(/'/g, "&apos;")
+                ;
+            }
+
             function injectedScript() {
 
                 navigator.epubReadingSystem = window.parent.navigator.epubReadingSystem;
@@ -37,7 +47,7 @@ define(['readium_shared_js/globals', 'text!version.json', 'jquery', 'underscore'
             
             console.log("EPUB doc base href:");
             console.log(baseHref);
-            var base = "<base href=\"" + baseHref + "\"/>";
+            var base = "<base href=\"" + encodeURI(escapeXML(baseHref)) + "\"/>";
 
             var scripts = "<script type=\"text/javascript\">(" + injectedScript.toString() + ")()<\/script>";
 
