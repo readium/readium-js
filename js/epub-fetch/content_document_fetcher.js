@@ -344,6 +344,7 @@ define(
 
             function resolveDocumentScripts(resolutionDeferreds, onerror) {
                 resolveResourceElements('script', 'src', 'blob', resolutionDeferreds, onerror);
+                resolveResourceElements('script', 'xlink:href', 'blob', resolutionDeferreds, onerror);
             }
 
             function resolveDocumentLinkStylesheets(resolutionDeferreds, onerror) {

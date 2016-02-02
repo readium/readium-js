@@ -84,7 +84,7 @@ define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore', './disco
                     }
                 );
             } else {
-                fetchContentDocument(loadedDocumentUri, function (contentDocumentHtml) {
+                fetchContentDocument(attachedData, loadedDocumentUri, function (contentDocumentHtml) {
                       if (!contentDocumentHtml) {
                           //failed to load content document
                           callback.call(caller, false, attachedData);
@@ -104,7 +104,11 @@ define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore', './disco
                 if (attachedData.spineItem.media_type && attachedData.spineItem.media_type.length) {
                     contentType = attachedData.spineItem.media_type;
                 }
-
+                var isSVG = contentType.indexOf("svg") >= 0;
+                if (isSVG) {
+                    contentType = "application/xhtml+xml";
+                }
+                
                 var documentDataUri = window.URL.createObjectURL(
                     new Blob([contentDocumentData], {'type': contentType})
                 );
@@ -258,7 +262,7 @@ define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore', './disco
             });
         }
 
-        function fetchContentDocument(src, callback) {
+        function fetchContentDocument(attachedData, src, callback) {
 
             fetchHtmlAsText(src, function (contentDocumentHtml) {
 
@@ -266,10 +270,26 @@ define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore', './disco
                     callback();
                     return;
                 }
-
+                
+                var contentType = 'text/html';
+                if (attachedData.spineItem.media_type && attachedData.spineItem.media_type.length) {
+                    contentType = attachedData.spineItem.media_type;
+                }
+                var isSVG = contentType.indexOf("svg") >= 0;
+                
+                if (isSVG) {
+                    console.log("SVG wrapped in HTML");
+                    
+                    contentDocumentHtml = contentDocumentHtml.replace(/<\?xml[^\?>]+\?>/, '');
+                    
+                    contentDocumentHtml = '<!DOCTYPE html>\n<html id="READIUM_SVG_WRAP" xmlns="http://www.w3.org/1999/xhtml">\n<head>\n<title>READIUM_SVG_WRAP</title>\n<meta charset="utf-8" />\n</head>\n<body style="widthx:100%;heightx:100%;">\n\n\n' + contentDocumentHtml + '\n\n\n</body>\n</html>';
+                }
+                
                 if (_contentDocumentTextPreprocessor) {
                     contentDocumentHtml = _contentDocumentTextPreprocessor(src, contentDocumentHtml);
                 }
+                
+                //console.debug(contentDocumentHtml);
 
                 callback(contentDocumentHtml);
             });
