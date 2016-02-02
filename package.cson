@@ -181,8 +181,16 @@ scripts:
         &&
         npm run rimraf
             build-output/*
+        &&
+        npm run rimraf
+            api-docs/*
     '
 
+#=====================
+    apidocs: '
+
+        npm run yuidocjs
+    '
 
 #=====================
     'prebuild': '
