@@ -243,7 +243,7 @@ define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore', './disco
 
             $.ajax({
                 url: path,
-                dataType: 'html',
+                dataType: 'text',
                 async: true,
                 success: function (result) {
 

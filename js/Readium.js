@@ -13,10 +13,10 @@
 
 
 define(['readium_shared_js/globals', 'text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/reader_view', 'readium_js/epub-fetch/publication_fetcher',
-        'readium_js/epub-model/package_document_parser', 'readium_js/epub-fetch/iframe_zip_loader', 'readium_shared_js/views/iframe_loader'
+        'readium_js/epub-model/package_document_parser', 'readium_js/epub-fetch/iframe_zip_loader', 'readium_shared_js/views/iframe_loader', 'readium_cfi_js/XmlParse'
         ],
     function (Globals, versionText, $, _, ReaderView, PublicationFetcher,
-              PackageParser, IframeZipLoader, IframeLoader) {
+              PackageParser, IframeZipLoader, IframeLoader, XmlParse) {
 
     var DEBUG_VERSION_GIT = false; 
 
@@ -63,6 +63,8 @@ define(['readium_shared_js/globals', 'text!version.json', 'jquery', 'underscore'
             // Empty title in Internet Explorer blows the XHTML parser (document.open/write/close instead of BlobURI)
             contentDocumentHtml = contentDocumentHtml.replace(/<title>[\s]*<\/title>/g, '<title>TITLE</title>');
             contentDocumentHtml = contentDocumentHtml.replace(/<title[\s]*\/>/g, '<title>TITLE</title>');
+            
+            contentDocumentHtml = XmlParse.preprocess(contentDocumentHtml);
             
             return contentDocumentHtml;
         };
