@@ -11,10 +11,10 @@
 //  used to endorse or promote products derived from this software without specific
 //  prior written permission.
 
-define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip_resource_fetcher',
-    './content_document_fetcher', './resource_cache', './encryption_handler', './discover_content_type', 'readium_shared_js/helpers'],
-    function ($, URI, MarkupParser, PlainResourceFetcher, ZipResourceFetcher, ContentDocumentFetcher,
-              ResourceCache, EncryptionHandler, ContentTypeDiscovery, Helpers) {
+define(['jquery', 'URIjs', './plain_resource_fetcher', './zip_resource_fetcher',
+    './content_document_fetcher', './resource_cache', './encryption_handler', './discover_content_type', 'readium_shared_js/helpers', 'readium_cfi_js/XmlParse'],
+    function ($, URI, PlainResourceFetcher, ZipResourceFetcher, ContentDocumentFetcher,
+              ResourceCache, EncryptionHandler, ContentTypeDiscovery, Helpers, XmlParse) {
 
     var PublicationFetcher = function(ebookURL, jsLibRoot, sourceWindow, cacheSizeEvictThreshold, contentDocumentTextPreprocessor, contentType) {
 
@@ -37,8 +37,6 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
 
         var _contentDocumentTextPreprocessor = contentDocumentTextPreprocessor;
         var _contentType = contentType;
-
-        this.markupParser = new MarkupParser();
 
         this.initialize =  function(callback) {
 
@@ -200,7 +198,7 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
 
         this.getXmlFileDom = function (xmlFilePathRelativeToPackageRoot, callback, onerror) {
             self.getFileContentsFromPackage(xmlFilePathRelativeToPackageRoot, function (xmlFileContents) {
-                var fileDom = self.markupParser.parseXml(xmlFileContents);
+                var fileDom = XmlParse.fromString(xmlFileContents);
                 callback(fileDom);
             }, onerror);
         };

@@ -12,8 +12,8 @@
 //  prior written permission.
 
 define(
-    ['jquery', 'underscore', 'URIjs', './discover_content_type'],
-    function ($, _, URI, ContentTypeDiscovery) {
+    ['jquery', 'underscore', 'URIjs', './discover_content_type', 'readium_cfi_js/XmlParse'],
+    function ($, _, URI, ContentTypeDiscovery, XmlParse) {
 
 
         var ContentDocumentFetcher = function (publicationFetcher, spineItem, loadedDocumentUri, publicationResourcesCache, contentDocumentTextPreprocessor) {
@@ -44,7 +44,7 @@ define(
 
             this.resolveInternalPackageResources = function (resolvedDocumentCallback, onerror) {
 
-                _contentDocumentDom = _publicationFetcher.markupParser.parseMarkup(_contentDocumentText, _srcMediaType);
+                _contentDocumentDom = XmlParse.fromString(_contentDocumentText, _srcMediaType);
                 setBaseUri(_contentDocumentDom, loadedDocumentUri);
 
                 var resolutionDeferreds = [];

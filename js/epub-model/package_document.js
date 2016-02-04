@@ -11,8 +11,8 @@
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define(['jquery', 'underscore', 'URIjs'],
-    function ($, _, URI) {
+define(['jquery', 'underscore', 'URIjs', 'readium_cfi_js/XmlParse'],
+    function ($, _, URI, XmlParse) {
 
     // Description: This model provides an interface for navigating an EPUB's package document
     var PackageDocument = function(packageDocumentURL, resourceFetcher, metadata, spine, manifest) {
@@ -103,7 +103,7 @@ define(['jquery', 'underscore', 'URIjs'],
 
             this.getTocText(function (tocText) {
                 if (typeof tocText === 'string') {
-                    var tocDom = (new DOMParser()).parseFromString(tocText, "text/xml");
+                    var tocDom = XmlParse.fromString(tocText);
                     callback(tocDom);
                 } else {
                     callback(undefined);
