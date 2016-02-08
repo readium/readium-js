@@ -331,6 +331,7 @@ define(
             function resolveDocumentImages(resolutionDeferreds, onerror) {
                 resolveResourceElements('img', 'src', 'blob', resolutionDeferreds, onerror);
                 resolveResourceElements('image', 'xlink:href', 'blob', resolutionDeferreds, onerror);
+                resolveResourceElements('image', 'href', 'blob', resolutionDeferreds, onerror);
             }
 
             function resolveDocumentAudios(resolutionDeferreds, onerror) {

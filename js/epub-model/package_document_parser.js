@@ -95,7 +95,7 @@ define(['jquery', 'underscore', 'URIjs', './package_document',
 
                 publicationFetcher.relativeToPackageFetchFileContents(pathToIBooksSpecificXml, 'text', function (ibookPropText) {
                     if(ibookPropText) {
-                        var propModel = XmlParse.fromString(ibookPropText);
+                        var propModel = XmlParse.fromString(ibookPropText, "text/xml");
                         var fixLayoutProp = $("option[name=fixed-layout]", propModel)[0];
                         if(fixLayoutProp) {
                             var fixLayoutVal = $(fixLayoutProp).text();

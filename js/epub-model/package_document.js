@@ -74,7 +74,7 @@ define(['jquery', 'underscore', 'URIjs', 'readium_cfi_js/XmlParse'],
             return metadata;
         };
 
-        this.getToc = function() {
+        this.getTocHref = function() {
             var item = getTocItem();
             if (item) {
                 return item.href;
@@ -82,18 +82,33 @@ define(['jquery', 'underscore', 'URIjs', 'readium_cfi_js/XmlParse'],
             return null;
         };
 
+        this.getTocURI = function() {
+            var href = this.getTocHref();
+            if (href) {
+                var tocDocumentAbsoluteURL = new URI(href).absoluteTo(packageDocumentURL).toString();
+
+                return tocDocumentAbsoluteURL;
+            }
+            
+            return null;
+        };
+
         this.getTocText = function(callback) {
-            var toc = this.getToc();
-            if (!toc) {
+            
+            var item = getTocItem();
+            if (!item) {
                 console.error("No TOC?!");
                 callback(undefined);
                 return;
             }
+            
+            var tocHref = item.href; //this.getTocHref();
+            //var tocContentType = item.media_type; 
 
-            resourceFetcher.relativeToPackageFetchFileContents(toc, 'text', function (tocDocumentText) {
+            resourceFetcher.relativeToPackageFetchFileContents(tocHref, 'text', function (tocDocumentText) {
                 callback(tocDocumentText)
             }, function (err) {
-                console.error('ERROR fetching TOC from [' + toc + ']:');
+                console.error('ERROR fetching TOC from [' + tocHref + ']:');
                 console.error(err);
                 callback(undefined);
             });
@@ -103,7 +118,12 @@ define(['jquery', 'underscore', 'URIjs', 'readium_cfi_js/XmlParse'],
 
             this.getTocText(function (tocText) {
                 if (typeof tocText === 'string') {
-                    var tocDom = XmlParse.fromString(tocText);
+                            
+                    var item = getTocItem();
+                    var tocHref = item.href; //this.getTocHref();
+                    var tocContentType = item.media_type; 
+
+                    var tocDom = XmlParse.fromString(tocText, tocContentType);
                     callback(tocDom);
                 } else {
                     callback(undefined);
@@ -123,8 +143,7 @@ define(['jquery', 'underscore', 'URIjs', 'readium_cfi_js/XmlParse'],
                         $ncxOrderedList = getNcxOrderedList($("navMap", tocDom));
                         callback($ncxOrderedList[0]);
                     } else {
-                        var packageDocumentAbsoluteURL = new URI(packageDocumentURL).absoluteTo(document.URL);
-                        var tocDocumentAbsoluteURL = new URI(that.getToc()).absoluteTo(packageDocumentAbsoluteURL);
+                        var tocDocumentAbsoluteURL = that.getTocURI();
                         // add a BASE tag to change the TOC document's baseURI.
                         var oldBaseTag = $(tocDom).remove('base');
                         var newBaseTag = $('<base></base>');

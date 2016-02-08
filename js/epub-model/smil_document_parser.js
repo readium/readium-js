@@ -54,12 +54,27 @@ define(['jquery', 'underscore'], function ($, _) {
             var propParse = property.split(':');
             var destProperty = propParse[propParse.length - 1];
 
+            var attr = undefined;
+            if (propParse.length == 1) { // no XML namespace
+                attr = fromNode.getAttribute(property);
+                
+            } else { // XML namespace, such as epub:type
+
+                // Note: no need to use Helpers.getEpubTypeRoleAttributeValue() here, as SMIL / XML guarantees epub:type, unlike XHTML vs. HTML EPUB content documents
+                if (fromNode.getAttributeNS && propParse[0] == "epub") {
+                    attr = fromNode.getAttributeNS('http://www.idpf.org/2007/ops', destProperty);
+                }
+                if (!attr) {
+                    attr = fromNode.getAttribute(property) || fromNode.getAttribute(destProperty);
+                }
+            }
+            
             if (destProperty === "type") {
                 destProperty = "epubtype";
             }
             
-            if (fromNode.getAttribute(property) != undefined) {
-                toItem[destProperty] = fromNode.getAttribute(property);
+            if (attr) {
+                toItem[destProperty] = attr;
             } else if (isRequired) {
                 if (defaultValue !== undefined) {
                     toItem[destProperty] = defaultValue;

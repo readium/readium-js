@@ -198,7 +198,7 @@ define(['jquery', 'URIjs', './plain_resource_fetcher', './zip_resource_fetcher',
 
         this.getXmlFileDom = function (xmlFilePathRelativeToPackageRoot, callback, onerror) {
             self.getFileContentsFromPackage(xmlFilePathRelativeToPackageRoot, function (xmlFileContents) {
-                var fileDom = XmlParse.fromString(xmlFileContents);
+                var fileDom = XmlParse.fromString(xmlFileContents, "text/xml");
                 callback(fileDom);
             }, onerror);
         };
