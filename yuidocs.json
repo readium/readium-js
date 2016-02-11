@@ -1,0 +1,16 @@
+{
+  "COMMAND LINE": "node node_modules/yuidocjs/lib/cli.js -N -C -c yuidocs.json",
+  "name": "readium-js",
+  "description": "Readium - core processing Javascript library",
+  "version": "0.0.0",
+  "url": "https://github.com/readium/readium-js",
+  "logo": "http://readium.org/sites/readium.org/files/header-logo.png",
+  "options": {
+    "linkNatives": "true",
+    "exclude": "readium-shared-js,lib,node_modules,api-docs,dev,tests,gen,build-output,dist,build-config",
+    "paths": [
+      "js"
+    ],
+    "outdir": "./api-docs"
+  }
+}
