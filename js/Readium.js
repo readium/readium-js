@@ -66,6 +66,15 @@ if ((typeof navigator.serviceWorker) !== "undefined") {
 
         var _contentDocumentTextPreprocessor = function(src, contentDocumentHtml) {
 
+            function escapeMarkupEntitiesInUrl(url) {
+                return url
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&apos;");
+            }
+
             function injectedScript() {
 
                 navigator.epubReadingSystem = window.parent.navigator.epubReadingSystem;
@@ -77,7 +86,7 @@ if ((typeof navigator.serviceWorker) !== "undefined") {
             
             console.log("EPUB doc base href:");
             console.log(baseHref);
-            var base = "<base href=\"" + baseHref + "\"/>";
+            var base = "<base href=\"" + encodeURI(escapeMarkupEntitiesInUrl(baseHref)) + "\"/>";
 
             var scripts = "<script type=\"text/javascript\">(" + injectedScript.toString() + ")()<\/script>";
 
