@@ -46,6 +46,7 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
 
             // Non exploded EPUBs (i.e. zipped .epub documents) should be fetched in a programmatical manner:
             _shouldConstructDomProgrammatically = !isEpubExploded;
+            console.log("_shouldConstructDomProgrammatically INIT: " + _shouldConstructDomProgrammatically);
             
             createResourceFetcher(isEpubExploded, function(resourceFetcher) {
     
@@ -118,6 +119,7 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
          * false if documents can be fed directly into a window or iframe by src URL without using special fetching logic.
          */
         this.shouldConstructDomProgrammatically = function (){
+            
             return _shouldConstructDomProgrammatically;
         };
 
@@ -131,7 +133,9 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
          * the base URI of their content document.
          */
         this.shouldFetchMediaAssetsProgrammatically = function() {
-            return _shouldConstructDomProgrammatically && !isExploded();
+            
+            var ret = _shouldConstructDomProgrammatically && !isExploded();
+            return ret;
         };
 
         this.getEbookURL = function() {
@@ -307,6 +311,8 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
                 &&
                 new URI(relativeToPackagePath).scheme() !== '') {
 
+                console.log("shouldConstructDomProgrammatically EXTERNAL RESOURCE ...");
+
                   if (fetchMode === 'blob') {
 
                       var xhr = new XMLHttpRequest();
@@ -407,6 +413,7 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
                 if (_encryptionHandler.isEncryptionSpecified()) {
                     // EPUBs that use encryption for any resources should be fetched in a programmatical manner:
                     _shouldConstructDomProgrammatically = true;
+                    console.log("_shouldConstructDomProgrammatically ENCRYPTION ACTIVE: " + _shouldConstructDomProgrammatically);
                 }
 
                 settingFinishedCallback();
