@@ -209,8 +209,10 @@ define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore', './disco
                 var mathJax = iframe.contentWindow.MathJax;
                 if (mathJax) {
                     
-                    mathJax.Hub.Config({SVG:{useFontCache:!mathJax.Hub.Browser.isFirefox}});
+                    console.log("MathJax VERSION: " + mathJax.cdnVersion + " // " + mathJax.fileversion + " // " + mathJax.version);
                     
+                    mathJax.Hub.Config({showMathMenu:false, messageStyle: "none", showProcessingMessages: true, SVG:{useFontCache:!mathJax.Hub.Browser.isFirefox}});
+                
                     // If MathJax is being used, delay the callback until it has completed rendering
                     var mathJaxCallback = _.once(callback);
                     
