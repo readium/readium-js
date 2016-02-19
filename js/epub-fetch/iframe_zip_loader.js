@@ -208,26 +208,114 @@ define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore', './disco
                 
                 var mathJax = iframe.contentWindow.MathJax;
                 if (mathJax) {
+        
+                    var processMathJaxOutputSVG = function(jaxID) {
+                        
+                        var id = jaxID+"-Frame";
+                        var jaxOutput = doc.getElementById(id);
+                        if (jaxOutput) {
+                            $("use", jaxOutput).each(function() {
+                                //var $that = $(this);
+                                
+                                var xlink_href = this.getAttribute("xlink:href"); //$that.attr("xlink:href");
+                                var plain_href = this.getAttribute("href"); //$that.attr("href");
+                                var href = xlink_href || plain_href; 
+                                
+                                console.log(href);
+                                
+                                if (href && href.indexOf("#") == 0) {
+                                    
+                                    if (xlink_href) {
+                                        this.removeAttribute("xlink:href");
+                                    }
+                                    if (plain_href) {
+                                        this.removeAttribute("href");
+                                    }
+                                    
+                                    this.setAttribute("xlink:href", baseHref + href);
+                                    
+                                    // if (xlink_href) {
+                                    //     $that.attr("xlink:href", baseHref + href);
+                                    //     console.debug($that.attr("xlink:href"));
+                                    // } else {
+                                    //     $that.attr("href", baseHref + href);
+                                    //     console.debug($that.attr("href"));
+                                    // }
+                                    
+                                    //var href;
+                                    // if (this.attributes["xlink:href"]) {
+                                    //     href = this.attributes["xlink:href"].value;
+                                    // }
+                                    // else {
+                                    //     href = this.attributes["href"].value;
+                                    // }
+                                }
+                            });
+                            
+                            //console.debug(jaxOutput.outerHTML);
+                        } else {
+                            console.debug("NO MATHJAX for: " + id);
+                        }
+                    };
                     
                     console.log("MathJax VERSION: " + mathJax.cdnVersion + " // " + mathJax.fileversion + " // " + mathJax.version);
                     
+                    mathJax.Hub.Register.StartupHook("End Typeset", function () {
+                        console.log(">>> MathJax End Typeset from StartupHook");
+                    });
+                    
+                    mathJax.Hub.Startup.signal.Interest(function(message) {
+                        if (message == 'End Typeset') {
+                            console.log(">>> MathJax End Typeset from Signal.Interest");
+                        }
+                    });
+                    
+                    var baseHref = $("html>head>base[href]", doc);
+                    if (baseHref.length) {
+                        baseHref = baseHref.attr("href");
+                        console.log(baseHref);
+                    } else {
+                        baseHref = undefined;
+                    }
+                       
                     var useFontCache = true; // default in MathJax
                     
-                    // Firefox fails to render SVG otherwise
-                    if (mathJax.Hub.Browser.isFirefox) {
-                        useFontCache = false;
-                    }
+                    // REMOVED, SEE processMathJaxOutputSVG()
+                    // // Firefox fails to render SVG otherwise
+                    // if (mathJax.Hub.Browser.isFirefox) {
+                    //     useFontCache = false;
+                    // }
                     
-                    // Edge fails to render SVG otherwise
-                    // https://github.com/readium/readium-js-viewer/issues/394#issuecomment-185382196
-                    if (window.navigator.userAgent.indexOf("Edge") > 0) {
-                        useFontCache = false;
-                    }
+                    // // Edge fails to render SVG otherwise
+                    // // https://github.com/readium/readium-js-viewer/issues/394#issuecomment-185382196
+                    // if (window.navigator.userAgent.indexOf("Edge") > 0) {
+                    //     useFontCache = false;
+                    // }
                     
                     mathJax.Hub.Config({showMathMenu:false, messageStyle: "none", showProcessingMessages: true, SVG:{useFontCache:useFontCache}});
                 
                     // If MathJax is being used, delay the callback until it has completed rendering
-                    var mathJaxCallback = _.once(callback);
+                    var mathJaxCallback = _.once(function() {
+                        console.log(">>> MathJax queued callback");
+                        
+                        mathJax.Hub.Register.MessageHook("New Math", function (message) {
+                            
+                            console.log(">>> MathJax New Math");
+                            console.debug(message[1]);
+                            
+                            processMathJaxOutputSVG(message[1]);
+                        });
+                        
+                        // if (baseHref) {
+                        //     var allJax = mathJax.Hub.getAllJax();
+                        //     for (var i = 0; i < allJax.length; i++) {
+                        //         var jax = allJax[i];
+                        //         processMathJaxOutputSVG(jax.inputID);
+                        //     }
+                        // }
+                        
+                        callback();
+                    });
                     
                     try {
                         mathJax.Hub.Queue(mathJaxCallback);
