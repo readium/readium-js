@@ -209,48 +209,100 @@ define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore', './disco
                 var mathJax = iframe.contentWindow.MathJax;
                 if (mathJax) {
         
+                    var baseHref = $("html>head>base[href]", doc);
+                    if (baseHref.length) {
+                        baseHref = baseHref.attr("href");
+                        console.log(baseHref);
+                    } else {
+                        baseHref = undefined;
+                    }
+                    
+                    // Uncomment this to use the in-memory Blob (to avoid having the browser launch a request to the base href URL which does not contain MathJax's SVG glyph defs) ... to no avail either! (doesn't work with either xml:base or <use xlink:href="" /> or <use href="" />)
+                    // if (!isIE) {
+                    //     baseHref = iframe.getAttribute("src");
+                    //     console.log(baseHref);
+                    // }
+                       
+                    var useFontCache = true; // default in MathJax
+                    
+                    // set to false to test processMathJaxOutputSVG() in Edge and Firefox,
+                    // and change the forceAbsoluteURLs boolean in processMathJaxOutputSVG() to test absolute URLs versus xml:base ... none of which work, unfortunately :(
+                    var disableFontCache = false;
+                    if (disableFontCache) {
+                        
+                        // https://github.com/readium/readium-js-viewer/issues/394#issuecomment-186567759
+                        if (mathJax.Hub.Browser.isFirefox) {
+                            useFontCache = false;
+                        }
+                        
+                        // https://github.com/readium/readium-js-viewer/issues/394#issuecomment-185382196
+                        if (window.navigator.userAgent.indexOf("Edge") > 0) {
+                            useFontCache = false;
+                        }
+                    }
+                    
+                    mathJax.Hub.Config({showMathMenu:false, messageStyle: "none", showProcessingMessages: true, SVG:{useFontCache:useFontCache}});
+                
+                    // Attempt to fix Edge and Firefox when useFontCache is true (MathJax default),
+                    // by replacing relative URLs in <use xlink:href="#ID" /> with the explicit base href. Also tests xml:base ... to no avail :(
                     var processMathJaxOutputSVG = function(jaxID) {
+                        
+                        if (!useFontCache || (!mathJax.Hub.Browser.isFirefox && window.navigator.userAgent.indexOf("Edge") < 0)) { return; }
                         
                         var id = jaxID+"-Frame";
                         var jaxOutput = doc.getElementById(id);
                         if (jaxOutput) {
-                            $("use", jaxOutput).each(function() {
-                                //var $that = $(this);
-                                
-                                var xlink_href = this.getAttribute("xlink:href"); //$that.attr("xlink:href");
-                                var plain_href = this.getAttribute("href"); //$that.attr("href");
-                                var href = xlink_href || plain_href; 
-                                
-                                console.log(href);
-                                
-                                if (href && href.indexOf("#") == 0) {
+                            
+                            var forceAbsoluteURLs = true; // Does not work, in fact this even breaks Chrome and IE (which normally work fine with relative URLs in <use xlink:href="#ID" /> )
+                            // the "else" tries xml:base ... to no avail either (no difference with or without)
+                            if (forceAbsoluteURLs) {
                                     
-                                    if (xlink_href) {
-                                        this.removeAttribute("xlink:href");
+                                $("use", jaxOutput).each(function() {
+                                    //var $that = $(this);
+                                    
+                                    var xlink_href = this.getAttribute("xlink:href"); //$that.attr("xlink:href");
+                                    var plain_href = this.getAttribute("href"); //$that.attr("href");
+                                    var href = xlink_href || plain_href; 
+                                    
+                                    console.log(href);
+                                    
+                                    if (href && href.indexOf("#") == 0) {
+                                        
+                                        if (xlink_href) {
+                                            this.removeAttribute("xlink:href");
+                                        }
+                                        if (plain_href) {
+                                            this.removeAttribute("href");
+                                        }
+                                        
+                                        this.setAttribute("xlink:href", baseHref + href);
+                                        //this.setAttribute("href", baseHref + href);
+                                        
+                                        // if (xlink_href) {
+                                        //     $that.attr("xlink:href", baseHref + href);
+                                        //     console.debug($that.attr("xlink:href"));
+                                        // } else {
+                                        //     $that.attr("href", baseHref + href);
+                                        //     console.debug($that.attr("href"));
+                                        // }
+                                        
+                                        //var href;
+                                        // if (this.attributes["xlink:href"]) {
+                                        //     href = this.attributes["xlink:href"].value;
+                                        // }
+                                        // else {
+                                        //     href = this.attributes["href"].value;
+                                        // }
                                     }
-                                    if (plain_href) {
-                                        this.removeAttribute("href");
-                                    }
-                                    
-                                    this.setAttribute("xlink:href", baseHref + href);
-                                    
-                                    // if (xlink_href) {
-                                    //     $that.attr("xlink:href", baseHref + href);
-                                    //     console.debug($that.attr("xlink:href"));
-                                    // } else {
-                                    //     $that.attr("href", baseHref + href);
-                                    //     console.debug($that.attr("href"));
-                                    // }
-                                    
-                                    //var href;
-                                    // if (this.attributes["xlink:href"]) {
-                                    //     href = this.attributes["xlink:href"].value;
-                                    // }
-                                    // else {
-                                    //     href = this.attributes["href"].value;
-                                    // }
-                                }
-                            });
+                                });
+                                
+                            } else {
+                                
+                                $("svg", jaxOutput).each(function() {
+                                    var $that = $(this);
+                                    $that.attr("xml:base", baseHref); 
+                                });
+                            }
                             
                             //console.debug(jaxOutput.outerHTML);
                         } else {
@@ -269,42 +321,21 @@ define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore', './disco
                             console.log(">>> MathJax End Typeset from Signal.Interest");
                         }
                     });
-                    
-                    var baseHref = $("html>head>base[href]", doc);
-                    if (baseHref.length) {
-                        baseHref = baseHref.attr("href");
-                        console.log(baseHref);
-                    } else {
-                        baseHref = undefined;
-                    }
-                       
-                    var useFontCache = true; // default in MathJax
-                    
-                    // REMOVED, SEE processMathJaxOutputSVG()
-                    // // Firefox fails to render SVG otherwise
-                    // if (mathJax.Hub.Browser.isFirefox) {
-                    //     useFontCache = false;
-                    // }
-                    
-                    // // Edge fails to render SVG otherwise
-                    // // https://github.com/readium/readium-js-viewer/issues/394#issuecomment-185382196
-                    // if (window.navigator.userAgent.indexOf("Edge") > 0) {
-                    //     useFontCache = false;
-                    // }
-                    
-                    mathJax.Hub.Config({showMathMenu:false, messageStyle: "none", showProcessingMessages: true, SVG:{useFontCache:useFontCache}});
                 
+                    mathJax.Hub.Register.MessageHook("New Math", function (message) {
+                        
+                        console.log(">>> MathJax New Math");
+                        console.debug(message[1]);
+                        
+                        if (useFontCache) {
+                            processMathJaxOutputSVG(message[1]);
+                        }
+                    });
+                    
                     // If MathJax is being used, delay the callback until it has completed rendering
                     var mathJaxCallback = _.once(function() {
                         console.log(">>> MathJax queued callback");
                         
-                        mathJax.Hub.Register.MessageHook("New Math", function (message) {
-                            
-                            console.log(">>> MathJax New Math");
-                            console.debug(message[1]);
-                            
-                            processMathJaxOutputSVG(message[1]);
-                        });
                         
                         // if (baseHref) {
                         //     var allJax = mathJax.Hub.getAllJax();
