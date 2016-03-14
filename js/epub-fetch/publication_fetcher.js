@@ -20,6 +20,31 @@ define(['jquery', 'URIjs', './plain_resource_fetcher', './zip_resource_fetcher',
 
         var self = this;
 
+        var _ebookURLOPF = undefined;
+        var ebookURLTrimmed = ebookURL;
+        try {
+            //.absoluteTo("http://readium.org/epub")
+            ebookURLTrimmed = new URI(ebookURLTrimmed).search('').hash('').toString();
+        } catch(err) {
+            console.error(err);
+            console.log(ebookURL);
+        }
+        if (/\.opf$/.test(ebookURLTrimmed)) {
+            
+            var iSlash = ebookURLTrimmed.lastIndexOf("/");
+            if (iSlash >= 0) {
+                console.log("ebookURL is OPF: " + ebookURL);
+                
+                ebookURL = ebookURLTrimmed.substr(0, iSlash+1);
+                console.log("ebookURL rebased: " + ebookURL);
+                
+                _ebookURLOPF = ebookURLTrimmed.substr(iSlash+1, ebookURLTrimmed.length-1);
+                console.log("ebookURL OPF file (bypass META-INF/container.xml): " + _ebookURLOPF);
+            }
+        } else if (/\/META-INF\/container\.xml$/.test(ebookURLTrimmed)) {
+            ebookURL = ebookURL.substr(0, ebookURL.length-("/META-INF/container.xml".length)+1);
+        }
+        
         self.contentTypePackageReadStrategyMap = {
             'application/oebps-package+xml': 'exploded',
             'application/epub+zip': 'zipped',
@@ -228,7 +253,8 @@ define(['jquery', 'URIjs', './plain_resource_fetcher', './zip_resource_fetcher',
                 } else {
                     _packageDomInitializationDeferred = $.Deferred();
                     _packageDomInitializationDeferred.done(callback);
-                    self.getPackageFullPath(function (packageFullPath) {
+                    
+                    var func = function (packageFullPath) {
                                 
                         _packageFullPath = packageFullPath;
                         _packageDocumentAbsoluteUrl = _resourceFetcher.resolveURI(_packageFullPath);
@@ -246,7 +272,14 @@ define(['jquery', 'URIjs', './plain_resource_fetcher', './zip_resource_fetcher',
                             _packageDomInitializationDeferred.resolve(packageDom);
                             _packageDomInitializationDeferred = undefined;
                         })
-                    }, onerror);
+                    };
+                    
+                    // We already know which OPF to open, let's bypass META-INF/container.xml rootFile discovery 
+                    if (_ebookURLOPF) {
+                        func(_ebookURLOPF);
+                    } else {
+                        self.getPackageFullPath(func, onerror);
+                    }
                 }
             }
         };
@@ -255,8 +288,10 @@ define(['jquery', 'URIjs', './plain_resource_fetcher', './zip_resource_fetcher',
         // (starting with "/", already relative to the EPUB archive's base folder)
         // then the returned value is relativeToPackagePath.
         this.convertPathRelativeToPackageToRelativeToBase = function (relativeToPackagePath) {
-
-            return new URI(relativeToPackagePath).absoluteTo(_packageFullPath).toString();
+            var uriStr = new URI(relativeToPackagePath).absoluteTo(_packageFullPath).toString();
+            // Note that _packageFullPath is just be a relative path (to the root folder that contains ./META-INF/container.xml), and so is the returned path
+            //console.log(relativeToPackagePath + " /// " + _packageFullPath + " === " + uriStr);
+            return uriStr;
         };
 
         // Note that the relativeToPackagePath parameter can in fact be absolute
