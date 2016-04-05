@@ -86,7 +86,7 @@ define(['readium_shared_js/globals', 'text!version.json', 'jquery', 'underscore'
             ];
 
             var replacementFunc = function (tag) {
-                var tokens = tag.match(/<(.*)\/>/i)[1].split(' ');
+                var tokens = tag.match(/^<([\S|\s]*?)\/>$/im)[1].split(' ');
                 var tagName = tokens[0];
                 if (validSelfClosingTags.indexOf(tagName) === -1) {
                     return '<' + tokens.join(' ') + '>' + '</' + tokens[0] + '>';
