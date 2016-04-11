@@ -37,7 +37,10 @@ var _afterServiceWorker = function() {
     _afterServiceWorker_();
 };
 
-if ((typeof navigator.serviceWorker) !== "undefined") {
+var isChromeExtensionPackagedApp = (typeof chrome !== "undefined") && chrome.app
+    && chrome.app.window && chrome.app.window.current; // a bit redundant?
+
+if (!isChromeExtensionPackagedApp && ((typeof navigator.serviceWorker) !== "undefined")) {
     
     // TODO: define service worker script location and scope in RequireJS module config (see readium-js-viewer for examples) 
     navigator.serviceWorker.register("/readium-js_SERVICEWORKER.js", {scope: "/"})
@@ -296,7 +299,7 @@ if ((typeof navigator.serviceWorker) !== "undefined") {
         };
 
         this.openPackageDocument = function(ebookURL, callback, openPageRequest)  {
-            if (((typeof navigator.serviceWorker) === "undefined") || _ServiceWorker) {
+            if (isChromeExtensionPackagedApp || ((typeof navigator.serviceWorker) === "undefined") || _ServiceWorker) {
                 openPackageDocument__(ebookURL, callback, openPageRequest);
             } else {
                 _afterServiceWorker = function() {
