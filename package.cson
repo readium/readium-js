@@ -365,6 +365,31 @@ scripts:
              --rjs_bundle=single
     '
 
+#=====================
+    'preServiceWorker': '
+
+        npm run build:scripts:SERVICEWORKER
+    '
+
+#=====================
+    'ServiceWorker': '
+    
+        npm run cpy
+            ./build-output/readium-js_SERVICEWORKER.js
+            ../
+        &&
+        npm run cpy
+            ./build-output/readium-js_SERVICEWORKER.js.map
+            ../
+        &&
+        npm run cpy
+            ./build-output/readium-js_SERVICEWORKER.js
+            ../dist/cloud-reader/
+        &&
+        npm run cpy
+            ./build-output/readium-js_SERVICEWORKER.js.map
+            ../dist/cloud-reader/
+    '
 
 #=====================
     'build:scripts:SERVICEWORKER': '
@@ -379,11 +404,6 @@ scripts:
         npm run rjs
              --rjs_bundle=single
              --rjs_configOverrideTarget=_SERVICEWORKER
-              
-        &&
-        npm run cpy
-            build-output/readium-js_SERVICEWORKER.js
-            ./
     '
 
 #=====================

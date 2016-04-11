@@ -18,6 +18,24 @@ define(['readium_shared_js/globals', 'text!version.json', 'jquery', 'underscore'
     function (Globals, versionText, $, _, ReaderView, PublicationFetcher,
               PackageParser, IframeZipLoader, IframeLoader) {
 
+    var DEBUG_VERSION_GIT = false; 
+
+
+    var Readium = function(readiumOptions, readerOptions){
+
+        var _options = { mathJaxUrl: readerOptions.mathJaxUrl };
+
+var _ServiceWorker = undefined;
+
+var _afterServiceWorker_ = function() {
+    if (_ServiceWorker) {
+        console.log("SERVICE WORKER POSTMESSAGE [MATHJAX]: " + _options.mathJaxUrl);
+        _ServiceWorker.postMessage({msg: "MATHJAX_URL", url: _options.mathJaxUrl});
+    }
+};
+var _afterServiceWorker = function() {
+    _afterServiceWorker_();
+};
 
 if ((typeof navigator.serviceWorker) !== "undefined") {
     
@@ -33,9 +51,23 @@ if ((typeof navigator.serviceWorker) !== "undefined") {
                 
                 console.error("navigator.serviceWorker installing.onstatechange: ");
                 console.log(e);
-              };
-            } else {
                 
+                var sw = e.currentTarget;
+                if (sw && sw.postMessage && (!_ServiceWorker || (sw != _ServiceWorker))) {
+                    console.log("SERVICE WORKER POSTMESSAGE [ASSIGNED] (installing)");
+                    _ServiceWorker = sw;
+                    
+                    _afterServiceWorker();
+                }
+              };
+            } else if (reg.active) {
+                var sw = reg.active;
+                if (sw && sw.postMessage && (!_ServiceWorker || (sw != _ServiceWorker))) {
+                    console.log("SERVICE WORKER POSTMESSAGE [ASSIGNED] (active)");
+                    _ServiceWorker = sw;
+                    
+                    _afterServiceWorker();
+                }
             }
           }, function(err) {
             console.error("navigator.serviceWorker registration fail: " + err);
@@ -56,13 +88,6 @@ if ((typeof navigator.serviceWorker) !== "undefined") {
             //   1000
           // );
 }
-
-    var DEBUG_VERSION_GIT = false; 
-
-
-    var Readium = function(readiumOptions, readerOptions){
-
-        var _options = { mathJaxUrl: readerOptions.mathJaxUrl };
 
         var _contentDocumentTextPreprocessor = function(src, contentDocumentHtml) {
 
@@ -123,7 +148,7 @@ if ((typeof navigator.serviceWorker) !== "undefined") {
             readerOptions.iframeLoader = new IframeZipLoader(function() { return _currentPublicationFetcher; }, _contentDocumentTextPreprocessor);
         }
         else {
-            readerOptions.iframeLoader = new IframeLoader();
+            readerOptions.iframeLoader = new IframeLoader(function() { return _currentPublicationFetcher; });
         }
 
         // Chrome extension and cross-browser cloud reader build configuration uses this scaling method across the board (no browser sniffing for Chrome)
@@ -182,8 +207,7 @@ if ((typeof navigator.serviceWorker) !== "undefined") {
             });
         };
 
-
-        this.openPackageDocument = function(ebookURL, callback, openPageRequest)  {
+        var openPackageDocument__ = function(ebookURL, callback, openPageRequest)  {
                         
             if (!(ebookURL instanceof Blob)
                 && !(ebookURL instanceof File)
@@ -270,7 +294,18 @@ if ((typeof navigator.serviceWorker) !== "undefined") {
                     
             openPackageDocument_(ebookURL, callback, openPageRequest);
         };
-        
+
+        this.openPackageDocument = function(ebookURL, callback, openPageRequest)  {
+            if (((typeof navigator.serviceWorker) === "undefined") || _ServiceWorker) {
+                openPackageDocument__(ebookURL, callback, openPageRequest);
+            } else {
+                _afterServiceWorker = function() {
+                    _afterServiceWorker_();
+                    openPackageDocument__(ebookURL, callback, openPageRequest);
+                };
+            }
+        };
+
         this.closePackageDocument = function() {
             if (_currentPublicationFetcher) {
                 _currentPublicationFetcher.flushCache();

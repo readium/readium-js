@@ -140,12 +140,22 @@ define([//'jquery', 'underscore'
         );
     };
     
+    var _mathJaxUrl = "/scripts/mathjax/MathJax.js";
+    self.onmessage = function(ev) {
+        
+        console.log("SERVICE WORKER POSTMESSAGE RECEIVED");
+        
+        if (ev.data.msg == "MATHJAX_URL") {
+        
+            _mathJaxUrl = ev.data.url;
+            
+            console.debug("MATHJAX: " + _mathJaxUrl);
+        }
+    };
 
-
+    // TODO: see Readium.js (same function, without SRC as there is no base@href adustment, and no MathJax URL from global options)
     var _contentDocumentTextPreprocessor = function(contentDocumentHtml) {
 
-        var mathJaxUrl = "/MathJax.js";
-    
         function injectedScript() {
 
             navigator.epubReadingSystem = window.parent.navigator.epubReadingSystem;
@@ -153,13 +163,19 @@ define([//'jquery', 'underscore'
 
         var scripts = "<script type=\"text/javascript\">(" + injectedScript.toString() + ")()<\/script>";
 
-        if (contentDocumentHtml.indexOf("<math") >= 0) {
-            scripts += "<script type=\"text/javascript\" src=\"" + mathJaxUrl + "\"> <\/script>";
+        if (contentDocumentHtml.search(/<(\w+:|)(?=math)/) >= 0) {
+            scripts += "<script type=\"text/javascript\" src=\"" + _mathJaxUrl + "\"> <\/script>";
         }
 
         contentDocumentHtml = contentDocumentHtml.replace(/(<head[\s\S]*?>)/, "$1" + scripts);
-                    
-//console.debug(contentDocumentHtml);
+
+        contentDocumentHtml = contentDocumentHtml.replace(/(<iframe[\s\S]+?)src[\s]*=[\s]*(["'])[\s]*(.*)[\s]*(["'])([\s\S]*?>)/g, '$1data-src=$2$3$4$5');
+
+        contentDocumentHtml = contentDocumentHtml.replace(/(<iframe[\s\S]+?)data-src[\s]*=[\s]*(["'])[\s]*(http[s]?:\/\/.*)[\s]*(["'])([\s\S]*?>)/g, '$1src=$2$3$4$5');
+        
+        // Empty title in Internet Explorer blows the XHTML parser (document.open/write/close instead of BlobURI)
+        contentDocumentHtml = contentDocumentHtml.replace(/<title>[\s]*<\/title>/g, '<title>TITLE</title>');
+        contentDocumentHtml = contentDocumentHtml.replace(/<title[\s]*\/>/g, '<title>TITLE</title>');
         
         return contentDocumentHtml;
     };

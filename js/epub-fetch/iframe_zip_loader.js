@@ -11,13 +11,13 @@
 //  used to endorse or promote products derived from this software without specific
 //  prior written permission.
 
-define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore', './discover_content_type'], function(URI, IFrameLoader, _, ContentTypeDiscovery){
+define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore'], function(URI, IFrameLoader, _){
 
     var zipIframeLoader = function( getCurrentResourceFetcher, contentDocumentTextPreprocessor) {
 
         var isIE = (window.navigator.userAgent.indexOf("Trident") > 0 || window.navigator.userAgent.indexOf("Edge") > 0);
             
-        var basicIframeLoader = new IFrameLoader();
+        var basicIframeLoader = new IFrameLoader(getCurrentResourceFetcher);
 
         var self = this;
 
@@ -189,8 +189,6 @@ define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore', './disco
                         var refAttrOrigVal_RelativeToPackage = (new URI("/"+refAttrOrigVal_RelativeToBase)).relativeTo("/"+packageFullPath).toString();
                         // console.log("refAttrOrigVal_RelativeToPackage: " + refAttrOrigVal_RelativeToPackage);
 
-                        var mimetype = ContentTypeDiscovery.identifyContentTypeFromFileName(refAttrOrigVal_RelativeToPackage);
-                        
                         var childIframeLoader = new zipIframeLoader(getCurrentResourceFetcher, contentDocumentTextPreprocessor);
                         childIframeLoader.loadIframe(
                             child_iframe.frameElement,
@@ -202,7 +200,7 @@ define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore', './disco
                             {
                                 spineItem:
                                 {
-                                  media_type: mimetype, //attachedData.spineItem.media_type,
+                                  media_type: attachedData.spineItem.media_type, //ContentTypeDiscovery.identifyContentTypeFromFileName(refAttrOrigVal_RelativeToPackage);
                                   href: refAttrOrigVal_RelativeToPackage
                                 }
                             }
