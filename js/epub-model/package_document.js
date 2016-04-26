@@ -74,8 +74,23 @@ define(['jquery', 'underscore', 'URIjs', 'readium_cfi_js/XmlParse'],
             return metadata;
         };
 
-        this.getTocHref = function() {
-            var item = getTocItem();
+        this.getTocItem = function(){
+
+            var item = manifest.getNavItem();
+            if (item) {
+                return item;
+            }
+
+            var spine_id = metadata.ncx;
+            if (spine_id && spine_id.length > 0) {
+                return manifest.getManifestItemByIdref(spine_id);
+            }
+
+            return null;
+        };
+
+        this.getToc = function() {
+            var item = this.getTocItem();
             if (item) {
                 return item.href;
             }
@@ -83,7 +98,7 @@ define(['jquery', 'underscore', 'URIjs', 'readium_cfi_js/XmlParse'],
         };
 
         this.getTocURI = function() {
-            var href = this.getTocHref();
+            var href = this.getToc();
             if (href) {
                 var tocDocumentAbsoluteURL = new URI(href).absoluteTo(packageDocumentURL).toString();
 
@@ -95,14 +110,14 @@ define(['jquery', 'underscore', 'URIjs', 'readium_cfi_js/XmlParse'],
 
         this.getTocText = function(callback) {
             
-            var item = getTocItem();
+            var item = this.getTocItem();
             if (!item) {
                 console.error("No TOC?!");
                 callback(undefined);
                 return;
             }
             
-            var tocHref = item.href; //this.getTocHref();
+            var tocHref = item.href; //this.getToc();
             //var tocContentType = item.media_type; 
 
             resourceFetcher.relativeToPackageFetchFileContents(tocHref, 'text', function (tocDocumentText) {
@@ -119,9 +134,9 @@ define(['jquery', 'underscore', 'URIjs', 'readium_cfi_js/XmlParse'],
             this.getTocText(function (tocText) {
                 if (typeof tocText === 'string') {
                             
-                    var item = getTocItem();
-                    var tocHref = item.href; //this.getTocHref();
-                    var tocContentType = item.media_type; 
+                    var item = this.getTocItem();
+                    var tocHref = item.href; //this.getToc();
+                    var tocContentType = item.media_type;
 
                     var tocDom = XmlParse.fromString(tocText, tocContentType);
                     callback(tocDom);
@@ -138,7 +153,7 @@ define(['jquery', 'underscore', 'URIjs', 'readium_cfi_js/XmlParse'],
             var that = this;
             this.getTocDom(function (tocDom) {
                 if (tocDom) {
-                    if (tocIsNcx()) {
+                    if (that.tocIsNcx()) {
                         var $ncxOrderedList;
                         $ncxOrderedList = getNcxOrderedList($("navMap", tocDom));
                         callback($ncxOrderedList[0]);
@@ -158,9 +173,9 @@ define(['jquery', 'underscore', 'URIjs', 'readium_cfi_js/XmlParse'],
             });
         };
 
-        function tocIsNcx() {
+        this.tocIsNcx = function() {
 
-            var tocItem = getTocItem();
+            var tocItem = this.getTocItem();
             var contentDocURI = tocItem.href;
             var fileExtension = contentDocURI.substr(contentDocURI.lastIndexOf('.') + 1);
 
@@ -205,22 +220,6 @@ define(['jquery', 'underscore', 'URIjs', 'readium_cfi_js/XmlParse'],
                 $ol.append($newLi);
             }
         }
-
-        function getTocItem(){
-
-            var item = manifest.getNavItem();
-            if (item) {
-                return item;
-            }
-
-            var spine_id = metadata.ncx;
-            if (spine_id && spine_id.length > 0) {
-                return manifest.getManifestItemByIdref(spine_id);
-            }
-
-            return null;
-        }
-
     };
 
     return PackageDocument;
