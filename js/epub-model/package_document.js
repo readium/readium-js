@@ -130,11 +130,11 @@ define(['jquery', 'underscore', 'URIjs', 'readium_cfi_js/XmlParse'],
         };
 
         this.getTocDom = function(callback) {
-
+            var that = this;
             this.getTocText(function (tocText) {
                 if (typeof tocText === 'string') {
                             
-                    var item = this.getTocItem();
+                    var item = that.getTocItem();
                     var tocHref = item.href; //this.getToc();
                     var tocContentType = item.media_type;
 
