@@ -12,10 +12,10 @@
 //  prior written permission.
 
 
-define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/reader_view', 'readium_js/epub-fetch/publication_fetcher',
+define(['readium_shared_js/globals', 'text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/reader_view', 'readium_js/epub-fetch/publication_fetcher',
         'readium_js/epub-model/package_document_parser', 'readium_js/epub-fetch/iframe_zip_loader', 'readium_shared_js/views/iframe_loader'
         ],
-    function (versionText, $, _, ReaderView, PublicationFetcher,
+    function (Globals, versionText, $, _, ReaderView, PublicationFetcher,
               PackageParser, IframeZipLoader, IframeLoader) {
 
     var DEBUG_VERSION_GIT = false; 
@@ -25,6 +25,15 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
         var _options = { mathJaxUrl: readerOptions.mathJaxUrl };
 
         var _contentDocumentTextPreprocessor = function(src, contentDocumentHtml) {
+
+            function escapeMarkupEntitiesInUrl(url) {
+                return url
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&apos;");
+            }
 
             function injectedScript() {
 
@@ -37,7 +46,7 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
             
             console.log("EPUB doc base href:");
             console.log(baseHref);
-            var base = "<base href=\"" + baseHref + "\"/>";
+            var base = "<base href=\"" + encodeURI(escapeMarkupEntitiesInUrl(baseHref)) + "\"/>";
 
             var scripts = "<script type=\"text/javascript\">(" + injectedScript.toString() + ")()<\/script>";
 
@@ -46,16 +55,25 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
             }
 
             contentDocumentHtml = contentDocumentHtml.replace(/(<head[\s\S]*?>)/, "$1" + base + scripts);
-                        
-            contentDocumentHtml = contentDocumentHtml.replace(/(<iframe[\s\S]+?)src[\s\S]*?=[\s\S]*?(["'])([^"']+?)(["'])([\s\S]*?>)/g, '$1data-src=$2$3$4$5');
-//console.debug(contentDocumentHtml);
+
+            contentDocumentHtml = contentDocumentHtml.replace(/(<iframe[\s\S]+?)src[\s]*=[\s]*(["'])[\s]*(.*)[\s]*(["'])([\s\S]*?>)/g, '$1data-src=$2$3$4$5');
+
+            contentDocumentHtml = contentDocumentHtml.replace(/(<iframe[\s\S]+?)data-src[\s]*=[\s]*(["'])[\s]*(http[s]?:\/\/.*)[\s]*(["'])([\s\S]*?>)/g, '$1src=$2$3$4$5');
+            
+            // Empty title in Internet Explorer blows the XHTML parser (document.open/write/close instead of BlobURI)
+            contentDocumentHtml = contentDocumentHtml.replace(/<title>[\s]*<\/title>/g, '<title>TITLE</title>');
+            contentDocumentHtml = contentDocumentHtml.replace(/<title[\s]*\/>/g, '<title>TITLE</title>');
             
             return contentDocumentHtml;
         };
 
         var self = this;
 
-        var _currentPublicationFetcher;
+        var _currentPublicationFetcher = undefined;
+        this.getCurrentPublicationFetcher = function() {
+            return _currentPublicationFetcher;
+        };
+            
 
         var jsLibRoot = readiumOptions.jsLibRoot;
 
@@ -217,6 +235,7 @@ define(['text!version.json', 'jquery', 'underscore', 'readium_shared_js/views/re
             }
         };
 
+        Globals.logEvent("READER_INITIALIZED", "EMIT", "Readium.js");
         ReadiumSDK.emit(ReadiumSDK.Events.READER_INITIALIZED, ReadiumSDK.reader);
     };
 
