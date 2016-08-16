@@ -74,8 +74,24 @@ define(['jquery', 'underscore', 'URIjs'],
             return metadata;
         };
 
+
+        this.getTocItem = function(){
+
+            var item = manifest.getNavItem();
+            if (item) {
+                return item;
+            }
+
+            var spine_id = metadata.ncx;
+            if (spine_id && spine_id.length > 0) {
+                return manifest.getManifestItemByIdref(spine_id);
+            }
+
+            return null;
+        };
+
         this.getToc = function() {
-            var item = getTocItem();
+            var item = this.getTocItem();
             if (item) {
                 return item.href;
             }
@@ -118,7 +134,7 @@ define(['jquery', 'underscore', 'URIjs'],
             var that = this;
             this.getTocDom(function (tocDom) {
                 if (tocDom) {
-                    if (tocIsNcx()) {
+                    if (that.tocIsNcx()) {
                         var $ncxOrderedList;
                         $ncxOrderedList = getNcxOrderedList($("navMap", tocDom));
                         callback($ncxOrderedList[0]);
@@ -139,9 +155,9 @@ define(['jquery', 'underscore', 'URIjs'],
             });
         };
 
-        function tocIsNcx() {
+        this.tocIsNcx = function() {
 
-            var tocItem = getTocItem();
+            var tocItem = this.getTocItem();
             var contentDocURI = tocItem.href;
             var fileExtension = contentDocURI.substr(contentDocURI.lastIndexOf('.') + 1);
 
@@ -186,22 +202,6 @@ define(['jquery', 'underscore', 'URIjs'],
                 $ol.append($newLi);
             }
         }
-
-        function getTocItem(){
-
-            var item = manifest.getNavItem();
-            if (item) {
-                return item;
-            }
-
-            var spine_id = metadata.ncx;
-            if (spine_id && spine_id.length > 0) {
-                return manifest.getManifestItemByIdref(spine_id);
-            }
-
-            return null;
-        }
-
     };
 
     return PackageDocument;

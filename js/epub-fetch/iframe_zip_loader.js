@@ -229,18 +229,25 @@ define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore', './disco
                     // and change the forceAbsoluteURLs boolean in processMathJaxOutputSVG() to test absolute URLs versus xml:base ... none of which work, unfortunately :(
                     var disableFontCache = false;
                     if (disableFontCache) {
-                        
-                        // https://github.com/readium/readium-js-viewer/issues/394#issuecomment-186567759
+                            
+                        // Firefox fails to render SVG otherwise
                         if (mathJax.Hub.Browser.isFirefox) {
                             useFontCache = false;
                         }
                         
+                        // Chrome 49+ fails to render SVG otherwise
+                        // https://github.com/readium/readium-js/issues/138
+                        if (mathJax.Hub.Browser.isChrome) {
+                            useFontCache = false;
+                        }
+                        
+                        // Edge fails to render SVG otherwise
                         // https://github.com/readium/readium-js-viewer/issues/394#issuecomment-185382196
                         if (window.navigator.userAgent.indexOf("Edge") > 0) {
                             useFontCache = false;
                         }
                     }
-                    
+
                     mathJax.Hub.Config({showMathMenu:false, messageStyle: "none", showProcessingMessages: true, SVG:{useFontCache:useFontCache}});
                 
                     // Attempt to fix Edge and Firefox when useFontCache is true (MathJax default),
