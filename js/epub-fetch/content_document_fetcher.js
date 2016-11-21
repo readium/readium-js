@@ -37,7 +37,9 @@ define(
                         if (_contentDocumentTextPreprocessor) {
                             _contentDocumentText = _contentDocumentTextPreprocessor(loadedDocumentUri, _contentDocumentText);
                         }
+                        ReadiumSDK.emit('ContentDocumentFetcher-BeforeResolveResources');
                         self.resolveInternalPackageResources(contentDocumentResolvedCallback, errorCallback);
+                        ReadiumSDK.emit('ContentDocumentFetcher-AfterResolveResources');
                     }, errorCallback
                 );
             };
@@ -52,7 +54,7 @@ define(
                 if (_publicationFetcher.shouldFetchMediaAssetsProgrammatically()) {
                     
                     console.log("fetchMediaAssetsProgrammatically ...");
-            
+
                     resolveDocumentImages(resolutionDeferreds, onerror);
                     
                     resolveDocumentAudios(resolutionDeferreds, onerror);
@@ -60,7 +62,7 @@ define(
                     
                     // both audio and video
                     resolveResourceElements('source', 'src', 'blob', resolutionDeferreds, onerror);
-                    
+
                     resolveResourceElements('object', 'data', 'blob', resolutionDeferreds, onerror);
                 }
 
@@ -262,6 +264,8 @@ define(
 
             function preprocessCssStyleSheetData(styleSheetResourceData, styleSheetUriRelativeToPackageDocument,
                                                  callback) {
+                ReadiumSDK.emit('ContentDocumentFetcher-BeforeResolveResources');
+
                 var cssUrlRegexp = /[Uu][Rr][Ll]\(\s*([']([^']+)[']|["]([^"]+)["]|([^)]+))\s*\)/g;
                 var nonUrlCssImportRegexp = /@[Ii][Mm][Pp][Oo][Rr][Tt]\s*('([^']+)'|"([^"]+)")/g;
                 var stylesheetCssResourceUrlsMap = {};
@@ -286,6 +290,7 @@ define(
                     }
 
                 });
+                ReadiumSDK.emit('ContentDocumentFetcher-AfterResolveResources');
 
                 if (cssResourceDownloadDeferreds.length > 0) {
                     $.when.apply($, cssResourceDownloadDeferreds).done(function () {
