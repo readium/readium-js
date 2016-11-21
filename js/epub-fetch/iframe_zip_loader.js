@@ -112,6 +112,11 @@ define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore', './disco
                 // Internet Explorer doesn't handle loading documents from Blobs correctly.
                 // TODO: Currently using the document.write() approach only for IE, as it breaks CSS selectors
                 // with namespaces for some reason (e.g. the childrens-media-query sample EPUB)
+
+                // fix self-closed tags in the contentDocumentData; otherwise IE (IE11) creates an incorrect DOM tree
+                contentDocumentData=contentDocumentData.replace(/<([a-z]+)([^>]+)?\/>/g,'<$1$2></$1>')
+
+
                 iframe.contentWindow.document.open();
 
                 // Currently not handled automatically by winstore-jscompat,
