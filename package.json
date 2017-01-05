@@ -51,7 +51,7 @@
   },
   "devDependencies": {
     "crypto-js": "latest",
-    "zipjs": "danielweck/zip.js",
+    "zip-js": "danielweck/zip.js",
     "requirejs-text": "latest",
     "gift": "latest"
   },
