@@ -13,14 +13,14 @@ require(["readium_shared_js/globalsSetup", "readium_shared_js/globals"], functio
         console.log("!require.defined => using RequireJS-Almond as AMD loader?");
     }
     
-    if (require.specified && require.specified('readium_plugin_annotations')) {    
-    //if (require.specified && require.specified('readium_plugin_annotations/main')) {
-    //if (require.specified && require.specified('readium_shared_js/plugins/annotations/main') {
+    if (require.specified && require.specified('readium_plugin_highlights')) {    
+    //if (require.specified && require.specified('readium_plugin_highlights/main')) {
+    //if (require.specified && require.specified('readium_shared_js/plugins/highlights/main') {
     
-        //alert("readium_plugin_annotations");
-        require(['readium_plugin_annotations'], function (annotationPluginConfig) {
-            console.log("readium_plugin_annotations:");
-            console.debug(annotationPluginConfig);
+        //alert("readium_plugin_highlights");
+        require(['readium_plugin_highlights'], function (pluginConfig) {
+            console.log("readium_plugin_highlights:");
+            console.debug(pluginConfig);
         });   
     }
 

@@ -90,7 +90,11 @@ files: [
 #####################################################################
 dependencies:
 
-    "parallelshell": 'latest'
+    #"parallelshell": 'latest'
+    "concurrently": 'latest'
+
+    "npm-run-all": 'latest'
+
 
     "opener": 'latest'
 
@@ -108,7 +112,7 @@ devDependencies:
 
 #    "zipjs": 'gildas-lormeau/zip.js'
 #    "zipjs": 'ryanackley/zip.js'
-    "zipjs": "danielweck/zip.js"
+    "zip-js": "danielweck/zip.js"
 
 # see readium-cfi-js:
 # "requirejs", "almond", "jquery"
@@ -386,11 +390,11 @@ scripts:
 
         echo > open_webbrowser.js
         &&
-        parallelshell
-            \"npm run dowatch\"
-            \"npm run httpServe\"
+        run-p
+            \"dowatch\"
+            \"httpServe\"
     '
-#    \"npm run live-reload\"
+#    \"live-reload\"
 
 #=====================
 #### BLOCKING! (CTRL-C) [http]
