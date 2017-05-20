@@ -16,7 +16,7 @@ define(['readium_shared_js/globals', 'text!version.json', 'jquery', 'underscore'
         'readium_js/epub-model/package_document_parser', 'readium_js/epub-fetch/iframe_zip_loader', 'readium_shared_js/views/iframe_loader'
         ],
     function (Globals, versionText, $, _, ReaderView, PublicationFetcher,
-              PackageParser, IframeZipLoader, IframeLoader) {
+              PackageDocumentParser, IframeZipLoader, IframeLoader) {
 
     var DEBUG_VERSION_GIT = false; 
 
@@ -113,9 +113,9 @@ define(['readium_shared_js/globals', 'text!version.json', 'jquery', 'underscore'
                     return;
                 }
                 
-                var _packageParser = new PackageParser(_currentPublicationFetcher);
+                var _PackageDocumentParser = new PackageDocumentParser(_currentPublicationFetcher);
 
-                _packageParser.parse(function(packageDocument){
+                _PackageDocumentParser.parse(function(packageDocument){
                     
                     if (!packageDocument) {
                         

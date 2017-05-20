@@ -16,12 +16,60 @@ define(['jquery', 'underscore', '../epub-fetch/markup_parser', 'URIjs', './packa
     function($, _, MarkupParser, URI, PackageDocument, SmilDocumentParser, Metadata,
              Manifest) {
 
+
         // `PackageDocumentParser` is used to parse the xml of an epub package
     // document and build a javascript object. The constructor accepts an
     // instance of `URI` that is used to resolve paths during the process
     var PackageDocumentParser = function(publicationFetcher) {
 
         var _packageFetcher = publicationFetcher;
+
+    var convertWebPubManifestToPackageDoc = function(webpubJson) {
+        var metadata = {};
+        metadata.rendition_layout = "reflowable";
+        if (webpubJson.metadata.rendition && webpubJson.metadata.rendition.layout) {
+            if (webpubJson.metadata.rendition.layout === "fixed") {
+                metadata.rendition_layout = "pre-paginated";
+            }
+        }
+        for (var i = 0; i < webpubJson.resources.length; i++) {
+            var res = webpubJson.resources[i];
+            if (res.rel && res.rel.indexOf("cover")) {
+                metadata.cover_href = res.href;
+            }
+        }
+        var manifestJson = {};
+        var manifest = new Manifest(manifestJson);
+        var spine = {};
+        var packageDocument = new PackageDocument(_packageFetcher.getEbookURL(),
+            _packageFetcher, metadata, spine, manifest);
+
+        packageDocument.setPageProgressionDirection(webpubJson.metadata.direction === "default" ? "ltr" : webpubJson.metadata.direction);
+        return packageDocument;
+    };
+    
+    if (_packageFetcher.contentType() && _packageFetcher.contentType().indexOf('application/webpub+json') === 0) {
+
+        this.parse = function(callback) {
+
+            console.log(_packageFetcher.getEbookURL());
+            console.log(_packageFetcher.contentType());
+            
+            _packageFetcher.getFileContentsFromPackage(
+                _packageFetcher.getEbookURL(),
+                function (fileContents) {
+                    // console.log(fileContents);
+                    
+                    var webpubJson = JSON.parse(fileContents);
+                    // console.log(webpubJson);
+
+                    var zPackageDocument = convertWebPubManifestToPackageDoc(webpubJson);
+                    callback(zPackageDocument);
+                }, function (err) {
+                    callback(undefined);
+                });
+        };
+    } else {
         var _deferredXmlDom = $.Deferred();
         var _xmlDom;
 
@@ -476,7 +524,7 @@ define(['jquery', 'underscore', '../epub-fetch/markup_parser', 'URIjs', './packa
             }
             return properties;
         }
-
+    }
     };
 
     return PackageDocumentParser;
