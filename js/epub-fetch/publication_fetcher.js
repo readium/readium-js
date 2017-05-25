@@ -111,7 +111,7 @@ define(['jquery', 'URIjs', './plain_resource_fetcher', './zip_resource_fetcher',
             }
             
             // dumb test: ends with ".epub" file extension
-            return  !(/\.epub$/.test(uriTrimmed));
+            return  !(/\.epub[3?]$/.test(uriTrimmed));
             
             // var ext = ".epub";
             // return ebookURL.indexOf(ext, ebookURL.length - ext.length) === -1;
