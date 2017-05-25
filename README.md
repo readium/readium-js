@@ -21,7 +21,8 @@ See [license.txt](./license.txt).
 ## Prerequisites
 
 * A decent terminal. On Windows, GitShell works great ( http://git-scm.com ), GitBash works too ( https://msysgit.github.io ), and Cygwin adds useful commands ( https://www.cygwin.com ).
-* NodeJS ( https://nodejs.org ) **v4** (but not v5, because the installer ships with NPM v3 which seems to [have bugs](https://github.com/readium/readium-js-viewer/issues/453) related to the new flat module dependencies)
+* NodeJS ( https://nodejs.org ) **v4+** (Note that NodeJS v6+ and NPM v3+ are now supported, including NodeJS v7+ and NPM v4+)
+* Optionally: Yarn ( https://yarnpkg.com ) **v0.23+**
 
 
 ## Development
@@ -30,9 +31,10 @@ See [license.txt](./license.txt).
 
 * `git submodule update --init --recursive` to ensure that the readium-js chain of dependencies is initialised (readium-shared-js and readium-cfi-js)
 * `git checkout BRANCH_NAME && git submodule foreach --recursive "git checkout BRANCH_NAME"` to switch to the desired BRANCH_NAME
-* `npm run prepare` (to perform required preliminary tasks, like patching code before building)
+* `npm run prepare:all` (to perform required preliminary tasks, like patching code before building)
+* OR: `yarn run prepare:yarn:all` (to use Yarn instead of NPM for node_module management)
 
-Note that in some cases, administrator rights may be needed in order to install dependencies, because of NPM-related file access permissions (the console log would clearly show the error). Should this be the case, running `sudo npm run prepare` usually solves this.
+Note that in some cases, administrator rights may be needed in order to install dependencies, because of NPM-related file access permissions (the console log would clearly show the error). Should this be the case, running `sudo npm run prepare:all` usually solves this.
 
 Note that the above command executes the following:
 
