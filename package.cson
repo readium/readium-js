@@ -168,10 +168,10 @@ scripts:
 #=====================
     'prepare:yarn:all': '
 
-        npm run
+        yarn run
             prepare:yarn:submodule
         &&
-        npm run
+        yarn run
             prepare:yarn:local
     '
 
