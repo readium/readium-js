@@ -14,27 +14,29 @@
 define(['jquery', 'underscore', 'URIjs'],
     function ($, _, URI) {
 
-        // Description: This model provides an interface for navigating an EPUB's package document
-        var WebpubDocument = function(packageDocumentURL, resourceFetcher, metadata, spine, manifest) {
+        // R2's counterpart of PackageDocument
+        var WebpubDocument = function (packageDocumentURL, resourceFetcher,
+                                       metadata, spine, manifest, webpubJson) {
 
             var _page_prog_dir;
 
             this.manifest = manifest;
+            this.webpubJson = webpubJson;
 
             this.getSharedJsPackageData = function () {
 
                 var packageDocRoot = packageDocumentURL.substr(0, packageDocumentURL.lastIndexOf("/"));
                 return {
-                    rootUrl : packageDocRoot,
-                    rendition_viewport : metadata.rendition_viewport,
-                    rendition_layout : metadata.rendition_layout,
-                    rendition_orientation : metadata.rendition_orientation,
-                    rendition_flow : metadata.rendition_flow,
-                    rendition_spread : metadata.rendition_spread,
-                    media_overlay : metadata.media_overlay,
-                    spine : {
-                        direction : this.getPageProgressionDirection(),
-                        items : spine
+                    rootUrl: packageDocRoot,
+                    rendition_viewport: metadata.rendition_viewport,
+                    rendition_layout: metadata.rendition_layout,
+                    rendition_orientation: metadata.rendition_orientation,
+                    rendition_flow: metadata.rendition_flow,
+                    rendition_spread: metadata.rendition_spread,
+                    media_overlay: metadata.media_overlay,
+                    spine: {
+                        direction: this.getPageProgressionDirection(),
+                        items: spine
                     }
                 };
             };
@@ -44,17 +46,17 @@ define(['jquery', 'underscore', 'URIjs'],
              * @param spineIndex the index of the item within the spine
              * @returns Spine item data in readium-shared-js accepted format.
              */
-            this.getSpineItem = function(spineIndex) {
+            this.getSpineItem = function (spineIndex) {
                 var spineItem = spine[spineIndex];
                 return spineItem;
             };
 
-            this.setPageProgressionDirection = function(page_prog_dir) {
+            this.setPageProgressionDirection = function (page_prog_dir) {
                 _page_prog_dir = page_prog_dir;
             };
 
 
-            this.getPageProgressionDirection = function() {
+            this.getPageProgressionDirection = function () {
                 if (_page_prog_dir === "rtl") {
                     return "rtl";
                 }
@@ -66,16 +68,16 @@ define(['jquery', 'underscore', 'URIjs'],
                 }
             };
 
-            this.spineLength = function() {
+            this.spineLength = function () {
                 return spine.length;
             };
 
-            this.getMetadata = function() {
+            this.getMetadata = function () {
                 return metadata;
             };
 
 
-            this.getTocItem = function(){
+            this.getTocItem = function () {
 
                 var item = manifest.getNavItem();
                 if (item) {
@@ -90,7 +92,7 @@ define(['jquery', 'underscore', 'URIjs'],
                 return null;
             };
 
-            this.getToc = function() {
+            this.getToc = function () {
                 var item = this.getTocItem();
                 if (item) {
                     return item.href;
@@ -98,7 +100,7 @@ define(['jquery', 'underscore', 'URIjs'],
                 return null;
             };
 
-            this.getTocText = function(callback) {
+            this.getTocText = function (callback) {
                 var toc = this.getToc();
                 if (!toc) {
                     console.error("No TOC?!");
@@ -115,7 +117,7 @@ define(['jquery', 'underscore', 'URIjs'],
                 });
             };
 
-            this.getTocDom = function(callback) {
+            this.getTocDom = function (callback) {
 
                 this.getTocText(function (tocText) {
                     if (typeof tocText === 'string') {
@@ -127,39 +129,35 @@ define(['jquery', 'underscore', 'URIjs'],
                 });
             };
 
-
             // Used in EpubReader (readium-js-viewer)
-            // https://github.com/readium/readium-js-viewer/blob/develop/lib/EpubReader.js#L59
-            this.generateTocListDOM = function(callback) {
-                // todo: R2 returning empty TOC to keep EpubReader happy
-                callback($("<ol></ol>"));
-                return;
-                
-                var that = this;
-                this.getTocDom(function (tocDom) {
-                    if (tocDom) {
-                        if (that.tocIsNcx()) {
-                            var $ncxOrderedList;
-                            $ncxOrderedList = getNcxOrderedList($("navMap", tocDom));
-                            callback($ncxOrderedList[0]);
-                        } else {
-                            var packageDocumentAbsoluteURL = new URI(packageDocumentURL).absoluteTo(document.URL);
-                            var tocDocumentAbsoluteURL = new URI(that.getToc()).absoluteTo(packageDocumentAbsoluteURL);
-                            // add a BASE tag to change the TOC document's baseURI.
-                            var oldBaseTag = $(tocDom).remove('base');
-                            var newBaseTag = $('<base></base>');
-                            $(newBaseTag).attr('href', tocDocumentAbsoluteURL);
-                            $(tocDom).find('head').append(newBaseTag);
-                            // TODO: fix TOC hrefs both for exploded in zipped EPUBs
-                            callback(tocDom);
-                        }
-                    } else {
-                        callback(undefined);
-                    }
+            // we already have "toc" collection in WebPub manifest, so we just stick it into 
+            // html ordered list, similar to what was done with epub2 NCX
+            // - example of toc item
+            // {
+            //     "href": "s001-BookTitlePage-01.xhtml",
+            //     "title": "THE WAR POEMS OF SIEGFRIED SASSOON"
+            // },
+            this.generateTocListDOM = function (callback) {
+                // this is the beginning of TOC
+                var $ol = $("<ol></ol>");
+
+                // for now, assuming non-hierarchical TOC, i.e., no nested chapters
+                // todo: figure if R2 streamer supports hierarchies in toc collection
+
+                this.webpubJson.toc.forEach(function (tocItem) {
+                    var $navPointLi = $('<li class="nav-elem"></li>').append(
+                        $('<a></a>', {href: tocItem.href, text: tocItem.title})
+                    );
+
+                    // Append nav point info
+                    $ol.append($navPointLi);
                 });
+
+                callback($ol);
+                return;
             };
 
-            this.tocIsNcx = function() {
+            this.tocIsNcx = function () {
 
                 var tocItem = this.getTocItem();
                 var contentDocURI = tocItem.href;
@@ -187,14 +185,14 @@ define(['jquery', 'underscore', 'URIjs'],
                 var navText = $navPointDOM.children("navLabel").text().trim();
                 var navHref = $navPointDOM.children("content").attr("src");
                 var $navPointLi = $('<li class="nav-elem"></li>').append(
-                    $('<a></a>', { href: navHref, text: navText })
+                    $('<a></a>', {href: navHref, text: navText})
                 );
 
                 // Append nav point info
                 $ol.append($navPointLi);
 
                 // Append ordered list of nav points
-                if ($navPointDOM.children("navPoint").length > 0 ) {
+                if ($navPointDOM.children("navPoint").length > 0) {
 
                     var $newLi = $("<li></li>");
                     var $newOl = $("<ol></ol>");

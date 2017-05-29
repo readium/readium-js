@@ -149,7 +149,7 @@ define(['jquery', 'underscore', '../epub-fetch/markup_parser', 'URIjs', './packa
                 var spine = getJsonSpine(webpubJson, manifest, metadata);
                 
                 var webpubDocument = new WebpubDocument(_packageFetcher.getEbookURL(),
-                    _packageFetcher, metadata, spine, manifest);
+                    _packageFetcher, metadata, spine, manifest, webpubJson);
 
                 webpubDocument.setPageProgressionDirection(
                     webpubJson.metadata.direction === "default" ? "ltr" : webpubJson.metadata.direction);
