@@ -14,7 +14,7 @@
 define(['jquery', 'underscore', 'URIjs'],
     function ($, _, URI) {
 
-        // R2's counterpart of PackageDocument
+        // Readium2 counterpart of PackageDocument
         var WebpubDocument = function (packageDocumentURL, resourceFetcher,
                                        metadata, spine, manifest, webpubJson) {
 
@@ -54,7 +54,6 @@ define(['jquery', 'underscore', 'URIjs'],
             this.setPageProgressionDirection = function (page_prog_dir) {
                 _page_prog_dir = page_prog_dir;
             };
-
 
             this.getPageProgressionDirection = function () {
                 if (_page_prog_dir === "rtl") {
@@ -134,72 +133,38 @@ define(['jquery', 'underscore', 'URIjs'],
             // html ordered list, similar to what was done with epub2 NCX
             // - example of toc item
             // {
-            //     "href": "s001-BookTitlePage-01.xhtml",
-            //     "title": "THE WAR POEMS OF SIEGFRIED SASSOON"
+            //     "href": "pr01.xhtml",
+            //     "title": "Preface",
+            //     "children": []
             // },
             this.generateTocListDOM = function (callback) {
-                // this is the beginning of TOC
+
+                // this is the beginning of TOC DOM
                 var $ol = $("<ol></ol>");
-
-                // for now, assuming non-hierarchical TOC, i.e., no nested chapters
-                // todo: figure if R2 streamer supports hierarchies in toc collection
-
                 this.webpubJson.toc.forEach(function (tocItem) {
-                    var $navPointLi = $('<li class="nav-elem"></li>').append(
-                        $('<a></a>', {href: tocItem.href, text: tocItem.title})
-                    );
-
-                    // Append nav point info
-                    $ol.append($navPointLi);
+                    addTocItem(tocItem, $ol);
                 });
 
                 callback($ol);
                 return;
             };
 
-            this.tocIsNcx = function () {
+            // Recursive function that adds toc sub items for the current toc item
+            function addTocItem(tocItem, $ol) {
 
-                var tocItem = this.getTocItem();
-                var contentDocURI = tocItem.href;
-                var fileExtension = contentDocURI.substr(contentDocURI.lastIndexOf('.') + 1);
-
-                return fileExtension.trim().toLowerCase() === "ncx";
-            }
-
-            // ----------------------- PRIVATE HELPERS -------------------------------- //
-
-            function getNcxOrderedList($navMapDOM) {
-
-                var $ol = $("<ol></ol>");
-                $.each($navMapDOM.children("navPoint"), function (index, navPoint) {
-                    addNavPointElements($(navPoint), $ol);
-                });
-                return $ol;
-            }
-
-            // Description: Constructs an html representation of NCX navPoints, based on an object of navPoint information
-            // Rationale: This is a recursive method, as NCX navPoint elements can nest 0 or more of themselves as children
-            function addNavPointElements($navPointDOM, $ol) {
-
-                // Add the current navPoint element to the TOC html
-                var navText = $navPointDOM.children("navLabel").text().trim();
-                var navHref = $navPointDOM.children("content").attr("src");
+                // add current toc item to the TOC DOM
                 var $navPointLi = $('<li class="nav-elem"></li>').append(
-                    $('<a></a>', {href: navHref, text: navText})
+                    $('<a></a>', {href: tocItem.href, text: tocItem.title})
                 );
-
-                // Append nav point info
                 $ol.append($navPointLi);
 
-                // Append ordered list of nav points
-                if ($navPointDOM.children("navPoint").length > 0) {
-
+                // deal with children if they are present
+                if (tocItem.children && tocItem.children.length > 0) {
                     var $newLi = $("<li></li>");
                     var $newOl = $("<ol></ol>");
-                    $.each($navPointDOM.children("navPoint"), function (navIndex, navPoint) {
-                        $newOl.append(addNavPointElements($(navPoint), $newOl));
+                    tocItem.children.forEach(function (subItem) {
+                        $newOl.append(addTocItem(subItem, $newOl));
                     });
-
                     $newLi.append($newOl);
                     $ol.append($newLi);
                 }
