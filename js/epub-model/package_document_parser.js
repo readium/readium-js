@@ -13,7 +13,7 @@
 
 define(['jquery', 'underscore', '../epub-fetch/markup_parser', 'URIjs', './package_document',
         './webpub_document', './smil_document_parser', './metadata', './manifest'],
-    function ($, _, MarkupParser, URI, PackageDocument, WebpubDocument, SmilDocumentParser, 
+    function ($, _, MarkupParser, URI, PackageDocument, WebpubDocument, SmilDocumentParser,
               Metadata, Manifest) {
 
 
@@ -21,15 +21,111 @@ define(['jquery', 'underscore', '../epub-fetch/markup_parser', 'URIjs', './packa
         // document and build a javascript object. The constructor accepts an
         // instance of `URI` that is used to resolve paths during the process
         var PackageDocumentParser = function (publicationFetcher) {
+            
+            var cover;
+            var hrefToIdMap = {};
+            var idCounter = 0;
 
-            var _packageFetcher = publicationFetcher;
+            // create PackageDocument (expected by R1) based on WebPub json (produced by R2 streamer)
+            var convertWebPubManifestToPackageDoc = function convertWebPubManifestToPackageDoc(webpubJson) {
 
-            // define function that creates PackageDocument based on WebPub json
-            var convertWebPubManifestToPackageDoc = function (webpubJson) {
+                //
+                // Helper functions
+                //
+                
+                // recreates Package Document's spine based on "spine" section of webpub
+                // Note, that it must be called after manifest items are processed and hrefToIdMap is filled
+                function getJsonSpine(webpubJson, manifest, metadata) {
+
+                    var spine = webpubJson.spine.map(function(webpubItem) {
+
+                        var viewport = undefined;
+                        _.each(metadata.rendition_viewports, function (vp) {
+                            if (vp.refines == id) {
+                                viewport = vp.viewport;
+                                return true; // break
+                            }
+                        });
+
+                        var spineItem = {
+                            href: webpubItem.href,
+                            media_type: webpubItem.type,
+                            // assuming that the order of spine items in webpub indicates that they are linear
+                            linear: 'yes',
+
+                            // R2: these data is lost 
+                            rendition_viewport: viewport,
+                            idref: hrefToIdMap[webpubItem.href],
+                            manifest_id: '',
+                            media_overlay_id: '',
+                            properties: ''
+                        };
+
+                        // var parsedProperties = parsePropertiesString(spineItem.properties);
+                        // $.extend(spineItem, parsedProperties);
+                        return spineItem;
+                    });
+
+                    return spine;
+                }
+
+                // convert web pub item into package doc manifest item
+                // note that as a side effect we also finding "cover"
+                // this is how webpubItem looks like
+                // {
+                //     "href": "cover.xhtml",
+                //     "type": "application/xhtml+xml"
+                // }
+                function convertToPackageDocManifestItem(webpubItem) {
+                    
+                    // figure item's id
+                    // consult / maintain (href -> item id) map
+                    var id;
+                    if (hrefToIdMap[webpubItem.href]) {
+                        id = hrefToIdMap[webpubItem.href];
+                    } else {
+                        id = idCounter++;
+                        hrefToIdMap[webpubItem.href] = id.toString();
+                    }
+
+                    var manifestItem = {
+                        href: webpubItem.href,
+                        media_type: webpubItem.type,
+                        // R2: these data is lost 
+                        id: hrefToIdMap[webpubItem.href],
+                        media_overlay_id: '',
+                        properties: ''
+                    };
+
+                    // if webpubItem has "rel" property (relations array) that includes "cover"
+                    if (webpubItem.rel && webpubItem.rel.includes("cover")) {
+                        // set cover href
+                        cover = webpubItem.href;
+                    }
+
+                    return manifestItem;
+                }
+
+                // Recreate PackageDocument manifest from WebPub manifest
+                // we want to include items defined in WebPub's spine and resources. 
+                // Note, that "id" attribute of PackageDocument is not present in WebPub manifest,
+                // so we are trying to recreate it, assuming that "href" is a unique identifier of a resource 
+                function getJsonManifest(webpubJson) {
+                    // start with spine, continue with resources
+                    var spine = webpubJson.spine.map(convertToPackageDocManifestItem);
+                    var resources = webpubJson.resources.map(convertToPackageDocManifestItem);
+                    return spine.concat(resources);
+                }
+
+                //
+                // Body of the function
+                //
                 
                 // form metadata part of PackageDocument
+                // todo: this is from initial attempt, see if this makes sense
+                // var metadata = getMetadata(webpubJson);
                 var metadata = {};
-                
+
                 // figure metadata.rendition_layout
                 metadata.rendition_layout = "reflowable";
                 if (webpubJson.metadata.rendition && webpubJson.metadata.rendition.layout) {
@@ -37,7 +133,7 @@ define(['jquery', 'underscore', '../epub-fetch/markup_parser', 'URIjs', './packa
                         metadata.rendition_layout = "pre-paginated";
                     }
                 }
-                
+
                 // figure metadata.cover_href
                 for (var i = 0; i < webpubJson.resources.length; i++) {
                     var res = webpubJson.resources[i];
@@ -46,13 +142,12 @@ define(['jquery', 'underscore', '../epub-fetch/markup_parser', 'URIjs', './packa
                     }
                 }
 
-                // form Manifest part of PackageDocument
-                var manifestJson = {};
-                var manifest = new Manifest(manifestJson);
-
+                // form manifest part of PackageDocument
+                var manifest = new Manifest(getJsonManifest(webpubJson));
 
                 // form spine part of PackageDocument
-                var spine = {};
+                var spine = getJsonSpine(webpubJson, manifest, metadata);
+                
                 var webpubDocument = new WebpubDocument(_packageFetcher.getEbookURL(),
                     _packageFetcher, metadata, spine, manifest);
 
@@ -62,6 +157,7 @@ define(['jquery', 'underscore', '../epub-fetch/markup_parser', 'URIjs', './packa
             };
 
             // if we are dealing with WebPub manifest from R2 streamer
+            var _packageFetcher = publicationFetcher;
             if (_packageFetcher.contentType() && _packageFetcher.contentType().indexOf('application/webpub+json') === 0) {
 
                 // define WebPub specific parse function
@@ -73,7 +169,7 @@ define(['jquery', 'underscore', '../epub-fetch/markup_parser', 'URIjs', './packa
                     _packageFetcher.getFileContentsFromPackage(
                         _packageFetcher.getEbookURL(),
                         function (fileContents) {
-                            
+
                             // parse WebPub content 
                             var webpubJson = JSON.parse(fileContents);
                             // console.log(webpubJson);
