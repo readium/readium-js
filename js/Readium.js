@@ -40,6 +40,9 @@ define(['readium_shared_js/globals', 'text!version.json', 'jquery', 'underscore'
                 navigator.epubReadingSystem = window.parent.navigator.epubReadingSystem;
             }
 
+            //if (src.indexOf("%") >= 0) {
+            src = unescape(src); //decodeURIComponent
+            
             var sourceParts = src.split("/");
             //sourceParts.pop(); //remove source file name
             var baseHref = sourceParts.join("/"); // + "/";
