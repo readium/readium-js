@@ -1,5 +1,29 @@
 # readium-js
+## Branch specific - feature/readium2
 
+The goal of this feature branch is to "Create a Readium 2 compatible navigator based on
+Readium 1 project".
+
+For now the focus is to interface with Readium 2 streamer adopting WebPub manifest data model 
+as a principal for all the subsequent processing.
+
+If you have URI pointing to ePub processed by Readium 2 streamer, you can point
+Readium 1 viewer to this URI and see the book rendered.
+
+Here is an example:
+- Assuming that you processed ePub by Readium 2 streamer and got this URI:
+`http://localhost:60217/L1VzZXJzL21pY2hhZWxzL2VwL3JlYWRpdW0vcmVhZGl1bS1qcy12aWV3ZXIvdGVzdHMvZXB1YnMvYWNjZXNzaWJsZV9lcHViXzMuZXB1Yg==/manifest.json`
+- URL encode the value above, getting this:
+`http%3A%2F%2Flocalhost%3A60217%2FL1VzZXJzL21pY2hhZWxzL2VwL3JlYWRpdW0vcmVhZGl1bS1qcy12aWV3ZXIvdGVzdHMvZXB1YnMvYWNjZXNzaWJsZV9lcHViXzMuZXB1Yg%3D%3D%2Fmanifest.json%0A`
+- Assuming that you are running HTTP server in readium/readium-js-viewer on port
+  8090, use this URL to point Reader to WebPub:
+`http://localhost:8090/dev/index_RequireJS_no-optimize_LITE.html?epub=http%3A%2F%2Flocalhost%3A60217%2FL1VzZXJzL21pY2hhZWxzL2VwL3JlYWRpdW0vcmVhZGl1bS1qcy12aWV3ZXIvdGVzdHMvZXB1YnMvYWNjZXNzaWJsZV9lcHViXzMuZXB1Yg%3D%3D%2Fmanifest.json%0A`
+- See EPUB content rendered.
+
+**Note** that this is WIP, so far we have basic rendering, pagination and TOC
+working.
+
+## General
 **EPUB core processing engine written in Javascript.**
 
 This is a software component used by the Readium Chrome extension and the "cloud reader" ( https://github.com/readium/readium-js-viewer ).
