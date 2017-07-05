@@ -156,7 +156,7 @@ scripts:
 #=====================
     'prepare:local': '
 
-        npm outdated || echo outdated
+        (npm outdated || echo outdated)
         &&
         npm install --no-save --only=prod
         &&
@@ -180,7 +180,7 @@ scripts:
 #=====================
     'prepare:yarn:local': '
 
-        yarn outdated || echo outdated
+        (yarn outdated || echo outdated)
         &&
         yarn install
         &&
@@ -222,7 +222,7 @@ scripts:
 #=====================
     clean: '
 
-        yarn --version || echo noyarn
+        (yarn --version || echo noyarn)
         &&
         node --version
         &&
