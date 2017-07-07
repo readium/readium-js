@@ -35,7 +35,8 @@ define(['jquery', 'underscore', 'URIjs'],
                 spine : {
                     direction : this.getPageProgressionDirection(),
                     items : spine
-                }
+                },
+                metadata: metadata
             };
         };
 
