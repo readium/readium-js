@@ -100,7 +100,7 @@ dependencies:
     "opener": 'latest'
 
     #"http-server": 'latest'
-    "http-server": 'danielweck/http-server'
+    "http-server": 'github:danielweck/http-server'
     # SEE: https://github.com/indexzero/http-server/issues/154
 
 
@@ -111,9 +111,9 @@ devDependencies:
 
     "crypto-js": 'latest'
 
-#    "zipjs": 'gildas-lormeau/zip.js'
-#    "zipjs": 'ryanackley/zip.js'
-    "zip-js": "danielweck/zip.js"
+#    "zipjs": 'github:gildas-lormeau/zip.js'
+#    "zipjs": 'github:ryanackley/zip.js'
+    "zip-js": "github:danielweck/zip.js"
 
 # see readium-cfi-js:
 # "requirejs", "almond", "jquery"
