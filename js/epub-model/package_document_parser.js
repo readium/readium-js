@@ -12,9 +12,9 @@
 //  prior written permission.
 
 define(['jquery', 'underscore', '../epub-fetch/markup_parser', 'URIjs', './package_document',
-        './smil_document_parser', './metadata', './manifest'],
+        './smil_document_parser', './metadata', './manifest', 'readium_cfi_js'],
     function($, _, MarkupParser, URI, PackageDocument, SmilDocumentParser, Metadata,
-             Manifest) {
+             Manifest, epubCFI) {
 
         // `PackageDocumentParser` is used to parse the xml of an epub package
     // document and build a javascript object. The constructor accepts an
@@ -152,7 +152,8 @@ define(['jquery', 'underscore', '../epub-fetch/markup_parser', 'URIjs', './packa
                     media_type: manifestItem.media_type,
                     media_overlay_id: manifestItem.media_overlay_id,
                     linear: $currSpineElement.attr("linear") ? $currSpineElement.attr("linear") : "",
-                    properties: $currSpineElement.attr("properties") ? $currSpineElement.attr("properties") : ""
+                    properties: $currSpineElement.attr("properties") ? $currSpineElement.attr("properties") : "",
+                    cfi: epubCFI.generatePackageDocumentCFIComponentWithSpineIndex(spineElementIndex, xmlDom)
                 };
 
                 var parsedProperties = parsePropertiesString(spineItem.properties);
