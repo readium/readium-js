@@ -92,12 +92,11 @@ files: [
 dependencies:
 
     #"parallelshell": 'latest'
-    "concurrently": 'latest'
+    "concurrently": '^3.5.0'
 
-    "npm-run-all": 'latest'
+    "npm-run-all": '^4.1.2'
 
-
-    "opener": 'latest'
+    "opener": '^1.4.3'
 
     #"http-server": 'latest'
     "http-server": 'github:danielweck/http-server'
@@ -109,7 +108,7 @@ dependencies:
 # in "npm install --dev readium-js".
 devDependencies:
 
-    "crypto-js": 'latest'
+    "crypto-js": '^3.1.9-1'
 
 #    "zipjs": 'github:gildas-lormeau/zip.js'
 #    "zipjs": 'github:ryanackley/zip.js'
@@ -119,13 +118,13 @@ devDependencies:
 # "requirejs", "almond", "jquery"
 
 
-    "requirejs-text": 'latest'
+    "requirejs-text": '^2.0.15'
 
 # Below dependencies are only used for building tasks (above are runtime deps):
 
     # see readium-build-tools (in readium-cfi-js)
     # versionsMaker.js
-    "gift": 'latest'
+    "gift": '^0.10.1'
 
 # see readium-cfi-js:
 # "cson", "jshint", "glob", "rimraf", "mkdirp", "watch", "live-reload"
@@ -162,8 +161,6 @@ scripts:
         &&
         npm install --only=dev
         &&
-        npm update
-        &&
         npm run prepare:local:common
     '
 
@@ -183,8 +180,6 @@ scripts:
         (yarn outdated || echo outdated)
         &&
         yarn install
-        &&
-        yarn upgrade
         &&
         yarn run prepare:local:common
     '
