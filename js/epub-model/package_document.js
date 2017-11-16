@@ -15,7 +15,7 @@ define(['jquery', 'underscore', 'URIjs'],
     function ($, _, URI) {
 
     // Description: This model provides an interface for navigating an EPUB's package document
-    var PackageDocument = function(packageDocumentURL, resourceFetcher, metadata, spine, manifest) {
+    var PackageDocument = function(packageDocumentURL, packageDocumentDOM, resourceFetcher, metadata, spine, manifest) {
 
         var _page_prog_dir;
 
