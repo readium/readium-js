@@ -22,6 +22,7 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
 
         self.contentTypePackageReadStrategyMap = {
             'application/oebps-package+xml': 'exploded',
+            'application/webpub+json': 'exploded',
             'application/epub+zip': 'zipped',
             'application/zip': 'zipped'
         };
@@ -37,6 +38,9 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
 
         var _contentDocumentTextPreprocessor = contentDocumentTextPreprocessor;
         var _contentType = contentType;
+        this.contentType = function() {
+            return _contentType;
+        };
 
         this.markupParser = new MarkupParser();
 
@@ -49,13 +53,17 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
             console.log("_shouldConstructDomProgrammatically INIT: " + _shouldConstructDomProgrammatically);
             
             createResourceFetcher(isEpubExploded, function(resourceFetcher) {
-    
+
                 //NOTE: _resourceFetcher == resourceFetcher
-                
-                self.getPackageDom(
-                    function() {callback(resourceFetcher);},
-                    function(error) {console.error("unable to find package document: " + error); callback(undefined);}
-                );
+                if (!contentType || contentType.indexOf('application/webpub+json') !== 0) {
+
+                    self.getPackageDom(
+                        function() {callback(resourceFetcher);},
+                        function(error) {console.error("unable to find package document: " + error); callback(undefined);}
+                    );
+                } else {
+                    callback(resourceFetcher);
+                }
             });
         };
 
