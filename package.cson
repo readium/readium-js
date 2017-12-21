@@ -99,7 +99,7 @@ dependencies:
     "opener": '^1.4.3'
 
     #"http-server": 'latest'
-    "http-server": 'github:danielweck/http-server'
+    "http-server": 'github:danielweck/http-server#master'
     # SEE: https://github.com/indexzero/http-server/issues/154
 
 
@@ -112,7 +112,7 @@ devDependencies:
 
 #    "zipjs": 'github:gildas-lormeau/zip.js'
 #    "zipjs": 'github:ryanackley/zip.js'
-    "zip-js": "github:danielweck/zip.js"
+    "zip-js": 'github:danielweck/zip.js#master'
 
 # see readium-cfi-js:
 # "requirejs", "almond", "jquery"
@@ -157,9 +157,7 @@ scripts:
 
         (npm outdated || echo outdated)
         &&
-        npm install --only=prod
-        &&
-        npm install --only=dev
+        npm install
         &&
         npm run prepare:local:common
     '

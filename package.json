@@ -48,18 +48,18 @@
     "concurrently": "^3.5.0",
     "npm-run-all": "^4.1.2",
     "opener": "^1.4.3",
-    "http-server": "github:danielweck/http-server"
+    "http-server": "github:danielweck/http-server#master"
   },
   "devDependencies": {
     "crypto-js": "^3.1.9-1",
-    "zip-js": "github:danielweck/zip.js",
+    "zip-js": "github:danielweck/zip.js#master",
     "requirejs-text": "^2.0.15",
     "gift": "^0.10.1"
   },
   "scripts": {
     "cson2json": "node ./readium-shared-js/readium-cfi-js/node_modules/cson/bin/cson2json package.cson > package.json && node readium-shared-js/readium-cfi-js/readium-build-tools/optimizePackageJsonScripts.js",
     "prepare:all": "npm run prepare:submodule && npm run prepare:local",
-    "prepare:local": "(npm outdated || echo outdated) && npm install --only=prod && npm install --only=dev && npm run prepare:local:common",
+    "prepare:local": "(npm outdated || echo outdated) && npm install && npm run prepare:local:common",
     "prepare:yarn:all": "yarn run prepare:yarn:submodule && yarn run prepare:yarn:local",
     "prepare:yarn:local": "(yarn outdated || echo outdated) && yarn install && yarn run prepare:local:common",
     "prepare:local:common": "node readium-shared-js/readium-cfi-js/readium-build-tools/gitHubForksUpdater.js",
