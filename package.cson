@@ -12,7 +12,7 @@
 #
 # ALTERNATIVE METHOD (if package.json is corrupted):
 # npm install cson
-# node ./readium-shared-js/readium-cfi-js/node_modules/cson/bin/cson2json package.cson > package.json
+# node ./readium-shared-js/node_modules/cson/bin/cson2json package.cson > package.json
 # Note that on some Windows terminals (e.g. GitShell),
 # unfortunately the package.json file might need its encoding
 # converted to UTF-no-BOM :(
@@ -137,9 +137,9 @@ scripts:
 #=====================
     cson2json: '
 
-        node ./readium-shared-js/readium-cfi-js/node_modules/cson/bin/cson2json package.cson > package.json
+        node ./readium-shared-js/node_modules/cson/bin/cson2json package.cson > package.json
         &&
-        node readium-shared-js/readium-cfi-js/readium-build-tools/optimizePackageJsonScripts.js
+        node readium-shared-js/readium-build-tools/optimizePackageJsonScripts.js
     '
 
 #=====================
@@ -185,7 +185,7 @@ scripts:
 #=====================
     'prepare:local:common': '
 
-        node readium-shared-js/readium-cfi-js/readium-build-tools/gitHubForksUpdater.js
+        node readium-shared-js/readium-build-tools/gitHubForksUpdater.js
     '
 
 #=====================
@@ -261,7 +261,7 @@ scripts:
     'genPluginsConfig': '
         cd readium-shared-js/
         &&
-        node readium-cfi-js/readium-build-tools/pluginsConfigMaker.js
+        node readium-build-tools/pluginsConfigMaker.js
         &&
         cd ..
     '
@@ -448,10 +448,10 @@ scripts:
 
         npm run watch
             \"npm run build
-                && node readium-shared-js/readium-cfi-js/readium-build-tools/webbrowser.js
+                && node readium-shared-js/readium-build-tools/webbrowser.js
                 && npm run rimraf
                     open_webbrowser.js\"
-            dev/ js/ readium-shared-js/js/ readium-shared-js/plugins/ readium-shared-js/readium-cfi-js/js/
+            dev/ js/ readium-shared-js/js/ readium-shared-js/plugins/ readium-shared-js/js/
     '
     #    nodemon -q
     #    -w dev/
@@ -462,7 +462,7 @@ scripts:
     'httpServe': '
 
         node
-            readium-shared-js/readium-cfi-js/readium-build-tools/http-server.js
+            readium-shared-js/readium-build-tools/http-server.js
             
             -LOGFILE
             http.log
