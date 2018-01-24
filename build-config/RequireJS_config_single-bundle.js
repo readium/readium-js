@@ -31,6 +31,6 @@ require.config({
             process._RJS_rootDir(1) + '/build-output/version',
 
         "readium-js_all":
-            process._RJS_rootDir(1) + '/readium-shared-js/readium-cfi-js/node_modules/almond/almond'
+            process._RJS_rootDir(1) + '/readium-shared-js/node_modules/almond/almond'
     }
 });
