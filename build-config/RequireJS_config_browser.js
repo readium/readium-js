@@ -20,9 +20,8 @@ window.process._RJS_baseUrl = function(n)
 
 window.process._RJS_rootDir = function(n)
 {
-    if (n == 2) return ".";
-    if (n == 1) return "readium-shared-js";
-    if (n == 0) return "readium-shared-js/readium-cfi-js";
+    if (n == 1) return ".";
+    if (n == 0) return "readium-shared-js";
 };
 
 // Used in readium-build-tools/pluginsConfigMaker
@@ -38,6 +37,6 @@ require.config({
     paths:
     {
         "version":
-            process._RJS_rootDir(2) + '/dev/version'
+            process._RJS_rootDir(1) + '/dev/version'
     }
 });
