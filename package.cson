@@ -157,7 +157,7 @@ scripts:
 
         (npm outdated || echo outdated)
         &&
-        npm install
+        (npm ci || npm install)
         &&
         npm run prepare:local:common
     '
