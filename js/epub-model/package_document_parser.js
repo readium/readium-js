@@ -21,6 +21,7 @@ define(['jquery', 'underscore', '../epub-fetch/markup_parser', 'URIjs', './packa
     // instance of `URI` that is used to resolve paths during the process
     var PackageDocumentParser = function(publicationFetcher) {
 
+        var _packageFetcher = publicationFetcher;
         var _deferredXmlDom = $.Deferred();
         var _xmlDom;
 
@@ -74,8 +75,9 @@ define(['jquery', 'underscore', '../epub-fetch/markup_parser', 'URIjs', './packa
                     _packageFetcher.setPackageMetadata(metadata, function () {
 
                         var packageDocumentURL = publicationFetcher.getPackageUrl();
-                        var i = packageDocumentURL.lastIndexOf("/");
-                        var packageDocRoot = i > 0 ? packageDocumentURL.substr(0, i) : "";
+                        // var i = packageDocumentURL.lastIndexOf("/");
+                        // var packageDocRoot = i > 0 ? packageDocumentURL.substr(0, i) : "";
+                        var packageDocRoot = packageDocumentURL;
                         
                         var packageDocument = new PackageDocument(packageDocRoot, xmlDom,
                             publicationFetcher, metadata, spine, manifest);
