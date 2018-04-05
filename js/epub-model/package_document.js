@@ -11,11 +11,11 @@
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define(['jquery', 'underscore', 'URIjs'],
-    function ($, _, URI) {
+define(['jquery', 'underscore', 'URIjs', 'readium_cfi_js'],
+    function ($, _, URI, epubCFI) {
 
     // Description: This model provides an interface for navigating an EPUB's package document
-    var PackageDocument = function(packageDocRoot, publicationFetcher, metadata, spine, manifest) {
+    var PackageDocument = function(packageDocumentURL, packageDocumentDOM, resourceFetcher, metadata, spine, manifest) {
 
         var _page_prog_dir;
 
@@ -23,6 +23,7 @@ define(['jquery', 'underscore', 'URIjs'],
 
         this.getSharedJsPackageData = function () {
 
+            var packageDocRoot = packageDocumentURL.substr(0, packageDocumentURL.lastIndexOf("/"));
             return {
                 rootUrl : packageDocRoot,
                 rendition_viewport : metadata.rendition_viewport,
@@ -34,7 +35,8 @@ define(['jquery', 'underscore', 'URIjs'],
                 spine : {
                     direction : this.getPageProgressionDirection(),
                     items : spine
-                }
+                },
+                metadata: metadata
             };
         };
 
@@ -46,6 +48,17 @@ define(['jquery', 'underscore', 'URIjs'],
         this.getSpineItem = function(spineIndex) {
             var spineItem = spine[spineIndex];
             return spineItem;
+        };
+
+        /**
+         * Get the idref attribute value of the spine given a partial CFI
+         * @param packageCFI The partial CFI that targets the spine item element in the package document
+         */
+        this.getSpineItemIdrefFromCFI = function(packageCFI) {
+            var $spineItemElement = epubCFI.getTargetElementWithPartialCFI("epubcfi(" + packageCFI + ")", packageDocumentDOM);
+            if ($spineItemElement.length) {
+                return $spineItemElement[0].getAttribute('idref');
+            }
         };
 
         this.setPageProgressionDirection = function(page_prog_dir) {
@@ -105,7 +118,7 @@ define(['jquery', 'underscore', 'URIjs'],
                 return;
             }
 
-            publicationFetcher.relativeToPackageFetchFileContents(toc, 'text', function (tocDocumentText) {
+            resourceFetcher.relativeToPackageFetchFileContents(toc, 'text', function (tocDocumentText) {
                 callback(tocDocumentText)
             }, function (err) {
                 console.error('ERROR fetching TOC from [' + toc + ']:');
@@ -138,7 +151,6 @@ define(['jquery', 'underscore', 'URIjs'],
                         $ncxOrderedList = getNcxOrderedList($("navMap", tocDom));
                         callback($ncxOrderedList[0]);
                     } else {
-                        var packageDocumentURL = publicationFetcher.getPackageUrl();
                         var packageDocumentAbsoluteURL = new URI(packageDocumentURL).absoluteTo(document.URL);
                         var tocDocumentAbsoluteURL = new URI(that.getToc()).absoluteTo(packageDocumentAbsoluteURL);
                         // add a BASE tag to change the TOC document's baseURI.

@@ -200,7 +200,7 @@ define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore', './disco
                     }
                 }
                 
-                $('svg', doc).load(function(){
+                $('svg', doc).on("load", function(){
                     console.log('SVG loaded');
                 });
                 
