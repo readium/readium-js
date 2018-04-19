@@ -26,8 +26,7 @@ require.config({
             include: ["mime-types", "zip", "zip-ext", "zip-fs", "cryptoJs/sha1", "cryptoJs/core",
             'jquery', 'readium_cfi_js',
             'underscore', 'URIjs', 'punycode', 'SecondLevelDomains', 'IPv6',
-            'jquerySizes', 'domReady', 'eventEmitter', 'console_shim',
-            'rangy', 'rangy-core', 'rangy-textrange', 'rangy-classapplier', 'rangy-highlighter', 'rangy-position', 'cssom']
+            'jquerySizes', 'domReady', 'eventEmitter', 'console_shim', 'cssom']
         }
     ]
 });
