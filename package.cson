@@ -102,6 +102,7 @@ dependencies:
     "http-server": 'github:danielweck/http-server#master'
     # SEE: https://github.com/indexzero/http-server/issues/154
 
+    "bowser": '^1.9.3'
 
 #####################################################################
 # These dependencies can be fetched by using the "--dev" option

@@ -76,7 +76,10 @@ require.config({
             process._RJS_rootDir(2) + '/node_modules/zip-js/WebContent/deflate',
 
         'z-worker':
-            process._RJS_rootDir(2) + '/node_modules/zip-js/WebContent/z-worker'
+            process._RJS_rootDir(2) + '/node_modules/zip-js/WebContent/z-worker',
+
+        'bowser':
+            process._RJS_rootDir(2) + '/node_modules/bowser/bowser'
     },
 
 
@@ -102,6 +105,9 @@ require.config({
         },
         'deflate' : {
             exports: 'zip'
+        },
+        'bowser' : {
+            exports: 'bowser'
         }
     }
 });
