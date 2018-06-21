@@ -48,7 +48,8 @@
     "concurrently": "^3.5.0",
     "npm-run-all": "^4.1.2",
     "opener": "^1.4.3",
-    "http-server": "github:danielweck/http-server#master"
+    "http-server": "github:danielweck/http-server#master",
+    "bowser": "^1.9.3"
   },
   "devDependencies": {
     "crypto-js": "^3.1.9-1",

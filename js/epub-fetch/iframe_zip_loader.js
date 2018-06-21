@@ -11,7 +11,7 @@
 //  used to endorse or promote products derived from this software without specific
 //  prior written permission.
 
-define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore', './discover_content_type'], function(URI, IFrameLoader, _, ContentTypeDiscovery){
+define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore', './discover_content_type', 'bowser'], function(URI, IFrameLoader, _, ContentTypeDiscovery, bowser) {
 
     var zipIframeLoader = function( getCurrentResourceFetcher, contentDocumentTextPreprocessor) {
 
@@ -98,16 +98,26 @@ define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore', './disco
         };
 
         this._loadIframeWithDocument = function (iframe, attachedData, contentDocumentData, callback) {
+            var documentDataUri, blob;
 
-            if (!isIE) {
+            // IE and Safari 6 for iOS don't handle Blobs correctly
+            var isBlobHandled = !bowser.msie && !(bowser.ios && (parseInt(bowser.version, 10) < 7)) && !bowser.samsungBrowser;
+
+            if (isBlobHandled) {
                 var contentType = 'text/html';
                 if (attachedData.spineItem.media_type && attachedData.spineItem.media_type.length) {
                     contentType = attachedData.spineItem.media_type;
                 }
 
-                var documentDataUri = window.URL.createObjectURL(
-                    new Blob([contentDocumentData], {'type': contentType})
-                );
+                // prefer BlobBuilder as some browser supports Blob constructor but fails using it
+                if (window.BlobBuilder) {
+                    var builder = new BlobBuilder();
+                    builder.append(contentDocumentData);
+                    blob = builder.getBlob(contentType);
+                } else {
+                    blob = new Blob([contentDocumentData], {'type': contentType});
+                }
+                documentDataUri = window.URL.createObjectURL(blob);
             } else {
                 // Internet Explorer doesn't handle loading documents from Blobs correctly.
                 // TODO: Currently using the document.write() approach only for IE, as it breaks CSS selectors
@@ -248,12 +258,12 @@ define(['URIjs', 'readium_shared_js/views/iframe_loader', 'underscore', './disco
                     callback();
                 }
 
-                if (!isIE) {
+                if (isBlobHandled) {
                     window.URL.revokeObjectURL(documentDataUri);
                 }
             };
 
-            if (!isIE) {
+            if (isBlobHandled) {
                 iframe.setAttribute("src", documentDataUri);
             } else {
                 iframe.contentWindow.document.close();
