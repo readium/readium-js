@@ -1,5 +1,102 @@
 {
+  "/*": "----------------------------------------------------------------------------",
+  "..": "This package.json (JSON) is automatically generated from package.cson (CSON)",
+  ".-": "DO NOT invoke 'npm init' or 'npm install --save' ('--save-dev' / '--save-optional')",
+  "._": "as this would overwrite / update the JSON, not the master CSON!",
+  "*/": "----------------------------------------------------------------------------",
+  "name": "readium-js",
+  "version": "0.31.0-alpha",
+  "main": "build/index.js",
+  "engines": {
+    "node": ">=4",
+    "npm": ">=2",
+    "yarn": ">=0.23"
+  },
+  "description": "Readium - core javascript module",
+  "keywords": [
+    "readium",
+    "epub",
+    "epub3"
+  ],
+  "author": {
+    "name": "Readium (Daniel Weck)",
+    "email": "daniel.weck@gmail.com",
+    "url": "http://github.com/readium"
+  },
+  "license": "BSD-3-Clause",
+  "licenses": [
+    {
+      "type": "BSD-3-Clause",
+      "url": "http://opensource.org/licenses/BSD-3-Clause"
+    }
+  ],
+  "homepage": "http://github.com/readium/readium-js",
+  "bugs": {
+    "url": "http://github.com/readium/readium-js/issues",
+    "email": "daniel.weck@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/readium/readium-js.git"
+  },
+  "files": [
+    "build-output/",
+    "dev/",
+    "license.txt",
+    "README.md"
+  ],
+  "dependencies": {
+    "bowser": "^1.9.3",
+    "jquery": "^3.3.1",
+    "npm-run-all": "^4.1.3",
+    "opener": "^1.4.3",
+    "readium-cfi-js": "github:readium/readium-cfi-js.git#develop",
+    "urijs": "^1.19.1"
+  },
   "devDependencies": {
-    "lerna": "^2.11.0"
+    "babel-core": "^6.26.3",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-es2015": "^6.24.1",
+    "concurrently": "^3.6.0",
+    "crypto-js": "^3.1.9-1",
+    "gift": "^0.10.1",
+    "http-server": "github:danielweck/http-server#master",
+    "raw-loader": "^0.5.1",
+    "requirejs-text": "^2.0.15",
+    "text-loader": "^0.0.1",
+    "webpack": "^4.16.2",
+    "webpack-blocks": "^1.0.0",
+    "webpack-cli": "^3.1.0",
+    "zip-js": "github:danielweck/zip.js#master"
+  },
+  "scripts": {
+    "cson2json": "node ./readium-shared-js/node_modules/cson/bin/cson2json package.cson > package.json && node readium-shared-js/readium-build-tools/optimizePackageJsonScripts.js",
+    "prepare:all": "npm run prepare:submodule && npm run prepare:local",
+    "prepare:local": "(npm outdated || echo outdated) && (npm ci || npm install) && npm run prepare:local:common",
+    "prepare:yarn:all": "yarn run prepare:yarn:submodule && yarn run prepare:yarn:local",
+    "prepare:yarn:local": "(yarn outdated || echo outdated) && yarn install && yarn run prepare:local:common",
+    "prepare:local:common": "node readium-shared-js/readium-build-tools/gitHubForksUpdater.js",
+    "prepare:submodule": "cd readium-shared-js && npm run prepare:all && cd .. && ls",
+    "prepare:yarn:submodule": "cd readium-shared-js && yarn run prepare:yarn:all && cd .. && ls",
+    "clean": "(yarn --version || echo noyarn) && node --version && npm --version && node ./readium-shared-js/node_modules/rimraf/bin.js build-output/* && node ./readium-shared-js/node_modules/rimraf/bin.js api-docs/*",
+    "apidocs": "node ./readium-shared-js/node_modules/yuidocjs/lib/cli.js -N -C -c yuidocs.json",
+    "prebuild": "npm run clean",
+    "build": "npm run build:styles && npm run build:scripts",
+    "lint": "node ./readium-shared-js/readium-build-tools/jshint_glob.js \"js/**.js\"",
+    "genPluginsConfig": "cd readium-shared-js/ && node readium-build-tools/pluginsConfigMaker.js && cd ..",
+    "prebuild:scripts": "npm run genPluginsConfig",
+    "preversioning": "node ./readium-shared-js/node_modules/mkdirp/bin/cmd.js build-output/_multiple-bundles && node ./readium-shared-js/node_modules/mkdirp/bin/cmd.js build-output/_single-bundle && node ./readium-shared-js/node_modules/mkdirp/bin/cmd.js build-output/XXX",
+    "versioning": "node build-config/versioning.js build-output/version.json && node ./readium-shared-js/node_modules/cpy-cli/cli.js build-output/version.json build-output/XXX/",
+    "build:scripts": "npm run versioning && npm run build:scripts:multiple && npm run build:scripts:single",
+    "postbuild:scripts": "node ./readium-shared-js/node_modules/rimraf/bin.js build-output/XXX && node ./readium-shared-js/node_modules/rimraf/bin.js build-output/_multiple-bundles/version.json && node ./readium-shared-js/node_modules/cpy-cli/cli.js build-output/_multiple-bundles/z-worker.js build-output/ && node ./readium-shared-js/node_modules/cpy-cli/cli.js build-output/_multiple-bundles/deflate.js build-output/ && node ./readium-shared-js/node_modules/cpy-cli/cli.js build-output/_multiple-bundles/inflate.js build-output/ && node ./readium-shared-js/node_modules/rimraf/bin.js build-output/_multiple-bundles/z-worker.js && node ./readium-shared-js/node_modules/rimraf/bin.js build-output/_multiple-bundles/deflate.js && node ./readium-shared-js/node_modules/rimraf/bin.js build-output/_multiple-bundles/inflate.js && ( node ./readium-shared-js/node_modules/cpy-cli/cli.js build-output/_multiple-bundles/z-worker.js.map build-output/ && ( node ./readium-shared-js/node_modules/cpy-cli/cli.js build-output/_multiple-bundles/deflate.js.map build-output/ && node ./readium-shared-js/node_modules/cpy-cli/cli.js build-output/_multiple-bundles/inflate.js.map build-output/ && node ./readium-shared-js/node_modules/rimraf/bin.js build-output/_multiple-bundles/z-worker.js.map && node ./readium-shared-js/node_modules/rimraf/bin.js build-output/_multiple-bundles/deflate.js.map && node ./readium-shared-js/node_modules/rimraf/bin.js build-output/_multiple-bundles/inflate.js.map ) || echo \"=== SUCCESS [ignore previous error]: no sourcemaps were generated for zip web-worker, deflate, inflate (no uglification).\" )",
+    "build:scripts:multiple": "node ./readium-shared-js/node_modules/requirejs/bin/r.js -o ./readium-shared-js/readium-build-tools/RequireJS_config.js --rjs_bundle=multiple",
+    "postbuild:scripts:multiple": "node ./readium-shared-js/node_modules/rimraf/bin.js build-output/_multiple-bundles/RequireJS.js.src.js && node ./readium-shared-js/node_modules/rimraf/bin.js build-output/_multiple-bundles/inflate.js.src.js && node ./readium-shared-js/node_modules/rimraf/bin.js build-output/_multiple-bundles/deflate.js.src.js && node ./readium-shared-js/node_modules/rimraf/bin.js build-output/_multiple-bundles/z-worker.js.src.js",
+    "build:scripts:single": "node ./readium-shared-js/node_modules/requirejs/bin/r.js -o ./readium-shared-js/readium-build-tools/RequireJS_config.js --rjs_bundle=single",
+    "prebuild:styles": "node ./readium-shared-js/node_modules/mkdirp/bin/cmd.js build-output/css/",
+    "build:styles": "node ./readium-shared-js/node_modules/cpy-cli/cli.js readium-shared-js/static/sdk.css build-output/css/",
+    "http:watch": "echo > open_webbrowser.js && run-p \"dowatch\" \"httpServe\"",
+    "http": "npm run genPluginsConfig && npm run httpServe",
+    "dowatch": "node ./readium-shared-js/node_modules/watch/cli.js \"npm run build && node readium-shared-js/readium-build-tools/webbrowser.js && node ./readium-shared-js/node_modules/rimraf/bin.js open_webbrowser.js\" dev/ js/ readium-shared-js/js/ readium-shared-js/plugins/ readium-shared-js/js/",
+    "httpServe": "node readium-shared-js/readium-build-tools/http-server.js -LOGFILE http.log -OPEN /dev/ -c-1 -a 127.0.0.1 -p 9090 --cors ."
   }
 }
