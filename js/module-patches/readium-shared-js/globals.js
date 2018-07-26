@@ -1,3 +1,3 @@
 
 import {Globals} from "readium-shared-js";
-module.exports = Globals
+module.exports = Globals;

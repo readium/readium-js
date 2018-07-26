@@ -13,9 +13,9 @@ const {
 } = require("webpack-blocks");
 
 module.exports = createConfig([
-  babel(),
+   babel(), 
   customConfig({
-    module: {
+    /* module: {
       rules: [
         {
           test: /\.json$/,
@@ -28,7 +28,7 @@ module.exports = createConfig([
       alias: {
         text: "text-loader"
       }
-    }
+    } */
   }),
   resolve({
     alias: {
@@ -70,14 +70,14 @@ module.exports = createConfig([
         "./readium-shared-js/lib/rangy/rangy-serializer"
       ),
       "rangy-textrange": root("./readium-shared-js/lib/rangy/rangy-textrange"),
-      "zip-ext": "zip-js/WebContent/zip-ext",
+      "zip-ext": "zip-js/WebContent/zip",
     } 
   }),
   entryPoint(["./js/polyfills.js", "./js/Readium"]),
   setOutput({
     path: root("./build"),
     filename: "index.js",
-    libraryTarget: "commonjs"
+    libraryTarget: "umd"
   }),
   addPlugins([
     new webpack.ProvidePlugin({
