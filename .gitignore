@@ -30,4 +30,5 @@ Session.vim
 
 
 ## Webpack
-build/
+# build/
+# we should ignore builds once using npm repo
