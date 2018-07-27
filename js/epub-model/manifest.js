@@ -11,46 +11,44 @@
 //  used to endorse or promote products derived from this software without specific 
 //  prior written permission.
 
-define(['underscore'],
-    function (_) {
+import _ from 'underscore';
 
-        var Manifest = function (manifestJson) {
+var Manifest = function(manifestJson) {
 
-            var _manifestIndexById = {};
-            var _navItem;
+    var _manifestIndexById = {};
+    var _navItem;
 
-            this.manifestLength = function() {
-                return manifestJson.length;
-            };
+    this.manifestLength = function() {
+        return manifestJson.length;
+    };
 
-            this.getManifestItemByIdref = function (idref) {
-                return _manifestIndexById[idref];
-            };
+    this.getManifestItemByIdref = function(idref) {
+        return _manifestIndexById[idref];
+    };
 
-            /**
-             * Iterate over manifest items and apply callback (synchronously) on each one of them.
-             * @param iteratorCallback the iterator callback function, will be called once for each manifest item,
-             * and the item will be passed as the (one and only) argument.
-             * @returns the Manifest object for chaining.
-             */
-            this.each = function(iteratorCallback) {
-                _.each(manifestJson, iteratorCallback);
-                return this;
-            };
+    /**
+     * Iterate over manifest items and apply callback (synchronously) on each one of them.
+     * @param iteratorCallback the iterator callback function, will be called once for each manifest item,
+     * and the item will be passed as the (one and only) argument.
+     * @returns the Manifest object for chaining.
+     */
+    this.each = function(iteratorCallback) {
+        _.each(manifestJson, iteratorCallback);
+        return this;
+    };
 
-            this.getNavItem = function () {
-                return _navItem;
-            };
+    this.getNavItem = function() {
+        return _navItem;
+    };
 
-            // Initialize indexes
-            this.each(function(manifestItem) {
-                _manifestIndexById[manifestItem.id] = manifestItem;
+    // Initialize indexes
+    this.each(function(manifestItem) {
+        _manifestIndexById[manifestItem.id] = manifestItem;
 
-                if (manifestItem.properties && manifestItem.properties.indexOf("nav") !== -1) {
-                    _navItem = manifestItem;
-                }
-            });
-
-        };
-        return Manifest;
+        if (manifestItem.properties && manifestItem.properties.indexOf("nav") !== -1) {
+            _navItem = manifestItem;
+        }
     });
+
+};
+export default Manifest;
