@@ -12,7 +12,7 @@
 //  prior written permission.
 
 define(
-    ['jquery', 'underscore', 'URIjs', './discover_content_type', 'readium_cfi_js/XmlParse'],
+    ['jquery', 'underscore', 'URIjs', './discover_content_type', 'readium_shared_js/XmlParse'],
     function ($, _, URI, ContentTypeDiscovery, XmlParse) {
 
 

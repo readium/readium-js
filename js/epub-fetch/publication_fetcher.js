@@ -12,7 +12,7 @@
 //  prior written permission.
 
 define(['jquery', 'URIjs', './plain_resource_fetcher', './zip_resource_fetcher',
-    './content_document_fetcher', './resource_cache', './encryption_handler', './discover_content_type', 'readium_shared_js/helpers', 'readium_cfi_js/XmlParse'],
+    './content_document_fetcher', './resource_cache', './encryption_handler', './discover_content_type', 'readium_shared_js/helpers', 'readium_shared_js/XmlParse'],
     function ($, URI, PlainResourceFetcher, ZipResourceFetcher, ContentDocumentFetcher,
               ResourceCache, EncryptionHandler, ContentTypeDiscovery, Helpers, XmlParse) {
 
