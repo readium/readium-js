@@ -3,15 +3,13 @@ var path = require('path');
 
 var path_readiumJS = process.cwd();
 var path_readiumSharedJS = path.join(path_readiumJS, '/readium-shared-js');
-var path_readiumCfiJS = path.join(path_readiumSharedJS, '/readium-cfi-js');
 
 var repoNamePaths = {
     "readiumJs": path_readiumJS,
-    "readiumSharedJs": path_readiumSharedJS,
-    "readiumCfiJs": path_readiumCfiJS
+    "readiumSharedJs": path_readiumSharedJS
 };
 
-var filePath = path.join(process.cwd(), 'readium-shared-js', 'readium-cfi-js', 'readium-build-tools', 'versionsMaker.js')
+var filePath = path.join(process.cwd(), 'readium-shared-js', 'readium-build-tools', 'versionsMaker.js')
 
 var fs = require("fs");
 fs.readFile(
