@@ -11,10 +11,10 @@
 //  used to endorse or promote products derived from this software without specific
 //  prior written permission.
 
-define(['jquery', 'underscore', '../epub-fetch/markup_parser', 'URIjs', './package_document',
-        './smil_document_parser', './metadata', './manifest', 'readium_cfi_js'],
-    function($, _, MarkupParser, URI, PackageDocument, SmilDocumentParser, Metadata,
-             Manifest, epubCFI) {
+define(['jquery', 'underscore', 'URIjs', './package_document',
+        './smil_document_parser', './metadata', './manifest', 'readium_cfi_js', 'readium_shared_js/XmlParse'],
+    function($, _, URI, PackageDocument, SmilDocumentParser, Metadata,
+             Manifest, epubCFI, XmlParse) {
 
         // `PackageDocumentParser` is used to parse the xml of an epub package
     // document and build a javascript object. The constructor accepts an
@@ -95,8 +95,7 @@ define(['jquery', 'underscore', '../epub-fetch/markup_parser', 'URIjs', './packa
 
                 publicationFetcher.relativeToPackageFetchFileContents(pathToIBooksSpecificXml, 'text', function (ibookPropText) {
                     if(ibookPropText) {
-                        var parser = new MarkupParser();
-                        var propModel = parser.parseXml(ibookPropText);
+                        var propModel = XmlParse.fromString(ibookPropText, "text/xml");
                         var fixLayoutProp = $("option[name=fixed-layout]", propModel)[0];
                         if(fixLayoutProp) {
                             var fixLayoutVal = $(fixLayoutProp).text();
