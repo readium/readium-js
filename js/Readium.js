@@ -96,7 +96,8 @@ define(['readium_shared_js/globals', 'text!version.json', 'jquery', 'underscore'
         this.reader = new ReaderView(readerOptions);
         ReadiumSDK.reader = this.reader;
 
-        var openPackageDocument_ = function(ebookURL, callback, openPageRequest, contentType)  {
+        var openPackageDocument_ = function(ebookURL, callback, openPageRequest, contentType, renditionSelection)  {
+
             if (_currentPublicationFetcher) {
                 _currentPublicationFetcher.flushCache();
             }
@@ -106,9 +107,9 @@ define(['readium_shared_js/globals', 'text!version.json', 'jquery', 'underscore'
                 cacheSizeEvictThreshold = readiumOptions.cacheSizeEvictThreshold;
             }
 
-            _currentPublicationFetcher = new PublicationFetcher(ebookURL, jsLibRoot, window, cacheSizeEvictThreshold, _contentDocumentTextPreprocessor, contentType);
+            _currentPublicationFetcher = new PublicationFetcher(ebookURL, jsLibRoot, window, cacheSizeEvictThreshold, _contentDocumentTextPreprocessor, contentType, renditionSelection);
 
-            _currentPublicationFetcher.initialize(function(resourceFetcher) {
+            _currentPublicationFetcher.initialize(function(resourceFetcher, multipleRenditions) {
 
                 if (!resourceFetcher) {
                     
@@ -128,6 +129,7 @@ define(['readium_shared_js/globals', 'text!version.json', 'jquery', 'underscore'
                     
                     var openBookOptions = readiumOptions.openBookOptions || {};
                     var openBookData = $.extend(packageDocument.getSharedJsPackageData(), openBookOptions);
+                    openBookData = $.extend(openBookData, {multipleRenditions: multipleRenditions});
 
                     if (openPageRequest) {
                         // resolve package CFI (targeting a spine item ref) to an idref value if provided
@@ -148,7 +150,7 @@ define(['readium_shared_js/globals', 'text!version.json', 'jquery', 'underscore'
         };
 
 
-        this.openPackageDocument = function(ebookURL, callback, openPageRequest)  {
+        this.openPackageDocument = function(ebookURL, callback, openPageRequest, renditionSelection)  {
                         
             if (!(ebookURL instanceof Blob)
                 && !(ebookURL instanceof File)
@@ -223,7 +225,7 @@ define(['readium_shared_js/globals', 'text!version.json', 'jquery', 'underscore'
                             }
                         }
                         
-                        openPackageDocument_(ebookURL, callback, openPageRequest, contentType);
+                        openPackageDocument_(ebookURL, callback, openPageRequest, contentType, renditionSelection);
                     };
                     xhr.open('HEAD', ebookURL, true);
                     //xhr.responseType = 'blob';
@@ -233,7 +235,7 @@ define(['readium_shared_js/globals', 'text!version.json', 'jquery', 'underscore'
                 }
             }
                     
-            openPackageDocument_(ebookURL, callback, openPageRequest);
+            openPackageDocument_(ebookURL, callback, openPageRequest, undefined, renditionSelection);
         };
         
         this.closePackageDocument = function() {

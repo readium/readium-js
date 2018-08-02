@@ -73,7 +73,13 @@ define(['jquery', 'underscore', '../epub-fetch/markup_parser', 'URIjs', './packa
                 $.when(updateMetadataWithIBookProperties(metadata)).then(function() {
 
                     _packageFetcher.setPackageMetadata(metadata, function () {
-                        var packageDocument = new PackageDocument(publicationFetcher.getPackageUrl(), xmlDom,
+
+                        var packageDocumentURL = publicationFetcher.getPackageUrl();
+                        // var i = packageDocumentURL.lastIndexOf("/");
+                        // var packageDocRoot = i > 0 ? packageDocumentURL.substr(0, i) : "";
+                        var packageDocRoot = packageDocumentURL;
+                        
+                        var packageDocument = new PackageDocument(packageDocRoot, xmlDom,
                             publicationFetcher, metadata, spine, manifest);
 
                         packageDocument.setPageProgressionDirection(page_prog_dir);

@@ -16,7 +16,7 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
     function ($, URI, MarkupParser, PlainResourceFetcher, ZipResourceFetcher, ContentDocumentFetcher,
               ResourceCache, EncryptionHandler, ContentTypeDiscovery, Helpers) {
 
-    var PublicationFetcher = function(ebookURL, jsLibRoot, sourceWindow, cacheSizeEvictThreshold, contentDocumentTextPreprocessor, contentType) {
+    var PublicationFetcher = function(ebookURL, jsLibRoot, sourceWindow, cacheSizeEvictThreshold, contentDocumentTextPreprocessor, contentType, renditionSelection) {
 
         var self = this;
 
@@ -40,6 +40,10 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
 
         this.markupParser = new MarkupParser();
 
+        var _renditionSelection = renditionSelection;
+        var _mediaQuery = undefined;
+        var _mediaQueryEventCallback = undefined;
+        
         this.initialize =  function(callback) {
 
             var isEpubExploded = isExploded();
@@ -53,13 +57,17 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
                 //NOTE: _resourceFetcher == resourceFetcher
                 
                 self.getPackageDom(
-                    function() {callback(resourceFetcher);},
-                    function(error) {console.error("unable to find package document: " + error); callback(undefined);}
+                    function(packageDocument, multipleRenditions) {
+                        callback(resourceFetcher, multipleRenditions);
+                    },
+                    function(error) {
+                        console.error("unable to find package document: " + error);
+        
+                        callback(resourceFetcher, undefined);
+                    }
                 );
             });
         };
-
-
 
         // INTERNAL FUNCTIONS
 
@@ -93,6 +101,236 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
             // var ext = ".epub";
             // return ebookURL.indexOf(ext, ebookURL.length - ext.length) === -1;
         }
+
+        var buildRenditionMapping = function(callback, multipleRenditions, containerXmlDom, packageFullPath, cacheOpfDom) {
+
+            var doCallback = true;
+        
+            multipleRenditions.mappings = [];
+                
+            var linkMapping = $('link[rel=mapping]', containerXmlDom);
+            if (linkMapping.length) {
+                var href = linkMapping.attr("href");
+                console.debug('link[rel=mapping] @href ==> ' + href);
+                if (href) {
+                    
+                    var hrefParentFolder = "";
+                    var slashi = href.lastIndexOf("/");
+                    if (slashi > 0) {
+                        hrefParentFolder = href.substr(0, slashi);
+                    }
+                    hrefParentFolder = "/" + hrefParentFolder;
+                    console.debug(hrefParentFolder);
+                    
+                    doCallback = false;
+                    
+                    self.getXmlFileDom(href,
+                        function (mappingDom) {
+                            //var nav = $('nav[epub\\:type=resource-map]', mappingDom);
+                            //var nav = $('nav[type=resource-map]', mappingDom);
+                            var navs = $('nav', mappingDom);
+                            if (navs.length) {
+                                for (var i = 0; i < navs.length; i++) {
+                                    var nav = $(navs[i]);
+                                    
+                                    var epubtype = nav.attr("epub:type");
+                                    if (epubtype !== "resource-map") {
+                                        continue;
+                                    }
+                                    var uls = $('ul', nav);
+                                    for (var j = 0; j < uls.length; j++) {
+                                        var ul = $(uls[j]);
+                                            
+                                        var mappingUL = [];
+                                        multipleRenditions.mappings.push(mappingUL);
+                                            
+                                        var lias = $('li > a', ul);
+                                        for (var k = 0; k < lias.length; k++) {
+                                            var lia = $(lias[k]);
+                                            var ahref = lia.attr("href");
+                                            var arendition = lia.attr("epub:rendition");
+                                            
+                                            var mapping = {};
+                                            mappingUL.push(mapping);
+                                            
+                                            mapping.href = ahref;
+                                            mapping.rendition = arendition;
+                                            
+                                            var hashi = mapping.href.indexOf("#epubcfi");
+                                            
+                                            // this is relative to the mapping HTML doc, not to the root of the EPUB file tree
+                                            mapping.opf = mapping.rendition;
+                                            if (!mapping.opf) {
+                                                if (hashi > 0) {
+                                                    var opfPath = mapping.href.substr(0, hashi);
+                                                    mapping.opf = opfPath;
+                                                }
+                                            }
+                                            mapping.opf = hrefParentFolder + "/" + mapping.opf;
+                                            
+                                            var cfiOpfSpineItem = undefined;
+                                            mapping.cfiFull = undefined;
+                                            mapping.cfiPartial = undefined;
+                                            if (hashi > 0) {
+                                                var offset = hashi + 9;
+                                                mapping.cfiFull = mapping.href.substr(offset, mapping.href.length-offset-1);
+                                                cfiOpfSpineItem = mapping.cfiFull;
+                                                
+                                                var excli = mapping.cfiFull.indexOf("!");
+                                                if (excli > 0) {
+                                                    var offset = excli + 1;
+                                                    mapping.cfiPartial = mapping.cfiFull.substr(offset, mapping.cfiFull.length-offset);
+                                                    cfiOpfSpineItem = mapping.cfiFull.substr(0, offset-1);
+                                                }
+                                            }
+                                            
+                                            //OPF: packageFullPath
+                                            //MAPPING: href
+                                            
+                                            mapping.target = undefined;
+                                            if (mapping.rendition) {
+                                                // this is relative to the mapping HTML doc, not to the root of the EPUB file tree
+                                                mapping.target = mapping.href;
+                                                mapping.target = hrefParentFolder + "/" + mapping.target;
+                                            } else {
+                                                // this is relative to the root of the EPUB file tree
+                                                
+                                                //console.debug("cfiOpfSpineItem: " + cfiOpfSpineItem);
+                                                var slashi = cfiOpfSpineItem.lastIndexOf("/");
+                                                if (slashi > 0) {
+                                                    var nStr = cfiOpfSpineItem.substr(slashi + 1, 1);
+                                                    var n = parseInt(nStr);
+                                                    n = n / 2 - 1;
+                                                    // n is zero-based index of spine item child element in OPF
+                                                    
+                                                    if (mapping.opf) {
+                                                        var f = function() {
+                                                            var itemRefIndex = n;
+                                                            var thisOpfPath = mapping.opf.substr(1);
+                                                            var mapping_ = mapping;
+                                                            
+                                                            var thisOpfPathParentFolder = "";
+                                                            var slashi = thisOpfPath.lastIndexOf("/");
+                                                            if (slashi > 0) {
+                                                                thisOpfPathParentFolder = thisOpfPath.substr(0, slashi);
+                                                            }
+                                                            thisOpfPathParentFolder = "/" + thisOpfPathParentFolder;
+                                                            //console.debug(">>> " + thisOpfPathParentFolder);
+                                                            
+                                                            var processOpfDom = function(opfDom) {
+                                                            
+                                                                var itemRefs = $('itemref', opfDom);
+                                                                if (itemRefs.length) {
+                                                                    var itemRef = $(itemRefs[itemRefIndex]);
+                                                                    var idref = itemRef.attr("idref");
+                                                                    mapping_.idref = idref;
+                                                                
+                                                                    var item = $('#' + idref, opfDom);
+                                                                    if (item.length) {
+                                                                        var itemHref = item.attr("href");
+                                                                        mapping_.target = itemHref;
+                                                                        mapping_.target = thisOpfPathParentFolder + "/" + mapping_.target;
+                                                                        //console.debug(">>> " + mapping_.target);
+                                                                        //console.debug(mapping_);
+                                                                    }
+                                                                }
+                                                            };
+                                                            
+                                                            var dom = cacheOpfDom[thisOpfPath];
+                                                            if (dom) {
+                                                                //console.debug("*** CACHED OPF DOM: " + thisOpfPath);
+                                                                processOpfDom(dom);
+                                                            }
+                                                            else {
+                                                                // Async!
+                                                                // Should never occur,
+                                                                // because the cacheOpfDom array was initialised in populateCacheOpfDom(),
+                                                                // based upon renditions declared in META-INF/container.xml
+                                                                console.debug("*** PARSING OPF DOM: " + thisOpfPath);
+                                                                self.getXmlFileDom(thisOpfPath,
+                                                                    function (opfDom) {
+                                                                        cacheOpfDom[thisOpfPath] = opfDom;
+                                                                        processOpfDom(opfDom);
+                                                                    },
+                                                                    function(error) {
+                                                                    }
+                                                                );
+                                                            }
+                                                            
+                                                        }();
+                                                    }
+                                                }
+                                            }
+                                            
+                                            /*
+                                            console.debug("============");
+                                            console.log("- href: " + mapping.href);
+                                            console.log("- rendition: " + mapping.rendition);
+                                            console.log("opf: " + mapping.opf);
+                                            console.log("cfiFull: " + mapping.cfiFull);
+                                            console.log("cfiPartial: " + mapping.cfiPartial);
+                                            console.log("target: " + mapping.target);
+                                            */
+                                        }
+                                    }
+                                }
+                            }
+                            callback(packageFullPath, multipleRenditions);
+                        },
+                        function(error) {
+                            callback(packageFullPath, multipleRenditions);
+                        }
+                    );
+                }
+            }
+            
+            if (doCallback) callback(packageFullPath, multipleRenditions);
+        };
+        
+        var populateCacheOpfDom = function(i, multipleRenditions, cacheOpfDom, callback) {
+        
+            var next = function(j) {
+                if (j < multipleRenditions.renditions.length) {
+                    console.debug("next populateCacheOpfDom");
+                    populateCacheOpfDom(j, multipleRenditions, cacheOpfDom, callback);
+                } else {
+                    console.debug("callback populateCacheOpfDom");
+                    callback();
+                }
+            };
+        
+            var rendition = multipleRenditions.renditions[i];
+        
+            var thisOpfPath = rendition.opfPath.substr(1);
+        
+            if (cacheOpfDom[thisOpfPath]) {
+                
+                next(i+1);
+                return;
+            }
+        
+            self.getXmlFileDom(thisOpfPath,
+                function (opfDom) {
+                    console.error("....cacheOpfDom: " + thisOpfPath);
+                    cacheOpfDom[thisOpfPath] = opfDom;
+                    
+                    next(i+1);
+                },
+                function(error) {
+                    next(i+1);
+                }
+            );
+            
+        };
+        
+        this.cleanup = function() {
+            self.flushCache();
+
+            if (_mediaQueryEventCallback) {
+                _mediaQuery.removeListener(_mediaQueryEventCallback);
+                _mediaQueryEventCallback = undefined;
+            }
+        };
 
         function createResourceFetcher(isExploded, callback) {
             if (isExploded) {
@@ -155,7 +393,6 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
             _publicationResourcesCache.flushCache();
         };
 
-
         this.getPackageUrl = function() {
             return _packageDocumentAbsoluteUrl;
         };
@@ -205,22 +442,224 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
             }, onerror);
         };
 
-        this.getPackageFullPath = function(callback, onerror) {
-            self.getXmlFileDom('/META-INF/container.xml', function (containerXmlDom) {
-                var packageFullPath = self.getRootFile(containerXmlDom);
-                callback(packageFullPath);
+
+        var _packageFullPathFromContainerXml = undefined;
+        var _multipleRenditions = undefined;
+        
+        var getPackageFullPathFromContainerXml = function(callback, onerror) {
+            if (_packageFullPathFromContainerXml) {
+                callback(_packageFullPathFromContainerXml, _multipleRenditions);
+                return;
+            }
+            
+            self.getXmlFileDom('META-INF/container.xml', function(containerXmlDom) {
+                
+                _multipleRenditions = {};
+            
+                _packageFullPathFromContainerXml = getRootFile(containerXmlDom, _multipleRenditions);
+                
+                var cacheOpfDom = {};
+
+                if (_multipleRenditions.renditions.length) {
+                    populateCacheOpfDom(0, _multipleRenditions, cacheOpfDom, function() {
+                        buildRenditionMapping(callback, _multipleRenditions, containerXmlDom, _packageFullPathFromContainerXml, cacheOpfDom);
+                    });
+                } else {
+                    buildRenditionMapping(callback, _multipleRenditions, containerXmlDom, _packageFullPathFromContainerXml, cacheOpfDom);
+                }
+                
             }, onerror);
         };
-
-        this.getRootFile = function(containerXmlDom) {
-            var rootFile = $('rootfile', containerXmlDom);
+        
+        var getRootFile = function(containerXmlDom, multipleRenditions) {
+            //console.debug(containerXmlDom.documentElement.innerHTML);
+            
+            console.debug("@@@@@@@@@@@@@@@@@@ getRootFile");
+                
+        
+            //console.debug("_renditionSelectionrenditionMedia: ", _renditionSelection.renditionMedia);
+            console.debug("_renditionSelection.renditionLayout: ", _renditionSelection.renditionLayout);
+            console.debug("_renditionSelection.renditionLanguage: ", _renditionSelection.renditionLanguage);
+            console.debug("_renditionSelection.renditionAccessMode: ", _renditionSelection.renditionAccessMode);
+            
+            
+            var rootFiles = $('rootfile', containerXmlDom);
+            //console.debug(rootFiles);
+                            
+            multipleRenditions.renditions = [];
+            multipleRenditions.selectedIndex = -1;
+        
+        
+            var rootFile = undefined;
+            if (rootFiles.length == 1) {
+                rootFile = rootFiles;
+            
+                var renditionMedia = rootFile.attr('rendition:media');
+                var renditionLayout = rootFile.attr('rendition:layout');
+                var renditionLanguage = rootFile.attr('rendition:language');
+                var renditionAccessMode = rootFile.attr('rendition:accessMode');
+                
+                var rendition = {};
+        
+                rendition.Media = renditionMedia;
+                rendition.Layout = renditionLayout;
+                rendition.Language = renditionLanguage;
+                rendition.AccessMode = renditionAccessMode;
+                rendition.Label = renditionLabel;
+                
+                rendition.opfPath = "/" + rootFile.attr('full-path');
+                console.debug("opfPath: ", rendition.opfPath);
+                
+                multipleRenditions.renditions.push(rendition);
+                multipleRenditions.selectedIndex = 0;
+            
+            } else {
+                for (var i = 0; i < rootFiles.length; i++) {
+                    var rendition = {};
+                
+                    rendition.Media = undefined;
+                    rendition.Layout = undefined;
+                    rendition.Language = undefined;
+                    rendition.AccessMode = undefined;
+                    rendition.Label = undefined;
+                    rendition.opfPath = undefined;
+                    
+                    multipleRenditions.renditions.push(rendition);
+                }
+                
+                var selectedIndex = -1;
+            
+                for (var i = rootFiles.length - 1; i >= 0; i--) {
+                    
+                    console.debug("----- ROOT FILE #" + i);
+                    
+                    var rendition = multipleRenditions.renditions[i];
+                    
+                    var rf = $(rootFiles[i]);
+                        
+                    var renditionMedia = rf.attr('rendition:media');
+                    var renditionLayout = rf.attr('rendition:layout');
+                    var renditionLanguage = rf.attr('rendition:language');
+                    var renditionAccessMode = rf.attr('rendition:accessMode');
+                    
+                    var renditionLabel = rf.attr('rendition:label');
+                    
+                    console.debug("renditionMedia: ", renditionMedia);
+                    console.debug("renditionLayout: ", renditionLayout);
+                    console.debug("renditionLanguage: ", renditionLanguage);
+                    console.debug("renditionAccessMode: ", renditionAccessMode);
+                    
+                    console.debug("renditionLabel: ", renditionLabel);
+                    
+                    rendition.Media = renditionMedia;
+                    rendition.Layout = renditionLayout;
+                    rendition.Language = renditionLanguage;
+                    rendition.AccessMode = renditionAccessMode;
+                    rendition.Label = renditionLabel;
+                    
+                    rendition.opfPath = "/" + rf.attr('full-path');
+                    console.debug("opfPath: ", rendition.opfPath);
+                    
+                    var selected = true;
+                    if (renditionMedia && renditionMedia !== "" && window.matchMedia) {
+                        
+                        if (_mediaQueryEventCallback) {
+                            _mediaQuery.removeListener(_mediaQueryEventCallback);
+                            
+                            _mediaQueryEventCallback = undefined;
+                            _mediaQuery = undefined;
+                        }
+                        
+                        _mediaQuery = window.matchMedia(renditionMedia);
+                        
+                        _mediaQueryEventCallback = function(mq) {
+                            console.debug("Rendition Selection Media Query changed: " + mq.media + " (" + mq.matches + ")");
+                            if (mq.matches) {
+                                // noop
+                            }
+                            if (_renditionSelection && _renditionSelection.renditionReload) {
+                                _renditionSelection.renditionReload();
+                            }
+                        };
+                        
+                        _mediaQuery.addListener(_mediaQueryEventCallback);
+                        
+                        if (!_mediaQuery.matches) {
+                            console.debug("=== EJECTED: renditionMedia");
+                            
+                            selected = selected && false;
+                            //continue;
+                        }
+                    }
+console.log("######################################");
+console.debug(_renditionSelection);
+console.log("######################################");
+                    if (_renditionSelection && (typeof _renditionSelection.renditionLayout !== "undefined") && renditionLayout && renditionLayout !== "") {
+                        if (_renditionSelection.renditionLayout !== renditionLayout) {
+                            console.debug("=== EJECTED: renditionLayout");
+                            
+                            selected = selected && false;
+                            //continue;
+                        }
+                    }
+                    
+                    if (_renditionSelection && (typeof _renditionSelection.renditionLanguage !== "undefined") && renditionLanguage && renditionLanguage !== "") {
+                        
+                        // TODO: language tag (+ script subtag) match algorithm RFC 4647 http://www.ietf.org/rfc/rfc4647.txt
+                        if (_renditionSelection.renditionLanguage !== renditionLanguage) {
+                            var langTags1 = _renditionSelection.renditionLanguage.split("-");
+                            var langTags2 = renditionLanguage.split("-");
+                            
+                            console.debug(langTags1[0]);
+                            console.debug(langTags2[0]);
+                            
+                            if (langTags1[0] !== langTags2[0]) {                                
+                                console.debug("=== EJECTED: renditionLanguage");
+                                    
+                                selected = selected && false;
+                                //continue;
+                            }
+                        }
+                    }
+                    
+                    if (_renditionSelection && (typeof _renditionSelection.renditionAccessMode !== "undefined") && renditionAccessMode && renditionAccessMode !== "") {
+                        if (_renditionSelection.renditionAccessMode !== renditionAccessMode) {
+                            console.debug("=== EJECTED: renditionAccessMode");
+                            
+                            selected = selected && false;
+                            //continue;
+                        }
+                    }
+                    
+                    if (selected && !rootFile) {
+                        rootFile = rf;
+                        selectedIndex = i;
+                        //break;
+                    }
+                }
+                
+                if (!rootFile
+                    // first-time load, or app with no preferences at all
+                    || (_renditionSelection && (typeof _renditionSelection.renditionAccessMode === "undefined") && (typeof _renditionSelection.renditionLanguage === "undefined") && (typeof _renditionSelection.renditionLayout === "undefined"))
+                ) {
+                    // fallback to index zero ... is that a valid interpretation of the EPUB3 specification??
+                    // See Processing Model:
+                    //http://www.idpf.org/epub/renditions/multiple/epub-multiple-renditions.html#h.4n44azuq1490
+                    
+                    selectedIndex = 0;
+                    rootFile = $(rootFiles[selectedIndex]);
+                }
+                
+                multipleRenditions.selectedIndex = selectedIndex;
+            }
+            
             var packageFullPath = rootFile.attr('full-path');
             return packageFullPath;
         };
-
+        
         this.getPackageDom = function (callback, onerror) {
             if (_packageDom) {
-                callback(_packageDom);
+                callback(_packageDom, _multipleRenditions);
             } else {
                 // TODO: use jQuery's Deferred
                 // Register all callbacks interested in initialized packageDom, launch its instantiation only once
@@ -230,7 +669,8 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
                 } else {
                     _packageDomInitializationDeferred = $.Deferred();
                     _packageDomInitializationDeferred.done(callback);
-                    self.getPackageFullPath(function (packageFullPath) {
+
+                    getPackageFullPathFromContainerXml(function (packageFullPath, multipleRenditions) {
                                 
                         _packageFullPath = packageFullPath;
                         _packageDocumentAbsoluteUrl = _resourceFetcher.resolveURI(_packageFullPath);
@@ -245,7 +685,7 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
                         
                         self.getXmlFileDom(packageFullPath, function (packageDom) {
                             _packageDom = packageDom;
-                            _packageDomInitializationDeferred.resolve(packageDom);
+                            _packageDomInitializationDeferred.resolve(packageDom, _multipleRenditions);
                             _packageDomInitializationDeferred = undefined;
                         })
                     }, onerror);
