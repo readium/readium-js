@@ -5,7 +5,7 @@ import babel from 'rollup-plugin-babel';
 const pkg = require('./package.json');
 
 export default {
-    input: 'js/Readium.js',
+    input: 'js/index.js',
     output: [
         {
             file: pkg.module,
