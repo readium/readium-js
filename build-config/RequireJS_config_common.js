@@ -13,14 +13,14 @@
 
 require.config({
 
-    baseUrl: process._RJS_baseUrl(2),
+    baseUrl: process._RJS_baseUrl(1),
 
     packages: [
 
         {
             name: 'readium_js',
             location:
-                process._RJS_rootDir(2) + '/js',
+                process._RJS_rootDir(1) + '/js',
 
             main: 'Readium'
         },
@@ -28,7 +28,7 @@ require.config({
         // {
         //     name: 'epub_fetch',
         //     location:
-        //         process._RJS_rootDir(2) + '/js/epub-fetch',
+        //         process._RJS_rootDir(1) + '/js/epub-fetch',
         //
         //     main: 'publication_fetcher'
         // },
@@ -36,7 +36,7 @@ require.config({
         // {
         //     name: 'epub_model',
         //     location:
-        //         process._RJS_rootDir(2) + '/js/epub-model',
+        //         process._RJS_rootDir(1) + '/js/epub-model',
         //
         //     main: 'package_document_parser'
         // },
@@ -44,7 +44,7 @@ require.config({
         {
             name: 'cryptoJs',
             location:
-                process._RJS_rootDir(2) + '/node_modules/crypto-js',
+                process._RJS_rootDir(1) + '/node_modules/crypto-js',
 
             main: 'core'
         }
@@ -55,28 +55,31 @@ require.config({
         // ------ NPM MODULEs
 
         text:
-            process._RJS_rootDir(2) + '/node_modules/requirejs-text/text',
+            process._RJS_rootDir(1) + '/node_modules/requirejs-text/text',
 
         zip:
-            process._RJS_rootDir(2) + '/node_modules/zip-js/WebContent/zip',
+            process._RJS_rootDir(1) + '/node_modules/zip-js/WebContent/zip',
 
         'mime-types':
-            process._RJS_rootDir(2) + '/node_modules/zip-js/WebContent/mime-types',
+            process._RJS_rootDir(1) + '/node_modules/zip-js/WebContent/mime-types',
 
         'zip-fs':
-            process._RJS_rootDir(2) + '/node_modules/zip-js/WebContent/zip-fs',
+            process._RJS_rootDir(1) + '/node_modules/zip-js/WebContent/zip-fs',
 
         'zip-ext':
-            process._RJS_rootDir(2) + '/node_modules/zip-js/WebContent/zip-ext',
+            process._RJS_rootDir(1) + '/node_modules/zip-js/WebContent/zip-ext',
 
         'inflate':
-            process._RJS_rootDir(2) + '/node_modules/zip-js/WebContent/inflate',
+            process._RJS_rootDir(1) + '/node_modules/zip-js/WebContent/inflate',
 
         'deflate':
-            process._RJS_rootDir(2) + '/node_modules/zip-js/WebContent/deflate',
+            process._RJS_rootDir(1) + '/node_modules/zip-js/WebContent/deflate',
 
         'z-worker':
-            process._RJS_rootDir(2) + '/node_modules/zip-js/WebContent/z-worker'
+            process._RJS_rootDir(1) + '/node_modules/zip-js/WebContent/z-worker',
+
+        'bowser':
+            process._RJS_rootDir(1) + '/node_modules/bowser/bowser'
     },
 
 
@@ -102,6 +105,9 @@ require.config({
         },
         'deflate' : {
             exports: 'zip'
+        },
+        'bowser' : {
+            exports: 'bowser'
         }
     }
 });

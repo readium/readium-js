@@ -18,7 +18,10 @@ define(['readium_shared_js/globals', 'text!version.json', 'jquery', 'underscore'
     function (Globals, versionText, $, _, ReaderView, PublicationFetcher,
               PackageParser, IframeZipLoader, IframeLoader) {
 
-    var DEBUG_VERSION_GIT = false; 
+    var DEBUG_VERSION_GIT = false;
+
+    //polyfill to support old versions of some browsers
+    window.BlobBuilder = window.BlobBuilder || window.WebKitBlobBuilder || window.MozBlobBuilder || window.MSBlobBuilder;
 
     var Readium = function(readiumOptions, readerOptions){
 
