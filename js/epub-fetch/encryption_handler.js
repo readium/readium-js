@@ -121,8 +121,9 @@ define(['cryptoJs/sha1'], function (CryptoJS_SHA1) {
         //console.debug(sha.toString(CryptoJS.enc.Hex));
         
         var byteArray = [];
-        
-        for (var i = 0; i < sha.sigBytes; i++) {
+        var i = 0;
+        var j = 0;
+        for (i = 0; i < sha.sigBytes; i++) {
             byteArray.push((sha.words[i >>> 2] >>> (24 - (i % 4) * 8)) & 0xff);
         }
         
@@ -138,16 +139,21 @@ define(['cryptoJs/sha1'], function (CryptoJS_SHA1) {
             encryptions: undefined
         };
 
-        var encryptedData = $('EncryptedData', encryptionDom);
-        encryptedData.each(function (index, encryptedData) {
-            var encryptionAlgorithm = $('EncryptionMethod', encryptedData).first().attr('Algorithm');
+        var encryptedDataElems = encryptionDom.getElementsByTagNameNS('*', 'EncryptedData');
+        for (i = 0; i < encryptedDataElems.length; ++i) {
+            var encryptedDataElem = encryptedDataElems[i];
+            var encryptionAlgorithmElems = encryptedDataElem.getElementsByTagNameNS('*', 'EncryptionMethod');
+            if (encryptionAlgorithmElems.length < 1) {
+                continue;
+            }
+            // TODO: Handle namespaced attributes (for robustness)
+            var encryptionAlgorithm = encryptionAlgorithmElems[0].getAttribute('Algorithm');
 
             // For some reason, jQuery selector "" against XML DOM sometimes doesn't match properly
-            var cipherReference = $('CipherReference', encryptedData);
-            cipherReference.each(function (index, CipherReference) {
-                
-                //var cipherReferenceURI = "/" + $(CipherReference).attr('URI');
-                var cipherReferenceURI = $(CipherReference).attr('URI');
+            var cipherReferenceElems = encryptedDataElem.getElementsByTagNameNS('*', 'CipherReference');
+            for (j = 0; j < cipherReferenceElems.length; ++j) {
+                // TODO: Handle namespaced attributes (for robustness)
+                var cipherReferenceURI = cipherReferenceElems[j].getAttribute('URI');
                 
                 console.log('Encryption/obfuscation algorithm ' + encryptionAlgorithm + ' specified for ' +
                     cipherReferenceURI);
@@ -157,8 +163,8 @@ define(['cryptoJs/sha1'], function (CryptoJS_SHA1) {
                 }
 
                 encryptionData.encryptions[cipherReferenceURI] = encryptionAlgorithm;
-            });
-        });
+            }
+        }
 
         return encryptionData;
     };
