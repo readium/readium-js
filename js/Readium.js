@@ -149,7 +149,13 @@ define(['readium_shared_js/globals', 'text!version.json', 'jquery', 'underscore'
 
 
         this.openPackageDocument = function(ebookURL, callback, openPageRequest)  {
-                        
+            var resourcePluginKey='ResourceFetcherPlugin';
+            var plugins = ReadiumSDK.Plugins.getLoadedPlugins()
+            if (_.has(plugins, resourcePluginKey)) {
+                _resourceFetcher = plugins[resourcePluginKey].CustomResourceFetcher.openPackageDocument(ebookURL, callback, openPageRequest, openPackageDocument_)
+                return;
+            }
+
             if (!(ebookURL instanceof Blob)
                 && !(ebookURL instanceof File)
                 // && ebookURL.indexOf("file://") != 0
