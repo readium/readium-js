@@ -137,17 +137,14 @@ define(['cryptoJs/sha1'], function (CryptoJS_SHA1) {
             uidHash: byteArray,
             encryptions: undefined
         };
-
-        var encryptedData = $('EncryptedData', encryptionDom);
-        encryptedData.each(function (index, encryptedData) {
-            var encryptionAlgorithm = $('EncryptionMethod', encryptedData).first().attr('Algorithm');
-
-            // For some reason, jQuery selector "" against XML DOM sometimes doesn't match properly
-            var cipherReference = $('CipherReference', encryptedData);
-            cipherReference.each(function (index, CipherReference) {
+        var encryptedDatas = encryptionDom.children[0].getElementsByTagNameNS("*", 'EncryptedData');
+        Array.prototype.forEach.call(encryptedDatas, function (encryptedData) {
+            var encryptionAlgorithm = $(encryptedData.getElementsByTagNameNS("*", 'EncryptionMethod')[0]).attr('Algorithm');
+            var cipherReferences = encryptedData.getElementsByTagNameNS("*", 'CipherReference');
+            Array.prototype.forEach.call(cipherReferences, function (cipherReference) {
                 
-                //var cipherReferenceURI = "/" + $(CipherReference).attr('URI');
-                var cipherReferenceURI = $(CipherReference).attr('URI');
+                //var cipherReferenceURI = "/" + $(cipherReference).attr('URI');
+                var cipherReferenceURI = $(cipherReference).attr('URI');
                 
                 console.log('Encryption/obfuscation algorithm ' + encryptionAlgorithm + ' specified for ' +
                     cipherReferenceURI);

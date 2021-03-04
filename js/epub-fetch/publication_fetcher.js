@@ -376,39 +376,45 @@ define(['jquery', 'URIjs', './markup_parser', './plain_resource_fetcher', './zip
             self.getXmlFileDom(self.convertPathRelativeToPackageToRelativeToBase(filePath), callback, errorCallback);
         };
 
-        // TODO: this function seems unused, and the callback parameter seems to be onError 
-        function readEncriptionData(callback) {
-            self.getXmlFileDom('/META-INF/encryption.xml', function (encryptionDom, error) {
+        // // TODO: this function seems unused, and the callback parameter seems to be onError 
+        // function readEncriptionData(callback) {
+        //     self.getXmlFileDom('/META-INF/encryption.xml', function (encryptionDom, error) {
 
-                if(error) {
+        //         if(error) {
                     
-                    _encryptionHandler = new EncryptionHandler(undefined);
-                    callback();
-                }
-                else {
+        //             _encryptionHandler = new EncryptionHandler(undefined);
+        //             callback();
+        //         }
+        //         else {
 
-                    var encryptions = [];
+        //             var encryptions = [];
 
+        //             var encryptedDatas = encryptionDom.getElementsByTagNameNS("*", 'EncryptedData');
+        //             Array.prototype.forEach.call(encryptedDatas, function (encryptedData) {
+        //                 var encryptionAlgorithm = $(encryptedData.getElementsByTagNameNS("*", 'EncryptionMethod')[0]).attr('Algorithm');
 
-                    var encryptedData = $('EncryptedData', encryptionDom);
-                    encryptedData.each(function (index, encryptedData) {
-                        var encryptionAlgorithm = $('EncryptionMethod', encryptedData).first().attr('Algorithm');
+        //                 encryptions.push({algorithm: encryptionAlgorithm});
 
-                        encryptions.push({algorithm: encryptionAlgorithm});
+        //                 var cipherReferences = encryptedData.getElementsByTagNameNS("*", 'CipherReference');
+        //                 Array.prototype.forEach.call(cipherReferences, function (cipherReference) {
+                            
+        //                     //var cipherReferenceURI = "/" + $(CipherReference).attr('URI');
+        //                     var cipherReferenceURI = $(cipherReference).attr('URI');
+                            
+        //                     console.log('Encryption/obfuscation algorithm ' + encryptionAlgorithm + ' specified for ' +
+        //                         cipherReferenceURI);
+            
+        //                     if(!encryptionData.encryptions) {
+        //                         encryptionData.encryptions = {};
+        //                     }
+            
+        //                     encryptions[cipherReferenceURI] = encryptionAlgorithm;
+        //                 });
+        //             });
+        //         }
 
-                        // For some reason, jQuery selector "" against XML DOM sometimes doesn't match properly
-                        var cipherReference = $('CipherReference', encryptedData);
-                        cipherReference.each(function (index, CipherReference) {
-                            var cipherReferenceURI = $(CipherReference).attr('URI');
-                            console.log('Encryption/obfuscation algorithm ' + encryptionAlgorithm + ' specified for ' +
-                                cipherReferenceURI);
-                            encryptions[cipherReferenceURI] = encryptionAlgorithm;
-                        });
-                    });
-                }
-
-            });
-        }
+        //     });
+        // }
 
         // Currently needed for deobfuscating fonts
         this.setPackageMetadata = function(packageMetadata, settingFinishedCallback) {
