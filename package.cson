@@ -33,7 +33,7 @@
 
 name: "readium-js"
 
-version: "0.32.0-alpha"
+version: "0.32.0"
 
 engines:
     node: ">=4"
@@ -99,7 +99,7 @@ dependencies:
     "opener": '^1.4.3'
 
     #"http-server": 'latest'
-    "http-server": 'github:danielweck/http-server#master'
+    "http-server": 'github:readium/http-server#9c6e56279af34381a5dae640b7d73762e8135bd7'
     # SEE: https://github.com/indexzero/http-server/issues/154
 
     "bowser": '^1.9.3'
@@ -113,7 +113,7 @@ devDependencies:
 
 #    "zipjs": 'github:gildas-lormeau/zip.js'
 #    "zipjs": 'github:ryanackley/zip.js'
-    "zip-js": 'github:danielweck/zip.js#master'
+    "zip-js": 'github:readium/zip.js#a6f4b24f16dfb5d62d9de48371922bb074ec6c8a'
 
 # see readium-cfi-js:
 # "requirejs", "almond", "jquery"
@@ -185,9 +185,10 @@ scripts:
 
 #=====================
     'prepare:local:common': '
-
-        node readium-shared-js/readium-build-tools/gitHubForksUpdater.js
+        echo ok
     '
+# node readium-shared-js/readium-build-tools/patchRequireJS.js
+# node readium-shared-js/readium-build-tools/gitHubForksUpdater.js
 
 #=====================
     'prepare:submodule': '
@@ -387,7 +388,13 @@ scripts:
 
 #=====================
     'postbuild:scripts:multiple': '
-
+        npm run cpy
+            readium-shared-js/node_modules/requirejs/bin/r.js
+            build-output/
+        &&
+            mv build-output/r.js
+            build-output/_multiple-bundles/RequireJS.js
+        &&
         npm run rimraf
             build-output/_multiple-bundles/RequireJS.js.src.js
         &&
