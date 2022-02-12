@@ -67,6 +67,12 @@ define(['readium_shared_js/globals', 'text!version.json', 'jquery', 'underscore'
             contentDocumentHtml = contentDocumentHtml.replace(/<title>[\s]*<\/title>/g, '<title>TITLE</title>');
             contentDocumentHtml = contentDocumentHtml.replace(/<title[\s]*\/>/g, '<title>TITLE</title>');
             
+            // Replace quotes < IE 10 cannot handle proper quoting when traversting textNodes.
+            contentDocumentHtml = contentDocumentHtml.replace(/(“)/g, '"'); // &#8220;
+            contentDocumentHtml = contentDocumentHtml.replace(/(”)/g, '"'); // &#8221;
+            // Replace apostrophes
+            contentDocumentHtml = contentDocumentHtml.replace(/(’)/g, '\''); // &#8217;
+            
             return contentDocumentHtml;
         };
 
