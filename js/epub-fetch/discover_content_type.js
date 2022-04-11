@@ -30,7 +30,9 @@ define(['jquery', 'URIjs'], function ($, URI) {
             opf: 'application/oebps-package+xml',
             png: 'image/png',
             svg: 'image/svg+xml',
-            xhtml: 'application/xhtml+xml'
+            xhtml: 'application/xhtml+xml',
+            mp3: "audio/mpeg",
+            mp4: "video/mp4"
         };
 
         this.identifyContentTypeFromFileName = function(contentUrl) {
